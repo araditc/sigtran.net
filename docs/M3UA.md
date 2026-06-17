@@ -95,6 +95,8 @@ Routing Key Management support covers the first dynamic registration path:
 
 Routing Keys require a Local-RK-Identifier and at least one Destination Point Code. Routing Context, Traffic Mode Type, Network Appearance, Service Indicators, and Originating Point Code List are optional fields.
 
+`M3uaRkmClient` can send Registration and Deregistration requests over `M3uaTransportSession` and wait for the corresponding response type.
+
 ## Validation Rules
 
 - Message lengths must match the common header length.

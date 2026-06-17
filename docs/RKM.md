@@ -46,6 +46,22 @@ bool ok = M3uaMessageBuilder.BuildRegistrationRequest(
     out string? error);
 ```
 
+## Client Helper
+
+`M3uaRkmClient` sends request messages through `M3uaTransportSession` and waits until the matching response type arrives.
+
+```csharp
+M3uaRkmClient client = new(transport);
+
+M3uaRegistrationResponseMessage registration = await client.RegisterAsync(
+    routingKeys,
+    ct: ct);
+
+M3uaDeregistrationResponseMessage deregistration = await client.DeregisterAsync(
+    new uint[] { registration.Results[0].RoutingContext },
+    ct: ct);
+```
+
 ## Registration Response
 
 Registration Response carries one or more Registration Result parameters. Each result contains:

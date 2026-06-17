@@ -30,9 +30,10 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 6. `M3uaOutboundProcessor` can apply association defaults and optional ASP active-state policy while building outbound messages.
 7. `M3uaTransportSession` connects processors to an `ISctpSocket` for async send/receive flows.
 8. `M3uaAspClient` can run common ASP startup, heartbeat, and shutdown handshakes over the transport session.
-9. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
-10. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
-11. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
+9. `M3uaRkmClient` can run dynamic Routing Key registration and deregistration handshakes.
+10. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
+11. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
+12. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
 
 ## Production Boundaries
 

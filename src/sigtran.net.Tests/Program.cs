@@ -48,6 +48,7 @@ Run("M3UA rejects SCON without Affected Point Code", M3uaRejectsSconWithoutAffec
 Run("M3UA parses RKM Registration Request messages", M3uaParsesRegistrationRequest);
 Run("M3UA parses RKM Registration Response messages", M3uaParsesRegistrationResponse);
 Run("M3UA parses RKM Deregistration messages", M3uaParsesDeregistrationMessages);
+Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
 
 static void M3uaPayloadDataUsesNetworkOrder()
@@ -1356,6 +1357,56 @@ static void M3uaParsesDeregistrationMessages()
     AssertEqual(2, typedResponse!.Results.Length, "typed DEREG RSP result count");
     AssertEqual(M3uaDeregistrationStatus.SuccessfullyDeregistered, typedResponse.Results[0].Status, "first DEREG RSP status");
     AssertEqual(M3uaDeregistrationStatus.ErrorNotRegistered, typedResponse.Results[1].Status, "second DEREG RSP status");
+}
+
+static void M3uaRkmClientRegistersAndDeregistersRoutingKeys()
+{
+    Span<byte> buffer = stackalloc byte[128];
+    FakeSctpSocket socket = new();
+
+    M3uaRegistrationResult[] registrationResults =
+    [
+        new(0x0000002A, M3uaRegistrationStatus.SuccessfullyRegistered, 0x00000064)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationResponse(buffer, registrationResults, out int written, out string? registrationBuildError),
+        registrationBuildError ?? "REG RSP build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaDeregistrationResult[] deregistrationResults =
+    [
+        new(0x00000064, M3uaDeregistrationStatus.SuccessfullyDeregistered)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildDeregistrationResponse(buffer, deregistrationResults, out written, out string? deregistrationBuildError),
+        deregistrationBuildError ?? "DEREG RSP build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    using M3uaTransportSession transport = new(socket, leaveOpen: true);
+    M3uaRkmClient client = new(transport);
+    M3uaRoutingKey[] routingKeys =
+    [
+        new(
+            localRoutingKeyIdentifier: 0x0000002A,
+            routingContext: null,
+            trafficModeType: M3uaTrafficModeType.Loadshare,
+            destinationPointCodes: [new M3uaAffectedPointCode(mask: 0, pointCode: 0x00112233)],
+            networkAppearance: 0x00000007,
+            serviceIndicators: [3],
+            originatingPointCodes: ReadOnlySpan<M3uaAffectedPointCode>.Empty)
+    ];
+
+    M3uaRegistrationResponseMessage registration = client.RegisterAsync(routingKeys).GetAwaiter().GetResult();
+    M3uaDeregistrationResponseMessage deregistration = client.DeregisterAsync(new uint[] { 0x00000064 }).GetAwaiter().GetResult();
+
+    AssertEqual(1, registration.Results.Length, "RKM client REG RSP result count");
+    AssertEqual(M3uaRegistrationStatus.SuccessfullyRegistered, registration.Results[0].Status, "RKM client REG RSP status");
+    AssertEqual((uint)0x00000064, registration.Results[0].RoutingContext, "RKM client REG RSP Routing Context");
+    AssertEqual(1, deregistration.Results.Length, "RKM client DEREG RSP result count");
+    AssertEqual(M3uaDeregistrationStatus.SuccessfullyDeregistered, deregistration.Results[0].Status, "RKM client DEREG RSP status");
+    AssertEqual(2, socket.SentPackets.Count, "RKM client sent packet count");
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.RegistrationRequest, DecodeMessage(socket.SentPackets[0].Span).MessageType, "RKM client first sent type");
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.DeregistrationRequest, DecodeMessage(socket.SentPackets[1].Span).MessageType, "RKM client second sent type");
 }
 
 static void M3uaRejectsRoutingKeyWithoutDestinationPointCode()

@@ -158,6 +158,32 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Builds and sends an RKM Registration Request message.
+    /// </summary>
+    /// <param name="routingKeys">The Routing Key entries to register.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendRegistrationRequestAsync(ReadOnlyMemory<M3uaRoutingKey> routingKeys, CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildRegistrationRequest(buffer, routingKeys.Span, out written, out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends an RKM Deregistration Request message.
+    /// </summary>
+    /// <param name="routingContexts">The Routing Context values to deregister.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDeregistrationRequestAsync(ReadOnlyMemory<uint> routingContexts, CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDeregistrationRequest(buffer, routingContexts.Span, out written, out error),
+            ct);
+    }
+
+    /// <summary>
     /// Builds and sends a Payload Data message.
     /// </summary>
     /// <param name="userPayload">The MTP3-user payload.</param>

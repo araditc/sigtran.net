@@ -13,14 +13,14 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA transfer | DATA builders/parsers with Network Appearance, Routing Context, Protocol Data, and Correlation Id |
 | M3UA DATA routing | Payload route table for matching DATA by Network Appearance, Routing Context, DPC, and SI |
 | M3UA inbound processing | Decode, typed dispatch, ASP ACK state updates, and DATA route resolution |
-| M3UA outbound processing | State-aware builders with association defaults for ASP lifecycle and DATA |
+| M3UA outbound processing | State-aware builders with association defaults for ASP lifecycle, RKM, and DATA |
 | M3UA transport session | Async receive/send facade over `ISctpSocket` using inbound/outbound processors |
 | M3UA ASP client | ASP startup, heartbeat, and shutdown helpers over the transport session |
 | M3UA ASPSM | ASP Up/Down, Heartbeat, acknowledgements, typed parsing |
 | M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
 | M3UA management | Error and Notify builders/parsers |
 | M3UA SSNM | DUNA, DAVA, DAUD, DRST, DUPU, and SCON builders/parsers |
-| M3UA RKM | REG REQ, REG RSP, DEREG REQ, and DEREG RSP builders/parsers |
+| M3UA RKM | REG REQ, REG RSP, DEREG REQ, and DEREG RSP builders/parsers plus client helpers |
 | ASP state | Local acknowledgement-driven ASP session state machine |
 | SCTP | Transport contract plus a development TCP adapter; production SCTP is planned |
 | SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |

@@ -145,6 +145,40 @@ public sealed class M3uaOutboundProcessor
     }
 
     /// <summary>
+    /// Builds an RKM Registration Request message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingKeys">The Routing Key entries to register.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildRegistrationRequest(
+        Span<byte> buffer,
+        ReadOnlySpan<M3uaRoutingKey> routingKeys,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildRegistrationRequest(buffer, routingKeys, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds an RKM Deregistration Request message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingContexts">The Routing Context values to deregister.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDeregistrationRequest(
+        Span<byte> buffer,
+        ReadOnlySpan<uint> routingContexts,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDeregistrationRequest(buffer, routingContexts, out written, out error);
+    }
+
+    /// <summary>
     /// Builds a Payload Data message using configured defaults unless explicit values are supplied.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
