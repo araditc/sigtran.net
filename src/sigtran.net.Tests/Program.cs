@@ -119,13 +119,17 @@ static void M3uaDecoderReturnsProtocolDataValue()
     Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "decode failed");
     AssertEqual(M3uaMessageClass.Transfer, message.MessageClass, "message class");
     AssertEqual((byte)M3uaTransferMessageType.PayloadData, message.MessageType, "message type");
+    Assert(message.TryGetParameter(M3uaParameterTag.ProtocolData, out ReadOnlySpan<byte> genericProtocolData, out string? genericProtocolError), genericProtocolError ?? "generic Protocol Data missing");
     Assert(message.TryGetProtocolData(out ReadOnlySpan<byte> protocolData, out string? protocolError), protocolError ?? "Protocol Data missing");
 
+    AssertSequence(genericProtocolData, protocolData, "generic Protocol Data value");
     AssertEqual(15, protocolData.Length, "Protocol Data value length");
     AssertSequence([0x00, 0x00, 0x00, 0x01], protocolData.Slice(0, 4), "decoded OPC");
     AssertSequence([0x00, 0x00, 0x00, 0x02], protocolData.Slice(4, 4), "decoded DPC");
     AssertSequence([3, 2, 0, 7], protocolData.Slice(8, 4), "decoded SI/NI/MP/SLS");
     AssertSequence(payload, protocolData.Slice(12), "decoded user payload");
+    Assert(!message.TryGetParameter(M3uaParameterTag.HeartbeatData, out _, out string? missingError), "missing Heartbeat Data should not be found");
+    Assert(missingError?.Contains("HeartbeatData", StringComparison.Ordinal) == true, missingError ?? "missing parameter error");
 }
 
 static void M3uaParsesPayloadDataOptionalFields()

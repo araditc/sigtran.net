@@ -96,6 +96,18 @@ public class M3uaMessage : ISigtranMessage
     }
 
     /// <summary>
+    /// Extracts the first parameter value with the supplied TLV tag.
+    /// </summary>
+    /// <param name="tag">The parameter tag to find.</param>
+    /// <param name="value">A span over the parameter value on success.</param>
+    /// <param name="error">An error message if the parameter is not found or the parameter block is malformed.</param>
+    /// <returns>True if the parameter is found; otherwise false.</returns>
+    public bool TryGetParameter(M3uaParameterTag tag, out ReadOnlySpan<byte> value, out string? error)
+    {
+        return M3uaParameterReader.TryFind(Parameters.Span, tag, out value, out error);
+    }
+
+    /// <summary>
     /// Extracts the Protocol Data parameter from the TLV list.
     /// </summary>
     /// <param name="protocolData">A span over the protocol data value.</param>
@@ -103,6 +115,6 @@ public class M3uaMessage : ISigtranMessage
     /// <returns>True if the parameter is found; otherwise false.</returns>
     public bool TryGetProtocolData(out ReadOnlySpan<byte> protocolData, out string? error)
     {
-        return M3uaParameterReader.TryFind(Parameters.Span, M3uaParameterTag.ProtocolData, out protocolData, out error);
+        return TryGetParameter(M3uaParameterTag.ProtocolData, out protocolData, out error);
     }
 }
