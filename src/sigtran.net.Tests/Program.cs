@@ -19,6 +19,8 @@ Run("M3UA outbound processor builds ASP Active with default Routing Context", M3
 Run("M3UA transport session sends outbound DATA", M3uaTransportSessionSendsOutboundData);
 Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceivesInboundData);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
+Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
+Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -558,6 +560,50 @@ static void M3uaTransportSessionDisposesOwnedSocket()
     session.Dispose();
 
     Assert(socket.Disposed, "owned socket should be disposed");
+}
+
+static void M3uaAspClientCompletesStartupHandshake()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    FakeSctpSocket socket = new();
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, aspIdentifier: 42, ReadOnlySpan<byte>.Empty, out int written, out string? upAckError),
+        upAckError ?? "ASP Up Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Loadshare, [100], ReadOnlySpan<byte>.Empty, out written, out string? activeAckError),
+        activeAckError ?? "ASP Active Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaAspSession aspSession = new();
+    M3uaInboundProcessor inbound = new(aspSession);
+    M3uaOutboundProcessor outbound = new(aspSession, routingContext: 100);
+    using M3uaTransportSession transport = new(socket, inbound, outbound, leaveOpen: true);
+    M3uaAspClient client = new(transport);
+
+    M3uaAspStartupResult result = client.StartAsync(new M3uaAspStartupOptions(
+        aspIdentifier: 42,
+        trafficModeType: M3uaTrafficModeType.Loadshare)).GetAwaiter().GetResult();
+
+    AssertEqual(M3uaAspState.Active, aspSession.State, "ASP client final state");
+    AssertEqual(M3uaAspEvent.AspUpAcknowledged, result.AspUpAcknowledgement.StateTransition!.Value.Event, "ASP client up transition");
+    AssertEqual(M3uaAspEvent.AspActiveAcknowledged, result.AspActiveAcknowledgement.StateTransition!.Value.Event, "ASP client active transition");
+    AssertEqual(2, socket.SentPackets.Count, "ASP client sent packet count");
+    AssertEqual((byte)M3uaAspsmMessageType.AspUp, DecodeMessage(socket.SentPackets[0].Span).MessageType, "ASP client first sent type");
+    AssertEqual((byte)M3uaAsptmMessageType.AspActive, DecodeMessage(socket.SentPackets[1].Span).MessageType, "ASP client second sent type");
+}
+
+static void M3uaAspClientFailsWhenAcknowledgementIsMissing()
+{
+    FakeSctpSocket socket = new();
+    using M3uaTransportSession transport = new(socket, leaveOpen: true);
+    M3uaAspClient client = new(transport);
+
+    InvalidOperationException exception = AssertThrows<InvalidOperationException>(() =>
+        client.StartAsync(new M3uaAspStartupOptions(maxHandshakeMessages: 1)).GetAwaiter().GetResult());
+    Assert(exception.Message.Contains("Transport closed", StringComparison.Ordinal), exception.Message);
 }
 
 static void M3uaParameterReaderSkipsPadding()
@@ -1290,6 +1336,21 @@ static void AssertSequence(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> actua
     {
         throw new InvalidOperationException($"{label}: expected {Convert.ToHexString(expected)}, got {Convert.ToHexString(actual)}");
     }
+}
+
+static TException AssertThrows<TException>(Action action)
+    where TException : Exception
+{
+    try
+    {
+        action();
+    }
+    catch (TException ex)
+    {
+        return ex;
+    }
+
+    throw new InvalidOperationException($"Expected exception {typeof(TException).Name}");
 }
 
 static byte[] UInt32SpanToBytes(ReadOnlySpan<uint> values)

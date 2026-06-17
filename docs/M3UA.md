@@ -60,6 +60,8 @@ For application code that handles multiple M3UA message families, `M3uaTypedMess
 
 `M3uaTransportSession` connects processors to an `ISctpSocket` so applications can receive one complete M3UA PDU or send common outbound M3UA messages asynchronously.
 
+`M3uaAspClient` runs the common startup sequence: ASP Up, wait for ASP Up Ack, ASP Active, wait for ASP Active Ack.
+
 ## Transfer Notes
 
 DATA messages are modeled with a typed parser so callers can access Network Appearance, Routing Context, OPC, DPC, SI, NI, MP, SLS, user payload, and Correlation Id without manually decoding the Protocol Data parameter.
