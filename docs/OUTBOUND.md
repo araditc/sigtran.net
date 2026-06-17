@@ -6,6 +6,7 @@
 
 - Build ASP Up and ASP Down messages.
 - Build ASP Active and ASP Inactive using a configured default Routing Context.
+- Build Heartbeat and Heartbeat Ack messages.
 - Build DATA using configured default Network Appearance and Routing Context.
 - Optionally reject DATA while the associated ASP session is not `Active`.
 

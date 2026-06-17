@@ -60,7 +60,7 @@ For application code that handles multiple M3UA message families, `M3uaTypedMess
 
 `M3uaTransportSession` connects processors to an `ISctpSocket` so applications can receive one complete M3UA PDU or send common outbound M3UA messages asynchronously.
 
-`M3uaAspClient` runs the common startup sequence: ASP Up, wait for ASP Up Ack, ASP Active, wait for ASP Active Ack.
+`M3uaAspClient` runs the common startup sequence: ASP Up, wait for ASP Up Ack, ASP Active, wait for ASP Active Ack. It also supports sending Heartbeat and waiting for Heartbeat Ack.
 
 ## Transfer Notes
 

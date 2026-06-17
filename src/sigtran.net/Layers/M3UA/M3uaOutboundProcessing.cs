@@ -111,6 +111,40 @@ public sealed class M3uaOutboundProcessor
     }
 
     /// <summary>
+    /// Builds a Heartbeat message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="heartbeatData">The optional Heartbeat Data value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildHeartbeat(
+        Span<byte> buffer,
+        ReadOnlySpan<byte> heartbeatData,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildHeartbeat(buffer, heartbeatData, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Heartbeat acknowledgement message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="heartbeatData">The Heartbeat Data value copied from the received Heartbeat message.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildHeartbeatAck(
+        Span<byte> buffer,
+        ReadOnlySpan<byte> heartbeatData,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildHeartbeatAck(buffer, heartbeatData, out written, out error);
+    }
+
+    /// <summary>
     /// Builds a Payload Data message using configured defaults unless explicit values are supplied.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>

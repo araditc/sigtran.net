@@ -13,6 +13,16 @@
 
 The inbound processor updates the shared `M3uaAspSession`, so after a successful startup the ASP state is `Active`.
 
+## Heartbeat
+
+`SendHeartbeatAsync` sends BEAT with optional Heartbeat Data and waits for BEAT Ack. The inbound processor applies the Heartbeat acknowledgement to the ASP session. The accepted transition does not change the ASP state.
+
+```csharp
+M3uaInboundProcessingResult heartbeat = await client.SendHeartbeatAsync(
+    heartbeatData: new byte[] { 0x01, 0x02, 0x03 },
+    ct: ct);
+```
+
 ## Example
 
 ```csharp

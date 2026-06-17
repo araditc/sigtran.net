@@ -21,6 +21,8 @@ Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceives
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
+Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
+Run("M3UA ASP client sends Heartbeat and waits for Ack", M3uaAspClientSendsHeartbeatAndWaitsForAck);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -604,6 +606,49 @@ static void M3uaAspClientFailsWhenAcknowledgementIsMissing()
     InvalidOperationException exception = AssertThrows<InvalidOperationException>(() =>
         client.StartAsync(new M3uaAspStartupOptions(maxHandshakeMessages: 1)).GetAwaiter().GetResult());
     Assert(exception.Message.Contains("Transport closed", StringComparison.Ordinal), exception.Message);
+}
+
+static void M3uaTransportSessionSendsHeartbeat()
+{
+    FakeSctpSocket socket = new();
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+
+    session.SendHeartbeatAsync(new byte[] { 0x10, 0x20, 0x30 }).GetAwaiter().GetResult();
+
+    AssertEqual(1, socket.SentPackets.Count, "Heartbeat sent packet count");
+    M3uaMessage message = DecodeMessage(socket.SentPackets[0].Span);
+    AssertEqual(M3uaMessageClass.Aspsm, message.MessageClass, "Heartbeat message class");
+    AssertEqual((byte)M3uaAspsmMessageType.Heartbeat, message.MessageType, "Heartbeat message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseAspsm(message, out M3uaAspStateMaintenanceMessage? typed, out string? parseError),
+        parseError ?? "Heartbeat parse failed");
+    AssertSequence([0x10, 0x20, 0x30], typed!.HeartbeatData.Span, "Heartbeat Data");
+}
+
+static void M3uaAspClientSendsHeartbeatAndWaitsForAck()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    FakeSctpSocket socket = new();
+    byte[] heartbeatData = [0x01, 0x02, 0x03, 0x04];
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeatAck(buffer, heartbeatData, out int written, out string? buildError),
+        buildError ?? "Heartbeat Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaAspSession aspSession = new(M3uaAspState.Active);
+    M3uaInboundProcessor inbound = new(aspSession);
+    M3uaOutboundProcessor outbound = new(aspSession);
+    using M3uaTransportSession transport = new(socket, inbound, outbound, leaveOpen: true);
+    M3uaAspClient client = new(transport);
+
+    M3uaInboundProcessingResult result = client.SendHeartbeatAsync(heartbeatData).GetAwaiter().GetResult();
+
+    AssertEqual(M3uaAspState.Active, aspSession.State, "Heartbeat should not change ASP state");
+    AssertEqual(M3uaAspEvent.HeartbeatAcknowledged, result.StateTransition!.Value.Event, "Heartbeat event");
+    Assert(!result.StateTransition.Value.Changed, "Heartbeat transition should not change state");
+    AssertEqual(1, socket.SentPackets.Count, "Heartbeat client sent packet count");
+    M3uaMessage sent = DecodeMessage(socket.SentPackets[0].Span);
+    AssertEqual((byte)M3uaAspsmMessageType.Heartbeat, sent.MessageType, "Heartbeat client sent type");
 }
 
 static void M3uaParameterReaderSkipsPadding()

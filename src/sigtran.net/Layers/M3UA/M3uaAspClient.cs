@@ -110,6 +110,30 @@ public sealed class M3uaAspClient
         return new(upAck, activeAck);
     }
 
+    /// <summary>
+    /// Sends a Heartbeat message and waits for a Heartbeat Ack.
+    /// </summary>
+    /// <param name="heartbeatData">The optional Heartbeat Data value to echo through the peer.</param>
+    /// <param name="maxHandshakeMessages">The maximum inbound messages to inspect while waiting for Heartbeat Ack.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound result that accepted the Heartbeat Ack.</returns>
+    public async Task<M3uaInboundProcessingResult> SendHeartbeatAsync(
+        ReadOnlyMemory<byte> heartbeatData = default,
+        int maxHandshakeMessages = 8,
+        CancellationToken ct = default)
+    {
+        if (maxHandshakeMessages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxHandshakeMessages), "Maximum handshake messages must be positive.");
+        }
+
+        await _session.SendHeartbeatAsync(heartbeatData, ct).ConfigureAwait(false);
+        return await ReceiveUntilTransitionAsync(
+            M3uaAspEvent.HeartbeatAcknowledged,
+            maxHandshakeMessages,
+            ct).ConfigureAwait(false);
+    }
+
     private async Task<M3uaInboundProcessingResult> ReceiveUntilTransitionAsync(
         M3uaAspEvent expectedEvent,
         int maxMessages,

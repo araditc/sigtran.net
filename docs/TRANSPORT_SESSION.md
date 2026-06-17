@@ -7,6 +7,7 @@
 - Receive one complete M3UA PDU from `ISctpSocket`.
 - Process inbound packets through `M3uaInboundProcessor`.
 - Build outbound ASP lifecycle and DATA messages through `M3uaOutboundProcessor`.
+- Send Heartbeat and Heartbeat Ack messages.
 - Send encoded packets through `ISctpSocket`.
 - Manage rented buffers with `ArrayPool<byte>`.
 

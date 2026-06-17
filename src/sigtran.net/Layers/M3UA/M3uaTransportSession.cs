@@ -132,6 +132,32 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Builds and sends a Heartbeat message.
+    /// </summary>
+    /// <param name="heartbeatData">The optional Heartbeat Data value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendHeartbeatAsync(ReadOnlyMemory<byte> heartbeatData, CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildHeartbeat(buffer, heartbeatData.Span, out written, out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Heartbeat acknowledgement message.
+    /// </summary>
+    /// <param name="heartbeatData">The Heartbeat Data value copied from the received Heartbeat message.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendHeartbeatAckAsync(ReadOnlyMemory<byte> heartbeatData, CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildHeartbeatAck(buffer, heartbeatData.Span, out written, out error),
+            ct);
+    }
+
+    /// <summary>
     /// Builds and sends a Payload Data message.
     /// </summary>
     /// <param name="userPayload">The MTP3-user payload.</param>
