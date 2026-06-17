@@ -29,7 +29,7 @@ public sealed class M3uaRkmClient
         ValidateMaxResponseMessages(maxResponseMessages);
 
         await _session.SendRegistrationRequestAsync(routingKeys, ct).ConfigureAwait(false);
-        M3uaInboundProcessingResult result = await ReceiveUntilKindAsync(
+        M3uaInboundProcessingResult result = await _session.ReceiveUntilAsync(
             M3uaTypedMessageKind.RegistrationResponse,
             maxResponseMessages,
             ct).ConfigureAwait(false);
@@ -51,33 +51,11 @@ public sealed class M3uaRkmClient
         ValidateMaxResponseMessages(maxResponseMessages);
 
         await _session.SendDeregistrationRequestAsync(routingContexts, ct).ConfigureAwait(false);
-        M3uaInboundProcessingResult result = await ReceiveUntilKindAsync(
+        M3uaInboundProcessingResult result = await _session.ReceiveUntilAsync(
             M3uaTypedMessageKind.DeregistrationResponse,
             maxResponseMessages,
             ct).ConfigureAwait(false);
         return result.TypedMessage.As<M3uaDeregistrationResponseMessage>();
-    }
-
-    private async Task<M3uaInboundProcessingResult> ReceiveUntilKindAsync(
-        M3uaTypedMessageKind expectedKind,
-        int maxMessages,
-        CancellationToken ct)
-    {
-        for (int i = 0; i < maxMessages; i++)
-        {
-            M3uaInboundProcessingResult? result = await _session.ReceiveAsync(ct).ConfigureAwait(false);
-            if (result is null)
-            {
-                throw new InvalidOperationException($"Transport closed before {expectedKind} was received.");
-            }
-
-            if (result.TypedMessage.Kind == expectedKind)
-            {
-                return result;
-            }
-        }
-
-        throw new InvalidOperationException($"Did not receive {expectedKind} within {maxMessages} inbound messages.");
     }
 
     private static void ValidateMaxResponseMessages(int maxResponseMessages)

@@ -18,6 +18,7 @@ Run("M3UA outbound processor can require active ASP for DATA", M3uaOutboundProce
 Run("M3UA outbound processor builds ASP Active with default Routing Context", M3uaOutboundProcessorBuildsAspActiveWithDefaultRoutingContext);
 Run("M3UA transport session sends outbound DATA", M3uaTransportSessionSendsOutboundData);
 Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceivesInboundData);
+Run("M3UA transport session waits for typed messages", M3uaTransportSessionWaitsForTypedMessages);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
@@ -557,6 +558,42 @@ static void M3uaTransportSessionReceivesInboundData()
     Assert(result is not null, "received result should not be null");
     AssertEqual(M3uaTypedMessageKind.PayloadData, result!.TypedMessage.Kind, "received typed kind");
     AssertEqual("sccp", result.PayloadRoute!.Name, "received route");
+}
+
+static void M3uaTransportSessionWaitsForTypedMessages()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    FakeSctpSocket socket = new();
+
+    Assert(
+        M3uaMessageBuilder.BuildNotify(
+            buffer,
+            M3uaNotifyStatusType.ApplicationServerStateChange,
+            (ushort)M3uaApplicationServerState.Active,
+            aspIdentifier: null,
+            ReadOnlySpan<uint>.Empty,
+            ReadOnlySpan<byte>.Empty,
+            out int written,
+            out string? notifyError),
+        notifyError ?? "Notify build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaRegistrationResult[] results =
+    [
+        new(0x0000002A, M3uaRegistrationStatus.SuccessfullyRegistered, 0x00000064)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationResponse(buffer, results, out written, out string? registrationError),
+        registrationError ?? "REG RSP build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+    M3uaInboundProcessingResult result = session.ReceiveUntilAsync(
+        M3uaTypedMessageKind.RegistrationResponse,
+        maxMessages: 2).GetAwaiter().GetResult();
+
+    AssertEqual(M3uaTypedMessageKind.RegistrationResponse, result.TypedMessage.Kind, "waited typed kind");
+    AssertEqual(M3uaRegistrationStatus.SuccessfullyRegistered, result.TypedMessage.As<M3uaRegistrationResponseMessage>().Results[0].Status, "waited registration status");
 }
 
 static void M3uaTransportSessionDisposesOwnedSocket()

@@ -5,6 +5,7 @@
 ## Responsibilities
 
 - Receive one complete M3UA PDU from `ISctpSocket`.
+- Wait for a specific typed message kind across multiple inbound PDUs.
 - Process inbound packets through `M3uaInboundProcessor`.
 - Build outbound ASP lifecycle and DATA messages through `M3uaOutboundProcessor`.
 - Send Heartbeat and Heartbeat Ack messages.
@@ -50,6 +51,15 @@ Network Appearance and Routing Context defaults are applied by the configured `M
 ## Receiving
 
 `ReceiveAsync` returns null when the transport reports a clean close by returning zero bytes. Decode, typed parsing, ASP acknowledgement updates, DATA active-state policy, and route resolution are delegated to the inbound processor.
+
+`ReceiveUntilAsync` keeps receiving processed messages until a requested `M3uaTypedMessageKind` is accepted or the configured message limit is reached.
+
+```csharp
+M3uaInboundProcessingResult result = await session.ReceiveUntilAsync(
+    M3uaTypedMessageKind.RegistrationResponse,
+    maxMessages: 8,
+    ct);
+```
 
 ## Current Scope
 

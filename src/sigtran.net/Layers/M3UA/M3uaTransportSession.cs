@@ -78,6 +78,40 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Receives and processes inbound M3UA PDUs until a specific typed message kind is accepted.
+    /// </summary>
+    /// <param name="expectedKind">The typed message kind to wait for.</param>
+    /// <param name="maxMessages">The maximum inbound messages to inspect.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound processing result with the expected typed message kind.</returns>
+    public async Task<M3uaInboundProcessingResult> ReceiveUntilAsync(
+        M3uaTypedMessageKind expectedKind,
+        int maxMessages = 8,
+        CancellationToken ct = default)
+    {
+        if (maxMessages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxMessages), "Maximum messages must be positive.");
+        }
+
+        for (int i = 0; i < maxMessages; i++)
+        {
+            M3uaInboundProcessingResult? result = await ReceiveAsync(ct).ConfigureAwait(false);
+            if (result is null)
+            {
+                throw new InvalidOperationException($"Transport closed before {expectedKind} was received.");
+            }
+
+            if (result.TypedMessage.Kind == expectedKind)
+            {
+                return result;
+            }
+        }
+
+        throw new InvalidOperationException($"Did not receive {expectedKind} within {maxMessages} inbound messages.");
+    }
+
+    /// <summary>
     /// Builds and sends an ASP Up message.
     /// </summary>
     /// <param name="aspIdentifier">The optional ASP Identifier value.</param>

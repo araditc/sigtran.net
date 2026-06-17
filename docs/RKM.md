@@ -48,7 +48,7 @@ bool ok = M3uaMessageBuilder.BuildRegistrationRequest(
 
 ## Client Helper
 
-`M3uaRkmClient` sends request messages through `M3uaTransportSession` and waits until the matching response type arrives.
+`M3uaRkmClient` sends request messages through `M3uaTransportSession` and uses the session receive-wait helper until the matching response type arrives.
 
 ```csharp
 M3uaRkmClient client = new(transport);
