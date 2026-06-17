@@ -64,4 +64,30 @@ public static class M3uaDiagnostics
         summary = $"M3UA v{message.Version} class={message.MessageClass} type={message.MessageType} length={message.MessageLength} parameters={message.Parameters.Length}";
         return true;
     }
+
+    /// <summary>
+    /// Decodes an M3UA packet, parses it as a supported typed message, and formats a one-line summary.
+    /// </summary>
+    /// <param name="packet">The encoded M3UA packet.</param>
+    /// <param name="summary">The formatted typed summary on success.</param>
+    /// <param name="error">An error message when the packet cannot be decoded or typed.</param>
+    /// <returns>True if the typed summary was formatted; otherwise false.</returns>
+    public static bool TryFormatTypedSummary(ReadOnlySpan<byte> packet, out string summary, out string? error)
+    {
+        M3uaMessage message = new();
+        if (!message.TryDecode(packet, out error))
+        {
+            summary = string.Empty;
+            return false;
+        }
+
+        if (!M3uaTypedMessageParser.TryParseKnown(message, out M3uaTypedMessage? typedMessage, out error))
+        {
+            summary = string.Empty;
+            return false;
+        }
+
+        summary = $"M3UA v{message.Version} class={message.MessageClass} type={message.MessageType} kind={typedMessage!.Kind} length={message.MessageLength} parameters={message.Parameters.Length}";
+        return true;
+    }
 }

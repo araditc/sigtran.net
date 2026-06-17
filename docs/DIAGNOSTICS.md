@@ -22,3 +22,16 @@ if (M3uaDiagnostics.TryFormatSummary(packet, out string summary, out string? err
 ```
 
 The summary includes version, message class, message type, total length, and parameter length. Malformed packets return false with the same decode error used by `M3uaMessage`.
+
+## Typed Summary
+
+`TryFormatTypedSummary` validates the common header and then runs the typed dispatcher. It is useful for production traces where unsupported or malformed message types should be visible before an application handler runs.
+
+```csharp
+if (M3uaDiagnostics.TryFormatTypedSummary(packet, out string typed, out string? error))
+{
+    logger.LogInformation("{M3uaPacket}", typed);
+}
+```
+
+The typed summary adds `kind`, such as `PayloadData`, `AspStateMaintenance`, `Error`, or `RegistrationResponse`. Unsupported messages return false with the dispatcher error.

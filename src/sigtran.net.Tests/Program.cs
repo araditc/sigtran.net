@@ -781,6 +781,21 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         summaryError ?? "summary format failed");
     AssertEqual("M3UA v1 class=Aspsm type=3 length=16 parameters=8", summary, "M3UA summary");
     Assert(
+        M3uaDiagnostics.TryFormatTypedSummary(buffer.Slice(0, written), out string typedSummary, out string? typedSummaryError),
+        typedSummaryError ?? "typed summary format failed");
+    AssertEqual("M3UA v1 class=Aspsm type=3 kind=AspStateMaintenance length=16 parameters=8", typedSummary, "M3UA typed summary");
+
+    Span<byte> unsupported = stackalloc byte[8];
+    unsupported[0] = 1;
+    unsupported[2] = (byte)M3uaMessageClass.Management;
+    unsupported[3] = 0x7F;
+    unsupported[7] = 8;
+    Assert(
+        !M3uaDiagnostics.TryFormatTypedSummary(unsupported, out _, out string? unsupportedError),
+        "unsupported typed summary should fail");
+    Assert(unsupportedError?.Contains("Unsupported Management message type", StringComparison.Ordinal) == true, unsupportedError ?? "missing unsupported typed summary error");
+
+    Assert(
         !M3uaDiagnostics.TryFormatSummary([0x01, 0x00], out _, out string? malformedError),
         "malformed summary should fail");
     Assert(malformedError?.Contains("too short", StringComparison.Ordinal) == true, malformedError ?? "missing malformed summary error");

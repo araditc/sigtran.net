@@ -22,7 +22,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA management | Error and Notify builders/parsers plus transport send helpers |
 | M3UA SSNM | DUNA, DAVA, DAUD, DRST, DUPU, and SCON builders/parsers plus transport send helpers |
 | M3UA RKM | REG/DEREG builders, parsers, client helpers, and response status utilities |
-| M3UA diagnostics | Header summaries and offset-based hex dump formatting |
+| M3UA diagnostics | Header summaries, typed message summaries, and offset-based hex dump formatting |
 | ASP state | Local acknowledgement-driven ASP session state machine with reset support |
 | SCTP | Transport contract plus a development TCP adapter; production SCTP is planned |
 | SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
