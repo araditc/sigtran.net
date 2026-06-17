@@ -38,6 +38,7 @@ Run("M3UA ASP session applies acknowledgement lifecycle messages", M3uaAspSessio
 Run("M3UA ASP session rejects acknowledgement messages in the wrong state", M3uaAspSessionRejectsWrongStateAcknowledgement);
 Run("M3UA parses Management Error messages", M3uaParsesManagementError);
 Run("M3UA parses Management Notify messages", M3uaParsesManagementNotify);
+Run("M3UA transport session sends Management messages", M3uaTransportSessionSendsManagementMessages);
 Run("M3UA rejects invalid Management Notify status information", M3uaRejectsInvalidManagementNotifyStatusInformation);
 Run("M3UA parses SSNM Destination Unavailable messages", M3uaParsesSsnmDestinationUnavailable);
 Run("M3UA rejects SSNM messages without Affected Point Code", M3uaRejectsSsnmWithoutAffectedPointCode);
@@ -1062,6 +1063,49 @@ static void M3uaParsesManagementNotify()
     AssertEqual((uint?)0x0000002A, typed.AspIdentifier, "typed Notify ASP Identifier");
     AssertSequence([0x00, 0x00, 0x00, 0x33], UInt32SpanToBytes(typed.RoutingContexts), "typed Notify Routing Contexts");
     AssertSequence(info, typed.InfoString.Span, "typed Notify Info String");
+}
+
+static void M3uaTransportSessionSendsManagementMessages()
+{
+    FakeSctpSocket socket = new();
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+
+    session.SendErrorAsync(
+        M3uaErrorCode.InvalidRoutingContext,
+        new uint[] { 0x00000011 },
+        networkAppearance: 0x00000005,
+        diagnosticInformation: new byte[] { 0xDE, 0xAD }).GetAwaiter().GetResult();
+    session.SendNotifyAsync(
+        M3uaNotifyStatusType.ApplicationServerStateChange,
+        (ushort)M3uaApplicationServerState.Active,
+        aspIdentifier: 0x0000002A,
+        routingContexts: new uint[] { 0x00000033 },
+        infoString: new byte[] { 0x61, 0x73 }).GetAwaiter().GetResult();
+
+    AssertEqual(2, socket.SentPackets.Count, "Management sent packet count");
+
+    M3uaMessage errorMessage = DecodeMessage(socket.SentPackets[0].Span);
+    AssertEqual(M3uaMessageClass.Management, errorMessage.MessageClass, "sent Error class");
+    AssertEqual((byte)M3uaManagementMessageType.Error, errorMessage.MessageType, "sent Error type");
+    Assert(
+        M3uaTypedMessageParser.TryParseError(errorMessage, out M3uaErrorMessage? error, out string? errorParseError),
+        errorParseError ?? "sent Error parse failed");
+    AssertEqual(M3uaErrorCode.InvalidRoutingContext, error!.ErrorCode, "sent Error code");
+    AssertEqual((uint?)0x00000005, error.NetworkAppearance, "sent Error Network Appearance");
+    AssertSequence([0x00, 0x00, 0x00, 0x11], UInt32SpanToBytes(error.RoutingContexts), "sent Error Routing Context");
+    AssertSequence([0xDE, 0xAD], error.DiagnosticInformation.Span, "sent Error diagnostic");
+
+    M3uaMessage notifyMessage = DecodeMessage(socket.SentPackets[1].Span);
+    AssertEqual(M3uaMessageClass.Management, notifyMessage.MessageClass, "sent Notify class");
+    AssertEqual((byte)M3uaManagementMessageType.Notify, notifyMessage.MessageType, "sent Notify type");
+    Assert(
+        M3uaTypedMessageParser.TryParseNotify(notifyMessage, out M3uaNotifyMessage? notify, out string? notifyParseError),
+        notifyParseError ?? "sent Notify parse failed");
+    AssertEqual(M3uaNotifyStatusType.ApplicationServerStateChange, notify!.StatusType, "sent Notify status type");
+    AssertEqual((ushort)M3uaApplicationServerState.Active, notify.StatusInformation, "sent Notify status information");
+    AssertEqual((uint?)0x0000002A, notify.AspIdentifier, "sent Notify ASP Identifier");
+    AssertSequence([0x00, 0x00, 0x00, 0x33], UInt32SpanToBytes(notify.RoutingContexts), "sent Notify Routing Context");
+    AssertSequence([0x61, 0x73], notify.InfoString.Span, "sent Notify Info String");
 }
 
 static void M3uaRejectsInvalidManagementNotifyStatusInformation()

@@ -184,6 +184,65 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Builds and sends a Management Error message.
+    /// </summary>
+    /// <param name="errorCode">The Error Code value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="diagnosticInformation">The optional Diagnostic Information value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendErrorAsync(
+        M3uaErrorCode errorCode,
+        ReadOnlyMemory<uint> routingContexts,
+        uint? networkAppearance,
+        ReadOnlyMemory<byte> diagnosticInformation,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildError(
+                buffer,
+                errorCode,
+                routingContexts.Span,
+                networkAppearance,
+                diagnosticInformation.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Management Notify message.
+    /// </summary>
+    /// <param name="statusType">The Status Type value.</param>
+    /// <param name="statusInformation">The Status Information value.</param>
+    /// <param name="aspIdentifier">The optional ASP Identifier value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendNotifyAsync(
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        uint? aspIdentifier,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildNotify(
+                buffer,
+                statusType,
+                statusInformation,
+                aspIdentifier,
+                routingContexts.Span,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
     /// Builds and sends a Payload Data message.
     /// </summary>
     /// <param name="userPayload">The MTP3-user payload.</param>

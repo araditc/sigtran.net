@@ -179,6 +179,54 @@ public sealed class M3uaOutboundProcessor
     }
 
     /// <summary>
+    /// Builds a Management Error message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="errorCode">The Error Code value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="diagnosticInformation">The optional Diagnostic Information value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildError(
+        Span<byte> buffer,
+        M3uaErrorCode errorCode,
+        ReadOnlySpan<uint> routingContexts,
+        uint? networkAppearance,
+        ReadOnlySpan<byte> diagnosticInformation,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildError(buffer, errorCode, routingContexts, networkAppearance, diagnosticInformation, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Management Notify message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="statusType">The Status Type value.</param>
+    /// <param name="statusInformation">The Status Information value.</param>
+    /// <param name="aspIdentifier">The optional ASP Identifier value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildNotify(
+        Span<byte> buffer,
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        uint? aspIdentifier,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildNotify(buffer, statusType, statusInformation, aspIdentifier, routingContexts, infoString, out written, out error);
+    }
+
+    /// <summary>
     /// Builds a Payload Data message using configured defaults unless explicit values are supplied.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>

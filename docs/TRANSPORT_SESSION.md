@@ -9,6 +9,7 @@
 - Build outbound ASP lifecycle and DATA messages through `M3uaOutboundProcessor`.
 - Send Heartbeat and Heartbeat Ack messages.
 - Send RKM Registration and Deregistration Request messages.
+- Send Management Error and Notify messages.
 - Send encoded packets through `ISctpSocket`.
 - Manage rented buffers with `ArrayPool<byte>`.
 

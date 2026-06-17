@@ -18,7 +18,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA ASP client | ASP startup, heartbeat, and shutdown helpers over the transport session |
 | M3UA ASPSM | ASP Up/Down, Heartbeat, acknowledgements, typed parsing |
 | M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
-| M3UA management | Error and Notify builders/parsers |
+| M3UA management | Error and Notify builders/parsers plus transport send helpers |
 | M3UA SSNM | DUNA, DAVA, DAUD, DRST, DUPU, and SCON builders/parsers |
 | M3UA RKM | REG REQ, REG RSP, DEREG REQ, and DEREG RSP builders/parsers plus client helpers |
 | ASP state | Local acknowledgement-driven ASP session state machine |
@@ -95,6 +95,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [M3UA Outbound Processing](docs/OUTBOUND.md)
 - [M3UA Transport Session](docs/TRANSPORT_SESSION.md)
 - [M3UA ASP Client](docs/ASP_CLIENT.md)
+- [M3UA Management Messages](docs/MANAGEMENT.md)
 - [M3UA Routing Key Management](docs/RKM.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
