@@ -98,6 +98,17 @@ session.ResetCounters();
 
 The counters are intentionally framework-neutral. Applications can export them through OpenTelemetry, Prometheus, logs, or their own health endpoints.
 
+## Transport Loss
+
+`TryNotifyTransportLost` applies the ASP `TransportLost` event through the session facade. Use it when the socket, SCTP association, or hosting layer detects a connection failure outside `ReceiveAsync`.
+
+```csharp
+if (session.TryNotifyTransportLost(out M3uaAspStateTransition transition, out string? error))
+{
+    logger.LogWarning("ASP moved from {From} to {To}", transition.From, transition.To);
+}
+```
+
 ## Current Scope
 
 The session expects `ISctpSocket.ReceiveAsync` to return exactly one complete M3UA PDU per call. This matches the existing transport contract and the TCP development adapter. Native SCTP stream and PPID handling will be added in the transport phase.

@@ -101,6 +101,18 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Notifies the shared ASP session that the underlying transport association was lost.
+    /// </summary>
+    /// <param name="transition">The accepted ASP state transition.</param>
+    /// <param name="error">An error message when the transition is rejected.</param>
+    /// <returns>True if the ASP session accepted the transport-loss transition; otherwise false.</returns>
+    public bool TryNotifyTransportLost(out M3uaAspStateTransition transition, out string? error)
+    {
+        ThrowIfDisposed();
+        return InboundProcessor.AspSession.NotifyTransportLost(out transition, out error);
+    }
+
+    /// <summary>
     /// Receives and processes one complete M3UA PDU.
     /// </summary>
     /// <param name="ct">A cancellation token.</param>

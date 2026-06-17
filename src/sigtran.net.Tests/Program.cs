@@ -27,6 +27,7 @@ Run("M3UA transport session waits for ASP transitions", M3uaTransportSessionWait
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters);
 Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters);
+Run("M3UA transport session notifies ASP transport loss", M3uaTransportSessionNotifiesAspTransportLoss);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client resets before startup handshake", M3uaAspClientResetsBeforeStartupHandshake);
@@ -779,6 +780,20 @@ static void M3uaTransportSessionResetsCounters()
     AssertEqual(0L, afterReset.ReceivedPdus, "counter received PDUs after reset");
     AssertEqual(0L, afterReset.SendFailures, "counter send failures after reset");
     AssertEqual(0L, afterReset.ReceiveFailures, "counter receive failures after reset");
+}
+
+static void M3uaTransportSessionNotifiesAspTransportLoss()
+{
+    FakeSctpSocket socket = new();
+    M3uaAspSession aspSession = new(M3uaAspState.Active);
+    M3uaInboundProcessor inbound = new(aspSession);
+    using M3uaTransportSession session = new(socket, inbound, leaveOpen: true);
+
+    Assert(session.TryNotifyTransportLost(out M3uaAspStateTransition transition, out string? error), error ?? "transport loss notification failed");
+    AssertEqual(M3uaAspEvent.TransportLost, transition.Event, "transport loss event");
+    AssertEqual(M3uaAspState.Active, transition.From, "transport loss from state");
+    AssertEqual(M3uaAspState.Down, transition.To, "transport loss to state");
+    AssertEqual(M3uaAspState.Down, aspSession.State, "transport loss session state");
 }
 
 static void M3uaDiagnosticsFormatHexAndSummaries()
