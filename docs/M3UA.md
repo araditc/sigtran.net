@@ -54,6 +54,10 @@ if (!M3uaTypedMessageParser.TryParseAsptm(
 
 For application code that handles multiple M3UA message families, `M3uaTypedMessageParser.TryParseKnown` dispatches supported messages into a `M3uaTypedMessage` result with a `Kind` discriminator and concrete typed model.
 
+`M3uaInboundProcessor` combines decode, typed dispatch, optional ASP active-state enforcement for DATA, route resolution, and ASP acknowledgement state updates behind one processing call.
+
+`M3uaOutboundProcessor` provides state-aware outbound builders for ASP lifecycle messages and DATA, including configured Network Appearance and Routing Context defaults.
+
 ## Transfer Notes
 
 DATA messages are modeled with a typed parser so callers can access Network Appearance, Routing Context, OPC, DPC, SI, NI, MP, SLS, user payload, and Correlation Id without manually decoding the Protocol Data parameter.

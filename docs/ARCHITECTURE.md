@@ -26,9 +26,11 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 2. `M3uaMessage` validates the common header and exposes the parameter block.
 3. `M3uaParameterReader` walks RFC-style TLV parameters and skips padding.
 4. `M3uaTypedMessageParser` converts generic messages into typed DATA, ASPSM, ASPTM, management, SSNM, and RKM objects.
-5. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
-6. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
-7. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
+5. `M3uaInboundProcessor` can orchestrate decode, typed dispatch, ASP acknowledgement state updates, and DATA route resolution.
+6. `M3uaOutboundProcessor` can apply association defaults and optional ASP active-state policy while building outbound messages.
+7. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
+8. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
+9. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
 
 ## Production Boundaries
 

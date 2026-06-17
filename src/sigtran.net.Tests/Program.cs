@@ -9,6 +9,12 @@ Run("M3UA dispatcher rejects unsupported message types", M3uaDispatcherRejectsUn
 Run("M3UA route table resolves the most specific DATA route", M3uaRouteTableResolvesMostSpecificDataRoute);
 Run("M3UA route table rejects ambiguous DATA routes", M3uaRouteTableRejectsAmbiguousDataRoutes);
 Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplicateSelectors);
+Run("M3UA inbound processor updates ASP state and routes DATA", M3uaInboundProcessorUpdatesAspStateAndRoutesData);
+Run("M3UA inbound processor can require active ASP for DATA", M3uaInboundProcessorCanRequireActiveAspForData);
+Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist);
+Run("M3UA outbound processor applies defaults to DATA", M3uaOutboundProcessorAppliesDefaultsToData);
+Run("M3UA outbound processor can require active ASP for DATA", M3uaOutboundProcessorCanRequireActiveAspForData);
+Run("M3UA outbound processor builds ASP Active with default Routing Context", M3uaOutboundProcessorBuildsAspActiveWithDefaultRoutingContext);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -294,6 +300,191 @@ static void M3uaRouteTableRejectsDuplicateSelectors()
     Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
     Assert(!table.TryAdd(second, out string? secondError), "duplicate selectors should be rejected");
     Assert(secondError?.Contains("same selectors", StringComparison.Ordinal) == true, secondError ?? "missing duplicate route error");
+}
+
+static void M3uaInboundProcessorUpdatesAspStateAndRoutesData()
+{
+    Span<byte> buffer = stackalloc byte[128];
+    M3uaPayloadRouteTable routes = new();
+    Assert(
+        routes.TryAdd(new M3uaPayloadRoute("map-home", networkAppearance: 7, routingContext: 100, destinationPointCode: 0x00040506, serviceIndicator: 3), out string? addError),
+        addError ?? "route add failed");
+    M3uaInboundProcessor processor = new(payloadRoutes: routes, requireActiveAspForPayload: true);
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, aspIdentifier: 0x0000002A, ReadOnlySpan<byte>.Empty, out int written, out string? upBuildError),
+        upBuildError ?? "ASP Up Ack build failed");
+    Assert(
+        processor.TryProcess(buffer.Slice(0, written), out M3uaInboundProcessingResult? upResult, out string? upError),
+        upError ?? "ASP Up Ack process failed");
+    AssertEqual(M3uaAspState.Inactive, processor.AspSession.State, "processor ASP state after ASP Up Ack");
+    AssertEqual(M3uaAspEvent.AspUpAcknowledged, upResult!.StateTransition!.Value.Event, "processor ASP Up event");
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Loadshare, [100], ReadOnlySpan<byte>.Empty, out written, out string? activeBuildError),
+        activeBuildError ?? "ASP Active Ack build failed");
+    Assert(
+        processor.TryProcess(buffer.Slice(0, written), out M3uaInboundProcessingResult? activeResult, out string? activeError),
+        activeError ?? "ASP Active Ack process failed");
+    AssertEqual(M3uaAspState.Active, processor.AspSession.State, "processor ASP state after ASP Active Ack");
+    AssertEqual(M3uaAspEvent.AspActiveAcknowledged, activeResult!.StateTransition!.Value.Event, "processor ASP Active event");
+
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            userPayload: [0x01, 0x02],
+            opc: 0x00010203,
+            dpc: 0x00040506,
+            si: 3,
+            ni: 2,
+            mp: 0,
+            sls: 7,
+            networkAppearance: 7,
+            routingContext: 100,
+            correlationId: null,
+            out written,
+            out string? dataBuildError),
+        dataBuildError ?? "DATA build failed");
+    Assert(
+        processor.TryProcess(buffer.Slice(0, written), out M3uaInboundProcessingResult? dataResult, out string? dataError),
+        dataError ?? "DATA process failed");
+    AssertEqual(M3uaTypedMessageKind.PayloadData, dataResult!.TypedMessage.Kind, "processor DATA kind");
+    AssertEqual("map-home", dataResult.PayloadRoute!.Name, "processor DATA route");
+}
+
+static void M3uaInboundProcessorCanRequireActiveAspForData()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    M3uaInboundProcessor processor = new(requireActiveAspForPayload: true);
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            userPayload: [0x01],
+            opc: 1,
+            dpc: 2,
+            si: 3,
+            ni: 2,
+            mp: 0,
+            sls: 7,
+            networkAppearance: null,
+            routingContext: null,
+            correlationId: null,
+            out int written,
+            out string? buildError),
+        buildError ?? "DATA build failed");
+
+    Assert(
+        !processor.TryProcess(buffer.Slice(0, written), out _, out string? processError),
+        "processor should reject DATA while ASP is not active");
+    Assert(processError?.Contains("ASP is Down", StringComparison.Ordinal) == true, processError ?? "missing ASP state error");
+}
+
+static void M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    M3uaPayloadRouteTable routes = new();
+    Assert(routes.TryAdd(new M3uaPayloadRoute("isup", null, routingContext: 200, null, serviceIndicator: 5), out string? addError), addError ?? "route add failed");
+    M3uaInboundProcessor processor = new(new M3uaAspSession(M3uaAspState.Active), routes);
+
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            userPayload: [0x01],
+            opc: 1,
+            dpc: 2,
+            si: 3,
+            ni: 2,
+            mp: 0,
+            sls: 7,
+            networkAppearance: null,
+            routingContext: 100,
+            correlationId: null,
+            out int written,
+            out string? buildError),
+        buildError ?? "DATA build failed");
+
+    Assert(
+        !processor.TryProcess(buffer.Slice(0, written), out _, out string? processError),
+        "processor should reject unrouted DATA when routes exist");
+    Assert(processError?.Contains("No Payload Data route", StringComparison.Ordinal) == true, processError ?? "missing route error");
+}
+
+static void M3uaOutboundProcessorAppliesDefaultsToData()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    M3uaOutboundProcessor processor = new(networkAppearance: 7, routingContext: 100);
+
+    Assert(
+        processor.TryBuildPayloadData(
+            buffer,
+            userPayload: [0xAA],
+            originatingPointCode: 1,
+            destinationPointCode: 2,
+            serviceIndicator: 3,
+            networkIndicator: 2,
+            messagePriority: 0,
+            signallingLinkSelection: 7,
+            networkAppearance: null,
+            routingContext: null,
+            correlationId: 42,
+            out int written,
+            out string? buildError),
+        buildError ?? "outbound DATA build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(message, out M3uaPayloadDataMessage? typed, out string? parseError),
+        parseError ?? "outbound DATA parse failed");
+    AssertEqual((uint?)7, typed!.NetworkAppearance, "outbound DATA default Network Appearance");
+    AssertEqual((uint?)100, typed.RoutingContext, "outbound DATA default Routing Context");
+    AssertEqual((uint?)42, typed.CorrelationId, "outbound DATA Correlation Id");
+    AssertSequence([0xAA], typed.UserPayload, "outbound DATA payload");
+}
+
+static void M3uaOutboundProcessorCanRequireActiveAspForData()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    M3uaOutboundProcessor processor = new(requireActiveAspForPayload: true);
+
+    Assert(
+        !processor.TryBuildPayloadData(
+            buffer,
+            userPayload: [0xAA],
+            originatingPointCode: 1,
+            destinationPointCode: 2,
+            serviceIndicator: 3,
+            networkIndicator: 2,
+            messagePriority: 0,
+            signallingLinkSelection: 7,
+            networkAppearance: null,
+            routingContext: null,
+            correlationId: null,
+            out _,
+            out string? buildError),
+        "outbound DATA should be rejected while ASP is not active");
+    Assert(buildError?.Contains("ASP is Down", StringComparison.Ordinal) == true, buildError ?? "missing outbound ASP state error");
+}
+
+static void M3uaOutboundProcessorBuildsAspActiveWithDefaultRoutingContext()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    M3uaOutboundProcessor processor = new(routingContext: 100);
+
+    Assert(
+        processor.TryBuildAspActive(
+            buffer,
+            M3uaTrafficModeType.Loadshare,
+            ReadOnlySpan<byte>.Empty,
+            out int written,
+            out string? buildError),
+        buildError ?? "outbound ASP Active build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParseAsptm(message, out M3uaAspTrafficMaintenanceMessage? typed, out string? parseError),
+        parseError ?? "outbound ASP Active parse failed");
+    AssertEqual(M3uaAsptmMessageType.AspActive, typed!.MessageType, "outbound ASP Active type");
+    AssertSequence([0x00, 0x00, 0x00, 0x64], UInt32SpanToBytes(typed.RoutingContexts), "outbound ASP Active Routing Context");
 }
 
 static void M3uaParameterReaderSkipsPadding()

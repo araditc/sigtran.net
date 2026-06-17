@@ -12,6 +12,8 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA common framing | Header parser, TLV reader/writer, padding handling |
 | M3UA transfer | DATA builders/parsers with Network Appearance, Routing Context, Protocol Data, and Correlation Id |
 | M3UA DATA routing | Payload route table for matching DATA by Network Appearance, Routing Context, DPC, and SI |
+| M3UA inbound processing | Decode, typed dispatch, ASP ACK state updates, and DATA route resolution |
+| M3UA outbound processing | State-aware builders with association defaults for ASP lifecycle and DATA |
 | M3UA ASPSM | ASP Up/Down, Heartbeat, acknowledgements, typed parsing |
 | M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
 | M3UA management | Error and Notify builders/parsers |
@@ -87,6 +89,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [M3UA typed dispatcher](docs/DISPATCHER.md)
 - [M3UA Payload Data](docs/DATA.md)
 - [M3UA Payload Routing](docs/ROUTING.md)
+- [M3UA Inbound Processing](docs/PROCESSING.md)
+- [M3UA Outbound Processing](docs/OUTBOUND.md)
 - [M3UA Routing Key Management](docs/RKM.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
