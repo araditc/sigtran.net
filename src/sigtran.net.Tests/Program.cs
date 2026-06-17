@@ -14,6 +14,9 @@ Run("M3UA ASP state machine follows the active lifecycle", M3uaAspStateMachineFo
 Run("M3UA ASP state machine rejects invalid transitions", M3uaAspStateMachineRejectsInvalidTransitions);
 Run("M3UA ASP session applies acknowledgement lifecycle messages", M3uaAspSessionAppliesAcknowledgementLifecycle);
 Run("M3UA ASP session rejects acknowledgement messages in the wrong state", M3uaAspSessionRejectsWrongStateAcknowledgement);
+Run("M3UA parses Management Error messages", M3uaParsesManagementError);
+Run("M3UA parses Management Notify messages", M3uaParsesManagementNotify);
+Run("M3UA rejects invalid Management Notify status information", M3uaRejectsInvalidManagementNotifyStatusInformation);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -396,6 +399,83 @@ static void M3uaAspSessionRejectsWrongStateAcknowledgement()
         "ASP Active Ack from Down should be rejected by session");
     Assert(error?.Contains("Cannot apply", StringComparison.Ordinal) == true, error ?? "missing session transition error");
     AssertEqual(M3uaAspState.Down, session.State, "session state after rejected acknowledgement");
+}
+
+static void M3uaParsesManagementError()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    uint[] routingContexts = [0x00000011, 0x00000022];
+    byte[] diagnostic = [0xDE, 0xAD, 0xBE, 0xEF, 0x01];
+
+    Assert(
+        M3uaMessageBuilder.BuildError(buffer, M3uaErrorCode.InvalidRoutingContext, routingContexts, 0x00000005, diagnostic, out int written, out string? buildError),
+        buildError ?? "Error build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.Management, message.MessageClass, "Error message class");
+    AssertEqual((byte)M3uaManagementMessageType.Error, message.MessageType, "Error message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseError(message, out M3uaErrorMessage? typed, out string? parseError),
+        parseError ?? "Error typed parse failed");
+
+    AssertEqual(M3uaErrorCode.InvalidRoutingContext, typed!.ErrorCode, "typed Error Code");
+    AssertEqual((uint?)0x00000005, typed.NetworkAppearance, "typed Network Appearance");
+    AssertSequence([0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x22], UInt32SpanToBytes(typed.RoutingContexts), "typed Error Routing Contexts");
+    AssertSequence(diagnostic, typed.DiagnosticInformation.Span, "typed Diagnostic Information");
+}
+
+static void M3uaParsesManagementNotify()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    uint[] routingContexts = [0x00000033];
+    byte[] info = [0x61, 0x73, 0x2D, 0x61, 0x63, 0x74];
+
+    Assert(
+        M3uaMessageBuilder.BuildNotify(
+            buffer,
+            M3uaNotifyStatusType.ApplicationServerStateChange,
+            (ushort)M3uaApplicationServerState.Active,
+            aspIdentifier: 0x0000002A,
+            routingContexts,
+            info,
+            out int written,
+            out string? buildError),
+        buildError ?? "Notify build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.Management, message.MessageClass, "Notify message class");
+    AssertEqual((byte)M3uaManagementMessageType.Notify, message.MessageType, "Notify message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseNotify(message, out M3uaNotifyMessage? typed, out string? parseError),
+        parseError ?? "Notify typed parse failed");
+
+    AssertEqual(M3uaNotifyStatusType.ApplicationServerStateChange, typed!.StatusType, "typed Notify Status Type");
+    AssertEqual((ushort)M3uaApplicationServerState.Active, typed.StatusInformation, "typed Notify Status Information");
+    AssertEqual((uint?)0x0000002A, typed.AspIdentifier, "typed Notify ASP Identifier");
+    AssertSequence([0x00, 0x00, 0x00, 0x33], UInt32SpanToBytes(typed.RoutingContexts), "typed Notify Routing Contexts");
+    AssertSequence(info, typed.InfoString.Span, "typed Notify Info String");
+}
+
+static void M3uaRejectsInvalidManagementNotifyStatusInformation()
+{
+    Span<byte> buffer = stackalloc byte[32];
+    Assert(
+        M3uaMessageBuilder.BuildNotify(
+            buffer,
+            M3uaNotifyStatusType.ApplicationServerStateChange,
+            statusInformation: 99,
+            aspIdentifier: null,
+            ReadOnlySpan<uint>.Empty,
+            ReadOnlySpan<byte>.Empty,
+            out int written,
+            out string? buildError),
+        buildError ?? "Notify build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        !M3uaTypedMessageParser.TryParseNotify(message, out _, out string? parseError),
+        "invalid Notify status information should be rejected");
+    Assert(parseError?.Contains("Unknown Notify Status Information", StringComparison.Ordinal) == true, parseError ?? "missing Notify parse error");
 }
 
 static void Run(string name, Action test)

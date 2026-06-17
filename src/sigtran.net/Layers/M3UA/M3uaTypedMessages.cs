@@ -75,10 +75,307 @@ public sealed class M3uaAspTrafficMaintenanceMessage
 }
 
 /// <summary>
+/// Represents a typed M3UA Error management message.
+/// </summary>
+public sealed class M3uaErrorMessage
+{
+    private readonly uint[] _routingContexts;
+
+    /// <summary>Creates a typed M3UA Error management message.</summary>
+    /// <param name="errorCode">The decoded Error Code value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="diagnosticInformation">The optional Diagnostic Information value.</param>
+    public M3uaErrorMessage(
+        M3uaErrorCode errorCode,
+        ReadOnlySpan<uint> routingContexts,
+        uint? networkAppearance,
+        ReadOnlyMemory<byte> diagnosticInformation)
+    {
+        ErrorCode = errorCode;
+        _routingContexts = routingContexts.ToArray();
+        NetworkAppearance = networkAppearance;
+        DiagnosticInformation = diagnosticInformation;
+    }
+
+    /// <summary>The decoded Error Code value.</summary>
+    public M3uaErrorCode ErrorCode { get; }
+
+    /// <summary>The optional Routing Context values.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Diagnostic Information value.</summary>
+    public ReadOnlyMemory<byte> DiagnosticInformation { get; }
+}
+
+/// <summary>
+/// Represents a typed M3UA Notify management message.
+/// </summary>
+public sealed class M3uaNotifyMessage
+{
+    private readonly uint[] _routingContexts;
+
+    /// <summary>Creates a typed M3UA Notify management message.</summary>
+    /// <param name="statusType">The decoded Status Type value.</param>
+    /// <param name="statusInformation">The decoded Status Information value.</param>
+    /// <param name="aspIdentifier">The optional ASP Identifier value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    public M3uaNotifyMessage(
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        uint? aspIdentifier,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlyMemory<byte> infoString)
+    {
+        StatusType = statusType;
+        StatusInformation = statusInformation;
+        AspIdentifier = aspIdentifier;
+        _routingContexts = routingContexts.ToArray();
+        InfoString = infoString;
+    }
+
+    /// <summary>The decoded Status Type value.</summary>
+    public M3uaNotifyStatusType StatusType { get; }
+
+    /// <summary>The decoded Status Information value.</summary>
+    public ushort StatusInformation { get; }
+
+    /// <summary>The optional ASP Identifier value.</summary>
+    public uint? AspIdentifier { get; }
+
+    /// <summary>The optional Routing Context values.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+
+    /// <summary>The optional Info String value.</summary>
+    public ReadOnlyMemory<byte> InfoString { get; }
+}
+
+/// <summary>
 /// Converts generic M3UA messages into typed messages used by session state machines.
 /// </summary>
 public static class M3uaTypedMessageParser
 {
+    /// <summary>
+    /// Parses a Management Error message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseError(
+        M3uaMessage message,
+        out M3uaErrorMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateManagementType(message, M3uaManagementMessageType.Error, out error))
+        {
+            return false;
+        }
+
+        M3uaErrorCode? errorCode = null;
+        uint[] routingContexts = Array.Empty<uint>();
+        uint? networkAppearance = null;
+        byte[] diagnosticInformation = Array.Empty<byte>();
+        bool hasRoutingContext = false;
+        bool hasDiagnosticInformation = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.ErrorCode:
+                    if (errorCode.HasValue)
+                    {
+                        error = "Duplicate Error Code parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint rawErrorCode, out error))
+                    {
+                        return false;
+                    }
+
+                    if (!Enum.IsDefined(typeof(M3uaErrorCode), rawErrorCode))
+                    {
+                        error = $"Unknown Error Code {rawErrorCode}";
+                        return false;
+                    }
+
+                    errorCode = (M3uaErrorCode)rawErrorCode;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (hasRoutingContext)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+                    {
+                        return false;
+                    }
+
+                    hasRoutingContext = true;
+                    break;
+
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.DiagnosticInformation:
+                    if (hasDiagnosticInformation)
+                    {
+                        error = "Duplicate Diagnostic Information parameter";
+                        return false;
+                    }
+
+                    hasDiagnosticInformation = true;
+                    diagnosticInformation = parameter.Value.ToArray();
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!errorCode.HasValue)
+        {
+            error = "Missing Error Code parameter";
+            return false;
+        }
+
+        typedMessage = new(errorCode.Value, routingContexts, networkAppearance, diagnosticInformation);
+        return true;
+    }
+
+    /// <summary>
+    /// Parses a Management Notify message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseNotify(
+        M3uaMessage message,
+        out M3uaNotifyMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateManagementType(message, M3uaManagementMessageType.Notify, out error))
+        {
+            return false;
+        }
+
+        M3uaNotifyStatusType? statusType = null;
+        ushort statusInformation = 0;
+        uint? aspIdentifier = null;
+        uint[] routingContexts = Array.Empty<uint>();
+        byte[] infoString = Array.Empty<byte>();
+        bool hasRoutingContext = false;
+        bool hasInfoString = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.Status:
+                    if (statusType.HasValue)
+                    {
+                        error = "Duplicate Status parameter";
+                        return false;
+                    }
+
+                    if (!TryReadStatus(parameter.Value, out M3uaNotifyStatusType parsedStatusType, out statusInformation, out error))
+                    {
+                        return false;
+                    }
+
+                    statusType = parsedStatusType;
+                    break;
+
+                case M3uaParameterTag.AspIdentifier:
+                    if (aspIdentifier.HasValue)
+                    {
+                        error = "Duplicate ASP Identifier parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint id, out error))
+                    {
+                        return false;
+                    }
+
+                    aspIdentifier = id;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (hasRoutingContext)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+                    {
+                        return false;
+                    }
+
+                    hasRoutingContext = true;
+                    break;
+
+                case M3uaParameterTag.InfoString:
+                    if (hasInfoString)
+                    {
+                        error = "Duplicate Info String parameter";
+                        return false;
+                    }
+
+                    hasInfoString = true;
+                    infoString = parameter.Value.ToArray();
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!statusType.HasValue)
+        {
+            error = "Missing Status parameter";
+            return false;
+        }
+
+        typedMessage = new(statusType.Value, statusInformation, aspIdentifier, routingContexts, infoString);
+        return true;
+    }
+
     /// <summary>
     /// Parses an ASP State Maintenance message.
     /// </summary>
@@ -260,6 +557,77 @@ public static class M3uaTypedMessageParser
         }
 
         typedMessage = new(messageType, trafficModeType, routingContexts, infoString);
+        return true;
+    }
+
+    private static bool ValidateManagementType(
+        M3uaMessage message,
+        M3uaManagementMessageType expectedType,
+        out string? error)
+    {
+        error = null;
+        if (message.MessageClass != M3uaMessageClass.Management)
+        {
+            error = $"Expected Management message class, got {message.MessageClass}";
+            return false;
+        }
+
+        if (message.MessageType != (byte)expectedType)
+        {
+            error = $"Expected Management message type {expectedType}, got {message.MessageType}";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool TryReadStatus(
+        ReadOnlySpan<byte> value,
+        out M3uaNotifyStatusType statusType,
+        out ushort statusInformation,
+        out string? error)
+    {
+        statusType = default;
+        statusInformation = 0;
+        error = null;
+
+        if (value.Length != sizeof(uint))
+        {
+            error = "Status parameter must contain exactly 4 bytes";
+            return false;
+        }
+
+        ushort rawStatusType = BinaryPrimitives.ReadUInt16BigEndian(value);
+        if (!Enum.IsDefined(typeof(M3uaNotifyStatusType), rawStatusType))
+        {
+            error = $"Unknown Notify Status Type {rawStatusType}";
+            return false;
+        }
+
+        statusType = (M3uaNotifyStatusType)rawStatusType;
+        statusInformation = BinaryPrimitives.ReadUInt16BigEndian(value.Slice(2, 2));
+        return ValidateStatusInformation(statusType, statusInformation, out error);
+    }
+
+    private static bool ValidateStatusInformation(
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        out string? error)
+    {
+        error = null;
+        bool valid = statusType switch
+        {
+            M3uaNotifyStatusType.ApplicationServerStateChange => Enum.IsDefined(typeof(M3uaApplicationServerState), statusInformation),
+            M3uaNotifyStatusType.Other => Enum.IsDefined(typeof(M3uaOtherNotifyStatus), statusInformation),
+            _ => false
+        };
+
+        if (!valid)
+        {
+            error = $"Unknown Notify Status Information {statusInformation} for Status Type {statusType}";
+            return false;
+        }
+
         return true;
     }
 

@@ -227,6 +227,122 @@ public static class M3uaMessageBuilder
     }
 
     /// <summary>
+    /// Builds a Management Error message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="errorCode">The Error Code value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="diagnosticInformation">The optional Diagnostic Information value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildError(
+        Span<byte> buffer,
+        M3uaErrorCode errorCode,
+        ReadOnlySpan<uint> routingContexts,
+        uint? networkAppearance,
+        ReadOnlySpan<byte> diagnosticInformation,
+        out int written,
+        out string? error)
+    {
+        int parameterLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + (networkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalBytesParameterLength(diagnosticInformation);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Management, (byte)M3uaManagementMessageType.Error, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.ErrorCode, (uint)errorCode, out int paramWritten, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        offset += paramWritten;
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        if (networkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.NetworkAppearance, networkAppearance.Value, out paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.DiagnosticInformation, diagnosticInformation, ref offset, out error);
+    }
+
+    /// <summary>
+    /// Builds a Management Notify message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="statusType">The Status Type value.</param>
+    /// <param name="statusInformation">The Status Information value.</param>
+    /// <param name="aspIdentifier">The optional ASP Identifier value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildNotify(
+        Span<byte> buffer,
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        uint? aspIdentifier,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        int parameterLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                              + (aspIdentifier.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Management, (byte)M3uaManagementMessageType.Notify, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (!TryWriteStatusParameter(buffer.Slice(offset), statusType, statusInformation, out int paramWritten, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        offset += paramWritten;
+        if (aspIdentifier.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.AspIdentifier, aspIdentifier.Value, out paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
+    /// <summary>
     /// Builds an ASP Active message.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
@@ -530,6 +646,19 @@ public static class M3uaMessageBuilder
         Span<byte> valueBuffer = stackalloc byte[sizeof(uint)];
         BinaryPrimitives.WriteUInt32BigEndian(valueBuffer, value);
         return M3uaParameterWriter.TryWrite(buffer, tag, valueBuffer, out written, out error);
+    }
+
+    private static bool TryWriteStatusParameter(
+        Span<byte> buffer,
+        M3uaNotifyStatusType statusType,
+        ushort statusInformation,
+        out int written,
+        out string? error)
+    {
+        Span<byte> valueBuffer = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt16BigEndian(valueBuffer, (ushort)statusType);
+        BinaryPrimitives.WriteUInt16BigEndian(valueBuffer.Slice(2, 2), statusInformation);
+        return M3uaParameterWriter.TryWrite(buffer, M3uaParameterTag.Status, valueBuffer, out written, out error);
     }
 
     private static bool TryWriteOptionalUInt32ListParameter(

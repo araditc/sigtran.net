@@ -50,6 +50,80 @@ public enum M3uaManagementMessageType : byte
     Notify = 1
 }
 
+/// <summary>Error Code values used by M3UA Error messages.</summary>
+public enum M3uaErrorCode : uint
+{
+    /// <summary>Invalid Version.</summary>
+    InvalidVersion = 0x01,
+    /// <summary>Unsupported Message Class.</summary>
+    UnsupportedMessageClass = 0x03,
+    /// <summary>Unsupported Message Type.</summary>
+    UnsupportedMessageType = 0x04,
+    /// <summary>Unsupported Traffic Mode Type.</summary>
+    UnsupportedTrafficModeType = 0x05,
+    /// <summary>Unexpected Message.</summary>
+    UnexpectedMessage = 0x06,
+    /// <summary>Protocol Error.</summary>
+    ProtocolError = 0x07,
+    /// <summary>Invalid Stream Identifier.</summary>
+    InvalidStreamIdentifier = 0x09,
+    /// <summary>Refused - Management Blocking.</summary>
+    RefusedManagementBlocking = 0x0D,
+    /// <summary>ASP Identifier Required.</summary>
+    AspIdentifierRequired = 0x0E,
+    /// <summary>Invalid ASP Identifier.</summary>
+    InvalidAspIdentifier = 0x0F,
+    /// <summary>Invalid Parameter Value.</summary>
+    InvalidParameterValue = 0x11,
+    /// <summary>Parameter Field Error.</summary>
+    ParameterFieldError = 0x12,
+    /// <summary>Unexpected Parameter.</summary>
+    UnexpectedParameter = 0x13,
+    /// <summary>Destination Status Unknown.</summary>
+    DestinationStatusUnknown = 0x14,
+    /// <summary>Invalid Network Appearance.</summary>
+    InvalidNetworkAppearance = 0x15,
+    /// <summary>Missing Parameter.</summary>
+    MissingParameter = 0x16,
+    /// <summary>Invalid Routing Context.</summary>
+    InvalidRoutingContext = 0x19,
+    /// <summary>No configured Application Server for ASP.</summary>
+    NoConfiguredApplicationServerForAsp = 0x1A
+}
+
+/// <summary>Status Type values used by M3UA Notify messages.</summary>
+public enum M3uaNotifyStatusType : ushort
+{
+    /// <summary>Application Server state change.</summary>
+    ApplicationServerStateChange = 1,
+    /// <summary>Other status information.</summary>
+    Other = 2
+}
+
+/// <summary>Status Information values for Application Server state-change notifications.</summary>
+public enum M3uaApplicationServerState : ushort
+{
+    /// <summary>Reserved value.</summary>
+    Reserved = 1,
+    /// <summary>Application Server Inactive.</summary>
+    Inactive = 2,
+    /// <summary>Application Server Active.</summary>
+    Active = 3,
+    /// <summary>Application Server Pending.</summary>
+    Pending = 4
+}
+
+/// <summary>Status Information values for Notify messages with Status Type Other.</summary>
+public enum M3uaOtherNotifyStatus : ushort
+{
+    /// <summary>Insufficient ASP resources are active in the Application Server.</summary>
+    InsufficientAspResourcesActiveInApplicationServer = 1,
+    /// <summary>An alternate ASP is active.</summary>
+    AlternateAspActive = 2,
+    /// <summary>An ASP failure was detected.</summary>
+    AspFailure = 3
+}
+
 /// <summary>Transfer message types.</summary>
 public enum M3uaTransferMessageType : byte
 {
