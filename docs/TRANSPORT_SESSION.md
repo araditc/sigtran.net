@@ -6,6 +6,7 @@
 
 - Receive one complete M3UA PDU from `ISctpSocket`.
 - Wait for a specific typed message kind across multiple inbound PDUs.
+- Wait for a specific ASP acknowledgement state transition across multiple inbound PDUs.
 - Process inbound packets through `M3uaInboundProcessor`.
 - Build outbound ASP lifecycle and DATA messages through `M3uaOutboundProcessor`.
 - Send Heartbeat and Heartbeat Ack messages.
@@ -57,6 +58,15 @@ Network Appearance and Routing Context defaults are applied by the configured `M
 ```csharp
 M3uaInboundProcessingResult result = await session.ReceiveUntilAsync(
     M3uaTypedMessageKind.RegistrationResponse,
+    maxMessages: 8,
+    ct);
+```
+
+`ReceiveUntilTransitionAsync` is the equivalent helper for ASP acknowledgement events. It is used by `M3uaAspClient` for startup, Heartbeat, and shutdown handshakes.
+
+```csharp
+M3uaInboundProcessingResult activeAck = await session.ReceiveUntilTransitionAsync(
+    M3uaAspEvent.AspActiveAcknowledged,
     maxMessages: 8,
     ct);
 ```

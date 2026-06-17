@@ -19,6 +19,7 @@ Run("M3UA outbound processor builds ASP Active with default Routing Context", M3
 Run("M3UA transport session sends outbound DATA", M3uaTransportSessionSendsOutboundData);
 Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceivesInboundData);
 Run("M3UA transport session waits for typed messages", M3uaTransportSessionWaitsForTypedMessages);
+Run("M3UA transport session waits for ASP transitions", M3uaTransportSessionWaitsForAspTransitions);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
@@ -594,6 +595,41 @@ static void M3uaTransportSessionWaitsForTypedMessages()
 
     AssertEqual(M3uaTypedMessageKind.RegistrationResponse, result.TypedMessage.Kind, "waited typed kind");
     AssertEqual(M3uaRegistrationStatus.SuccessfullyRegistered, result.TypedMessage.As<M3uaRegistrationResponseMessage>().Results[0].Status, "waited registration status");
+}
+
+static void M3uaTransportSessionWaitsForAspTransitions()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    FakeSctpSocket socket = new();
+
+    Assert(
+        M3uaMessageBuilder.BuildNotify(
+            buffer,
+            M3uaNotifyStatusType.ApplicationServerStateChange,
+            (ushort)M3uaApplicationServerState.Inactive,
+            aspIdentifier: null,
+            ReadOnlySpan<uint>.Empty,
+            ReadOnlySpan<byte>.Empty,
+            out int written,
+            out string? notifyError),
+        notifyError ?? "Notify build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, aspIdentifier: 0x0000002A, ReadOnlySpan<byte>.Empty, out written, out string? upAckError),
+        upAckError ?? "ASP Up Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaAspSession aspSession = new();
+    M3uaInboundProcessor inbound = new(aspSession);
+    using M3uaTransportSession session = new(socket, inboundProcessor: inbound, leaveOpen: true);
+
+    M3uaInboundProcessingResult result = session.ReceiveUntilTransitionAsync(
+        M3uaAspEvent.AspUpAcknowledged,
+        maxMessages: 2).GetAwaiter().GetResult();
+
+    AssertEqual(M3uaAspEvent.AspUpAcknowledged, result.StateTransition!.Value.Event, "waited ASP transition event");
+    AssertEqual(M3uaAspState.Inactive, aspSession.State, "waited ASP transition state");
 }
 
 static void M3uaTransportSessionDisposesOwnedSocket()

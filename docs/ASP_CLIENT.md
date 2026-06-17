@@ -1,6 +1,6 @@
 # M3UA ASP Client
 
-`M3uaAspClient` runs common ASP lifecycle handshakes over `M3uaTransportSession`.
+`M3uaAspClient` runs common ASP lifecycle handshakes over `M3uaTransportSession` using the session ASP transition wait helper.
 
 ## Startup
 

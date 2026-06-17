@@ -112,6 +112,40 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Receives and processes inbound M3UA PDUs until a specific ASP state event is accepted.
+    /// </summary>
+    /// <param name="expectedEvent">The ASP state event to wait for.</param>
+    /// <param name="maxMessages">The maximum inbound messages to inspect.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound processing result with the expected ASP state transition.</returns>
+    public async Task<M3uaInboundProcessingResult> ReceiveUntilTransitionAsync(
+        M3uaAspEvent expectedEvent,
+        int maxMessages = 8,
+        CancellationToken ct = default)
+    {
+        if (maxMessages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxMessages), "Maximum messages must be positive.");
+        }
+
+        for (int i = 0; i < maxMessages; i++)
+        {
+            M3uaInboundProcessingResult? result = await ReceiveAsync(ct).ConfigureAwait(false);
+            if (result is null)
+            {
+                throw new InvalidOperationException($"Transport closed before {expectedEvent} was received.");
+            }
+
+            if (result.StateTransition?.Event == expectedEvent)
+            {
+                return result;
+            }
+        }
+
+        throw new InvalidOperationException($"Did not receive {expectedEvent} within {maxMessages} inbound messages.");
+    }
+
+    /// <summary>
     /// Builds and sends an ASP Up message.
     /// </summary>
     /// <param name="aspIdentifier">The optional ASP Identifier value.</param>

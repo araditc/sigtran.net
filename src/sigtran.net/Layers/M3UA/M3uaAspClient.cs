@@ -96,13 +96,13 @@ public sealed class M3uaAspClient
         options ??= new M3uaAspStartupOptions();
 
         await _session.SendAspUpAsync(options.AspIdentifier, options.AspUpInfoString, ct).ConfigureAwait(false);
-        M3uaInboundProcessingResult upAck = await ReceiveUntilTransitionAsync(
+        M3uaInboundProcessingResult upAck = await _session.ReceiveUntilTransitionAsync(
             M3uaAspEvent.AspUpAcknowledged,
             options.MaxHandshakeMessages,
             ct).ConfigureAwait(false);
 
         await _session.SendAspActiveAsync(options.TrafficModeType, options.AspActiveInfoString, ct).ConfigureAwait(false);
-        M3uaInboundProcessingResult activeAck = await ReceiveUntilTransitionAsync(
+        M3uaInboundProcessingResult activeAck = await _session.ReceiveUntilTransitionAsync(
             M3uaAspEvent.AspActiveAcknowledged,
             options.MaxHandshakeMessages,
             ct).ConfigureAwait(false);
@@ -128,7 +128,7 @@ public sealed class M3uaAspClient
         }
 
         await _session.SendHeartbeatAsync(heartbeatData, ct).ConfigureAwait(false);
-        return await ReceiveUntilTransitionAsync(
+        return await _session.ReceiveUntilTransitionAsync(
             M3uaAspEvent.HeartbeatAcknowledged,
             maxHandshakeMessages,
             ct).ConfigureAwait(false);
@@ -152,7 +152,7 @@ public sealed class M3uaAspClient
         }
 
         await _session.SendAspInactiveAsync(infoString, ct).ConfigureAwait(false);
-        return await ReceiveUntilTransitionAsync(
+        return await _session.ReceiveUntilTransitionAsync(
             M3uaAspEvent.AspInactiveAcknowledged,
             maxHandshakeMessages,
             ct).ConfigureAwait(false);
@@ -176,31 +176,9 @@ public sealed class M3uaAspClient
         }
 
         await _session.SendAspDownAsync(infoString, ct).ConfigureAwait(false);
-        return await ReceiveUntilTransitionAsync(
+        return await _session.ReceiveUntilTransitionAsync(
             M3uaAspEvent.AspDownAcknowledged,
             maxHandshakeMessages,
             ct).ConfigureAwait(false);
-    }
-
-    private async Task<M3uaInboundProcessingResult> ReceiveUntilTransitionAsync(
-        M3uaAspEvent expectedEvent,
-        int maxMessages,
-        CancellationToken ct)
-    {
-        for (int i = 0; i < maxMessages; i++)
-        {
-            M3uaInboundProcessingResult? result = await _session.ReceiveAsync(ct).ConfigureAwait(false);
-            if (result is null)
-            {
-                throw new InvalidOperationException($"Transport closed before {expectedEvent} was received.");
-            }
-
-            if (result.StateTransition?.Event == expectedEvent)
-            {
-                return result;
-            }
-        }
-
-        throw new InvalidOperationException($"Did not receive {expectedEvent} within {maxMessages} inbound messages.");
     }
 }
