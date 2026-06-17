@@ -153,6 +153,41 @@ public sealed class M3uaPayloadRouteTable
     }
 
     /// <summary>
+    /// Copies registered routes into a stable snapshot array.
+    /// </summary>
+    /// <returns>A snapshot of the registered routes in insertion order.</returns>
+    public M3uaPayloadRoute[] Snapshot()
+    {
+        return _routes.ToArray();
+    }
+
+    /// <summary>
+    /// Finds the first registered route with the supplied name.
+    /// </summary>
+    /// <param name="name">The route name to find.</param>
+    /// <param name="route">The matching route on success.</param>
+    /// <returns>True if a matching route was found; otherwise false.</returns>
+    public bool TryFindByName(string name, out M3uaPayloadRoute? route)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Route name must not be empty.", nameof(name));
+        }
+
+        for (int i = 0; i < _routes.Count; i++)
+        {
+            if (string.Equals(_routes[i].Name, name, StringComparison.Ordinal))
+            {
+                route = _routes[i];
+                return true;
+            }
+        }
+
+        route = null;
+        return false;
+    }
+
+    /// <summary>
     /// Resolves a Payload Data message to the most specific matching route.
     /// </summary>
     /// <param name="message">The typed Payload Data message to resolve.</param>

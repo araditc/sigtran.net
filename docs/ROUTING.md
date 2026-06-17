@@ -71,6 +71,19 @@ routes.TryRemove(
 routes.Clear();
 ```
 
+## Inspection
+
+`Snapshot` returns a stable array copy of routes in insertion order. `TryFindByName` returns the first route with the requested name, which is useful for diagnostics, admin APIs, and configuration validation.
+
+```csharp
+M3uaPayloadRoute[] snapshot = routes.Snapshot();
+
+if (routes.TryFindByName("map-home", out M3uaPayloadRoute? route))
+{
+    Console.WriteLine(route.RoutingContext);
+}
+```
+
 ## Current Scope
 
 This table resolves already-decoded DATA messages. It does not yet enforce ASP active state, traffic mode policy, multi-ASP load-sharing decisions, or cross-thread synchronization. Those belong in a later Application Server model.

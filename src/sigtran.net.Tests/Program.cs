@@ -11,6 +11,7 @@ Run("M3UA route table resolves the most specific DATA route", M3uaRouteTableReso
 Run("M3UA route table rejects ambiguous DATA routes", M3uaRouteTableRejectsAmbiguousDataRoutes);
 Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplicateSelectors);
 Run("M3UA route table removes and clears routes", M3uaRouteTableRemovesAndClearsRoutes);
+Run("M3UA route table snapshots and finds routes by name", M3uaRouteTableSnapshotsAndFindsRoutesByName);
 Run("M3UA inbound processor updates ASP state and routes DATA", M3uaInboundProcessorUpdatesAspStateAndRoutesData);
 Run("M3UA inbound processor can require active ASP for DATA", M3uaInboundProcessorCanRequireActiveAspForData);
 Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist);
@@ -339,6 +340,28 @@ static void M3uaRouteTableRemovesAndClearsRoutes()
 
     table.Clear();
     AssertEqual(0, table.Routes.Count, "route count after clear");
+}
+
+static void M3uaRouteTableSnapshotsAndFindsRoutesByName()
+{
+    M3uaPayloadRouteTable table = new();
+    M3uaPayloadRoute first = new("first", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute second = new("second", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: 5);
+
+    Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
+    Assert(table.TryAdd(second, out string? secondError), secondError ?? "second route add failed");
+
+    M3uaPayloadRoute[] snapshot = table.Snapshot();
+    AssertEqual(2, snapshot.Length, "snapshot route count");
+    AssertEqual("first", snapshot[0].Name, "snapshot first route");
+    table.Clear();
+    AssertEqual(2, snapshot.Length, "snapshot should remain stable after clear");
+    AssertEqual(0, table.Routes.Count, "table should be empty after clear");
+
+    Assert(table.TryAdd(first, out string? readdError), readdError ?? "re-add route failed");
+    Assert(table.TryFindByName("first", out M3uaPayloadRoute? found), "route by name should be found");
+    AssertEqual((uint?)100, found!.RoutingContext, "found route Routing Context");
+    Assert(!table.TryFindByName("missing", out _), "missing route by name should not be found");
 }
 
 static void M3uaInboundProcessorUpdatesAspStateAndRoutesData()
