@@ -25,6 +25,7 @@ Good comments should explain protocol meaning, units, optionality, and important
 - Add at least one malformed input or missing-parameter test for every required parameter rule.
 - Verify big-endian encoding and TLV padded length behavior.
 - Document whether the feature is production-ready or experimental.
+- Add diagnostics coverage when a feature changes packet visibility or operational troubleshooting.
 
 ## API Stability
 

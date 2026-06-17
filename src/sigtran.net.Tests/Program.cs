@@ -21,6 +21,7 @@ Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceives
 Run("M3UA transport session waits for typed messages", M3uaTransportSessionWaitsForTypedMessages);
 Run("M3UA transport session waits for ASP transitions", M3uaTransportSessionWaitsForAspTransitions);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
+Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
@@ -640,6 +641,33 @@ static void M3uaTransportSessionDisposesOwnedSocket()
     session.Dispose();
 
     Assert(socket.Disposed, "owned socket should be disposed");
+}
+
+static void M3uaDiagnosticsFormatHexAndSummaries()
+{
+    byte[] bytes =
+    [
+        0x00, 0x01, 0x02, 0x03,
+        0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09
+    ];
+    string dump = M3uaDiagnostics.FormatHexDump(bytes, bytesPerLine: 4);
+    Assert(dump.Contains("0000: 00 01 02 03", StringComparison.Ordinal), dump);
+    Assert(dump.Contains("0004: 04 05 06 07", StringComparison.Ordinal), dump);
+    Assert(dump.Contains("0008: 08 09", StringComparison.Ordinal), dump);
+
+    Span<byte> buffer = stackalloc byte[32];
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeat(buffer, [0xAA, 0xBB], out int written, out string? buildError),
+        buildError ?? "Heartbeat build failed");
+    Assert(
+        M3uaDiagnostics.TryFormatSummary(buffer.Slice(0, written), out string summary, out string? summaryError),
+        summaryError ?? "summary format failed");
+    AssertEqual("M3UA v1 class=Aspsm type=3 length=16 parameters=8", summary, "M3UA summary");
+    Assert(
+        !M3uaDiagnostics.TryFormatSummary([0x01, 0x00], out _, out string? malformedError),
+        "malformed summary should fail");
+    Assert(malformedError?.Contains("too short", StringComparison.Ordinal) == true, malformedError ?? "missing malformed summary error");
 }
 
 static void M3uaAspClientCompletesStartupHandshake()
