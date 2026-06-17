@@ -739,6 +739,178 @@ public static class M3uaMessageBuilder
             out error);
     }
 
+    /// <summary>
+    /// Builds an RKM Registration Request message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingKeys">The Routing Key entries to register.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildRegistrationRequest(
+        Span<byte> buffer,
+        ReadOnlySpan<M3uaRoutingKey> routingKeys,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (routingKeys.IsEmpty)
+        {
+            error = "At least one Routing Key is required";
+            return false;
+        }
+
+        int parameterLength = 0;
+        for (int i = 0; i < routingKeys.Length; i++)
+        {
+            if (!TryGetRoutingKeyValueLength(routingKeys[i], out int routingKeyValueLength, out error))
+            {
+                return false;
+            }
+
+            parameterLength += M3uaParameterWriter.GetPaddedLength(routingKeyValueLength);
+        }
+
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.RoutingKeyManagement, (byte)M3uaRoutingKeyManagementMessageType.RegistrationRequest, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        for (int i = 0; i < routingKeys.Length; i++)
+        {
+            if (!TryWriteRoutingKeyParameter(buffer, routingKeys[i], ref offset, out error))
+            {
+                written = 0;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Builds an RKM Registration Response message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="results">The Registration Result entries.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildRegistrationResponse(
+        Span<byte> buffer,
+        ReadOnlySpan<M3uaRegistrationResult> results,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (results.IsEmpty)
+        {
+            error = "At least one Registration Result is required";
+            return false;
+        }
+
+        int resultValueLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                                + M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                                + M3uaParameterWriter.GetPaddedLength(sizeof(uint));
+        int parameterLength = results.Length * M3uaParameterWriter.GetPaddedLength(resultValueLength);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.RoutingKeyManagement, (byte)M3uaRoutingKeyManagementMessageType.RegistrationResponse, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        for (int i = 0; i < results.Length; i++)
+        {
+            if (!TryWriteRegistrationResultParameter(buffer, results[i], ref offset, out error))
+            {
+                written = 0;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Builds an RKM Deregistration Request message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingContexts">The Routing Context values to deregister.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDeregistrationRequest(
+        Span<byte> buffer,
+        ReadOnlySpan<uint> routingContexts,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (routingContexts.IsEmpty)
+        {
+            error = "At least one Routing Context is required";
+            return false;
+        }
+
+        int parameterLength = M3uaParameterWriter.GetPaddedLength(routingContexts.Length * sizeof(uint));
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.RoutingKeyManagement, (byte)M3uaRoutingKeyManagementMessageType.DeregistrationRequest, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Builds an RKM Deregistration Response message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="results">The Deregistration Result entries.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDeregistrationResponse(
+        Span<byte> buffer,
+        ReadOnlySpan<M3uaDeregistrationResult> results,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (results.IsEmpty)
+        {
+            error = "At least one Deregistration Result is required";
+            return false;
+        }
+
+        int resultValueLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                                + M3uaParameterWriter.GetPaddedLength(sizeof(uint));
+        int parameterLength = results.Length * M3uaParameterWriter.GetPaddedLength(resultValueLength);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.RoutingKeyManagement, (byte)M3uaRoutingKeyManagementMessageType.DeregistrationResponse, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        for (int i = 0; i < results.Length; i++)
+        {
+            if (!TryWriteDeregistrationResultParameter(buffer, results[i], ref offset, out error))
+            {
+                written = 0;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static bool BuildAspIdentifierAndInfoMessage(
         Span<byte> buffer,
         M3uaMessageClass messageClass,
@@ -920,6 +1092,170 @@ public static class M3uaMessageBuilder
         }
 
         return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
+    private static bool TryGetRoutingKeyValueLength(
+        M3uaRoutingKey routingKey,
+        out int valueLength,
+        out string? error)
+    {
+        valueLength = 0;
+        error = null;
+
+        if (routingKey.DestinationPointCodes.IsEmpty)
+        {
+            error = "Routing Key requires at least one Destination Point Code";
+            return false;
+        }
+
+        valueLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                      + (routingKey.RoutingContext.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                      + (routingKey.TrafficModeType.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                      + M3uaParameterWriter.GetPaddedLength(routingKey.DestinationPointCodes.Length * sizeof(uint))
+                      + (routingKey.NetworkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                      + GetOptionalBytesParameterLength(routingKey.ServiceIndicators)
+                      + (routingKey.OriginatingPointCodes.IsEmpty ? 0 : M3uaParameterWriter.GetPaddedLength(routingKey.OriginatingPointCodes.Length * sizeof(uint)));
+        return true;
+    }
+
+    private static bool TryWriteRoutingKeyParameter(
+        Span<byte> buffer,
+        M3uaRoutingKey routingKey,
+        ref int offset,
+        out string? error)
+    {
+        if (!TryGetRoutingKeyValueLength(routingKey, out int valueLength, out error))
+        {
+            return false;
+        }
+
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.RoutingKey, valueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        int nestedOffset = offset + M3uaProtocol.ParameterHeaderLength;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.LocalRoutingKeyIdentifier, routingKey.LocalRoutingKeyIdentifier, out int paramWritten, out error))
+        {
+            return false;
+        }
+
+        nestedOffset += paramWritten;
+        if (routingKey.RoutingContext.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.RoutingContext, routingKey.RoutingContext.Value, out paramWritten, out error))
+            {
+                return false;
+            }
+
+            nestedOffset += paramWritten;
+        }
+
+        if (routingKey.TrafficModeType.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.TrafficModeType, (uint)routingKey.TrafficModeType.Value, out paramWritten, out error))
+            {
+                return false;
+            }
+
+            nestedOffset += paramWritten;
+        }
+
+        if (!TryWriteAffectedPointCodeParameter(buffer, M3uaParameterTag.DestinationPointCode, routingKey.DestinationPointCodes, ref nestedOffset, out error))
+        {
+            return false;
+        }
+
+        if (routingKey.NetworkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.NetworkAppearance, routingKey.NetworkAppearance.Value, out paramWritten, out error))
+            {
+                return false;
+            }
+
+            nestedOffset += paramWritten;
+        }
+
+        if (!TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.ServiceIndicators, routingKey.ServiceIndicators, ref nestedOffset, out error))
+        {
+            return false;
+        }
+
+        if (!routingKey.OriginatingPointCodes.IsEmpty)
+        {
+            if (!TryWriteAffectedPointCodeParameter(buffer, M3uaParameterTag.OriginatingPointCodeList, routingKey.OriginatingPointCodes, ref nestedOffset, out error))
+            {
+                return false;
+            }
+        }
+
+        offset += written;
+        return true;
+    }
+
+    private static bool TryWriteRegistrationResultParameter(
+        Span<byte> buffer,
+        M3uaRegistrationResult result,
+        ref int offset,
+        out string? error)
+    {
+        int valueLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                          + M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                          + M3uaParameterWriter.GetPaddedLength(sizeof(uint));
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.RegistrationResult, valueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        int nestedOffset = offset + M3uaProtocol.ParameterHeaderLength;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.LocalRoutingKeyIdentifier, result.LocalRoutingKeyIdentifier, out int paramWritten, out error))
+        {
+            return false;
+        }
+
+        nestedOffset += paramWritten;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.RegistrationStatus, (uint)result.Status, out paramWritten, out error))
+        {
+            return false;
+        }
+
+        nestedOffset += paramWritten;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.RoutingContext, result.RoutingContext, out _, out error))
+        {
+            return false;
+        }
+
+        offset += written;
+        return true;
+    }
+
+    private static bool TryWriteDeregistrationResultParameter(
+        Span<byte> buffer,
+        M3uaDeregistrationResult result,
+        ref int offset,
+        out string? error)
+    {
+        int valueLength = M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                          + M3uaParameterWriter.GetPaddedLength(sizeof(uint));
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.DeregistrationResult, valueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        int nestedOffset = offset + M3uaProtocol.ParameterHeaderLength;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.RoutingContext, result.RoutingContext, out int paramWritten, out error))
+        {
+            return false;
+        }
+
+        nestedOffset += paramWritten;
+        if (!TryWriteUInt32Parameter(buffer.Slice(nestedOffset), M3uaParameterTag.DeregistrationStatus, (uint)result.Status, out _, out error))
+        {
+            return false;
+        }
+
+        offset += written;
+        return true;
     }
 
     private static bool TryWriteMessageHeader(

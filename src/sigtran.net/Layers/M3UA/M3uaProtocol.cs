@@ -234,6 +234,54 @@ public enum M3uaRoutingKeyManagementMessageType : byte
     DeregistrationResponse = 4
 }
 
+/// <summary>Registration Status values used by RKM Registration Result parameters.</summary>
+public enum M3uaRegistrationStatus : uint
+{
+    /// <summary>The Routing Key was registered successfully.</summary>
+    SuccessfullyRegistered = 0,
+    /// <summary>An unknown registration error occurred.</summary>
+    ErrorUnknown = 1,
+    /// <summary>The Destination Point Code is invalid.</summary>
+    ErrorInvalidDestinationPointCode = 2,
+    /// <summary>The Network Appearance is invalid.</summary>
+    ErrorInvalidNetworkAppearance = 3,
+    /// <summary>The Routing Key is invalid.</summary>
+    ErrorInvalidRoutingKey = 4,
+    /// <summary>Registration permission was denied.</summary>
+    ErrorPermissionDenied = 5,
+    /// <summary>The peer cannot support unique routing for the requested key.</summary>
+    ErrorCannotSupportUniqueRouting = 6,
+    /// <summary>The Routing Key is not currently provisioned.</summary>
+    ErrorRoutingKeyNotCurrentlyProvisioned = 7,
+    /// <summary>The peer has insufficient resources to register the Routing Key.</summary>
+    ErrorInsufficientResources = 8,
+    /// <summary>The Routing Key includes an unsupported parameter field.</summary>
+    ErrorUnsupportedRoutingKeyParameterField = 9,
+    /// <summary>The traffic handling mode is unsupported or invalid.</summary>
+    ErrorUnsupportedOrInvalidTrafficHandlingMode = 10,
+    /// <summary>The Routing Key change was refused.</summary>
+    ErrorRoutingKeyChangeRefused = 11,
+    /// <summary>The Routing Key is already registered.</summary>
+    ErrorRoutingKeyAlreadyRegistered = 12
+}
+
+/// <summary>Deregistration Status values used by RKM Deregistration Result parameters.</summary>
+public enum M3uaDeregistrationStatus : uint
+{
+    /// <summary>The Routing Context was deregistered successfully.</summary>
+    SuccessfullyDeregistered = 0,
+    /// <summary>An unknown deregistration error occurred.</summary>
+    ErrorUnknown = 1,
+    /// <summary>The Routing Context is invalid.</summary>
+    ErrorInvalidRoutingContext = 2,
+    /// <summary>Deregistration permission was denied.</summary>
+    ErrorPermissionDenied = 3,
+    /// <summary>The Routing Context is not registered.</summary>
+    ErrorNotRegistered = 4,
+    /// <summary>The ASP is currently active for the Routing Context.</summary>
+    ErrorAspCurrentlyActiveForRoutingContext = 5
+}
+
 /// <summary>M3UA and common SIGTRAN parameter tags used by RFC 4666.</summary>
 public enum M3uaParameterTag : ushort
 {

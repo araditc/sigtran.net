@@ -14,6 +14,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
 | M3UA management | Error and Notify builders/parsers |
 | M3UA SSNM | DUNA, DAVA, DAUD, DRST, DUPU, and SCON builders/parsers |
+| M3UA RKM | REG REQ, REG RSP, DEREG REQ, and DEREG RSP builders/parsers |
 | ASP state | Local acknowledgement-driven ASP session state machine |
 | SCTP | Transport contract plus a development TCP adapter; production SCTP is planned |
 | SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
@@ -81,13 +82,14 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [SDK roadmap](docs/SDK_ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [M3UA implementation notes](docs/M3UA.md)
+- [M3UA Routing Key Management](docs/RKM.md)
 - [Quality and contribution rules](docs/QUALITY.md)
 
 ## Project Direction
 
 The roadmap is intentionally conservative:
 
-1. Finish binary-correct M3UA.
+1. Finish remaining M3UA protocol coverage and API polish.
 2. Add a production SCTP transport story.
 3. Replace simplified SCCP with standards-based SCCP.
 4. Replace simplified TCAP with ASN.1 BER based TCAP.

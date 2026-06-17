@@ -12,6 +12,7 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 | Management | Error, Notify |
 | SSNM common | DUNA, DAVA, DAUD, DRST |
 | SSNM specialized | DUPU, SCON |
+| RKM | REG REQ, REG RSP, DEREG REQ, DEREG RSP |
 
 ## Builder Pattern
 
@@ -64,6 +65,17 @@ if (!M3uaTypedMessageParser.TryParseAsptm(
 ## SSNM Notes
 
 Common SSNM messages require at least one Affected Point Code. DUPU is modeled separately because it requires exactly one Affected Point Code with mask zero and a mandatory User/Cause parameter. SCON is modeled separately because it can include Concerned Destination and Congestion Indications.
+
+## RKM Notes
+
+Routing Key Management support covers the first dynamic registration path:
+
+- Registration Request with one or more Routing Key parameters.
+- Registration Response with one or more Registration Result parameters.
+- Deregistration Request with a Routing Context list.
+- Deregistration Response with one or more Deregistration Result parameters.
+
+Routing Keys require a Local-RK-Identifier and at least one Destination Point Code. Routing Context, Traffic Mode Type, Network Appearance, Service Indicators, and Originating Point Code List are optional fields.
 
 ## Validation Rules
 

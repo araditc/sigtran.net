@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 
 namespace sigtran.net.Layers.M3UA;
 
@@ -316,6 +317,182 @@ public sealed class M3uaDestinationUserPartUnavailableMessage
 
     /// <summary>The optional Info String value.</summary>
     public ReadOnlyMemory<byte> InfoString { get; }
+}
+
+/// <summary>
+/// Represents a Routing Key carried in an RKM Registration Request.
+/// </summary>
+public sealed class M3uaRoutingKey
+{
+    private readonly M3uaAffectedPointCode[] _destinationPointCodes;
+    private readonly byte[] _serviceIndicators;
+    private readonly M3uaAffectedPointCode[] _originatingPointCodes;
+
+    /// <summary>Creates a Routing Key model.</summary>
+    /// <param name="localRoutingKeyIdentifier">The Local-RK-Identifier used to correlate the Registration Response.</param>
+    /// <param name="routingContext">The optional Routing Context value.</param>
+    /// <param name="trafficModeType">The optional Traffic Mode Type value.</param>
+    /// <param name="destinationPointCodes">The mandatory Destination Point Code entries.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="serviceIndicators">The optional Service Indicator values.</param>
+    /// <param name="originatingPointCodes">The optional Originating Point Code entries.</param>
+    public M3uaRoutingKey(
+        uint localRoutingKeyIdentifier,
+        uint? routingContext,
+        M3uaTrafficModeType? trafficModeType,
+        ReadOnlySpan<M3uaAffectedPointCode> destinationPointCodes,
+        uint? networkAppearance,
+        ReadOnlySpan<byte> serviceIndicators,
+        ReadOnlySpan<M3uaAffectedPointCode> originatingPointCodes)
+    {
+        LocalRoutingKeyIdentifier = localRoutingKeyIdentifier;
+        RoutingContext = routingContext;
+        TrafficModeType = trafficModeType;
+        _destinationPointCodes = destinationPointCodes.ToArray();
+        NetworkAppearance = networkAppearance;
+        _serviceIndicators = serviceIndicators.ToArray();
+        _originatingPointCodes = originatingPointCodes.ToArray();
+    }
+
+    /// <summary>The Local-RK-Identifier used to correlate the Registration Response.</summary>
+    public uint LocalRoutingKeyIdentifier { get; }
+
+    /// <summary>The optional Routing Context value.</summary>
+    public uint? RoutingContext { get; }
+
+    /// <summary>The optional Traffic Mode Type value.</summary>
+    public M3uaTrafficModeType? TrafficModeType { get; }
+
+    /// <summary>The mandatory Destination Point Code entries.</summary>
+    public ReadOnlySpan<M3uaAffectedPointCode> DestinationPointCodes => _destinationPointCodes;
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Service Indicator values.</summary>
+    public ReadOnlySpan<byte> ServiceIndicators => _serviceIndicators;
+
+    /// <summary>The optional Originating Point Code entries.</summary>
+    public ReadOnlySpan<M3uaAffectedPointCode> OriginatingPointCodes => _originatingPointCodes;
+}
+
+/// <summary>
+/// Represents a typed RKM Registration Request message.
+/// </summary>
+public sealed class M3uaRegistrationRequestMessage
+{
+    private readonly M3uaRoutingKey[] _routingKeys;
+
+    /// <summary>Creates a typed Registration Request message.</summary>
+    /// <param name="routingKeys">The Routing Key entries to register.</param>
+    public M3uaRegistrationRequestMessage(ReadOnlySpan<M3uaRoutingKey> routingKeys)
+    {
+        _routingKeys = routingKeys.ToArray();
+    }
+
+    /// <summary>The Routing Key entries to register.</summary>
+    public ReadOnlySpan<M3uaRoutingKey> RoutingKeys => _routingKeys;
+}
+
+/// <summary>
+/// Represents one Registration Result entry from an RKM Registration Response.
+/// </summary>
+public readonly struct M3uaRegistrationResult
+{
+    /// <summary>Creates a Registration Result entry.</summary>
+    /// <param name="localRoutingKeyIdentifier">The Local-RK-Identifier from the matching request.</param>
+    /// <param name="status">The registration status.</param>
+    /// <param name="routingContext">The assigned Routing Context, or zero if registration failed.</param>
+    public M3uaRegistrationResult(uint localRoutingKeyIdentifier, M3uaRegistrationStatus status, uint routingContext)
+    {
+        LocalRoutingKeyIdentifier = localRoutingKeyIdentifier;
+        Status = status;
+        RoutingContext = routingContext;
+    }
+
+    /// <summary>The Local-RK-Identifier from the matching request.</summary>
+    public uint LocalRoutingKeyIdentifier { get; }
+
+    /// <summary>The registration status.</summary>
+    public M3uaRegistrationStatus Status { get; }
+
+    /// <summary>The assigned Routing Context, or zero if registration failed.</summary>
+    public uint RoutingContext { get; }
+}
+
+/// <summary>
+/// Represents a typed RKM Registration Response message.
+/// </summary>
+public sealed class M3uaRegistrationResponseMessage
+{
+    private readonly M3uaRegistrationResult[] _results;
+
+    /// <summary>Creates a typed Registration Response message.</summary>
+    /// <param name="results">The Registration Result entries.</param>
+    public M3uaRegistrationResponseMessage(ReadOnlySpan<M3uaRegistrationResult> results)
+    {
+        _results = results.ToArray();
+    }
+
+    /// <summary>The Registration Result entries.</summary>
+    public ReadOnlySpan<M3uaRegistrationResult> Results => _results;
+}
+
+/// <summary>
+/// Represents a typed RKM Deregistration Request message.
+/// </summary>
+public sealed class M3uaDeregistrationRequestMessage
+{
+    private readonly uint[] _routingContexts;
+
+    /// <summary>Creates a typed Deregistration Request message.</summary>
+    /// <param name="routingContexts">The Routing Context values to deregister.</param>
+    public M3uaDeregistrationRequestMessage(ReadOnlySpan<uint> routingContexts)
+    {
+        _routingContexts = routingContexts.ToArray();
+    }
+
+    /// <summary>The Routing Context values to deregister.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+}
+
+/// <summary>
+/// Represents one Deregistration Result entry from an RKM Deregistration Response.
+/// </summary>
+public readonly struct M3uaDeregistrationResult
+{
+    /// <summary>Creates a Deregistration Result entry.</summary>
+    /// <param name="routingContext">The Routing Context from the matching request.</param>
+    /// <param name="status">The deregistration status.</param>
+    public M3uaDeregistrationResult(uint routingContext, M3uaDeregistrationStatus status)
+    {
+        RoutingContext = routingContext;
+        Status = status;
+    }
+
+    /// <summary>The Routing Context from the matching request.</summary>
+    public uint RoutingContext { get; }
+
+    /// <summary>The deregistration status.</summary>
+    public M3uaDeregistrationStatus Status { get; }
+}
+
+/// <summary>
+/// Represents a typed RKM Deregistration Response message.
+/// </summary>
+public sealed class M3uaDeregistrationResponseMessage
+{
+    private readonly M3uaDeregistrationResult[] _results;
+
+    /// <summary>Creates a typed Deregistration Response message.</summary>
+    /// <param name="results">The Deregistration Result entries.</param>
+    public M3uaDeregistrationResponseMessage(ReadOnlySpan<M3uaDeregistrationResult> results)
+    {
+        _results = results.ToArray();
+    }
+
+    /// <summary>The Deregistration Result entries.</summary>
+    public ReadOnlySpan<M3uaDeregistrationResult> Results => _results;
 }
 
 /// <summary>
@@ -940,6 +1117,221 @@ public static class M3uaTypedMessageParser
     }
 
     /// <summary>
+    /// Parses an RKM Registration Request message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseRegistrationRequest(
+        M3uaMessage message,
+        out M3uaRegistrationRequestMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateRoutingKeyManagementType(message, M3uaRoutingKeyManagementMessageType.RegistrationRequest, out error))
+        {
+            return false;
+        }
+
+        List<M3uaRoutingKey> routingKeys = new();
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            if (parameter.Tag != M3uaParameterTag.RoutingKey)
+            {
+                continue;
+            }
+
+            if (!TryReadRoutingKey(parameter.Value, out M3uaRoutingKey? routingKey, out error))
+            {
+                return false;
+            }
+
+            routingKeys.Add(routingKey!);
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (routingKeys.Count == 0)
+        {
+            error = "Missing Routing Key parameter";
+            return false;
+        }
+
+        typedMessage = new(CollectionsMarshal.AsSpan(routingKeys));
+        return true;
+    }
+
+    /// <summary>
+    /// Parses an RKM Registration Response message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseRegistrationResponse(
+        M3uaMessage message,
+        out M3uaRegistrationResponseMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateRoutingKeyManagementType(message, M3uaRoutingKeyManagementMessageType.RegistrationResponse, out error))
+        {
+            return false;
+        }
+
+        List<M3uaRegistrationResult> results = new();
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            if (parameter.Tag != M3uaParameterTag.RegistrationResult)
+            {
+                continue;
+            }
+
+            if (!TryReadRegistrationResult(parameter.Value, out M3uaRegistrationResult result, out error))
+            {
+                return false;
+            }
+
+            results.Add(result);
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (results.Count == 0)
+        {
+            error = "Missing Registration Result parameter";
+            return false;
+        }
+
+        typedMessage = new(CollectionsMarshal.AsSpan(results));
+        return true;
+    }
+
+    /// <summary>
+    /// Parses an RKM Deregistration Request message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseDeregistrationRequest(
+        M3uaMessage message,
+        out M3uaDeregistrationRequestMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateRoutingKeyManagementType(message, M3uaRoutingKeyManagementMessageType.DeregistrationRequest, out error))
+        {
+            return false;
+        }
+
+        uint[] routingContexts = Array.Empty<uint>();
+        bool hasRoutingContext = false;
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            if (parameter.Tag != M3uaParameterTag.RoutingContext)
+            {
+                continue;
+            }
+
+            if (hasRoutingContext)
+            {
+                error = "Duplicate Routing Context parameter";
+                return false;
+            }
+
+            if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+            {
+                return false;
+            }
+
+            hasRoutingContext = true;
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!hasRoutingContext)
+        {
+            error = "Missing Routing Context parameter";
+            return false;
+        }
+
+        typedMessage = new(routingContexts);
+        return true;
+    }
+
+    /// <summary>
+    /// Parses an RKM Deregistration Response message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseDeregistrationResponse(
+        M3uaMessage message,
+        out M3uaDeregistrationResponseMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (!ValidateRoutingKeyManagementType(message, M3uaRoutingKeyManagementMessageType.DeregistrationResponse, out error))
+        {
+            return false;
+        }
+
+        List<M3uaDeregistrationResult> results = new();
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            if (parameter.Tag != M3uaParameterTag.DeregistrationResult)
+            {
+                continue;
+            }
+
+            if (!TryReadDeregistrationResult(parameter.Value, out M3uaDeregistrationResult result, out error))
+            {
+                return false;
+            }
+
+            results.Add(result);
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (results.Count == 0)
+        {
+            error = "Missing Deregistration Result parameter";
+            return false;
+        }
+
+        typedMessage = new(CollectionsMarshal.AsSpan(results));
+        return true;
+    }
+
+    /// <summary>
     /// Parses an ASP State Maintenance message.
     /// </summary>
     /// <param name="message">The decoded M3UA message.</param>
@@ -1141,6 +1533,331 @@ public static class M3uaTypedMessageParser
             return false;
         }
 
+        return true;
+    }
+
+    private static bool ValidateRoutingKeyManagementType(
+        M3uaMessage message,
+        M3uaRoutingKeyManagementMessageType expectedType,
+        out string? error)
+    {
+        error = null;
+        if (message.MessageClass != M3uaMessageClass.RoutingKeyManagement)
+        {
+            error = $"Expected Routing Key Management message class, got {message.MessageClass}";
+            return false;
+        }
+
+        if (message.MessageType != (byte)expectedType)
+        {
+            error = $"Expected Routing Key Management message type {expectedType}, got {message.MessageType}";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool TryReadRoutingKey(
+        ReadOnlySpan<byte> value,
+        out M3uaRoutingKey? routingKey,
+        out string? error)
+    {
+        routingKey = null;
+        error = null;
+        uint? localRoutingKeyIdentifier = null;
+        uint? routingContext = null;
+        M3uaTrafficModeType? trafficModeType = null;
+        List<M3uaAffectedPointCode> destinationPointCodes = new();
+        uint? networkAppearance = null;
+        byte[] serviceIndicators = Array.Empty<byte>();
+        List<M3uaAffectedPointCode> originatingPointCodes = new();
+        bool hasServiceIndicators = false;
+
+        M3uaParameterReader reader = new(value);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.LocalRoutingKeyIdentifier:
+                    if (localRoutingKeyIdentifier.HasValue)
+                    {
+                        error = "Duplicate Local-RK-Identifier parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint localId, out error))
+                    {
+                        return false;
+                    }
+
+                    localRoutingKeyIdentifier = localId;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (routingContext.HasValue)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint context, out error))
+                    {
+                        return false;
+                    }
+
+                    routingContext = context;
+                    break;
+
+                case M3uaParameterTag.TrafficModeType:
+                    if (trafficModeType.HasValue)
+                    {
+                        error = "Duplicate Traffic Mode Type parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint trafficMode, out error))
+                    {
+                        return false;
+                    }
+
+                    if (!Enum.IsDefined(typeof(M3uaTrafficModeType), trafficMode))
+                    {
+                        error = $"Unknown Traffic Mode Type {trafficMode}";
+                        return false;
+                    }
+
+                    trafficModeType = (M3uaTrafficModeType)trafficMode;
+                    break;
+
+                case M3uaParameterTag.DestinationPointCode:
+                    if (!TryReadAffectedPointCodes(parameter.Value, out M3uaAffectedPointCode[] destinationCodes, out error))
+                    {
+                        return false;
+                    }
+
+                    destinationPointCodes.AddRange(destinationCodes);
+                    break;
+
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.ServiceIndicators:
+                    if (hasServiceIndicators)
+                    {
+                        error = "Duplicate Service Indicators parameter";
+                        return false;
+                    }
+
+                    if (parameter.Value.IsEmpty)
+                    {
+                        error = "Service Indicators parameter must not be empty";
+                        return false;
+                    }
+
+                    hasServiceIndicators = true;
+                    serviceIndicators = parameter.Value.ToArray();
+                    break;
+
+                case M3uaParameterTag.OriginatingPointCodeList:
+                    if (!TryReadAffectedPointCodes(parameter.Value, out M3uaAffectedPointCode[] originatingCodes, out error))
+                    {
+                        return false;
+                    }
+
+                    originatingPointCodes.AddRange(originatingCodes);
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!localRoutingKeyIdentifier.HasValue)
+        {
+            error = "Missing Local-RK-Identifier parameter";
+            return false;
+        }
+
+        if (destinationPointCodes.Count == 0)
+        {
+            error = "Missing Destination Point Code parameter";
+            return false;
+        }
+
+        routingKey = new(
+            localRoutingKeyIdentifier.Value,
+            routingContext,
+            trafficModeType,
+            CollectionsMarshal.AsSpan(destinationPointCodes),
+            networkAppearance,
+            serviceIndicators,
+            CollectionsMarshal.AsSpan(originatingPointCodes));
+        return true;
+    }
+
+    private static bool TryReadRegistrationResult(
+        ReadOnlySpan<byte> value,
+        out M3uaRegistrationResult result,
+        out string? error)
+    {
+        result = default;
+        error = null;
+        uint? localRoutingKeyIdentifier = null;
+        M3uaRegistrationStatus? status = null;
+        uint? routingContext = null;
+
+        M3uaParameterReader reader = new(value);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.LocalRoutingKeyIdentifier:
+                    if (localRoutingKeyIdentifier.HasValue)
+                    {
+                        error = "Duplicate Local-RK-Identifier parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint localId, out error))
+                    {
+                        return false;
+                    }
+
+                    localRoutingKeyIdentifier = localId;
+                    break;
+
+                case M3uaParameterTag.RegistrationStatus:
+                    if (status.HasValue)
+                    {
+                        error = "Duplicate Registration Status parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint rawStatus, out error))
+                    {
+                        return false;
+                    }
+
+                    if (!Enum.IsDefined(typeof(M3uaRegistrationStatus), rawStatus))
+                    {
+                        error = $"Unknown Registration Status {rawStatus}";
+                        return false;
+                    }
+
+                    status = (M3uaRegistrationStatus)rawStatus;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (routingContext.HasValue)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint context, out error))
+                    {
+                        return false;
+                    }
+
+                    routingContext = context;
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!localRoutingKeyIdentifier.HasValue || !status.HasValue || !routingContext.HasValue)
+        {
+            error = "Registration Result requires Local-RK-Identifier, Registration Status, and Routing Context";
+            return false;
+        }
+
+        result = new(localRoutingKeyIdentifier.Value, status.Value, routingContext.Value);
+        return true;
+    }
+
+    private static bool TryReadDeregistrationResult(
+        ReadOnlySpan<byte> value,
+        out M3uaDeregistrationResult result,
+        out string? error)
+    {
+        result = default;
+        error = null;
+        uint? routingContext = null;
+        M3uaDeregistrationStatus? status = null;
+
+        M3uaParameterReader reader = new(value);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.RoutingContext:
+                    if (routingContext.HasValue)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint context, out error))
+                    {
+                        return false;
+                    }
+
+                    routingContext = context;
+                    break;
+
+                case M3uaParameterTag.DeregistrationStatus:
+                    if (status.HasValue)
+                    {
+                        error = "Duplicate Deregistration Status parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint rawStatus, out error))
+                    {
+                        return false;
+                    }
+
+                    if (!Enum.IsDefined(typeof(M3uaDeregistrationStatus), rawStatus))
+                    {
+                        error = $"Unknown Deregistration Status {rawStatus}";
+                        return false;
+                    }
+
+                    status = (M3uaDeregistrationStatus)rawStatus;
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!routingContext.HasValue || !status.HasValue)
+        {
+            error = "Deregistration Result requires Routing Context and Deregistration Status";
+            return false;
+        }
+
+        result = new(routingContext.Value, status.Value);
         return true;
     }
 

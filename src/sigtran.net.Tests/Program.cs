@@ -23,6 +23,10 @@ Run("M3UA parses SSNM Destination User Part Unavailable messages", M3uaParsesDes
 Run("M3UA rejects DUPU with non-zero affected point-code mask", M3uaRejectsDupuWithNonZeroMask);
 Run("M3UA parses SSNM Signalling Congestion messages", M3uaParsesSignallingCongestion);
 Run("M3UA rejects SCON without Affected Point Code", M3uaRejectsSconWithoutAffectedPointCode);
+Run("M3UA parses RKM Registration Request messages", M3uaParsesRegistrationRequest);
+Run("M3UA parses RKM Registration Response messages", M3uaParsesRegistrationResponse);
+Run("M3UA parses RKM Deregistration messages", M3uaParsesDeregistrationMessages);
+Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -652,6 +656,130 @@ static void M3uaRejectsSconWithoutAffectedPointCode()
             out string? buildError),
         "SCON without Affected Point Code should be rejected");
     Assert(buildError?.Contains("Affected Point Code", StringComparison.Ordinal) == true, buildError ?? "missing SCON affected point-code error");
+}
+
+static void M3uaParsesRegistrationRequest()
+{
+    Span<byte> buffer = stackalloc byte[128];
+    M3uaRoutingKey[] routingKeys =
+    [
+        new(
+            localRoutingKeyIdentifier: 0x0000002A,
+            routingContext: 0x00000064,
+            trafficModeType: M3uaTrafficModeType.Loadshare,
+            destinationPointCodes: [new M3uaAffectedPointCode(mask: 0, pointCode: 0x00112233)],
+            networkAppearance: 0x00000007,
+            serviceIndicators: [3, 5],
+            originatingPointCodes: [new M3uaAffectedPointCode(mask: 0xFF, pointCode: 0x0000ABCD)])
+    ];
+
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationRequest(buffer, routingKeys, out int written, out string? buildError),
+        buildError ?? "REG REQ build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.RoutingKeyManagement, message.MessageClass, "REG REQ message class");
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.RegistrationRequest, message.MessageType, "REG REQ message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseRegistrationRequest(message, out M3uaRegistrationRequestMessage? typed, out string? parseError),
+        parseError ?? "REG REQ typed parse failed");
+
+    AssertEqual(1, typed!.RoutingKeys.Length, "typed REG REQ Routing Key count");
+    M3uaRoutingKey routingKey = typed.RoutingKeys[0];
+    AssertEqual((uint)0x0000002A, routingKey.LocalRoutingKeyIdentifier, "typed Local-RK-Identifier");
+    AssertEqual((uint?)0x00000064, routingKey.RoutingContext, "typed Routing Context");
+    AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Loadshare, routingKey.TrafficModeType, "typed Traffic Mode");
+    AssertEqual((uint?)0x00000007, routingKey.NetworkAppearance, "typed Network Appearance");
+    AssertEqual(1, routingKey.DestinationPointCodes.Length, "typed DPC count");
+    AssertEqual((uint)0x00112233, routingKey.DestinationPointCodes[0].PointCode, "typed DPC value");
+    AssertSequence([3, 5], routingKey.ServiceIndicators, "typed Service Indicators");
+    AssertEqual(1, routingKey.OriginatingPointCodes.Length, "typed OPC count");
+    AssertEqual((byte)0xFF, routingKey.OriginatingPointCodes[0].Mask, "typed OPC mask");
+    AssertEqual((uint)0x0000ABCD, routingKey.OriginatingPointCodes[0].PointCode, "typed OPC value");
+}
+
+static void M3uaParsesRegistrationResponse()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    M3uaRegistrationResult[] results =
+    [
+        new(0x0000002A, M3uaRegistrationStatus.SuccessfullyRegistered, 0x00000064),
+        new(0x0000002B, M3uaRegistrationStatus.ErrorRoutingKeyAlreadyRegistered, 0)
+    ];
+
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationResponse(buffer, results, out int written, out string? buildError),
+        buildError ?? "REG RSP build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.RoutingKeyManagement, message.MessageClass, "REG RSP message class");
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.RegistrationResponse, message.MessageType, "REG RSP message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseRegistrationResponse(message, out M3uaRegistrationResponseMessage? typed, out string? parseError),
+        parseError ?? "REG RSP typed parse failed");
+
+    AssertEqual(2, typed!.Results.Length, "typed REG RSP result count");
+    AssertEqual((uint)0x0000002A, typed.Results[0].LocalRoutingKeyIdentifier, "first REG RSP Local-RK-Identifier");
+    AssertEqual(M3uaRegistrationStatus.SuccessfullyRegistered, typed.Results[0].Status, "first REG RSP status");
+    AssertEqual((uint)0x00000064, typed.Results[0].RoutingContext, "first REG RSP Routing Context");
+    AssertEqual(M3uaRegistrationStatus.ErrorRoutingKeyAlreadyRegistered, typed.Results[1].Status, "second REG RSP status");
+}
+
+static void M3uaParsesDeregistrationMessages()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    uint[] routingContexts = [0x00000064, 0x00000065];
+
+    Assert(
+        M3uaMessageBuilder.BuildDeregistrationRequest(buffer, routingContexts, out int written, out string? requestBuildError),
+        requestBuildError ?? "DEREG REQ build failed");
+
+    M3uaMessage request = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.RoutingKeyManagement, request.MessageClass, "DEREG REQ message class");
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.DeregistrationRequest, request.MessageType, "DEREG REQ message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseDeregistrationRequest(request, out M3uaDeregistrationRequestMessage? typedRequest, out string? requestParseError),
+        requestParseError ?? "DEREG REQ typed parse failed");
+    AssertSequence([0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x65], UInt32SpanToBytes(typedRequest!.RoutingContexts), "typed DEREG REQ Routing Contexts");
+
+    M3uaDeregistrationResult[] results =
+    [
+        new(0x00000064, M3uaDeregistrationStatus.SuccessfullyDeregistered),
+        new(0x00000065, M3uaDeregistrationStatus.ErrorNotRegistered)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildDeregistrationResponse(buffer, results, out written, out string? responseBuildError),
+        responseBuildError ?? "DEREG RSP build failed");
+
+    M3uaMessage response = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual((byte)M3uaRoutingKeyManagementMessageType.DeregistrationResponse, response.MessageType, "DEREG RSP message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseDeregistrationResponse(response, out M3uaDeregistrationResponseMessage? typedResponse, out string? responseParseError),
+        responseParseError ?? "DEREG RSP typed parse failed");
+    AssertEqual(2, typedResponse!.Results.Length, "typed DEREG RSP result count");
+    AssertEqual(M3uaDeregistrationStatus.SuccessfullyDeregistered, typedResponse.Results[0].Status, "first DEREG RSP status");
+    AssertEqual(M3uaDeregistrationStatus.ErrorNotRegistered, typedResponse.Results[1].Status, "second DEREG RSP status");
+}
+
+static void M3uaRejectsRoutingKeyWithoutDestinationPointCode()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    M3uaRoutingKey[] routingKeys =
+    [
+        new(
+            localRoutingKeyIdentifier: 1,
+            routingContext: null,
+            trafficModeType: null,
+            destinationPointCodes: ReadOnlySpan<M3uaAffectedPointCode>.Empty,
+            networkAppearance: null,
+            serviceIndicators: ReadOnlySpan<byte>.Empty,
+            originatingPointCodes: ReadOnlySpan<M3uaAffectedPointCode>.Empty)
+    ];
+
+    Assert(
+        !M3uaMessageBuilder.BuildRegistrationRequest(buffer, routingKeys, out _, out string? buildError),
+        "Routing Key without Destination Point Code should be rejected");
+    Assert(buildError?.Contains("Destination Point Code", StringComparison.Ordinal) == true, buildError ?? "missing Routing Key DPC error");
 }
 
 static void Run(string name, Action test)

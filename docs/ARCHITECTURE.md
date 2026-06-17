@@ -7,7 +7,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 | Layer | Responsibility | Current maturity |
 | --- | --- | --- |
 | SCTP transport | Association lifecycle, streams, PPID, reconnect, async I/O | Contract only; TCP adapter is development-only |
-| M3UA | MTP3 user adaptation, ASP state, routing context, SSNM, management | Active production path |
+| M3UA | MTP3 user adaptation, ASP state, routing context, SSNM, management, RKM | Active production path |
 | SCCP | Global title and subsystem routing, UDT/XUDT/LUDT | Experimental proof of concept |
 | TCAP | Dialogues, components, transaction IDs, BER encoding | Experimental proof of concept |
 | MAP | SMS operation profiles over TCAP | Experimental proof of concept |
@@ -25,7 +25,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 1. A transport implementation receives an M3UA byte stream from an SCTP association.
 2. `M3uaMessage` validates the common header and exposes the parameter block.
 3. `M3uaParameterReader` walks RFC-style TLV parameters and skips padding.
-4. `M3uaTypedMessageParser` converts generic messages into typed ASPSM, ASPTM, management, and SSNM objects.
+4. `M3uaTypedMessageParser` converts generic messages into typed ASPSM, ASPTM, management, SSNM, and RKM objects.
 5. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
 6. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
 
