@@ -5,6 +5,7 @@
 ## Responsibilities
 
 - Receive one complete M3UA PDU from `ISctpSocket`.
+- Automatically acknowledge inbound Heartbeat messages when requested.
 - Wait for a specific typed message kind across multiple inbound PDUs.
 - Wait for a specific ASP acknowledgement state transition across multiple inbound PDUs.
 - Process inbound packets through `M3uaInboundProcessor`.
@@ -52,6 +53,13 @@ Network Appearance and Routing Context defaults are applied by the configured `M
 ## Receiving
 
 `ReceiveAsync` returns null when the transport reports a clean close by returning zero bytes. Decode, typed parsing, ASP acknowledgement updates, DATA active-state policy, and route resolution are delegated to the inbound processor.
+
+`ReceiveAndAcknowledgeHeartbeatAsync` behaves like `ReceiveAsync`, but if the inbound message is ASPSM Heartbeat it sends Heartbeat Ack with the same Heartbeat Data before returning.
+
+```csharp
+M3uaInboundProcessingResult? result =
+    await session.ReceiveAndAcknowledgeHeartbeatAsync(ct);
+```
 
 `ReceiveUntilAsync` keeps receiving processed messages until a requested `M3uaTypedMessageKind` is accepted or the configured message limit is reached.
 

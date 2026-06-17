@@ -24,6 +24,7 @@ Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposes
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
+Run("M3UA transport session acknowledges inbound Heartbeat", M3uaTransportSessionAcknowledgesInboundHeartbeat);
 Run("M3UA ASP client sends Heartbeat and waits for Ack", M3uaAspClientSendsHeartbeatAndWaitsForAck);
 Run("M3UA ASP client deactivates and stops", M3uaAspClientDeactivatesAndStops);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
@@ -700,6 +701,32 @@ static void M3uaTransportSessionSendsHeartbeat()
         M3uaTypedMessageParser.TryParseAspsm(message, out M3uaAspStateMaintenanceMessage? typed, out string? parseError),
         parseError ?? "Heartbeat parse failed");
     AssertSequence([0x10, 0x20, 0x30], typed!.HeartbeatData.Span, "Heartbeat Data");
+}
+
+static void M3uaTransportSessionAcknowledgesInboundHeartbeat()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    FakeSctpSocket socket = new();
+    byte[] heartbeatData = [0x01, 0x02, 0x03];
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeat(buffer, heartbeatData, out int written, out string? buildError),
+        buildError ?? "Heartbeat build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+    M3uaInboundProcessingResult? result = session.ReceiveAndAcknowledgeHeartbeatAsync().GetAwaiter().GetResult();
+
+    Assert(result is not null, "Heartbeat result should not be null");
+    AssertEqual(M3uaTypedMessageKind.AspStateMaintenance, result!.TypedMessage.Kind, "Heartbeat typed kind");
+    AssertEqual(1, socket.SentPackets.Count, "Heartbeat Ack sent packet count");
+
+    M3uaMessage ack = DecodeMessage(socket.SentPackets[0].Span);
+    AssertEqual(M3uaMessageClass.Aspsm, ack.MessageClass, "Heartbeat Ack class");
+    AssertEqual((byte)M3uaAspsmMessageType.HeartbeatAck, ack.MessageType, "Heartbeat Ack type");
+    Assert(
+        M3uaTypedMessageParser.TryParseAspsm(ack, out M3uaAspStateMaintenanceMessage? typedAck, out string? parseError),
+        parseError ?? "Heartbeat Ack parse failed");
+    AssertSequence(heartbeatData, typedAck!.HeartbeatData.Span, "Heartbeat Ack data");
 }
 
 static void M3uaAspClientSendsHeartbeatAndWaitsForAck()

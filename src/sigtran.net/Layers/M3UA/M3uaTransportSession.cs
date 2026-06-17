@@ -78,6 +78,28 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Receives and processes one complete M3UA PDU, automatically sending Heartbeat Ack for inbound Heartbeat messages.
+    /// </summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound processing result, or null when the remote peer closes cleanly.</returns>
+    public async Task<M3uaInboundProcessingResult?> ReceiveAndAcknowledgeHeartbeatAsync(CancellationToken ct = default)
+    {
+        M3uaInboundProcessingResult? result = await ReceiveAsync(ct).ConfigureAwait(false);
+        if (result?.TypedMessage.Kind != M3uaTypedMessageKind.AspStateMaintenance)
+        {
+            return result;
+        }
+
+        M3uaAspStateMaintenanceMessage aspsm = result.TypedMessage.As<M3uaAspStateMaintenanceMessage>();
+        if (aspsm.MessageType == M3uaAspsmMessageType.Heartbeat)
+        {
+            await SendHeartbeatAckAsync(aspsm.HeartbeatData, ct).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Receives and processes inbound M3UA PDUs until a specific typed message kind is accepted.
     /// </summary>
     /// <param name="expectedKind">The typed message kind to wait for.</param>
