@@ -23,6 +23,15 @@ M3uaInboundProcessingResult heartbeat = await client.SendHeartbeatAsync(
     ct: ct);
 ```
 
+## Shutdown
+
+`DeactivateAsync` sends ASP Inactive and waits for ASP Inactive Ack. `StopAsync` sends ASP Down and waits for ASP Down Ack. Applications can call both for a graceful Active -> Inactive -> Down shutdown, or call `StopAsync` directly when the peer accepts ASP Down from the current state.
+
+```csharp
+await client.DeactivateAsync(ct: ct);
+await client.StopAsync(ct: ct);
+```
+
 ## Example
 
 ```csharp
@@ -55,7 +64,7 @@ M3uaAspStartupResult result = await client.StartAsync(
 | `TrafficModeType` | Optional Traffic Mode Type sent in ASP Active |
 | `AspUpInfoString` | Optional Info String sent in ASP Up |
 | `AspActiveInfoString` | Optional Info String sent in ASP Active |
-| `MaxHandshakeMessages` | Maximum inbound messages inspected while waiting for each acknowledgement |
+| `MaxHandshakeMessages` | Maximum inbound messages inspected while waiting for each startup acknowledgement |
 
 ## Failure Behavior
 
@@ -67,4 +76,4 @@ The client throws when:
 
 ## Current Scope
 
-Only startup is modeled here. Shutdown, reconnect, heartbeat scheduling, and multi-ASP traffic-mode policy belong in later lifecycle work.
+Startup, explicit Heartbeat, ASP Inactive, and ASP Down handshakes are modeled here. Reconnect, heartbeat scheduling, and multi-ASP traffic-mode policy belong in later lifecycle work.

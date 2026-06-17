@@ -134,6 +134,54 @@ public sealed class M3uaAspClient
             ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Sends ASP Inactive and waits for ASP Inactive Ack.
+    /// </summary>
+    /// <param name="infoString">The optional Info String value sent in ASP Inactive.</param>
+    /// <param name="maxHandshakeMessages">The maximum inbound messages to inspect while waiting for ASP Inactive Ack.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound result that accepted the ASP Inactive Ack.</returns>
+    public async Task<M3uaInboundProcessingResult> DeactivateAsync(
+        ReadOnlyMemory<byte> infoString = default,
+        int maxHandshakeMessages = 8,
+        CancellationToken ct = default)
+    {
+        if (maxHandshakeMessages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxHandshakeMessages), "Maximum handshake messages must be positive.");
+        }
+
+        await _session.SendAspInactiveAsync(infoString, ct).ConfigureAwait(false);
+        return await ReceiveUntilTransitionAsync(
+            M3uaAspEvent.AspInactiveAcknowledged,
+            maxHandshakeMessages,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sends ASP Down and waits for ASP Down Ack.
+    /// </summary>
+    /// <param name="infoString">The optional Info String value sent in ASP Down.</param>
+    /// <param name="maxHandshakeMessages">The maximum inbound messages to inspect while waiting for ASP Down Ack.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The inbound result that accepted the ASP Down Ack.</returns>
+    public async Task<M3uaInboundProcessingResult> StopAsync(
+        ReadOnlyMemory<byte> infoString = default,
+        int maxHandshakeMessages = 8,
+        CancellationToken ct = default)
+    {
+        if (maxHandshakeMessages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxHandshakeMessages), "Maximum handshake messages must be positive.");
+        }
+
+        await _session.SendAspDownAsync(infoString, ct).ConfigureAwait(false);
+        return await ReceiveUntilTransitionAsync(
+            M3uaAspEvent.AspDownAcknowledged,
+            maxHandshakeMessages,
+            ct).ConfigureAwait(false);
+    }
+
     private async Task<M3uaInboundProcessingResult> ReceiveUntilTransitionAsync(
         M3uaAspEvent expectedEvent,
         int maxMessages,

@@ -23,6 +23,7 @@ Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartup
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
 Run("M3UA ASP client sends Heartbeat and waits for Ack", M3uaAspClientSendsHeartbeatAndWaitsForAck);
+Run("M3UA ASP client deactivates and stops", M3uaAspClientDeactivatesAndStops);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -649,6 +650,39 @@ static void M3uaAspClientSendsHeartbeatAndWaitsForAck()
     AssertEqual(1, socket.SentPackets.Count, "Heartbeat client sent packet count");
     M3uaMessage sent = DecodeMessage(socket.SentPackets[0].Span);
     AssertEqual((byte)M3uaAspsmMessageType.Heartbeat, sent.MessageType, "Heartbeat client sent type");
+}
+
+static void M3uaAspClientDeactivatesAndStops()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    FakeSctpSocket socket = new();
+
+    Assert(
+        M3uaMessageBuilder.BuildAspInactiveAck(buffer, [100], ReadOnlySpan<byte>.Empty, out int written, out string? inactiveAckError),
+        inactiveAckError ?? "ASP Inactive Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    Assert(
+        M3uaMessageBuilder.BuildAspDownAck(buffer, ReadOnlySpan<byte>.Empty, out written, out string? downAckError),
+        downAckError ?? "ASP Down Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaAspSession aspSession = new(M3uaAspState.Active);
+    M3uaInboundProcessor inbound = new(aspSession);
+    M3uaOutboundProcessor outbound = new(aspSession, routingContext: 100);
+    using M3uaTransportSession transport = new(socket, inbound, outbound, leaveOpen: true);
+    M3uaAspClient client = new(transport);
+
+    M3uaInboundProcessingResult inactive = client.DeactivateAsync().GetAwaiter().GetResult();
+    M3uaInboundProcessingResult down = client.StopAsync().GetAwaiter().GetResult();
+
+    AssertEqual(M3uaAspEvent.AspInactiveAcknowledged, inactive.StateTransition!.Value.Event, "ASP Inactive event");
+    AssertEqual(M3uaAspState.Inactive, inactive.StateTransition.Value.To, "ASP Inactive final state");
+    AssertEqual(M3uaAspEvent.AspDownAcknowledged, down.StateTransition!.Value.Event, "ASP Down event");
+    AssertEqual(M3uaAspState.Down, aspSession.State, "ASP shutdown final state");
+    AssertEqual(2, socket.SentPackets.Count, "ASP shutdown sent packet count");
+    AssertEqual((byte)M3uaAsptmMessageType.AspInactive, DecodeMessage(socket.SentPackets[0].Span).MessageType, "ASP shutdown first sent type");
+    AssertEqual((byte)M3uaAspsmMessageType.AspDown, DecodeMessage(socket.SentPackets[1].Span).MessageType, "ASP shutdown second sent type");
 }
 
 static void M3uaParameterReaderSkipsPadding()
