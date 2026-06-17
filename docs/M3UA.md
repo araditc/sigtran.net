@@ -58,6 +58,8 @@ For application code that handles multiple M3UA message families, `M3uaTypedMess
 
 Common framing also exposes `M3uaMessage.HasParameter(tag)` and `M3uaMessage.TryGetParameter(tag, out value, out error)` for callers that need raw TLV checks before or outside typed parsing. `TryGetProtocolData` is a convenience wrapper over the same lookup path.
 
+`M3uaParameterReader.TryCount(parameters, out count, out error)` counts a raw parameter block with the same validation rules used by the streaming reader.
+
 `M3uaInboundProcessor` combines decode, typed dispatch, optional ASP active-state enforcement for DATA, route resolution, and ASP acknowledgement state updates behind one processing call.
 
 `M3uaOutboundProcessor` provides state-aware outbound builders for ASP lifecycle messages and DATA, including configured Network Appearance and Routing Context defaults.

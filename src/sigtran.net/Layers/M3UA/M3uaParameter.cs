@@ -131,6 +131,25 @@ public ref struct M3uaParameterReader
         error = $"M3UA parameter {tag} not found";
         return false;
     }
+
+    /// <summary>
+    /// Counts the TLV parameters in an encoded M3UA parameter block.
+    /// </summary>
+    /// <param name="parameters">The encoded parameter block.</param>
+    /// <param name="count">The decoded parameter count on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if all parameters were counted; otherwise false.</returns>
+    public static bool TryCount(ReadOnlySpan<byte> parameters, out int count, out string? error)
+    {
+        count = 0;
+        M3uaParameterReader reader = new(parameters);
+        while (reader.TryRead(out _, out error))
+        {
+            count++;
+        }
+
+        return error is null;
+    }
 }
 
 /// <summary>

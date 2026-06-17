@@ -1089,6 +1089,14 @@ static void M3uaParameterReaderSkipsPadding()
         M3uaParameterReader.TryFind(parameters, M3uaParameterTag.RoutingContext, out ReadOnlySpan<byte> found, out string? findError),
         findError ?? "routing context not found");
     AssertSequence(routingContext, found, "found routing context");
+    Assert(M3uaParameterReader.TryCount(parameters, out int count, out string? countError), countError ?? "parameter count failed");
+    AssertEqual(2, count, "parameter count");
+
+    Span<byte> malformed = stackalloc byte[4];
+    malformed[1] = (byte)M3uaParameterTag.InfoString;
+    malformed[3] = 8;
+    Assert(!M3uaParameterReader.TryCount(malformed, out _, out string? malformedCountError), "malformed count should fail");
+    Assert(malformedCountError?.Contains("exceeds remaining buffer", StringComparison.Ordinal) == true, malformedCountError ?? "missing malformed count error");
 }
 
 static void M3uaBuildsAspUp()
