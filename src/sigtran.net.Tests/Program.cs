@@ -45,6 +45,7 @@ Run("M3UA rejects SSNM messages without Affected Point Code", M3uaRejectsSsnmWit
 Run("M3UA parses SSNM Destination User Part Unavailable messages", M3uaParsesDestinationUserPartUnavailable);
 Run("M3UA rejects DUPU with non-zero affected point-code mask", M3uaRejectsDupuWithNonZeroMask);
 Run("M3UA parses SSNM Signalling Congestion messages", M3uaParsesSignallingCongestion);
+Run("M3UA transport session sends SSNM messages", M3uaTransportSessionSendsSsnmMessages);
 Run("M3UA rejects SCON without Affected Point Code", M3uaRejectsSconWithoutAffectedPointCode);
 Run("M3UA parses RKM Registration Request messages", M3uaParsesRegistrationRequest);
 Run("M3UA parses RKM Registration Response messages", M3uaParsesRegistrationResponse);
@@ -1282,6 +1283,53 @@ static void M3uaParsesSignallingCongestion()
     AssertSequence(info, typed.InfoString.Span, "typed SCON Info String");
 }
 
+static void M3uaTransportSessionSendsSsnmMessages()
+{
+    FakeSctpSocket socket = new();
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+    uint[] routingContexts = [0x00000055];
+    M3uaAffectedPointCode[] affectedPointCodes = [new(mask: 0, pointCode: 0x00112233)];
+
+    session.SendDestinationUnavailableAsync(0x00000007, routingContexts, affectedPointCodes, new byte[] { 0x64, 0x75 }).GetAwaiter().GetResult();
+    session.SendDestinationAvailableAsync(0x00000007, routingContexts, affectedPointCodes, ReadOnlyMemory<byte>.Empty).GetAwaiter().GetResult();
+    session.SendDestinationStateAuditAsync(null, ReadOnlyMemory<uint>.Empty, affectedPointCodes, ReadOnlyMemory<byte>.Empty).GetAwaiter().GetResult();
+    session.SendDestinationRestrictedAsync(null, ReadOnlyMemory<uint>.Empty, affectedPointCodes, ReadOnlyMemory<byte>.Empty).GetAwaiter().GetResult();
+    session.SendDestinationUserPartUnavailableAsync(
+        0x00000007,
+        routingContexts,
+        new M3uaAffectedPointCode(mask: 0, pointCode: 0x00012345),
+        M3uaUserPartUnavailableCause.InaccessibleRemoteUser,
+        M3uaMtp3UserIdentity.Sccp,
+        new byte[] { 0x64, 0x75, 0x70, 0x75 }).GetAwaiter().GetResult();
+    session.SendSignallingCongestionAsync(
+        0x00000007,
+        routingContexts,
+        affectedPointCodes,
+        concernedDestination: new M3uaAffectedPointCode(mask: 0, pointCode: 0x0000AAAA),
+        congestionLevel: 2,
+        infoString: new byte[] { 0x73, 0x63, 0x6F, 0x6E }).GetAwaiter().GetResult();
+
+    AssertEqual(6, socket.SentPackets.Count, "SSNM sent packet count");
+    AssertCommonSsnmPacket(socket.SentPackets[0].Span, M3uaSsnmMessageType.DestinationUnavailable, "sent DUNA");
+    AssertCommonSsnmPacket(socket.SentPackets[1].Span, M3uaSsnmMessageType.DestinationAvailable, "sent DAVA");
+    AssertCommonSsnmPacket(socket.SentPackets[2].Span, M3uaSsnmMessageType.DestinationStateAudit, "sent DAUD");
+    AssertCommonSsnmPacket(socket.SentPackets[3].Span, M3uaSsnmMessageType.DestinationRestricted, "sent DRST");
+
+    M3uaMessage dupuMessage = DecodeMessage(socket.SentPackets[4].Span);
+    Assert(
+        M3uaTypedMessageParser.TryParseDestinationUserPartUnavailable(dupuMessage, out M3uaDestinationUserPartUnavailableMessage? dupu, out string? dupuError),
+        dupuError ?? "sent DUPU parse failed");
+    AssertEqual(M3uaUserPartUnavailableCause.InaccessibleRemoteUser, dupu!.Cause, "sent DUPU cause");
+    AssertEqual(M3uaMtp3UserIdentity.Sccp, dupu.UserIdentity, "sent DUPU user");
+
+    M3uaMessage sconMessage = DecodeMessage(socket.SentPackets[5].Span);
+    Assert(
+        M3uaTypedMessageParser.TryParseSignallingCongestion(sconMessage, out M3uaSignallingCongestionMessage? scon, out string? sconError),
+        sconError ?? "sent SCON parse failed");
+    AssertEqual((uint?)2, scon!.CongestionLevel, "sent SCON congestion level");
+    AssertEqual((uint)0x0000AAAA, scon.ConcernedDestination!.Value.PointCode, "sent SCON concerned destination");
+}
+
 static void M3uaRejectsSconWithoutAffectedPointCode()
 {
     Span<byte> buffer = stackalloc byte[64];
@@ -1510,6 +1558,18 @@ static void AssertSequence(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> actua
     {
         throw new InvalidOperationException($"{label}: expected {Convert.ToHexString(expected)}, got {Convert.ToHexString(actual)}");
     }
+}
+
+static void AssertCommonSsnmPacket(ReadOnlySpan<byte> packet, M3uaSsnmMessageType expectedType, string label)
+{
+    M3uaMessage message = DecodeMessage(packet);
+    AssertEqual(M3uaMessageClass.Ssnm, message.MessageClass, $"{label} class");
+    AssertEqual((byte)expectedType, message.MessageType, $"{label} type");
+    Assert(
+        M3uaTypedMessageParser.TryParseSsnm(message, out M3uaSsnmMessage? typed, out string? parseError),
+        parseError ?? $"{label} parse failed");
+    AssertEqual(expectedType, typed!.MessageType, $"{label} typed type");
+    AssertEqual(1, typed.AffectedPointCodes.Length, $"{label} affected point-code count");
 }
 
 static TException AssertThrows<TException>(Action action)

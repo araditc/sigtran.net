@@ -243,6 +243,186 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     }
 
     /// <summary>
+    /// Builds and sends a Destination Unavailable SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDestinationUnavailableAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDestinationUnavailable(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCodes.Span,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Destination Available SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDestinationAvailableAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDestinationAvailable(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCodes.Span,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Destination State Audit SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDestinationStateAuditAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDestinationStateAudit(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCodes.Span,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Destination Restricted SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDestinationRestrictedAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDestinationRestricted(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCodes.Span,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Signalling Congestion SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="concernedDestination">The optional concerned destination point code.</param>
+    /// <param name="congestionLevel">The optional Congestion Indications level.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendSignallingCongestionAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        ReadOnlyMemory<M3uaAffectedPointCode> affectedPointCodes,
+        M3uaAffectedPointCode? concernedDestination,
+        uint? congestionLevel,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildSignallingCongestion(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCodes.Span,
+                concernedDestination,
+                congestionLevel,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
+    /// Builds and sends a Destination User Part Unavailable SSNM message.
+    /// </summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCode">The affected point-code entry. The mask must be zero.</param>
+    /// <param name="cause">The unavailability cause.</param>
+    /// <param name="userIdentity">The unavailable MTP3-user identity.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendDestinationUserPartUnavailableAsync(
+        uint? networkAppearance,
+        ReadOnlyMemory<uint> routingContexts,
+        M3uaAffectedPointCode affectedPointCode,
+        M3uaUserPartUnavailableCause cause,
+        M3uaMtp3UserIdentity userIdentity,
+        ReadOnlyMemory<byte> infoString,
+        CancellationToken ct = default)
+    {
+        return BuildAndSendAsync(
+            (Span<byte> buffer, out int written, out string? error) => OutboundProcessor.TryBuildDestinationUserPartUnavailable(
+                buffer,
+                networkAppearance,
+                routingContexts.Span,
+                affectedPointCode,
+                cause,
+                userIdentity,
+                infoString.Span,
+                out written,
+                out error),
+            ct);
+    }
+
+    /// <summary>
     /// Builds and sends a Payload Data message.
     /// </summary>
     /// <param name="userPayload">The MTP3-user payload.</param>

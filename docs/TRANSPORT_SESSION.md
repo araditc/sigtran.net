@@ -10,6 +10,7 @@
 - Send Heartbeat and Heartbeat Ack messages.
 - Send RKM Registration and Deregistration Request messages.
 - Send Management Error and Notify messages.
+- Send SSNM DUNA, DAVA, DAUD, DRST, DUPU, and SCON messages.
 - Send encoded packets through `ISctpSocket`.
 - Manage rented buffers with `ArrayPool<byte>`.
 

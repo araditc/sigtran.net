@@ -227,6 +227,152 @@ public sealed class M3uaOutboundProcessor
     }
 
     /// <summary>
+    /// Builds a Destination Unavailable SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDestinationUnavailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDestinationUnavailable(buffer, networkAppearance, routingContexts, affectedPointCodes, infoString, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination Available SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDestinationAvailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDestinationAvailable(buffer, networkAppearance, routingContexts, affectedPointCodes, infoString, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination State Audit SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDestinationStateAudit(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDestinationStateAudit(buffer, networkAppearance, routingContexts, affectedPointCodes, infoString, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination Restricted SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDestinationRestricted(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDestinationRestricted(buffer, networkAppearance, routingContexts, affectedPointCodes, infoString, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Signalling Congestion SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="concernedDestination">The optional concerned destination point code.</param>
+    /// <param name="congestionLevel">The optional Congestion Indications level.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildSignallingCongestion(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        M3uaAffectedPointCode? concernedDestination,
+        uint? congestionLevel,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildSignallingCongestion(buffer, networkAppearance, routingContexts, affectedPointCodes, concernedDestination, congestionLevel, infoString, out written, out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination User Part Unavailable SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCode">The affected point-code entry. The mask must be zero.</param>
+    /// <param name="cause">The unavailability cause.</param>
+    /// <param name="userIdentity">The unavailable MTP3-user identity.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildDestinationUserPartUnavailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        M3uaAffectedPointCode affectedPointCode,
+        M3uaUserPartUnavailableCause cause,
+        M3uaMtp3UserIdentity userIdentity,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return M3uaMessageBuilder.BuildDestinationUserPartUnavailable(buffer, networkAppearance, routingContexts, affectedPointCode, cause, userIdentity, infoString, out written, out error);
+    }
+
+    /// <summary>
     /// Builds a Payload Data message using configured defaults unless explicit values are supplied.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>

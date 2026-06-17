@@ -9,6 +9,7 @@
 - Build Heartbeat and Heartbeat Ack messages.
 - Build RKM Registration and Deregistration Request messages.
 - Build Management Error and Notify messages.
+- Build SSNM DUNA, DAVA, DAUD, DRST, DUPU, and SCON messages.
 - Build DATA using configured default Network Appearance and Routing Context.
 - Optionally reject DATA while the associated ASP session is not `Active`.
 

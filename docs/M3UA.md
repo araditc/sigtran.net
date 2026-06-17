@@ -10,8 +10,8 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 | ASPSM | ASP Up, ASP Down, BEAT, ASP Up Ack, ASP Down Ack, BEAT Ack |
 | ASPTM | ASP Active, ASP Inactive, ASP Active Ack, ASP Inactive Ack |
 | Management | Error, Notify with builders, parsers, and transport send helpers |
-| SSNM common | DUNA, DAVA, DAUD, DRST |
-| SSNM specialized | DUPU, SCON |
+| SSNM common | DUNA, DAVA, DAUD, DRST with builders, parsers, and transport send helpers |
+| SSNM specialized | DUPU, SCON with builders, parsers, and transport send helpers |
 | RKM | REG REQ, REG RSP, DEREG REQ, DEREG RSP |
 
 ## Builder Pattern
@@ -83,6 +83,8 @@ The original `BuildPayloadData` overload remains available for simple DATA messa
 ## SSNM Notes
 
 Common SSNM messages require at least one Affected Point Code. DUPU is modeled separately because it requires exactly one Affected Point Code with mask zero and a mandatory User/Cause parameter. SCON is modeled separately because it can include Concerned Destination and Congestion Indications.
+
+`M3uaTransportSession` can send common SSNM messages, DUPU, and SCON through dedicated methods.
 
 ## Management Notes
 
