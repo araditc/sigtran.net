@@ -7,6 +7,9 @@ Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
 Run("M3UA builds ASP Active with Traffic Mode and Routing Context", M3uaBuildsAspActive);
 Run("M3UA builds ASP Inactive Ack with Routing Context", M3uaBuildsAspInactiveAck);
+Run("M3UA parses ASP Up into a typed ASPSM message", M3uaParsesAspUp);
+Run("M3UA parses ASP Active into a typed ASPTM message", M3uaParsesAspActive);
+Run("M3UA rejects malformed typed Routing Context", M3uaRejectsMalformedTypedRoutingContext);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -194,6 +197,73 @@ static void M3uaBuildsAspInactiveAck()
     AssertSequence([0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x0A], buffer.Slice(12, 8), "Routing Context values");
 }
 
+static void M3uaParsesAspUp()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    byte[] info = [0x61, 0x73, 0x70];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUp(buffer, 0x0000002A, info, out int written, out string? buildError),
+        buildError ?? "ASP Up build failed");
+
+    M3uaMessage message = new();
+    Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "ASP Up decode failed");
+    Assert(
+        M3uaTypedMessageParser.TryParseAspsm(message, out M3uaAspStateMaintenanceMessage? typed, out string? parseError),
+        parseError ?? "ASP Up typed parse failed");
+
+    AssertEqual(M3uaAspsmMessageType.AspUp, typed!.MessageType, "typed ASPSM type");
+    AssertEqual((uint?)0x0000002A, typed.AspIdentifier, "typed ASP Identifier");
+    AssertSequence(info, typed.InfoString.Span, "typed Info String");
+    AssertEqual(0, typed.HeartbeatData.Length, "typed Heartbeat Data length");
+}
+
+static void M3uaParsesAspActive()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    uint[] routingContexts = [7, 8];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActive(buffer, M3uaTrafficModeType.Override, routingContexts, ReadOnlySpan<byte>.Empty, out int written, out string? buildError),
+        buildError ?? "ASP Active build failed");
+
+    M3uaMessage message = new();
+    Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "ASP Active decode failed");
+    Assert(
+        M3uaTypedMessageParser.TryParseAsptm(message, out M3uaAspTrafficMaintenanceMessage? typed, out string? parseError),
+        parseError ?? "ASP Active typed parse failed");
+
+    AssertEqual(M3uaAsptmMessageType.AspActive, typed!.MessageType, "typed ASPTM type");
+    AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Override, typed.TrafficModeType, "typed Traffic Mode");
+    AssertSequence([0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x08], UInt32SpanToBytes(typed.RoutingContexts), "typed Routing Contexts");
+}
+
+static void M3uaRejectsMalformedTypedRoutingContext()
+{
+    Span<byte> buffer = stackalloc byte[32];
+    byte[] malformedRoutingContext = [0x00, 0x00, 0x00];
+
+    buffer[0] = 1;
+    buffer[1] = 0;
+    buffer[2] = (byte)M3uaMessageClass.Asptm;
+    buffer[3] = (byte)M3uaAsptmMessageType.AspActive;
+    buffer[4] = 0;
+    buffer[5] = 0;
+    buffer[6] = 0;
+    buffer[7] = 16;
+    Assert(
+        M3uaParameterWriter.TryWrite(buffer.Slice(8), M3uaParameterTag.RoutingContext, malformedRoutingContext, out int parameterWritten, out string? writeError),
+        writeError ?? "malformed parameter write failed");
+    AssertEqual(8, parameterWritten, "malformed parameter padded length");
+
+    M3uaMessage message = new();
+    Assert(message.TryDecode(buffer.Slice(0, 16), out string? decodeError), decodeError ?? "malformed message decode failed");
+    Assert(
+        !M3uaTypedMessageParser.TryParseAsptm(message, out _, out string? parseError),
+        "malformed Routing Context should be rejected");
+    Assert(parseError?.Contains("non-empty multiple of 4 bytes", StringComparison.Ordinal) == true, parseError ?? "missing parse error");
+}
+
 static void Run(string name, Action test)
 {
     try
@@ -230,4 +300,18 @@ static void AssertSequence(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> actua
     {
         throw new InvalidOperationException($"{label}: expected {Convert.ToHexString(expected)}, got {Convert.ToHexString(actual)}");
     }
+}
+
+static byte[] UInt32SpanToBytes(ReadOnlySpan<uint> values)
+{
+    byte[] bytes = new byte[values.Length * sizeof(uint)];
+    for (int i = 0; i < values.Length; i++)
+    {
+        bytes[i * sizeof(uint)] = (byte)((values[i] >> 24) & 0xFF);
+        bytes[(i * sizeof(uint)) + 1] = (byte)((values[i] >> 16) & 0xFF);
+        bytes[(i * sizeof(uint)) + 2] = (byte)((values[i] >> 8) & 0xFF);
+        bytes[(i * sizeof(uint)) + 3] = (byte)(values[i] & 0xFF);
+    }
+
+    return bytes;
 }
