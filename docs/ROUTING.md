@@ -1,0 +1,59 @@
+# M3UA Payload Routing
+
+`M3uaPayloadRouteTable` maps typed DATA messages to application routes. This keeps route selection in the SDK instead of duplicating selector logic in every application.
+
+## Route Selectors
+
+`M3uaPayloadRoute` supports these selectors:
+
+| Selector | Source field |
+| --- | --- |
+| Network Appearance | `M3uaPayloadDataMessage.NetworkAppearance` |
+| Routing Context | `M3uaPayloadDataMessage.RoutingContext` |
+| Destination Point Code | `M3uaPayloadDataMessage.DestinationPointCode` |
+| Service Indicator | `M3uaPayloadDataMessage.ServiceIndicator` |
+
+Any selector can be omitted. Omitted selectors act as wildcards.
+
+## Resolution
+
+The route table finds all matching routes and selects the most specific route. Specificity is the number of concrete selectors on the route.
+
+If two or more matching routes have the same best specificity, resolution fails with an ambiguity error. This is intentional: production systems should not silently route SS7 traffic to a random handler.
+
+## Example
+
+```csharp
+M3uaPayloadRouteTable routes = new();
+
+routes.TryAdd(
+    new M3uaPayloadRoute(
+        name: "sccp-default",
+        networkAppearance: null,
+        routingContext: 100,
+        destinationPointCode: null,
+        serviceIndicator: 3),
+    out string? error);
+
+routes.TryAdd(
+    new M3uaPayloadRoute(
+        name: "map-home",
+        networkAppearance: 7,
+        routingContext: 100,
+        destinationPointCode: 0x00040506,
+        serviceIndicator: 3),
+    out error);
+
+if (!routes.TryResolve(data, out M3uaPayloadRoute? route, out error))
+{
+    throw new InvalidOperationException(error);
+}
+```
+
+## Duplicate Protection
+
+`TryAdd` rejects a route when an existing route has the exact same selectors. Route names can differ, but selector duplicates are not allowed because they make traffic ownership unclear.
+
+## Current Scope
+
+This table resolves already-decoded DATA messages. It does not yet enforce ASP active state, traffic mode policy, or multi-ASP load-sharing decisions. Those belong in a later Application Server model.

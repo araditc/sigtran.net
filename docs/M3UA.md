@@ -60,6 +60,8 @@ DATA messages are modeled with a typed parser so callers can access Network Appe
 
 The original `BuildPayloadData` overload remains available for simple DATA messages. A newer overload adds Network Appearance, Routing Context, and Correlation Id while preserving the same Protocol Data byte layout.
 
+`M3uaPayloadRouteTable` can resolve parsed DATA messages to application routes by Network Appearance, Routing Context, Destination Point Code, and Service Indicator. The table chooses the most specific matching route and rejects ambiguous equal-specificity matches.
+
 ## ASP State
 
 `M3uaAspStateMachine` models the local ASP lifecycle:

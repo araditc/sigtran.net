@@ -6,6 +6,9 @@ Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFie
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
 Run("M3UA dispatches known typed messages", M3uaDispatchesKnownTypedMessages);
 Run("M3UA dispatcher rejects unsupported message types", M3uaDispatcherRejectsUnsupportedMessageTypes);
+Run("M3UA route table resolves the most specific DATA route", M3uaRouteTableResolvesMostSpecificDataRoute);
+Run("M3UA route table rejects ambiguous DATA routes", M3uaRouteTableRejectsAmbiguousDataRoutes);
+Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplicateSelectors);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -236,6 +239,61 @@ static void M3uaDispatcherRejectsUnsupportedMessageTypes()
         !M3uaTypedMessageParser.TryParseKnown(message, out _, out string? parseError),
         "unsupported Management type should be rejected");
     Assert(parseError?.Contains("Unsupported Management message type", StringComparison.Ordinal) == true, parseError ?? "missing dispatcher parse error");
+}
+
+static void M3uaRouteTableResolvesMostSpecificDataRoute()
+{
+    M3uaPayloadRouteTable table = new();
+    Assert(table.TryAdd(new M3uaPayloadRoute("sccp-default", null, routingContext: 100, null, serviceIndicator: 3), out string? addDefaultError), addDefaultError ?? "default route add failed");
+    Assert(table.TryAdd(new M3uaPayloadRoute("map-home", networkAppearance: 7, routingContext: 100, destinationPointCode: 0x00040506, serviceIndicator: 3), out string? addSpecificError), addSpecificError ?? "specific route add failed");
+
+    M3uaPayloadDataMessage message = new(
+        networkAppearance: 7,
+        routingContext: 100,
+        originatingPointCode: 0x00010203,
+        destinationPointCode: 0x00040506,
+        serviceIndicator: 3,
+        networkIndicator: 2,
+        messagePriority: 0,
+        signallingLinkSelection: 7,
+        userPayload: [0x01, 0x02],
+        correlationId: null);
+
+    Assert(table.TryResolve(message, out M3uaPayloadRoute? route, out string? resolveError), resolveError ?? "route resolve failed");
+    AssertEqual("map-home", route!.Name, "resolved route name");
+}
+
+static void M3uaRouteTableRejectsAmbiguousDataRoutes()
+{
+    M3uaPayloadRouteTable table = new();
+    Assert(table.TryAdd(new M3uaPayloadRoute("by-rc", null, routingContext: 100, null, null), out string? addRcError), addRcError ?? "RC route add failed");
+    Assert(table.TryAdd(new M3uaPayloadRoute("by-dpc", null, routingContext: null, destinationPointCode: 0x00040506, null), out string? addDpcError), addDpcError ?? "DPC route add failed");
+
+    M3uaPayloadDataMessage message = new(
+        networkAppearance: null,
+        routingContext: 100,
+        originatingPointCode: 1,
+        destinationPointCode: 0x00040506,
+        serviceIndicator: 3,
+        networkIndicator: 2,
+        messagePriority: 0,
+        signallingLinkSelection: 7,
+        userPayload: ReadOnlySpan<byte>.Empty,
+        correlationId: null);
+
+    Assert(!table.TryResolve(message, out _, out string? resolveError), "ambiguous routes should be rejected");
+    Assert(resolveError?.Contains("same specificity", StringComparison.Ordinal) == true, resolveError ?? "missing ambiguity error");
+}
+
+static void M3uaRouteTableRejectsDuplicateSelectors()
+{
+    M3uaPayloadRouteTable table = new();
+    M3uaPayloadRoute first = new("first", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute second = new("second", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+
+    Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
+    Assert(!table.TryAdd(second, out string? secondError), "duplicate selectors should be rejected");
+    Assert(secondError?.Contains("same selectors", StringComparison.Ordinal) == true, secondError ?? "missing duplicate route error");
 }
 
 static void M3uaParameterReaderSkipsPadding()
