@@ -6,7 +6,7 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 
 | Family | Message types |
 | --- | --- |
-| Transfer | DATA |
+| Transfer | DATA with optional Network Appearance, Routing Context, and Correlation Id |
 | ASPSM | ASP Up, ASP Down, BEAT, ASP Up Ack, ASP Down Ack, BEAT Ack |
 | ASPTM | ASP Active, ASP Inactive, ASP Active Ack, ASP Inactive Ack |
 | Management | Error, Notify |
@@ -51,6 +51,12 @@ if (!M3uaTypedMessageParser.TryParseAsptm(
     throw new InvalidOperationException(error);
 }
 ```
+
+## Transfer Notes
+
+DATA messages are modeled with a typed parser so callers can access Network Appearance, Routing Context, OPC, DPC, SI, NI, MP, SLS, user payload, and Correlation Id without manually decoding the Protocol Data parameter.
+
+The original `BuildPayloadData` overload remains available for simple DATA messages. A newer overload adds Network Appearance, Routing Context, and Correlation Id while preserving the same Protocol Data byte layout.
 
 ## ASP State
 

@@ -33,54 +33,102 @@ public static class M3uaMessageBuilder
         out int written,
         out string? error)
     {
-        written = 0;
-        error = null;
+        return BuildPayloadData(
+            buffer,
+            userPayload,
+            opc,
+            dpc,
+            si,
+            ni,
+            mp,
+            sls,
+            networkAppearance: null,
+            routingContext: null,
+            correlationId: null,
+            out written,
+            out error);
+    }
 
+    /// <summary>
+    /// Constructs a Payload Data message with optional DATA parameters into the provided buffer.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="userPayload">The user payload, usually SCCP or another MTP3-user payload.</param>
+    /// <param name="opc">Originating Point Code.</param>
+    /// <param name="dpc">Destination Point Code.</param>
+    /// <param name="si">Service Indicator, e.g. 3 for SCCP.</param>
+    /// <param name="ni">Network Indicator.</param>
+    /// <param name="mp">Message Priority.</param>
+    /// <param name="sls">Signalling Link Selection.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContext">The optional Routing Context value.</param>
+    /// <param name="correlationId">The optional Correlation Id value.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildPayloadData(
+        Span<byte> buffer,
+        ReadOnlySpan<byte> userPayload,
+        uint opc,
+        uint dpc,
+        byte si,
+        byte ni,
+        byte mp,
+        byte sls,
+        uint? networkAppearance,
+        uint? routingContext,
+        uint? correlationId,
+        out int written,
+        out string? error)
+    {
         int protocolDataValueLength = 12 + userPayload.Length;
-        int protocolDataParameterLength = M3uaParameterWriter.GetPaddedLength(protocolDataValueLength);
-        int total = M3uaProtocol.HeaderLength + protocolDataParameterLength;
-
-        if (buffer.Length < total)
+        int parameterLength = (networkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + (routingContext.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + M3uaParameterWriter.GetPaddedLength(protocolDataValueLength)
+                              + (correlationId.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Transfer, (byte)M3uaTransferMessageType.PayloadData, parameterLength, out written, out error))
         {
-            error = $"Insufficient buffer size: need {total}, have {buffer.Length}";
             return false;
         }
 
-        buffer[0] = M3uaProtocol.Version;
-        buffer[1] = 0;
-        buffer[2] = (byte)M3uaMessageClass.Transfer;
-        buffer[3] = (byte)M3uaTransferMessageType.PayloadData;
-        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(4, 4), (uint)total);
+        int offset = M3uaProtocol.HeaderLength;
+        if (networkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.NetworkAppearance, networkAppearance.Value, out int networkAppearanceWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
 
-        Span<byte> protocolDataParameter = buffer.Slice(M3uaProtocol.HeaderLength, protocolDataParameterLength);
-        if (!M3uaParameterWriter.TryWriteHeader(
-                protocolDataParameter,
-                M3uaParameterTag.ProtocolData,
-                protocolDataValueLength,
-                out int parameterWritten,
-                out error))
+            offset += networkAppearanceWritten;
+        }
+
+        if (routingContext.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.RoutingContext, routingContext.Value, out int routingContextWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += routingContextWritten;
+        }
+
+        if (!TryWriteProtocolDataParameter(buffer, userPayload, opc, dpc, si, ni, mp, sls, ref offset, out error))
         {
             written = 0;
             return false;
         }
 
-        if (parameterWritten != protocolDataParameterLength)
+        if (correlationId.HasValue)
         {
-            written = 0;
-            error = $"Unexpected Protocol Data parameter length {parameterWritten}";
-            return false;
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.CorrelationId, correlationId.Value, out _, out error))
+            {
+                written = 0;
+                return false;
+            }
         }
 
-        Span<byte> protocolData = protocolDataParameter.Slice(M3uaProtocol.ParameterHeaderLength, protocolDataValueLength);
-        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(0, 4), opc);
-        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(4, 4), dpc);
-        protocolData[8] = si;
-        protocolData[9] = ni;
-        protocolData[10] = mp;
-        protocolData[11] = sls;
-        userPayload.CopyTo(protocolData.Slice(12));
-
-        written = total;
         return true;
     }
 
@@ -975,6 +1023,37 @@ public static class M3uaMessageBuilder
 
         int offset = M3uaProtocol.HeaderLength;
         return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.HeartbeatData, heartbeatData, ref offset, out error);
+    }
+
+    private static bool TryWriteProtocolDataParameter(
+        Span<byte> buffer,
+        ReadOnlySpan<byte> userPayload,
+        uint opc,
+        uint dpc,
+        byte si,
+        byte ni,
+        byte mp,
+        byte sls,
+        ref int offset,
+        out string? error)
+    {
+        int protocolDataValueLength = 12 + userPayload.Length;
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.ProtocolData, protocolDataValueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        Span<byte> protocolData = buffer.Slice(offset + M3uaProtocol.ParameterHeaderLength, protocolDataValueLength);
+        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(0, 4), opc);
+        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(4, 4), dpc);
+        protocolData[8] = si;
+        protocolData[9] = ni;
+        protocolData[10] = mp;
+        protocolData[11] = sls;
+        userPayload.CopyTo(protocolData.Slice(12));
+
+        offset += written;
+        return true;
     }
 
     private static bool BuildTrafficModeRoutingContextInfoMessage(

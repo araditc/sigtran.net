@@ -25,7 +25,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 1. A transport implementation receives an M3UA byte stream from an SCTP association.
 2. `M3uaMessage` validates the common header and exposes the parameter block.
 3. `M3uaParameterReader` walks RFC-style TLV parameters and skips padding.
-4. `M3uaTypedMessageParser` converts generic messages into typed ASPSM, ASPTM, management, SSNM, and RKM objects.
+4. `M3uaTypedMessageParser` converts generic messages into typed DATA, ASPSM, ASPTM, management, SSNM, and RKM objects.
 5. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
 6. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
 

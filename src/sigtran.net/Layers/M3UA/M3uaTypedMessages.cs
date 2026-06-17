@@ -76,6 +76,79 @@ public sealed class M3uaAspTrafficMaintenanceMessage
 }
 
 /// <summary>
+/// Represents a typed M3UA Payload Data message.
+/// </summary>
+public sealed class M3uaPayloadDataMessage
+{
+    private readonly byte[] _userPayload;
+
+    /// <summary>Creates a typed Payload Data message.</summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContext">The optional Routing Context value.</param>
+    /// <param name="originatingPointCode">The Originating Point Code value.</param>
+    /// <param name="destinationPointCode">The Destination Point Code value.</param>
+    /// <param name="serviceIndicator">The Service Indicator value.</param>
+    /// <param name="networkIndicator">The Network Indicator value.</param>
+    /// <param name="messagePriority">The Message Priority value.</param>
+    /// <param name="signallingLinkSelection">The Signalling Link Selection value.</param>
+    /// <param name="userPayload">The MTP3-user payload following the routing label fields.</param>
+    /// <param name="correlationId">The optional Correlation Id value.</param>
+    public M3uaPayloadDataMessage(
+        uint? networkAppearance,
+        uint? routingContext,
+        uint originatingPointCode,
+        uint destinationPointCode,
+        byte serviceIndicator,
+        byte networkIndicator,
+        byte messagePriority,
+        byte signallingLinkSelection,
+        ReadOnlySpan<byte> userPayload,
+        uint? correlationId)
+    {
+        NetworkAppearance = networkAppearance;
+        RoutingContext = routingContext;
+        OriginatingPointCode = originatingPointCode;
+        DestinationPointCode = destinationPointCode;
+        ServiceIndicator = serviceIndicator;
+        NetworkIndicator = networkIndicator;
+        MessagePriority = messagePriority;
+        SignallingLinkSelection = signallingLinkSelection;
+        _userPayload = userPayload.ToArray();
+        CorrelationId = correlationId;
+    }
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Routing Context value.</summary>
+    public uint? RoutingContext { get; }
+
+    /// <summary>The Originating Point Code value.</summary>
+    public uint OriginatingPointCode { get; }
+
+    /// <summary>The Destination Point Code value.</summary>
+    public uint DestinationPointCode { get; }
+
+    /// <summary>The Service Indicator value.</summary>
+    public byte ServiceIndicator { get; }
+
+    /// <summary>The Network Indicator value.</summary>
+    public byte NetworkIndicator { get; }
+
+    /// <summary>The Message Priority value.</summary>
+    public byte MessagePriority { get; }
+
+    /// <summary>The Signalling Link Selection value.</summary>
+    public byte SignallingLinkSelection { get; }
+
+    /// <summary>The MTP3-user payload following the routing label fields.</summary>
+    public ReadOnlySpan<byte> UserPayload => _userPayload;
+
+    /// <summary>The optional Correlation Id value.</summary>
+    public uint? CorrelationId { get; }
+}
+
+/// <summary>
 /// Represents a typed M3UA Error management message.
 /// </summary>
 public sealed class M3uaErrorMessage
@@ -500,6 +573,140 @@ public sealed class M3uaDeregistrationResponseMessage
 /// </summary>
 public static class M3uaTypedMessageParser
 {
+    /// <summary>
+    /// Parses a Payload Data message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParsePayloadData(
+        M3uaMessage message,
+        out M3uaPayloadDataMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (message.MessageClass != M3uaMessageClass.Transfer || message.MessageType != (byte)M3uaTransferMessageType.PayloadData)
+        {
+            error = $"Expected Payload Data message, got class {message.MessageClass} type {message.MessageType}";
+            return false;
+        }
+
+        uint? networkAppearance = null;
+        uint? routingContext = null;
+        uint? correlationId = null;
+        uint originatingPointCode = 0;
+        uint destinationPointCode = 0;
+        byte serviceIndicator = 0;
+        byte networkIndicator = 0;
+        byte messagePriority = 0;
+        byte signallingLinkSelection = 0;
+        byte[] userPayload = Array.Empty<byte>();
+        bool hasProtocolData = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (routingContext.HasValue)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint context, out error))
+                    {
+                        return false;
+                    }
+
+                    routingContext = context;
+                    break;
+
+                case M3uaParameterTag.ProtocolData:
+                    if (hasProtocolData)
+                    {
+                        error = "Duplicate Protocol Data parameter";
+                        return false;
+                    }
+
+                    if (!TryReadProtocolData(
+                            parameter.Value,
+                            out originatingPointCode,
+                            out destinationPointCode,
+                            out serviceIndicator,
+                            out networkIndicator,
+                            out messagePriority,
+                            out signallingLinkSelection,
+                            out userPayload,
+                            out error))
+                    {
+                        return false;
+                    }
+
+                    hasProtocolData = true;
+                    break;
+
+                case M3uaParameterTag.CorrelationId:
+                    if (correlationId.HasValue)
+                    {
+                        error = "Duplicate Correlation Id parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint parsedCorrelationId, out error))
+                    {
+                        return false;
+                    }
+
+                    correlationId = parsedCorrelationId;
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!hasProtocolData)
+        {
+            error = "Missing Protocol Data parameter";
+            return false;
+        }
+
+        typedMessage = new(
+            networkAppearance,
+            routingContext,
+            originatingPointCode,
+            destinationPointCode,
+            serviceIndicator,
+            networkIndicator,
+            messagePriority,
+            signallingLinkSelection,
+            userPayload,
+            correlationId);
+        return true;
+    }
+
     /// <summary>
     /// Parses a Management Error message.
     /// </summary>
@@ -1950,6 +2157,42 @@ public static class M3uaTypedMessageParser
             result[i] = BinaryPrimitives.ReadUInt32BigEndian(value.Slice(i * sizeof(uint), sizeof(uint)));
         }
 
+        return true;
+    }
+
+    private static bool TryReadProtocolData(
+        ReadOnlySpan<byte> value,
+        out uint originatingPointCode,
+        out uint destinationPointCode,
+        out byte serviceIndicator,
+        out byte networkIndicator,
+        out byte messagePriority,
+        out byte signallingLinkSelection,
+        out byte[] userPayload,
+        out string? error)
+    {
+        originatingPointCode = 0;
+        destinationPointCode = 0;
+        serviceIndicator = 0;
+        networkIndicator = 0;
+        messagePriority = 0;
+        signallingLinkSelection = 0;
+        userPayload = Array.Empty<byte>();
+        error = null;
+
+        if (value.Length < 12)
+        {
+            error = "Protocol Data parameter must contain at least 12 bytes";
+            return false;
+        }
+
+        originatingPointCode = BinaryPrimitives.ReadUInt32BigEndian(value);
+        destinationPointCode = BinaryPrimitives.ReadUInt32BigEndian(value.Slice(4, 4));
+        serviceIndicator = value[8];
+        networkIndicator = value[9];
+        messagePriority = value[10];
+        signallingLinkSelection = value[11];
+        userPayload = value.Slice(12).ToArray();
         return true;
     }
 

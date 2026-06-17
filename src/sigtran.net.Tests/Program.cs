@@ -2,6 +2,8 @@ using sigtran.net.Layers.M3UA;
 
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
+Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
+Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -86,6 +88,70 @@ static void M3uaDecoderReturnsProtocolDataValue()
     AssertSequence([0x00, 0x00, 0x00, 0x02], protocolData.Slice(4, 4), "decoded DPC");
     AssertSequence([3, 2, 0, 7], protocolData.Slice(8, 4), "decoded SI/NI/MP/SLS");
     AssertSequence(payload, protocolData.Slice(12), "decoded user payload");
+}
+
+static void M3uaParsesPayloadDataOptionalFields()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    byte[] payload = [0xCA, 0xFE, 0x01];
+
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            payload,
+            opc: 0x00010203,
+            dpc: 0x00040506,
+            si: 3,
+            ni: 2,
+            mp: 1,
+            sls: 8,
+            networkAppearance: 0x00000007,
+            routingContext: 0x00000064,
+            correlationId: 0x0000002A,
+            out int written,
+            out string? buildError),
+        buildError ?? "DATA build failed");
+
+    AssertEqual(52, written, "DATA length with optional fields");
+    AssertSequence([0x02, 0x00, 0x00, 0x08], buffer.Slice(8, 4), "Network Appearance TLV");
+    AssertSequence([0x00, 0x06, 0x00, 0x08], buffer.Slice(16, 4), "Routing Context TLV");
+    AssertSequence([0x02, 0x10, 0x00, 0x13], buffer.Slice(24, 4), "Protocol Data TLV");
+    AssertSequence([0x00, 0x13, 0x00, 0x08], buffer.Slice(44, 4), "Correlation Id TLV");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(message, out M3uaPayloadDataMessage? typed, out string? parseError),
+        parseError ?? "DATA typed parse failed");
+
+    AssertEqual((uint?)0x00000007, typed!.NetworkAppearance, "typed DATA Network Appearance");
+    AssertEqual((uint?)0x00000064, typed.RoutingContext, "typed DATA Routing Context");
+    AssertEqual((uint)0x00010203, typed.OriginatingPointCode, "typed DATA OPC");
+    AssertEqual((uint)0x00040506, typed.DestinationPointCode, "typed DATA DPC");
+    AssertEqual((byte)3, typed.ServiceIndicator, "typed DATA SI");
+    AssertEqual((byte)2, typed.NetworkIndicator, "typed DATA NI");
+    AssertEqual((byte)1, typed.MessagePriority, "typed DATA MP");
+    AssertEqual((byte)8, typed.SignallingLinkSelection, "typed DATA SLS");
+    AssertSequence(payload, typed.UserPayload, "typed DATA user payload");
+    AssertEqual((uint?)0x0000002A, typed.CorrelationId, "typed DATA Correlation Id");
+}
+
+static void M3uaRejectsPayloadDataWithoutProtocolData()
+{
+    Span<byte> buffer = stackalloc byte[16];
+    buffer[0] = 1;
+    buffer[1] = 0;
+    buffer[2] = (byte)M3uaMessageClass.Transfer;
+    buffer[3] = (byte)M3uaTransferMessageType.PayloadData;
+    buffer[4] = 0;
+    buffer[5] = 0;
+    buffer[6] = 0;
+    buffer[7] = 8;
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, 8));
+    Assert(
+        !M3uaTypedMessageParser.TryParsePayloadData(message, out _, out string? parseError),
+        "DATA without Protocol Data should be rejected");
+    Assert(parseError?.Contains("Missing Protocol Data", StringComparison.Ordinal) == true, parseError ?? "missing DATA parse error");
 }
 
 static void M3uaParameterReaderSkipsPadding()
