@@ -72,9 +72,21 @@ Registration Response carries one or more Registration Result parameters. Each r
 
 The status is exposed as `M3uaRegistrationStatus`.
 
+Registration results expose `IsSuccess`. Registration responses expose `AllSuccessful` and `TryFindResult(localRoutingKeyIdentifier, out result)` for correlating SG responses to requested Routing Keys.
+
 ## Deregistration
 
 Deregistration Request carries a non-empty Routing Context list. Deregistration Response carries one or more Deregistration Result parameters with Routing Context and `M3uaDeregistrationStatus`.
+
+Deregistration results expose `IsSuccess`. Deregistration responses expose `AllSuccessful` and `TryFindResult(routingContext, out result)`.
+
+```csharp
+if (registration.TryFindResult(42, out M3uaRegistrationResult result)
+    && result.IsSuccess)
+{
+    uint routingContext = result.RoutingContext;
+}
+```
 
 ## Validation Rules
 

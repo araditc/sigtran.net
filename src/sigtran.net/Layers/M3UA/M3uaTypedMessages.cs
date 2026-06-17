@@ -491,6 +491,9 @@ public readonly struct M3uaRegistrationResult
 
     /// <summary>The assigned Routing Context, or zero if registration failed.</summary>
     public uint RoutingContext { get; }
+
+    /// <summary>Whether the registration result status indicates success.</summary>
+    public bool IsSuccess => Status == M3uaRegistrationStatus.SuccessfullyRegistered;
 }
 
 /// <summary>
@@ -509,6 +512,44 @@ public sealed class M3uaRegistrationResponseMessage
 
     /// <summary>The Registration Result entries.</summary>
     public ReadOnlySpan<M3uaRegistrationResult> Results => _results;
+
+    /// <summary>Whether every registration result indicates success.</summary>
+    public bool AllSuccessful
+    {
+        get
+        {
+            for (int i = 0; i < _results.Length; i++)
+            {
+                if (!_results[i].IsSuccess)
+                {
+                    return false;
+                }
+            }
+
+            return _results.Length > 0;
+        }
+    }
+
+    /// <summary>
+    /// Finds a Registration Result by Local-RK-Identifier.
+    /// </summary>
+    /// <param name="localRoutingKeyIdentifier">The Local-RK-Identifier to find.</param>
+    /// <param name="result">The matching result on success.</param>
+    /// <returns>True if a matching result was found; otherwise false.</returns>
+    public bool TryFindResult(uint localRoutingKeyIdentifier, out M3uaRegistrationResult result)
+    {
+        for (int i = 0; i < _results.Length; i++)
+        {
+            if (_results[i].LocalRoutingKeyIdentifier == localRoutingKeyIdentifier)
+            {
+                result = _results[i];
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
 }
 
 /// <summary>
@@ -548,6 +589,9 @@ public readonly struct M3uaDeregistrationResult
 
     /// <summary>The deregistration status.</summary>
     public M3uaDeregistrationStatus Status { get; }
+
+    /// <summary>Whether the deregistration result status indicates success.</summary>
+    public bool IsSuccess => Status == M3uaDeregistrationStatus.SuccessfullyDeregistered;
 }
 
 /// <summary>
@@ -566,6 +610,44 @@ public sealed class M3uaDeregistrationResponseMessage
 
     /// <summary>The Deregistration Result entries.</summary>
     public ReadOnlySpan<M3uaDeregistrationResult> Results => _results;
+
+    /// <summary>Whether every deregistration result indicates success.</summary>
+    public bool AllSuccessful
+    {
+        get
+        {
+            for (int i = 0; i < _results.Length; i++)
+            {
+                if (!_results[i].IsSuccess)
+                {
+                    return false;
+                }
+            }
+
+            return _results.Length > 0;
+        }
+    }
+
+    /// <summary>
+    /// Finds a Deregistration Result by Routing Context.
+    /// </summary>
+    /// <param name="routingContext">The Routing Context to find.</param>
+    /// <param name="result">The matching result on success.</param>
+    /// <returns>True if a matching result was found; otherwise false.</returns>
+    public bool TryFindResult(uint routingContext, out M3uaDeregistrationResult result)
+    {
+        for (int i = 0; i < _results.Length; i++)
+        {
+            if (_results[i].RoutingContext == routingContext)
+            {
+                result = _results[i];
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
 }
 
 /// <summary>

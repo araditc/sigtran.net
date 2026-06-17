@@ -58,6 +58,7 @@ Run("M3UA rejects SCON without Affected Point Code", M3uaRejectsSconWithoutAffec
 Run("M3UA parses RKM Registration Request messages", M3uaParsesRegistrationRequest);
 Run("M3UA parses RKM Registration Response messages", M3uaParsesRegistrationResponse);
 Run("M3UA parses RKM Deregistration messages", M3uaParsesDeregistrationMessages);
+Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConvenienceHelpers);
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
 
@@ -1689,6 +1690,31 @@ static void M3uaParsesDeregistrationMessages()
     AssertEqual(2, typedResponse!.Results.Length, "typed DEREG RSP result count");
     AssertEqual(M3uaDeregistrationStatus.SuccessfullyDeregistered, typedResponse.Results[0].Status, "first DEREG RSP status");
     AssertEqual(M3uaDeregistrationStatus.ErrorNotRegistered, typedResponse.Results[1].Status, "second DEREG RSP status");
+}
+
+static void M3uaExposesRkmResponseConvenienceHelpers()
+{
+    M3uaRegistrationResponseMessage registration = new(
+    [
+        new M3uaRegistrationResult(0x0000002A, M3uaRegistrationStatus.SuccessfullyRegistered, 0x00000064),
+        new M3uaRegistrationResult(0x0000002B, M3uaRegistrationStatus.ErrorRoutingKeyAlreadyRegistered, 0)
+    ]);
+    Assert(!registration.AllSuccessful, "mixed registration results should not be all successful");
+    Assert(registration.Results[0].IsSuccess, "first registration result should be success");
+    Assert(!registration.Results[1].IsSuccess, "second registration result should be failure");
+    Assert(registration.TryFindResult(0x0000002A, out M3uaRegistrationResult registrationResult), "registration result should be found");
+    AssertEqual((uint)0x00000064, registrationResult.RoutingContext, "found registration Routing Context");
+    Assert(!registration.TryFindResult(0x0000002C, out _), "missing registration result should not be found");
+
+    M3uaDeregistrationResponseMessage deregistration = new(
+    [
+        new M3uaDeregistrationResult(0x00000064, M3uaDeregistrationStatus.SuccessfullyDeregistered)
+    ]);
+    Assert(deregistration.AllSuccessful, "deregistration result should be all successful");
+    Assert(deregistration.Results[0].IsSuccess, "deregistration result should be success");
+    Assert(deregistration.TryFindResult(0x00000064, out M3uaDeregistrationResult deregistrationResult), "deregistration result should be found");
+    AssertEqual(M3uaDeregistrationStatus.SuccessfullyDeregistered, deregistrationResult.Status, "found deregistration status");
+    Assert(!deregistration.TryFindResult(0x00000065, out _), "missing deregistration result should not be found");
 }
 
 static void M3uaRkmClientRegistersAndDeregistersRoutingKeys()

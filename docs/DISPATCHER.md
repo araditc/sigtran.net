@@ -48,6 +48,7 @@ switch (typed.Kind)
 - Unsupported message classes or message types return `false` with a descriptive error.
 - Message-specific parser validation still applies, including required parameters and duplicate singleton checks.
 - The `As<T>()` helper performs a normal cast, so callers should match `Kind` before casting.
+- RKM response models include status convenience helpers for common result correlation.
 
 ## Why This Exists
 
