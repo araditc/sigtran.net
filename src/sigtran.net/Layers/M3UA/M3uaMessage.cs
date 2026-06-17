@@ -5,25 +5,24 @@ using sigtran.net.Core.Interfaces;
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
-/// Represents a minimally parsed M3UA message.  This class supports
-/// Payload Data messages but can be extended to support other message
-/// classes and types in future.  Messages are immutable once created.
+/// Represents a minimally parsed M3UA message. Messages are immutable once
+/// decoded.
 /// </summary>
 public class M3uaMessage : ISigtranMessage
 {
     /// <summary>
-    /// The M3UA protocol version.  Only version 1 is supported by this
+    /// The M3UA protocol version. Only version 1 is supported by this
     /// implementation.
     /// </summary>
     public byte Version { get; private set; }
 
     /// <summary>
-    /// The message class (e.g. 1 for Transfer Messages).
+    /// The message class.
     /// </summary>
-    public byte MessageClass { get; private set; }
+    public M3uaMessageClass MessageClass { get; private set; }
 
     /// <summary>
-    /// The message type within the class (e.g. 1 for Payload Data).
+    /// The message type within the class.
     /// </summary>
     public byte MessageType { get; private set; }
 
@@ -34,12 +33,11 @@ public class M3uaMessage : ISigtranMessage
 
     /// <summary>
     /// The TLV parameters contained in this message, excluding the header.
-    /// For Payload Data messages this will contain the Protocol Data TLV.
     /// </summary>
     public ReadOnlyMemory<byte> Parameters { get; private set; }
 
     /// <summary>
-    /// Tries to decode the provided buffer as an M3UA message.  On success
+    /// Tries to decode the provided buffer as an M3UA message. On success
     /// the current instance will be populated with the decoded fields.
     /// </summary>
     /// <param name="buffer">The raw bytes containing the message.</param>
@@ -48,37 +46,49 @@ public class M3uaMessage : ISigtranMessage
     public bool TryDecode(ReadOnlySpan<byte> buffer, out string? error)
     {
         error = null;
-        if (buffer.Length < 8)
+        if (buffer.Length < M3uaProtocol.HeaderLength)
         {
             error = "M3UA buffer too short for header";
             return false;
         }
+
         byte version = buffer[0];
-        if (version != 1)
+        if (version != M3uaProtocol.Version)
         {
             error = $"Unsupported M3UA version {version}";
             return false;
         }
-        byte messageClass = buffer[2];
-        byte messageType = buffer[3];
+
+        if (buffer[1] != 0)
+        {
+            error = $"Invalid M3UA reserved header byte {buffer[1]}";
+            return false;
+        }
+
         uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(buffer.Slice(4, 4));
-        if (messageLength < 8 || messageLength > (uint)buffer.Length)
+        if (messageLength < M3uaProtocol.HeaderLength || messageLength > (uint)buffer.Length)
         {
             error = $"Invalid M3UA length {messageLength}";
             return false;
         }
-        Memory<byte> paramBytes = buffer.Slice(8, (int)(messageLength - 8)).ToArray().AsMemory();
+
+        if ((messageLength & 0x3) != 0)
+        {
+            error = $"M3UA message length {messageLength} is not 32-bit aligned";
+            return false;
+        }
+
         Version = version;
-        MessageClass = messageClass;
-        MessageType = messageType;
+        MessageClass = (M3uaMessageClass)buffer[2];
+        MessageType = buffer[3];
         MessageLength = messageLength;
-        Parameters = paramBytes;
+        Parameters = buffer.Slice(M3uaProtocol.HeaderLength, (int)(messageLength - M3uaProtocol.HeaderLength)).ToArray();
         return true;
     }
 
     /// <summary>
     /// M3UA messages are encoded via the <see cref="M3uaMessageBuilder"/>
-    /// helper class.  Invoking this method will throw.
+    /// helper class. Invoking this method will throw.
     /// </summary>
     public ReadOnlySpan<byte> Encode()
     {
@@ -86,48 +96,13 @@ public class M3uaMessage : ISigtranMessage
     }
 
     /// <summary>
-    /// Extracts the Protocol Data (tag 0x0210) parameter from the TLV list.
-    /// For messages that do not include this parameter the method will
-    /// return false.
+    /// Extracts the Protocol Data parameter from the TLV list.
     /// </summary>
-    /// <param name="protocolData">A span over the protocol data bytes.</param>
+    /// <param name="protocolData">A span over the protocol data value.</param>
     /// <param name="error">An error message if the parameter is not found.</param>
     /// <returns>True if the parameter is found; otherwise false.</returns>
     public bool TryGetProtocolData(out ReadOnlySpan<byte> protocolData, out string? error)
     {
-        protocolData = default;
-        error = null;
-        ReadOnlySpan<byte> span = Parameters.Span;
-        while (span.Length >= 4)
-        {
-            ushort tag = BinaryPrimitives.ReadUInt16BigEndian(span);
-            ushort length = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(2, 2));
-            if (length < 4 || length > span.Length)
-            {
-                error = $"Invalid TLV length {length}";
-                return false;
-            }
-            if (tag == 0x0210)
-            {
-                protocolData = span.Slice(4, length - 4);
-                return true;
-            }
-            int paddedLength = AlignToUInt32(length);
-            if (paddedLength > span.Length)
-            {
-                error = $"Invalid padded TLV length {paddedLength}";
-                return false;
-            }
-
-            span = span.Slice(paddedLength);
-        }
-        error = "Protocol Data TLV not found";
-        return false;
-    }
-
-    private static int AlignToUInt32(int length)
-    {
-        int remainder = length & 0x3;
-        return remainder == 0 ? length : length + (4 - remainder);
+        return M3uaParameterReader.TryFind(Parameters.Span, M3uaParameterTag.ProtocolData, out protocolData, out error);
     }
 }

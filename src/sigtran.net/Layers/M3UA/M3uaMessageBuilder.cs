@@ -3,28 +3,23 @@ using System.Buffers.Binary;
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
-/// Builds M3UA Payload Data messages containing a single Protocol Data
-/// parameter (tag 0x0210).  The user payload (usually SCCP/MTP3 data)
-/// follows the routing label.  Messages are padded to a 4‑byte boundary.
+/// Builds M3UA messages into caller-provided buffers.
 /// </summary>
 public static class M3uaMessageBuilder
 {
     /// <summary>
-    /// Constructs a Payload Data message into the provided buffer.  The
-    /// buffer must be large enough to hold the entire message.  On
-    /// success, <paramref name="written"/> will be set to the number of
-    /// bytes written.
+    /// Constructs a Payload Data message into the provided buffer.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
-    /// <param name="userPayload">The user payload (SCCP data).</param>
+    /// <param name="userPayload">The user payload, usually SCCP or another MTP3-user payload.</param>
     /// <param name="opc">Originating Point Code.</param>
     /// <param name="dpc">Destination Point Code.</param>
-    /// <param name="si">Service Indicator (e.g. 3 for SCCP).</param>
+    /// <param name="si">Service Indicator, e.g. 3 for SCCP.</param>
     /// <param name="ni">Network Indicator.</param>
     /// <param name="mp">Message Priority.</param>
     /// <param name="sls">Signalling Link Selection.</param>
     /// <param name="written">The number of bytes written on success.</param>
-    /// <param name="error">Set if the buffer is too small.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
     /// <returns>True if the message was built; otherwise false.</returns>
     public static bool BuildPayloadData(
         Span<byte> buffer,
@@ -41,43 +36,50 @@ public static class M3uaMessageBuilder
         written = 0;
         error = null;
 
-        int protocolDataValueLen = 12 + userPayload.Length; // routing label + payload
-        int protocolDataParameterLen = 4 + protocolDataValueLen; // TLV header + value
-        int total = 8 /*header*/ + protocolDataParameterLen;
-        // pad to 4‑byte boundary
-        if ((total & 0x3) != 0)
-        {
-            total += 4 - (total & 0x3);
-        }
+        int protocolDataValueLength = 12 + userPayload.Length;
+        int protocolDataParameterLength = M3uaParameterWriter.GetPaddedLength(protocolDataValueLength);
+        int total = M3uaProtocol.HeaderLength + protocolDataParameterLength;
 
         if (buffer.Length < total)
         {
             error = $"Insufficient buffer size: need {total}, have {buffer.Length}";
             return false;
         }
-        // Write header
-        buffer[0] = 1; // version
-        buffer[1] = 0; // reserved
-        buffer[2] = 1; // message class: Transfer Messages
-        buffer[3] = 1; // message type: Payload Data
+
+        buffer[0] = M3uaProtocol.Version;
+        buffer[1] = 0;
+        buffer[2] = (byte)M3uaMessageClass.Transfer;
+        buffer[3] = (byte)M3uaTransferMessageType.PayloadData;
         BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(4, 4), (uint)total);
-        // Write TLV header
-        BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(8, 2), 0x0210);
-        BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(10, 2), (ushort)protocolDataParameterLen);
-        // Write routing label
-        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(12, 4), opc);
-        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(16, 4), dpc);
-        buffer[20] = si;
-        buffer[21] = ni;
-        buffer[22] = mp;
-        buffer[23] = sls;
-        // Copy user payload
-        userPayload.CopyTo(buffer.Slice(24));
-        // Pad remainder with zeros
-        for (int i = 8 + protocolDataParameterLen; i < total; i++)
+
+        Span<byte> protocolDataParameter = buffer.Slice(M3uaProtocol.HeaderLength, protocolDataParameterLength);
+        if (!M3uaParameterWriter.TryWriteHeader(
+                protocolDataParameter,
+                M3uaParameterTag.ProtocolData,
+                protocolDataValueLength,
+                out int parameterWritten,
+                out error))
         {
-            buffer[i] = 0;
+            written = 0;
+            return false;
         }
+
+        if (parameterWritten != protocolDataParameterLength)
+        {
+            written = 0;
+            error = $"Unexpected Protocol Data parameter length {parameterWritten}";
+            return false;
+        }
+
+        Span<byte> protocolData = protocolDataParameter.Slice(M3uaProtocol.ParameterHeaderLength, protocolDataValueLength);
+        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(0, 4), opc);
+        BinaryPrimitives.WriteUInt32BigEndian(protocolData.Slice(4, 4), dpc);
+        protocolData[8] = si;
+        protocolData[9] = ni;
+        protocolData[10] = mp;
+        protocolData[11] = sls;
+        userPayload.CopyTo(protocolData.Slice(12));
+
         written = total;
         return true;
     }
