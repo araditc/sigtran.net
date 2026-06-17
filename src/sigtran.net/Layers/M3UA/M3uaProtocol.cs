@@ -104,6 +104,17 @@ public enum M3uaAsptmMessageType : byte
     AspInactiveAck = 4
 }
 
+/// <summary>Traffic mode values used by ASP Traffic Maintenance messages.</summary>
+public enum M3uaTrafficModeType : uint
+{
+    /// <summary>Override mode, where one ASP handles all traffic for an Application Server.</summary>
+    Override = 1,
+    /// <summary>Loadshare mode, where traffic is distributed across active ASPs.</summary>
+    Loadshare = 2,
+    /// <summary>Broadcast mode, where each active ASP receives the same traffic.</summary>
+    Broadcast = 3
+}
+
 /// <summary>Routing key management message types.</summary>
 public enum M3uaRoutingKeyManagementMessageType : byte
 {

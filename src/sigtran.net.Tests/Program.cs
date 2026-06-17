@@ -5,6 +5,8 @@ Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsP
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
+Run("M3UA builds ASP Active with Traffic Mode and Routing Context", M3uaBuildsAspActive);
+Run("M3UA builds ASP Inactive Ack with Routing Context", M3uaBuildsAspInactiveAck);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -143,6 +145,53 @@ static void M3uaBuildsHeartbeatAck()
         M3uaParameterReader.TryFind(buffer.Slice(8, written - 8), M3uaParameterTag.HeartbeatData, out ReadOnlySpan<byte> found, out string? findError),
         findError ?? "Heartbeat Data not found");
     AssertSequence(heartbeatData, found, "found Heartbeat Data");
+}
+
+static void M3uaBuildsAspActive()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    uint[] routingContexts = [0x01020304, 0x05060708];
+    byte[] info = [0x61, 0x63, 0x74];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActive(buffer, M3uaTrafficModeType.Loadshare, routingContexts, info, out int written, out string? error),
+        error ?? "ASP Active build failed");
+
+    AssertEqual(36, written, "ASP Active length");
+    AssertSequence([0x01, 0x00, 0x04, 0x01], buffer.Slice(0, 4), "ASP Active header");
+    AssertSequence([0x00, 0x00, 0x00, 0x24], buffer.Slice(4, 4), "ASP Active message length");
+    AssertSequence([0x00, 0x0B, 0x00, 0x08], buffer.Slice(8, 4), "Traffic Mode Type TLV");
+    AssertSequence([0x00, 0x00, 0x00, 0x02], buffer.Slice(12, 4), "Traffic Mode Type value");
+    AssertSequence([0x00, 0x06, 0x00, 0x0C], buffer.Slice(16, 4), "Routing Context TLV");
+    AssertSequence([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08], buffer.Slice(20, 8), "Routing Context values");
+    AssertSequence([0x00, 0x04, 0x00, 0x07], buffer.Slice(28, 4), "Info String TLV");
+    AssertSequence(info, buffer.Slice(32, 3), "Info String value");
+    AssertSequence([0x00], buffer.Slice(35, 1), "Info String padding");
+
+    M3uaMessage message = new();
+    Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "ASP Active decode failed");
+    AssertEqual(M3uaMessageClass.Asptm, message.MessageClass, "ASP Active class");
+    AssertEqual((byte)M3uaAsptmMessageType.AspActive, message.MessageType, "ASP Active type");
+    Assert(
+        M3uaParameterReader.TryFind(message.Parameters.Span, M3uaParameterTag.RoutingContext, out ReadOnlySpan<byte> found, out string? findError),
+        findError ?? "Routing Context not found");
+    AssertSequence([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08], found, "found Routing Context");
+}
+
+static void M3uaBuildsAspInactiveAck()
+{
+    Span<byte> buffer = stackalloc byte[32];
+    uint[] routingContexts = [0x00000009, 0x0000000A];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspInactiveAck(buffer, routingContexts, ReadOnlySpan<byte>.Empty, out int written, out string? error),
+        error ?? "ASP Inactive Ack build failed");
+
+    AssertEqual(20, written, "ASP Inactive Ack length");
+    AssertSequence([0x01, 0x00, 0x04, 0x04], buffer.Slice(0, 4), "ASP Inactive Ack header");
+    AssertSequence([0x00, 0x00, 0x00, 0x14], buffer.Slice(4, 4), "ASP Inactive Ack message length");
+    AssertSequence([0x00, 0x06, 0x00, 0x0C], buffer.Slice(8, 4), "Routing Context TLV");
+    AssertSequence([0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x0A], buffer.Slice(12, 8), "Routing Context values");
 }
 
 static void Run(string name, Action test)

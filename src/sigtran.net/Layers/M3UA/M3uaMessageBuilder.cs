@@ -226,6 +226,112 @@ public static class M3uaMessageBuilder
             out error);
     }
 
+    /// <summary>
+    /// Builds an ASP Active message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="trafficModeType">The optional traffic mode type.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildAspActive(
+        Span<byte> buffer,
+        M3uaTrafficModeType? trafficModeType,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildTrafficModeRoutingContextInfoMessage(
+            buffer,
+            (byte)M3uaAsptmMessageType.AspActive,
+            trafficModeType,
+            routingContexts,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds an ASP Active acknowledgement message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="trafficModeType">The optional traffic mode type.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildAspActiveAck(
+        Span<byte> buffer,
+        M3uaTrafficModeType? trafficModeType,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildTrafficModeRoutingContextInfoMessage(
+            buffer,
+            (byte)M3uaAsptmMessageType.AspActiveAck,
+            trafficModeType,
+            routingContexts,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds an ASP Inactive message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildAspInactive(
+        Span<byte> buffer,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildRoutingContextInfoMessage(
+            buffer,
+            (byte)M3uaAsptmMessageType.AspInactive,
+            routingContexts,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds an ASP Inactive acknowledgement message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildAspInactiveAck(
+        Span<byte> buffer,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildRoutingContextInfoMessage(
+            buffer,
+            (byte)M3uaAsptmMessageType.AspInactiveAck,
+            routingContexts,
+            infoString,
+            out written,
+            out error);
+    }
+
     private static bool BuildAspIdentifierAndInfoMessage(
         Span<byte> buffer,
         M3uaMessageClass messageClass,
@@ -292,6 +398,69 @@ public static class M3uaMessageBuilder
         return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.HeartbeatData, heartbeatData, ref offset, out error);
     }
 
+    private static bool BuildTrafficModeRoutingContextInfoMessage(
+        Span<byte> buffer,
+        byte messageType,
+        M3uaTrafficModeType? trafficModeType,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        int parameterLength = (trafficModeType.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Asptm, messageType, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (trafficModeType.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.TrafficModeType, (uint)trafficModeType.Value, out int paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
+    private static bool BuildRoutingContextInfoMessage(
+        Span<byte> buffer,
+        byte messageType,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        int parameterLength = GetOptionalUInt32ListParameterLength(routingContexts)
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Asptm, messageType, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
     private static bool TryWriteMessageHeader(
         Span<byte> buffer,
         M3uaMessageClass messageClass,
@@ -322,6 +491,11 @@ public static class M3uaMessageBuilder
     private static int GetOptionalBytesParameterLength(ReadOnlySpan<byte> value)
     {
         return value.IsEmpty ? 0 : M3uaParameterWriter.GetPaddedLength(value.Length);
+    }
+
+    private static int GetOptionalUInt32ListParameterLength(ReadOnlySpan<uint> values)
+    {
+        return values.IsEmpty ? 0 : M3uaParameterWriter.GetPaddedLength(values.Length * sizeof(uint));
     }
 
     private static bool TryWriteOptionalBytesParameter(
@@ -356,5 +530,34 @@ public static class M3uaMessageBuilder
         Span<byte> valueBuffer = stackalloc byte[sizeof(uint)];
         BinaryPrimitives.WriteUInt32BigEndian(valueBuffer, value);
         return M3uaParameterWriter.TryWrite(buffer, tag, valueBuffer, out written, out error);
+    }
+
+    private static bool TryWriteOptionalUInt32ListParameter(
+        Span<byte> buffer,
+        M3uaParameterTag tag,
+        ReadOnlySpan<uint> values,
+        ref int offset,
+        out string? error)
+    {
+        error = null;
+        if (values.IsEmpty)
+        {
+            return true;
+        }
+
+        int valueLength = values.Length * sizeof(uint);
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), tag, valueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        Span<byte> valueBuffer = buffer.Slice(offset + M3uaProtocol.ParameterHeaderLength, valueLength);
+        for (int i = 0; i < values.Length; i++)
+        {
+            BinaryPrimitives.WriteUInt32BigEndian(valueBuffer.Slice(i * sizeof(uint), sizeof(uint)), values[i]);
+        }
+
+        offset += written;
+        return true;
     }
 }
