@@ -145,6 +145,30 @@ public sealed class M3uaPayloadRouteTable
     }
 
     /// <summary>
+    /// Replaces the first route with the same selectors as the supplied route.
+    /// </summary>
+    /// <param name="route">The replacement route.</param>
+    /// <param name="error">An error message if no matching route exists.</param>
+    /// <returns>True if a route was replaced; otherwise false.</returns>
+    public bool TryReplace(M3uaPayloadRoute route, out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        error = null;
+
+        for (int i = 0; i < _routes.Count; i++)
+        {
+            if (_routes[i].HasSameSelectors(route))
+            {
+                _routes[i] = route;
+                return true;
+            }
+        }
+
+        error = "No route with the same selectors exists.";
+        return false;
+    }
+
+    /// <summary>
     /// Removes all registered routes.
     /// </summary>
     public void Clear()

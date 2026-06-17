@@ -13,6 +13,7 @@ Run("M3UA route table rejects ambiguous DATA routes", M3uaRouteTableRejectsAmbig
 Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplicateSelectors);
 Run("M3UA route table removes and clears routes", M3uaRouteTableRemovesAndClearsRoutes);
 Run("M3UA route table snapshots and finds routes by name", M3uaRouteTableSnapshotsAndFindsRoutesByName);
+Run("M3UA route table replaces routes by selector", M3uaRouteTableReplacesRoutesBySelector);
 Run("M3UA inbound processor updates ASP state and routes DATA", M3uaInboundProcessorUpdatesAspStateAndRoutesData);
 Run("M3UA inbound processor can require active ASP for DATA", M3uaInboundProcessorCanRequireActiveAspForData);
 Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist);
@@ -363,6 +364,25 @@ static void M3uaRouteTableRemovesAndClearsRoutes()
 
     table.Clear();
     AssertEqual(0, table.Routes.Count, "route count after clear");
+}
+
+static void M3uaRouteTableReplacesRoutesBySelector()
+{
+    M3uaPayloadRouteTable table = new();
+    M3uaPayloadRoute first = new("old-name", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute replacement = new("new-name", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+
+    Assert(table.TryAdd(first, out string? addError), addError ?? "route add failed");
+    Assert(table.TryReplace(replacement, out string? replaceError), replaceError ?? "route replace failed");
+
+    AssertEqual(1, table.Routes.Count, "route count after replace");
+    AssertEqual("new-name", table.Routes[0].Name, "route name after replace");
+    Assert(!table.TryFindByName("old-name", out _), "old route name should not be found after replace");
+    Assert(table.TryFindByName("new-name", out _), "new route name should be found after replace");
+
+    M3uaPayloadRoute missing = new("missing", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: null);
+    Assert(!table.TryReplace(missing, out string? missingError), "missing selector replace should fail");
+    Assert(missingError?.Contains("No route", StringComparison.Ordinal) == true, missingError ?? "missing replace error");
 }
 
 static void M3uaRouteTableSnapshotsAndFindsRoutesByName()

@@ -56,9 +56,20 @@ if (!routes.TryResolve(data, out M3uaPayloadRoute? route, out error))
 
 ## Route Updates
 
+`TryReplace` replaces the first route with the same selectors as the supplied route. This is useful for renaming a handler or refreshing route metadata while preserving selector ownership.
+
 `TryRemove` removes the first route with the same selectors as the supplied route. The route name does not need to match. `Clear` removes all routes, which is useful when an application reloads routing configuration from a trusted source.
 
 ```csharp
+routes.TryReplace(
+    new M3uaPayloadRoute(
+        name: "map-home-v2",
+        networkAppearance: 7,
+        routingContext: 100,
+        destinationPointCode: 0x00040506,
+        serviceIndicator: 3),
+    out error);
+
 routes.TryRemove(
     new M3uaPayloadRoute(
         name: "old-name-is-ok",
