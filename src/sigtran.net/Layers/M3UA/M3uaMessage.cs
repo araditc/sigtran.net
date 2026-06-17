@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System.Buffers.Binary;
 
 using sigtran.net.Core.Interfaces;
 
@@ -61,7 +61,7 @@ public class M3uaMessage : ISigtranMessage
         }
         byte messageClass = buffer[2];
         byte messageType = buffer[3];
-        uint messageLength = MemoryMarshal.Read<uint>(buffer.Slice(4, 4));
+        uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(buffer.Slice(4, 4));
         if (messageLength < 8 || messageLength > (uint)buffer.Length)
         {
             error = $"Invalid M3UA length {messageLength}";
@@ -100,8 +100,8 @@ public class M3uaMessage : ISigtranMessage
         ReadOnlySpan<byte> span = Parameters.Span;
         while (span.Length >= 4)
         {
-            ushort tag = MemoryMarshal.Read<ushort>(span);
-            ushort length = MemoryMarshal.Read<ushort>(span.Slice(2, 2));
+            ushort tag = BinaryPrimitives.ReadUInt16BigEndian(span);
+            ushort length = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(2, 2));
             if (length < 4 || length > span.Length)
             {
                 error = $"Invalid TLV length {length}";
@@ -112,9 +112,22 @@ public class M3uaMessage : ISigtranMessage
                 protocolData = span.Slice(4, length - 4);
                 return true;
             }
-            span = span.Slice(length);
+            int paddedLength = AlignToUInt32(length);
+            if (paddedLength > span.Length)
+            {
+                error = $"Invalid padded TLV length {paddedLength}";
+                return false;
+            }
+
+            span = span.Slice(paddedLength);
         }
         error = "Protocol Data TLV not found";
         return false;
+    }
+
+    private static int AlignToUInt32(int length)
+    {
+        int remainder = length & 0x3;
+        return remainder == 0 ? length : length + (4 - remainder);
     }
 }

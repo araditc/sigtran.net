@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+using System.Buffers.Binary;
 
 namespace sigtran.net.Layers.M3UA;
 
@@ -41,8 +41,9 @@ public static class M3uaMessageBuilder
         written = 0;
         error = null;
 
-        int protocolDataLen = 12 + userPayload.Length; // routing label + payload
-        int total = 8 /*header*/ + 4 /*TLV header*/ + protocolDataLen;
+        int protocolDataValueLen = 12 + userPayload.Length; // routing label + payload
+        int protocolDataParameterLen = 4 + protocolDataValueLen; // TLV header + value
+        int total = 8 /*header*/ + protocolDataParameterLen;
         // pad to 4‑byte boundary
         if ((total & 0x3) != 0)
         {
@@ -59,13 +60,13 @@ public static class M3uaMessageBuilder
         buffer[1] = 0; // reserved
         buffer[2] = 1; // message class: Transfer Messages
         buffer[3] = 1; // message type: Payload Data
-        MemoryMarshal.Write(buffer.Slice(4, 4), (uint)total);
+        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(4, 4), (uint)total);
         // Write TLV header
-        MemoryMarshal.Write(buffer.Slice(8, 2), (ushort)0x0210);
-        MemoryMarshal.Write(buffer.Slice(10, 2), (ushort)protocolDataLen);
+        BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(8, 2), 0x0210);
+        BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(10, 2), (ushort)protocolDataParameterLen);
         // Write routing label
-        MemoryMarshal.Write(buffer.Slice(12, 4), opc);
-        MemoryMarshal.Write(buffer.Slice(16, 4), dpc);
+        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(12, 4), opc);
+        BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(16, 4), dpc);
         buffer[20] = si;
         buffer[21] = ni;
         buffer[22] = mp;
@@ -73,7 +74,7 @@ public static class M3uaMessageBuilder
         // Copy user payload
         userPayload.CopyTo(buffer.Slice(24));
         // Pad remainder with zeros
-        for (int i = 8 + 4 + protocolDataLen; i < total; i++)
+        for (int i = 8 + protocolDataParameterLen; i < total; i++)
         {
             buffer[i] = 0;
         }
