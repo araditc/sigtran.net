@@ -13,6 +13,16 @@
 
 The inbound processor updates the shared `M3uaAspSession`, so after a successful startup the ASP state is `Active`.
 
+`ResetAndStartAsync` clears the shared ASP session state and negotiated values before running the same startup handshake. Use it after a reconnect or association rebuild when previous ASP Identifier, Traffic Mode, and Routing Context values should not carry forward.
+
+```csharp
+M3uaAspStartupResult restarted = await client.ResetAndStartAsync(
+    new M3uaAspStartupOptions(
+        aspIdentifier: 42,
+        trafficModeType: M3uaTrafficModeType.Loadshare),
+    ct);
+```
+
 ## Heartbeat
 
 `SendHeartbeatAsync` sends BEAT with optional Heartbeat Data and waits for BEAT Ack. The inbound processor applies the Heartbeat acknowledgement to the ASP session. The accepted transition does not change the ASP state.
@@ -76,6 +86,4 @@ The client throws when:
 
 ## Current Scope
 
-Startup, explicit Heartbeat, ASP Inactive, and ASP Down handshakes are modeled here. Reconnect, heartbeat scheduling, and multi-ASP traffic-mode policy belong in later lifecycle work.
-
-For reconnect flows, reset the shared `M3uaAspSession` before starting a fresh association if negotiated ASP Identifier, Traffic Mode, or Routing Context values should not carry forward.
+Startup, reset-and-start, explicit Heartbeat, ASP Inactive, and ASP Down handshakes are modeled here. Heartbeat scheduling and multi-ASP traffic-mode policy belong in later lifecycle work.

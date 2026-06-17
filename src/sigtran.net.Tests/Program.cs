@@ -29,6 +29,7 @@ Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters
 Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
+Run("M3UA ASP client resets before startup handshake", M3uaAspClientResetsBeforeStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
 Run("M3UA transport session acknowledges inbound Heartbeat", M3uaTransportSessionAcknowledgesInboundHeartbeat);
@@ -853,6 +854,40 @@ static void M3uaAspClientCompletesStartupHandshake()
     AssertEqual(2, socket.SentPackets.Count, "ASP client sent packet count");
     AssertEqual((byte)M3uaAspsmMessageType.AspUp, DecodeMessage(socket.SentPackets[0].Span).MessageType, "ASP client first sent type");
     AssertEqual((byte)M3uaAsptmMessageType.AspActive, DecodeMessage(socket.SentPackets[1].Span).MessageType, "ASP client second sent type");
+}
+
+static void M3uaAspClientResetsBeforeStartupHandshake()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    FakeSctpSocket socket = new();
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, aspIdentifier: 77, ReadOnlySpan<byte>.Empty, out int written, out string? upAckError),
+        upAckError ?? "ASP Up Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Override, [200], ReadOnlySpan<byte>.Empty, out written, out string? activeAckError),
+        activeAckError ?? "ASP Active Ack build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaAspSession aspSession = new(M3uaAspState.Active);
+    aspSession.Reset(M3uaAspState.Active);
+    M3uaInboundProcessor inbound = new(aspSession);
+    M3uaOutboundProcessor outbound = new(aspSession, routingContext: 200);
+    using M3uaTransportSession transport = new(socket, inbound, outbound, leaveOpen: true);
+    M3uaAspClient client = new(transport);
+
+    M3uaAspStartupResult result = client.ResetAndStartAsync(new M3uaAspStartupOptions(
+        aspIdentifier: 77,
+        trafficModeType: M3uaTrafficModeType.Override)).GetAwaiter().GetResult();
+
+    AssertEqual(M3uaAspState.Active, aspSession.State, "reset ASP client final state");
+    AssertEqual((uint?)77, aspSession.AspIdentifier, "reset ASP Identifier");
+    AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Override, aspSession.TrafficModeType, "reset Traffic Mode");
+    AssertSequence([0x00, 0x00, 0x00, 0xC8], UInt32SpanToBytes(aspSession.RoutingContexts), "reset Routing Context");
+    AssertEqual(M3uaAspEvent.AspUpAcknowledged, result.AspUpAcknowledgement.StateTransition!.Value.Event, "reset up transition");
+    AssertEqual(M3uaAspEvent.AspActiveAcknowledged, result.AspActiveAcknowledgement.StateTransition!.Value.Event, "reset active transition");
 }
 
 static void M3uaAspClientFailsWhenAcknowledgementIsMissing()

@@ -111,6 +111,20 @@ public sealed class M3uaAspClient
     }
 
     /// <summary>
+    /// Resets the shared ASP session state and then performs the standard startup handshake.
+    /// </summary>
+    /// <param name="options">The optional startup settings.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The accepted acknowledgement results.</returns>
+    public Task<M3uaAspStartupResult> ResetAndStartAsync(
+        M3uaAspStartupOptions? options = null,
+        CancellationToken ct = default)
+    {
+        _session.InboundProcessor.AspSession.Reset();
+        return StartAsync(options, ct);
+    }
+
+    /// <summary>
     /// Sends a Heartbeat message and waits for a Heartbeat Ack.
     /// </summary>
     /// <param name="heartbeatData">The optional Heartbeat Data value to echo through the peer.</param>
