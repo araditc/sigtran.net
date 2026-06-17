@@ -13,6 +13,8 @@
 
 The inbound processor updates the shared `M3uaAspSession`, so after a successful startup the ASP state is `Active`.
 
+After ASP Active Ack, `M3uaAspSession.HasRoutingContext(routingContext)` can be used to check whether a specific Routing Context is currently confirmed by the peer.
+
 `ResetAndStartAsync` clears the shared ASP session state and negotiated values before running the same startup handshake. Use it after a reconnect or association rebuild when previous ASP Identifier, Traffic Mode, and Routing Context values should not carry forward.
 
 ```csharp

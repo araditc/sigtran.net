@@ -1356,6 +1356,9 @@ static void M3uaAspSessionAppliesAcknowledgementLifecycle()
     AssertEqual(M3uaAspEvent.AspActiveAcknowledged, active.Event, "ASP Active Ack event");
     AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Loadshare, session.TrafficModeType, "session Traffic Mode");
     AssertSequence([0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0xC8], UInt32SpanToBytes(session.RoutingContexts), "session Routing Contexts");
+    Assert(session.HasRoutingContext(100), "session should have Routing Context 100");
+    Assert(session.HasRoutingContext(200), "session should have Routing Context 200");
+    Assert(!session.HasRoutingContext(300), "session should not have Routing Context 300");
 
     Assert(
         M3uaMessageBuilder.BuildHeartbeatAck(buffer, [0x01, 0x02], out written, out string? buildBeatError),
@@ -1390,6 +1393,7 @@ static void M3uaAspSessionAppliesAcknowledgementLifecycle()
     AssertEqual(M3uaAspEvent.AspDownAcknowledged, down.Event, "ASP Down Ack event");
     AssertEqual(null, session.TrafficModeType, "session Traffic Mode after ASP Down Ack");
     AssertEqual(0, session.RoutingContexts.Length, "session Routing Context count after ASP Down Ack");
+    Assert(!session.HasRoutingContext(100), "session should not have Routing Context after ASP Down Ack");
 }
 
 static void M3uaAspSessionResetsNegotiatedState()

@@ -28,6 +28,24 @@ public sealed class M3uaAspSession
     public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
 
     /// <summary>
+    /// Determines whether the supplied Routing Context is currently confirmed on this ASP session.
+    /// </summary>
+    /// <param name="routingContext">The Routing Context value to find.</param>
+    /// <returns>True if the Routing Context is present; otherwise false.</returns>
+    public bool HasRoutingContext(uint routingContext)
+    {
+        for (int i = 0; i < _routingContexts.Length; i++)
+        {
+            if (_routingContexts[i] == routingContext)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Applies an incoming ASPSM or ASPTM acknowledgement message to this session.
     /// </summary>
     /// <param name="message">The decoded M3UA acknowledgement message.</param>
