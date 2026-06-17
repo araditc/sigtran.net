@@ -5,6 +5,15 @@ namespace sigtran.net.Layers.M3UA;
 /// </summary>
 public static class M3uaProtocol
 {
+    /// <summary>The protocol short name exposed by this layer.</summary>
+    public const string Name = "M3UA";
+
+    /// <summary>The primary specification used for this protocol layer.</summary>
+    public const string Specification = "RFC 4666";
+
+    /// <summary>The NuGet package identity used by this SDK.</summary>
+    public const string PackageName = "Sigtran.Net";
+
     /// <summary>The M3UA Release 1.0 protocol version.</summary>
     public const byte Version = 1;
 

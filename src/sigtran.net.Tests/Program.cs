@@ -2,6 +2,7 @@ using sigtran.net.Layers.M3UA;
 using sigtran.net.Core.Interfaces;
 
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
+Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
@@ -94,6 +95,16 @@ static void M3uaPayloadDataUsesNetworkOrder()
     AssertSequence([0x05, 0x06, 0x07, 0x08], buffer.Slice(16, 4), "DPC");
     AssertSequence([3, 2, 1, 15], buffer.Slice(20, 4), "SI/NI/MP/SLS");
     AssertSequence(payload, buffer.Slice(24, payload.Length), "user payload");
+}
+
+static void M3uaProtocolExposesPublicMetadata()
+{
+    AssertEqual("M3UA", M3uaProtocol.Name, "protocol name");
+    AssertEqual("RFC 4666", M3uaProtocol.Specification, "protocol specification");
+    AssertEqual("Sigtran.Net", M3uaProtocol.PackageName, "package name");
+    AssertEqual((byte)1, M3uaProtocol.Version, "protocol version");
+    AssertEqual(8, M3uaProtocol.HeaderLength, "protocol header length");
+    AssertEqual(4, M3uaProtocol.ParameterHeaderLength, "protocol parameter header length");
 }
 
 static void M3uaDecoderReturnsProtocolDataValue()

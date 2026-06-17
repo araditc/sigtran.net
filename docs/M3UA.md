@@ -2,6 +2,8 @@
 
 M3UA is the first production-focused layer in SIGTRAN.NET. The implementation follows RFC 4666 message structure and uses strict network byte order for message headers and TLV parameters.
 
+`M3uaProtocol` exposes public protocol metadata through `Name`, `Specification`, `PackageName`, `Version`, `HeaderLength`, and `ParameterHeaderLength`. Use these constants for diagnostics, generated capability reports, and compatibility checks instead of duplicating literal values.
+
 ## Implemented Message Families
 
 | Family | Message types |
