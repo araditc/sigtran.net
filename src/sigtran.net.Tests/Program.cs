@@ -663,6 +663,29 @@ static void M3uaTransportSessionSendsOutboundData()
     AssertEqual((uint?)100, typed.RoutingContext, "sent DATA Routing Context");
     AssertEqual((uint?)42, typed.CorrelationId, "sent DATA Correlation Id");
     AssertSequence([0xCA, 0xFE], typed.UserPayload, "sent DATA payload");
+
+    M3uaPayloadDataMessage typedOutbound = new(
+        networkAppearance: 8,
+        routingContext: 200,
+        originatingPointCode: 3,
+        destinationPointCode: 4,
+        serviceIndicator: 5,
+        networkIndicator: 2,
+        messagePriority: 1,
+        signallingLinkSelection: 9,
+        userPayload: [0xAB, 0xCD],
+        correlationId: 43);
+    session.SendPayloadDataAsync(typedOutbound).GetAwaiter().GetResult();
+
+    AssertEqual(2, socket.SentPackets.Count, "typed sent packet count");
+    M3uaMessage typedSent = DecodeMessage(socket.SentPackets[1].Span);
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(typedSent, out M3uaPayloadDataMessage? parsedTypedOutbound, out string? typedParseError),
+        typedParseError ?? "typed sent DATA parse failed");
+    AssertEqual((uint?)8, parsedTypedOutbound!.NetworkAppearance, "typed sent DATA Network Appearance");
+    AssertEqual((uint?)200, parsedTypedOutbound.RoutingContext, "typed sent DATA Routing Context");
+    AssertEqual((uint?)43, parsedTypedOutbound.CorrelationId, "typed sent DATA Correlation Id");
+    AssertSequence([0xAB, 0xCD], parsedTypedOutbound.UserPayload, "typed sent DATA payload");
 }
 
 static void M3uaTransportSessionReceivesInboundData()

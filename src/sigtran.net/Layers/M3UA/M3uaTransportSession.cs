@@ -636,6 +636,29 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
             ct);
     }
 
+    /// <summary>
+    /// Builds and sends a Payload Data message from a typed Payload Data model.
+    /// </summary>
+    /// <param name="message">The typed Payload Data message to send.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A task that completes when the packet has been sent.</returns>
+    public Task SendPayloadDataAsync(M3uaPayloadDataMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        return SendPayloadDataAsync(
+            message.UserPayload.ToArray(),
+            message.OriginatingPointCode,
+            message.DestinationPointCode,
+            message.ServiceIndicator,
+            message.NetworkIndicator,
+            message.MessagePriority,
+            message.SignallingLinkSelection,
+            message.NetworkAppearance,
+            message.RoutingContext,
+            message.CorrelationId,
+            ct);
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {

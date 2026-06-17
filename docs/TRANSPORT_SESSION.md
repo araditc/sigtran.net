@@ -49,6 +49,12 @@ await session.SendPayloadDataAsync(
     ct: ct);
 ```
 
+When a typed DATA model is already available, the session can send it directly.
+
+```csharp
+await session.SendPayloadDataAsync(payloadDataMessage, ct);
+```
+
 Network Appearance and Routing Context defaults are applied by the configured `M3uaOutboundProcessor`.
 
 ## Receiving
