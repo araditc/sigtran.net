@@ -63,6 +63,7 @@ Run("M3UA parses RKM Registration Response messages", M3uaParsesRegistrationResp
 Run("M3UA parses RKM Deregistration messages", M3uaParsesDeregistrationMessages);
 Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConvenienceHelpers);
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
+Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
 
 static void M3uaPayloadDataUsesNetworkOrder()
@@ -1839,6 +1840,51 @@ static void M3uaRkmClientRegistersAndDeregistersRoutingKeys()
     AssertEqual(2, socket.SentPackets.Count, "RKM client sent packet count");
     AssertEqual((byte)M3uaRoutingKeyManagementMessageType.RegistrationRequest, DecodeMessage(socket.SentPackets[0].Span).MessageType, "RKM client first sent type");
     AssertEqual((byte)M3uaRoutingKeyManagementMessageType.DeregistrationRequest, DecodeMessage(socket.SentPackets[1].Span).MessageType, "RKM client second sent type");
+}
+
+static void M3uaRkmClientRequiresSuccessfulResponses()
+{
+    Span<byte> buffer = stackalloc byte[128];
+    FakeSctpSocket socket = new();
+
+    M3uaRegistrationResult[] registrationResults =
+    [
+        new(0x0000002A, M3uaRegistrationStatus.SuccessfullyRegistered, 0x00000064)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationResponse(buffer, registrationResults, out int written, out string? registrationBuildError),
+        registrationBuildError ?? "REG RSP build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    M3uaDeregistrationResult[] deregistrationResults =
+    [
+        new(0x00000064, M3uaDeregistrationStatus.ErrorNotRegistered)
+    ];
+    Assert(
+        M3uaMessageBuilder.BuildDeregistrationResponse(buffer, deregistrationResults, out written, out string? deregistrationBuildError),
+        deregistrationBuildError ?? "DEREG RSP build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    using M3uaTransportSession transport = new(socket, leaveOpen: true);
+    M3uaRkmClient client = new(transport);
+    M3uaRoutingKey[] routingKeys =
+    [
+        new(
+            localRoutingKeyIdentifier: 0x0000002A,
+            routingContext: null,
+            trafficModeType: M3uaTrafficModeType.Loadshare,
+            destinationPointCodes: [new M3uaAffectedPointCode(mask: 0, pointCode: 0x00112233)],
+            networkAppearance: null,
+            serviceIndicators: [3],
+            originatingPointCodes: ReadOnlySpan<M3uaAffectedPointCode>.Empty)
+    ];
+
+    M3uaRegistrationResponseMessage registration = client.RegisterAndRequireSuccessAsync(routingKeys).GetAwaiter().GetResult();
+    Assert(registration.AllSuccessful, "strict registration should return successful response");
+
+    InvalidOperationException exception = AssertThrows<InvalidOperationException>(() =>
+        client.DeregisterAndRequireSuccessAsync(new uint[] { 0x00000064 }).GetAwaiter().GetResult());
+    Assert(exception.Message.Contains("ErrorNotRegistered", StringComparison.Ordinal), exception.Message);
 }
 
 static void M3uaRejectsRoutingKeyWithoutDestinationPointCode()

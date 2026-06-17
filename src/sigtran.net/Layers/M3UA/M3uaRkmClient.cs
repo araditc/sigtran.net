@@ -37,6 +37,23 @@ public sealed class M3uaRkmClient
     }
 
     /// <summary>
+    /// Sends a Registration Request, waits for a Registration Response, and requires every result to be successful.
+    /// </summary>
+    /// <param name="routingKeys">The Routing Key entries to register.</param>
+    /// <param name="maxResponseMessages">The maximum inbound messages to inspect while waiting for Registration Response.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The successful Registration Response message.</returns>
+    public async Task<M3uaRegistrationResponseMessage> RegisterAndRequireSuccessAsync(
+        ReadOnlyMemory<M3uaRoutingKey> routingKeys,
+        int maxResponseMessages = 8,
+        CancellationToken ct = default)
+    {
+        M3uaRegistrationResponseMessage response = await RegisterAsync(routingKeys, maxResponseMessages, ct).ConfigureAwait(false);
+        RequireRegistrationSuccess(response);
+        return response;
+    }
+
+    /// <summary>
     /// Sends a Deregistration Request and waits for a Deregistration Response.
     /// </summary>
     /// <param name="routingContexts">The Routing Context values to deregister.</param>
@@ -58,11 +75,72 @@ public sealed class M3uaRkmClient
         return result.TypedMessage.As<M3uaDeregistrationResponseMessage>();
     }
 
+    /// <summary>
+    /// Sends a Deregistration Request, waits for a Deregistration Response, and requires every result to be successful.
+    /// </summary>
+    /// <param name="routingContexts">The Routing Context values to deregister.</param>
+    /// <param name="maxResponseMessages">The maximum inbound messages to inspect while waiting for Deregistration Response.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The successful Deregistration Response message.</returns>
+    public async Task<M3uaDeregistrationResponseMessage> DeregisterAndRequireSuccessAsync(
+        ReadOnlyMemory<uint> routingContexts,
+        int maxResponseMessages = 8,
+        CancellationToken ct = default)
+    {
+        M3uaDeregistrationResponseMessage response = await DeregisterAsync(routingContexts, maxResponseMessages, ct).ConfigureAwait(false);
+        RequireDeregistrationSuccess(response);
+        return response;
+    }
+
     private static void ValidateMaxResponseMessages(int maxResponseMessages)
     {
         if (maxResponseMessages <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(maxResponseMessages), "Maximum response messages must be positive.");
+        }
+    }
+
+    private static void RequireRegistrationSuccess(M3uaRegistrationResponseMessage response)
+    {
+        if (response.AllSuccessful)
+        {
+            return;
+        }
+
+        if (response.Results.Length == 0)
+        {
+            throw new InvalidOperationException("Registration Response did not contain any Registration Result entries.");
+        }
+
+        for (int i = 0; i < response.Results.Length; i++)
+        {
+            M3uaRegistrationResult result = response.Results[i];
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException($"Registration failed for Local-RK-Identifier {result.LocalRoutingKeyIdentifier}: {result.Status}.");
+            }
+        }
+    }
+
+    private static void RequireDeregistrationSuccess(M3uaDeregistrationResponseMessage response)
+    {
+        if (response.AllSuccessful)
+        {
+            return;
+        }
+
+        if (response.Results.Length == 0)
+        {
+            throw new InvalidOperationException("Deregistration Response did not contain any Deregistration Result entries.");
+        }
+
+        for (int i = 0; i < response.Results.Length; i++)
+        {
+            M3uaDeregistrationResult result = response.Results[i];
+            if (!result.IsSuccess)
+            {
+                throw new InvalidOperationException($"Deregistration failed for Routing Context {result.RoutingContext}: {result.Status}.");
+            }
         }
     }
 }

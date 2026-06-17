@@ -62,6 +62,19 @@ M3uaDeregistrationResponseMessage deregistration = await client.DeregisterAsync(
     ct: ct);
 ```
 
+Use the strict variants when partial success should fail the provisioning workflow immediately.
+
+```csharp
+M3uaRegistrationResponseMessage strictRegistration =
+    await client.RegisterAndRequireSuccessAsync(routingKeys, ct: ct);
+
+await client.DeregisterAndRequireSuccessAsync(
+    new uint[] { strictRegistration.Results[0].RoutingContext },
+    ct: ct);
+```
+
+`RegisterAndRequireSuccessAsync` and `DeregisterAndRequireSuccessAsync` throw `InvalidOperationException` when the response has no result entries or the first failed result reports a non-success status.
+
 ## Registration Response
 
 Registration Response carries one or more Registration Result parameters. Each result contains:
