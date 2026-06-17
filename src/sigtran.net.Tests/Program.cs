@@ -25,6 +25,7 @@ Run("M3UA transport session waits for typed messages", M3uaTransportSessionWaits
 Run("M3UA transport session waits for ASP transitions", M3uaTransportSessionWaitsForAspTransitions);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters);
+Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
@@ -738,6 +739,24 @@ static void M3uaTransportSessionTracksCounters()
     AssertEqual(1L, counters.ReceivedPdus, "counter received PDUs");
     AssertEqual(1L, counters.SendFailures, "counter send failures");
     AssertEqual(0L, counters.ReceiveFailures, "counter receive failures");
+}
+
+static void M3uaTransportSessionResetsCounters()
+{
+    FakeSctpSocket socket = new();
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+    session.SendHeartbeatAsync(new byte[] { 0x02 }).GetAwaiter().GetResult();
+
+    M3uaTransportSessionCounters beforeReset = session.Counters;
+    AssertEqual(1L, beforeReset.SentPdus, "counter sent PDUs before reset");
+
+    session.ResetCounters();
+
+    M3uaTransportSessionCounters afterReset = session.Counters;
+    AssertEqual(0L, afterReset.SentPdus, "counter sent PDUs after reset");
+    AssertEqual(0L, afterReset.ReceivedPdus, "counter received PDUs after reset");
+    AssertEqual(0L, afterReset.SendFailures, "counter send failures after reset");
+    AssertEqual(0L, afterReset.ReceiveFailures, "counter receive failures after reset");
 }
 
 static void M3uaDiagnosticsFormatHexAndSummaries()

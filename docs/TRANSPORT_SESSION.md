@@ -90,6 +90,12 @@ long sent = counters.SentPdus;
 long received = counters.ReceivedPdus;
 ```
 
+`ResetCounters` starts a new local measurement window without rebuilding the transport session.
+
+```csharp
+session.ResetCounters();
+```
+
 The counters are intentionally framework-neutral. Applications can export them through OpenTelemetry, Prometheus, logs, or their own health endpoints.
 
 ## Current Scope

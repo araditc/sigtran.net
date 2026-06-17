@@ -90,6 +90,17 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
         Interlocked.Read(ref _receiveFailures));
 
     /// <summary>
+    /// Resets all session-local packet counters to zero.
+    /// </summary>
+    public void ResetCounters()
+    {
+        Interlocked.Exchange(ref _sentPdus, 0);
+        Interlocked.Exchange(ref _receivedPdus, 0);
+        Interlocked.Exchange(ref _sendFailures, 0);
+        Interlocked.Exchange(ref _receiveFailures, 0);
+    }
+
+    /// <summary>
     /// Receives and processes one complete M3UA PDU.
     /// </summary>
     /// <param name="ct">A cancellation token.</param>
