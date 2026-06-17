@@ -83,8 +83,10 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [SDK roadmap](docs/SDK_ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [M3UA implementation notes](docs/M3UA.md)
+- [M3UA typed dispatcher](docs/DISPATCHER.md)
 - [M3UA Payload Data](docs/DATA.md)
 - [M3UA Routing Key Management](docs/RKM.md)
+- [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
 
 ## Project Direction

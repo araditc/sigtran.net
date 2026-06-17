@@ -569,10 +569,123 @@ public sealed class M3uaDeregistrationResponseMessage
 }
 
 /// <summary>
+/// Identifies the concrete typed M3UA message model returned by the dispatcher parser.
+/// </summary>
+public enum M3uaTypedMessageKind
+{
+    /// <summary>A Transfer Payload Data message.</summary>
+    PayloadData,
+    /// <summary>An ASP State Maintenance message.</summary>
+    AspStateMaintenance,
+    /// <summary>An ASP Traffic Maintenance message.</summary>
+    AspTrafficMaintenance,
+    /// <summary>A Management Error message.</summary>
+    Error,
+    /// <summary>A Management Notify message.</summary>
+    Notify,
+    /// <summary>A common SSNM message such as DUNA, DAVA, DAUD, or DRST.</summary>
+    Ssnm,
+    /// <summary>A Signalling Congestion SSNM message.</summary>
+    SignallingCongestion,
+    /// <summary>A Destination User Part Unavailable SSNM message.</summary>
+    DestinationUserPartUnavailable,
+    /// <summary>A Routing Key Management Registration Request message.</summary>
+    RegistrationRequest,
+    /// <summary>A Routing Key Management Registration Response message.</summary>
+    RegistrationResponse,
+    /// <summary>A Routing Key Management Deregistration Request message.</summary>
+    DeregistrationRequest,
+    /// <summary>A Routing Key Management Deregistration Response message.</summary>
+    DeregistrationResponse
+}
+
+/// <summary>
+/// Holds a typed M3UA message produced by the dispatcher parser.
+/// </summary>
+public sealed class M3uaTypedMessage
+{
+    internal M3uaTypedMessage(M3uaTypedMessageKind kind, object value)
+    {
+        Kind = kind;
+        Value = value;
+    }
+
+    /// <summary>The kind of typed M3UA message.</summary>
+    public M3uaTypedMessageKind Kind { get; }
+
+    /// <summary>The concrete typed message model.</summary>
+    public object Value { get; }
+
+    /// <summary>
+    /// Gets the concrete typed message model as the requested reference type.
+    /// </summary>
+    /// <typeparam name="T">The expected typed message model type.</typeparam>
+    /// <returns>The typed message model cast to <typeparamref name="T"/>.</returns>
+    public T As<T>()
+        where T : class
+    {
+        return (T)Value;
+    }
+}
+
+/// <summary>
 /// Converts generic M3UA messages into typed messages used by session state machines.
 /// </summary>
 public static class M3uaTypedMessageParser
 {
+    /// <summary>
+    /// Parses any currently supported M3UA message into its concrete typed model.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed dispatcher result on success.</param>
+    /// <param name="error">An error message if parsing fails or the message is unsupported.</param>
+    /// <returns>True if the message was parsed into a supported typed model; otherwise false.</returns>
+    public static bool TryParseKnown(
+        M3uaMessage message,
+        out M3uaTypedMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        switch (message.MessageClass)
+        {
+            case M3uaMessageClass.Transfer:
+                return TryParseTransferKnown(message, out typedMessage, out error);
+
+            case M3uaMessageClass.Management:
+                return TryParseManagementKnown(message, out typedMessage, out error);
+
+            case M3uaMessageClass.Ssnm:
+                return TryParseSsnmKnown(message, out typedMessage, out error);
+
+            case M3uaMessageClass.Aspsm:
+                if (!TryParseAspsm(message, out M3uaAspStateMaintenanceMessage? aspsm, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.AspStateMaintenance, aspsm!);
+                return true;
+
+            case M3uaMessageClass.Asptm:
+                if (!TryParseAsptm(message, out M3uaAspTrafficMaintenanceMessage? asptm, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.AspTrafficMaintenance, asptm!);
+                return true;
+
+            case M3uaMessageClass.RoutingKeyManagement:
+                return TryParseRoutingKeyManagementKnown(message, out typedMessage, out error);
+
+            default:
+                error = $"Unsupported M3UA message class {message.MessageClass}";
+                return false;
+        }
+    }
+
     /// <summary>
     /// Parses a Payload Data message.
     /// </summary>
@@ -1720,6 +1833,153 @@ public static class M3uaTypedMessageParser
 
         typedMessage = new(messageType, trafficModeType, routingContexts, infoString);
         return true;
+    }
+
+    private static bool TryParseTransferKnown(
+        M3uaMessage message,
+        out M3uaTypedMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        if (message.MessageType != (byte)M3uaTransferMessageType.PayloadData)
+        {
+            error = $"Unsupported Transfer message type {message.MessageType}";
+            return false;
+        }
+
+        if (!TryParsePayloadData(message, out M3uaPayloadDataMessage? payloadData, out error))
+        {
+            return false;
+        }
+
+        typedMessage = new(M3uaTypedMessageKind.PayloadData, payloadData!);
+        return true;
+    }
+
+    private static bool TryParseManagementKnown(
+        M3uaMessage message,
+        out M3uaTypedMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        switch ((M3uaManagementMessageType)message.MessageType)
+        {
+            case M3uaManagementMessageType.Error:
+                if (!TryParseError(message, out M3uaErrorMessage? errorMessage, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.Error, errorMessage!);
+                return true;
+
+            case M3uaManagementMessageType.Notify:
+                if (!TryParseNotify(message, out M3uaNotifyMessage? notifyMessage, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.Notify, notifyMessage!);
+                return true;
+
+            default:
+                error = $"Unsupported Management message type {message.MessageType}";
+                return false;
+        }
+    }
+
+    private static bool TryParseSsnmKnown(
+        M3uaMessage message,
+        out M3uaTypedMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        switch ((M3uaSsnmMessageType)message.MessageType)
+        {
+            case M3uaSsnmMessageType.SignallingCongestion:
+                if (!TryParseSignallingCongestion(message, out M3uaSignallingCongestionMessage? scon, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.SignallingCongestion, scon!);
+                return true;
+
+            case M3uaSsnmMessageType.DestinationUserPartUnavailable:
+                if (!TryParseDestinationUserPartUnavailable(message, out M3uaDestinationUserPartUnavailableMessage? dupu, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.DestinationUserPartUnavailable, dupu!);
+                return true;
+
+            case M3uaSsnmMessageType.DestinationUnavailable:
+            case M3uaSsnmMessageType.DestinationAvailable:
+            case M3uaSsnmMessageType.DestinationStateAudit:
+            case M3uaSsnmMessageType.DestinationRestricted:
+                if (!TryParseSsnm(message, out M3uaSsnmMessage? ssnm, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.Ssnm, ssnm!);
+                return true;
+
+            default:
+                error = $"Unsupported SSNM message type {message.MessageType}";
+                return false;
+        }
+    }
+
+    private static bool TryParseRoutingKeyManagementKnown(
+        M3uaMessage message,
+        out M3uaTypedMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        switch ((M3uaRoutingKeyManagementMessageType)message.MessageType)
+        {
+            case M3uaRoutingKeyManagementMessageType.RegistrationRequest:
+                if (!TryParseRegistrationRequest(message, out M3uaRegistrationRequestMessage? registrationRequest, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.RegistrationRequest, registrationRequest!);
+                return true;
+
+            case M3uaRoutingKeyManagementMessageType.RegistrationResponse:
+                if (!TryParseRegistrationResponse(message, out M3uaRegistrationResponseMessage? registrationResponse, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.RegistrationResponse, registrationResponse!);
+                return true;
+
+            case M3uaRoutingKeyManagementMessageType.DeregistrationRequest:
+                if (!TryParseDeregistrationRequest(message, out M3uaDeregistrationRequestMessage? deregistrationRequest, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.DeregistrationRequest, deregistrationRequest!);
+                return true;
+
+            case M3uaRoutingKeyManagementMessageType.DeregistrationResponse:
+                if (!TryParseDeregistrationResponse(message, out M3uaDeregistrationResponseMessage? deregistrationResponse, out error))
+                {
+                    return false;
+                }
+
+                typedMessage = new(M3uaTypedMessageKind.DeregistrationResponse, deregistrationResponse!);
+                return true;
+
+            default:
+                error = $"Unsupported Routing Key Management message type {message.MessageType}";
+                return false;
+        }
     }
 
     private static bool ValidateManagementType(

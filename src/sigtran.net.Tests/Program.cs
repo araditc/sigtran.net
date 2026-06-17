@@ -4,6 +4,8 @@ Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPa
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
+Run("M3UA dispatches known typed messages", M3uaDispatchesKnownTypedMessages);
+Run("M3UA dispatcher rejects unsupported message types", M3uaDispatcherRejectsUnsupportedMessageTypes);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -152,6 +154,88 @@ static void M3uaRejectsPayloadDataWithoutProtocolData()
         !M3uaTypedMessageParser.TryParsePayloadData(message, out _, out string? parseError),
         "DATA without Protocol Data should be rejected");
     Assert(parseError?.Contains("Missing Protocol Data", StringComparison.Ordinal) == true, parseError ?? "missing DATA parse error");
+}
+
+static void M3uaDispatchesKnownTypedMessages()
+{
+    Span<byte> buffer = stackalloc byte[128];
+
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            userPayload: [0x01, 0x02],
+            opc: 1,
+            dpc: 2,
+            si: 3,
+            ni: 2,
+            mp: 0,
+            sls: 7,
+            networkAppearance: null,
+            routingContext: 100,
+            correlationId: null,
+            out int written,
+            out string? dataBuildError),
+        dataBuildError ?? "DATA build failed");
+
+    M3uaMessage dataMessage = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParseKnown(dataMessage, out M3uaTypedMessage? dataTyped, out string? dataParseError),
+        dataParseError ?? "DATA dispatch failed");
+    AssertEqual(M3uaTypedMessageKind.PayloadData, dataTyped!.Kind, "DATA dispatch kind");
+    M3uaPayloadDataMessage payloadData = dataTyped.As<M3uaPayloadDataMessage>();
+    AssertEqual((uint?)100, payloadData.RoutingContext, "DATA dispatch Routing Context");
+    AssertSequence([0x01, 0x02], payloadData.UserPayload, "DATA dispatch payload");
+
+    Assert(
+        M3uaMessageBuilder.BuildDestinationUserPartUnavailable(
+            buffer,
+            networkAppearance: null,
+            ReadOnlySpan<uint>.Empty,
+            new M3uaAffectedPointCode(mask: 0, pointCode: 0x00012345),
+            M3uaUserPartUnavailableCause.Unknown,
+            M3uaMtp3UserIdentity.Sccp,
+            ReadOnlySpan<byte>.Empty,
+            out written,
+            out string? dupuBuildError),
+        dupuBuildError ?? "DUPU build failed");
+
+    M3uaMessage dupuMessage = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParseKnown(dupuMessage, out M3uaTypedMessage? dupuTyped, out string? dupuParseError),
+        dupuParseError ?? "DUPU dispatch failed");
+    AssertEqual(M3uaTypedMessageKind.DestinationUserPartUnavailable, dupuTyped!.Kind, "DUPU dispatch kind");
+    AssertEqual(M3uaMtp3UserIdentity.Sccp, dupuTyped.As<M3uaDestinationUserPartUnavailableMessage>().UserIdentity, "DUPU dispatch user identity");
+
+    M3uaRegistrationResult[] results = [new(1, M3uaRegistrationStatus.SuccessfullyRegistered, 100)];
+    Assert(
+        M3uaMessageBuilder.BuildRegistrationResponse(buffer, results, out written, out string? regBuildError),
+        regBuildError ?? "REG RSP build failed");
+
+    M3uaMessage registrationMessage = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParseKnown(registrationMessage, out M3uaTypedMessage? registrationTyped, out string? registrationParseError),
+        registrationParseError ?? "REG RSP dispatch failed");
+    AssertEqual(M3uaTypedMessageKind.RegistrationResponse, registrationTyped!.Kind, "REG RSP dispatch kind");
+    AssertEqual(M3uaRegistrationStatus.SuccessfullyRegistered, registrationTyped.As<M3uaRegistrationResponseMessage>().Results[0].Status, "REG RSP dispatch status");
+}
+
+static void M3uaDispatcherRejectsUnsupportedMessageTypes()
+{
+    Span<byte> buffer = stackalloc byte[8];
+    buffer[0] = 1;
+    buffer[1] = 0;
+    buffer[2] = (byte)M3uaMessageClass.Management;
+    buffer[3] = 0x7F;
+    buffer[4] = 0;
+    buffer[5] = 0;
+    buffer[6] = 0;
+    buffer[7] = 8;
+
+    M3uaMessage message = DecodeMessage(buffer);
+    Assert(
+        !M3uaTypedMessageParser.TryParseKnown(message, out _, out string? parseError),
+        "unsupported Management type should be rejected");
+    Assert(parseError?.Contains("Unsupported Management message type", StringComparison.Ordinal) == true, parseError ?? "missing dispatcher parse error");
 }
 
 static void M3uaParameterReaderSkipsPadding()

@@ -52,6 +52,8 @@ if (!M3uaTypedMessageParser.TryParseAsptm(
 }
 ```
 
+For application code that handles multiple M3UA message families, `M3uaTypedMessageParser.TryParseKnown` dispatches supported messages into a `M3uaTypedMessage` result with a `Kind` discriminator and concrete typed model.
+
 ## Transfer Notes
 
 DATA messages are modeled with a typed parser so callers can access Network Appearance, Routing Context, OPC, DPC, SI, NI, MP, SLS, user payload, and Correlation Id without manually decoding the Protocol Data parameter.
