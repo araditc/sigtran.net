@@ -80,6 +80,8 @@ The original `BuildPayloadData` overload remains available for simple DATA messa
 
 `M3uaAspSession` applies acknowledgement messages and records ASP Identifier, Traffic Mode, and Routing Context state.
 
+`M3uaAspSession.Reset` clears negotiated ASP Identifier, Traffic Mode, and Routing Context values and returns the lifecycle state to `Down` unless a different state is supplied. `NotifyTransportLost` also clears negotiated values after a transport-loss transition.
+
 ## SSNM Notes
 
 Common SSNM messages require at least one Affected Point Code. DUPU is modeled separately because it requires exactly one Affected Point Code with mask zero and a mandatory User/Cause parameter. SCON is modeled separately because it can include Concerned Destination and Congestion Indications.

@@ -77,3 +77,5 @@ The client throws when:
 ## Current Scope
 
 Startup, explicit Heartbeat, ASP Inactive, and ASP Down handshakes are modeled here. Reconnect, heartbeat scheduling, and multi-ASP traffic-mode policy belong in later lifecycle work.
+
+For reconnect flows, reset the shared `M3uaAspSession` before starting a fresh association if negotiated ASP Identifier, Traffic Mode, or Routing Context values should not carry forward.

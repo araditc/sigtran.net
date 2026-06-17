@@ -42,6 +42,7 @@ Run("M3UA rejects malformed typed Routing Context", M3uaRejectsMalformedTypedRou
 Run("M3UA ASP state machine follows the active lifecycle", M3uaAspStateMachineFollowsActiveLifecycle);
 Run("M3UA ASP state machine rejects invalid transitions", M3uaAspStateMachineRejectsInvalidTransitions);
 Run("M3UA ASP session applies acknowledgement lifecycle messages", M3uaAspSessionAppliesAcknowledgementLifecycle);
+Run("M3UA ASP session resets negotiated state", M3uaAspSessionResetsNegotiatedState);
 Run("M3UA ASP session rejects acknowledgement messages in the wrong state", M3uaAspSessionRejectsWrongStateAcknowledgement);
 Run("M3UA parses Management Error messages", M3uaParsesManagementError);
 Run("M3UA parses Management Notify messages", M3uaParsesManagementNotify);
@@ -1196,6 +1197,42 @@ static void M3uaAspSessionAppliesAcknowledgementLifecycle()
     AssertEqual(M3uaAspEvent.AspDownAcknowledged, down.Event, "ASP Down Ack event");
     AssertEqual(null, session.TrafficModeType, "session Traffic Mode after ASP Down Ack");
     AssertEqual(0, session.RoutingContexts.Length, "session Routing Context count after ASP Down Ack");
+}
+
+static void M3uaAspSessionResetsNegotiatedState()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    M3uaAspSession session = new();
+    uint[] routingContexts = [0x00000064];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, 0x0000002A, ReadOnlySpan<byte>.Empty, out int written, out string? buildUpError),
+        buildUpError ?? "ASP Up Ack build failed");
+    Assert(
+        session.TryApplyAcknowledgement(DecodeMessage(buffer.Slice(0, written)), out _, out string? upError),
+        upError ?? "ASP Up Ack apply failed");
+
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Loadshare, routingContexts, ReadOnlySpan<byte>.Empty, out written, out string? buildActiveError),
+        buildActiveError ?? "ASP Active Ack build failed");
+    Assert(
+        session.TryApplyAcknowledgement(DecodeMessage(buffer.Slice(0, written)), out _, out string? activeError),
+        activeError ?? "ASP Active Ack apply failed");
+
+    AssertEqual(M3uaAspState.Active, session.State, "session state before reset");
+    AssertEqual((uint?)0x0000002A, session.AspIdentifier, "session ASP Identifier before reset");
+    AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Loadshare, session.TrafficModeType, "session Traffic Mode before reset");
+    AssertEqual(1, session.RoutingContexts.Length, "session Routing Context count before reset");
+
+    session.Reset();
+
+    AssertEqual(M3uaAspState.Down, session.State, "session state after reset");
+    AssertEqual(null, session.AspIdentifier, "session ASP Identifier after reset");
+    AssertEqual(null, session.TrafficModeType, "session Traffic Mode after reset");
+    AssertEqual(0, session.RoutingContexts.Length, "session Routing Context count after reset");
+
+    session.Reset(M3uaAspState.Inactive);
+    AssertEqual(M3uaAspState.Inactive, session.State, "session explicit reset state");
 }
 
 static void M3uaAspSessionRejectsWrongStateAcknowledgement()

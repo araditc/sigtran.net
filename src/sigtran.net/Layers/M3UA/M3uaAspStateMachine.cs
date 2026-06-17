@@ -113,4 +113,13 @@ public sealed class M3uaAspStateMachine
         transition = new(from, State, @event, from != State);
         return true;
     }
+
+    /// <summary>
+    /// Resets the state machine to a known ASP state without applying a protocol event.
+    /// </summary>
+    /// <param name="state">The state to set.</param>
+    public void Reset(M3uaAspState state = M3uaAspState.Down)
+    {
+        State = state;
+    }
 }

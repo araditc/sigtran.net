@@ -58,11 +58,24 @@ public sealed class M3uaAspSession
         bool accepted = _stateMachine.TryApply(M3uaAspEvent.TransportLost, out transition, out error);
         if (accepted)
         {
+            AspIdentifier = null;
             TrafficModeType = null;
             _routingContexts = Array.Empty<uint>();
         }
 
         return accepted;
+    }
+
+    /// <summary>
+    /// Resets ASP lifecycle state and clears negotiated ASP session values.
+    /// </summary>
+    /// <param name="state">The ASP state to set after reset.</param>
+    public void Reset(M3uaAspState state = M3uaAspState.Down)
+    {
+        _stateMachine.Reset(state);
+        AspIdentifier = null;
+        TrafficModeType = null;
+        _routingContexts = Array.Empty<uint>();
     }
 
     private bool TryApplyAspsmAcknowledgement(
