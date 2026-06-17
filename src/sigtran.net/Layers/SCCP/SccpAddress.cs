@@ -17,7 +17,7 @@ public sealed class SccpAddress
     /// Encodes this address into a Called/Calling Party Address byte array
     /// according to a simplified interpretation of Q.713.  The returned
     /// array contains the Address Indicator followed by optional SSN and
-    /// TBCD‑encoded GT digits.
+    /// TBCD-encoded GT digits.
     /// </summary>
     /// <param name="isCalled">True if encoding a called party, false if calling.</param>
     /// <returns>The encoded address bytes.</returns>
@@ -40,7 +40,7 @@ public sealed class SccpAddress
             ai |= 0x04;
         }
 
-        // Numbering plan (E.164) – we use bits 4‑7 to indicate plan
+        // Numbering plan (E.164) - we use bits 4-7 to indicate plan
         if (hasGt)
         {
             ai |= 0x10;

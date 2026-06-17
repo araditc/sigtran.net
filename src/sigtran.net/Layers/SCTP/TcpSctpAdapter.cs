@@ -6,8 +6,8 @@ using sigtran.net.Core.Interfaces;
 namespace sigtran.net.Layers.SCTP;
 
 /// <summary>
-/// Provides a simple TCP‑backed implementation of the <see cref="ISctpSocket"/>
-/// interface.  It frames messages using a four‑byte big‑endian length
+/// Provides a simple TCP-backed implementation of the <see cref="ISctpSocket"/>
+/// interface.  It frames messages using a four-byte big-endian length
 /// prefix and reads exactly one message per call.  This adapter is not
 /// suitable for production use but allows development and testing on
 /// systems where SCTP is unavailable.
@@ -38,13 +38,13 @@ public sealed class TcpSctpAdapter : ISctpSocket
             throw new ObjectDisposedException(nameof(TcpSctpAdapter));
         }
 
-        // Prepare a four‑byte big‑endian length prefix. We intentionally avoid
+        // Prepare a four-byte big-endian length prefix. We intentionally avoid
         // stackalloc/Span here because byref-like types cannot be used as locals
         // in async methods. See CS4009. Instead we allocate a small array and
-        // manually encode the integer in big‑endian order.
+        // manually encode the integer in big-endian order.
         byte[] prefix = new byte[4];
         int len = data.Length;
-        // Write length in network byte order (big‑endian)
+        // Write length in network byte order (big-endian)
         prefix[0] = (byte)((len >> 24) & 0xFF);
         prefix[1] = (byte)((len >> 16) & 0xFF);
         prefix[2] = (byte)((len >> 8) & 0xFF);
@@ -64,7 +64,7 @@ public sealed class TcpSctpAdapter : ISctpSocket
             throw new ObjectDisposedException(nameof(TcpSctpAdapter));
         }
 
-        // Read 4‑byte length prefix
+        // Read 4-byte length prefix
         byte[] prefix = new byte[4];
         int r = await _stream.ReadAsync(prefix.AsMemory(0, 4), ct).ConfigureAwait(false);
         if (r == 0)

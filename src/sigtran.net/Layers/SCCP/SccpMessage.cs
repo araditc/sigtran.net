@@ -9,7 +9,7 @@ namespace sigtran.net.Layers.SCCP;
 ///   CalledParty (variable)
 ///   CallingParty (variable)
 ///   UserData (remainder)
-/// A real implementation would follow the layout defined in ITU‑T Q.713.
+/// A real implementation would follow the layout defined in ITU-T Q.713.
 /// </summary>
 public sealed class SccpMessage
 {
@@ -29,7 +29,7 @@ public sealed class SccpMessage
     public ReadOnlyMemory<byte> UserData { get; init; }
 
     /// <summary>
-    /// Encodes this UDT into a flat byte array.  This non‑standard layout is
+    /// Encodes this UDT into a flat byte array.  This non-standard layout is
     /// used solely for internal testing.  The encoded message can be fed
     /// directly into the M3UA layer.
     /// </summary>

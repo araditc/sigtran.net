@@ -13,7 +13,7 @@ public interface ISigtranMessage
     /// returned span is only valid until the message is mutated or
     /// disposed.  Encoders may return a slice of an internal buffer.
     /// </summary>
-    /// <returns>A read‑only span over the encoded bytes.</returns>
+    /// <returns>A read-only span over the encoded bytes.</returns>
     ReadOnlySpan<byte> Encode();
 
     /// <summary>

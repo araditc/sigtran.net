@@ -21,7 +21,7 @@ public interface ISigtranLayer
 
     /// <summary>
     /// Called by the upper layer when a new payload should be transmitted
-    /// downwards.  The data provided is the upper layer’s user payload.  It
+    /// downwards.  The data provided is the upper layer's user payload.  It
     /// is the responsibility of the implementation to encapsulate this
     /// payload in an appropriate protocol data unit and deliver it to the
     /// lower layer via the <see cref="ILayerConnector"/>.

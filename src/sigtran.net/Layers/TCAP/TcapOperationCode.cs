@@ -10,9 +10,9 @@ public enum TcapOperationCode : byte
 {
     /// <summary>Unknown or unspecified operation.</summary>
     None = 0,
-    /// <summary>Mobile‑originated forward short message (MO‑ForwardSM).</summary>
+    /// <summary>Mobile-originated forward short message (MO-ForwardSM).</summary>
     MoForwardShortMessage = 1,
-    /// <summary>Mobile‑terminated forward short message (MT‑ForwardSM).</summary>
+    /// <summary>Mobile-terminated forward short message (MT-ForwardSM).</summary>
     MtForwardShortMessage = 2,
     /// <summary>Alert Service Centre.</summary>
     AlertServiceCentre = 3,

@@ -15,6 +15,8 @@ public static class M3uaProtocol
     public const int ParameterHeaderLength = 4;
 
     /// <summary>Rounds a byte length up to the next 32-bit boundary.</summary>
+    /// <param name="length">The byte length to align.</param>
+    /// <returns>The aligned byte length.</returns>
     public static int AlignToUInt32(int length)
     {
         int remainder = length & 0x3;

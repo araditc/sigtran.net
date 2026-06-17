@@ -3,7 +3,7 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Provides hexadecimal dump output for protocol data units.  This helper
 /// can be used during development to visualise byte streams that are
-/// otherwise opaque.  It writes to the console in a Wireshark‑friendly
+/// otherwise opaque.  It writes to the console in a Wireshark-friendly
 /// format.  This class is static because it maintains no state.
 /// </summary>
 public static class PduLogger

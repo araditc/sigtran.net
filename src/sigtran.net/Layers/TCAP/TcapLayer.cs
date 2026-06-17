@@ -7,7 +7,7 @@ namespace sigtran.net.Layers.TCAP;
 /// A minimal TCAP layer that sits between SCCP and the application (MAP).
 /// It constructs and parses simplified TCAP components and manages a
 /// collection of active dialogues.  This implementation supports only
-/// single‑component messages and does not implement the ASN.1 Transaction
+/// single-component messages and does not implement the ASN.1 Transaction
 /// Portion or Dialogue Portion.
 /// </summary>
 public sealed class TcapLayer : ISigtranLayer

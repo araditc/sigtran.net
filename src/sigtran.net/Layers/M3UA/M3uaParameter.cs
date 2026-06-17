@@ -9,6 +9,10 @@ namespace sigtran.net.Layers.M3UA;
 public readonly ref struct M3uaParameter
 {
     /// <summary>Creates a decoded M3UA parameter view.</summary>
+    /// <param name="tag">The parameter tag.</param>
+    /// <param name="length">The encoded parameter length, excluding padding.</param>
+    /// <param name="value">The decoded parameter value bytes.</param>
+    /// <param name="paddedLength">The encoded parameter length including padding.</param>
     public M3uaParameter(M3uaParameterTag tag, int length, ReadOnlySpan<byte> value, int paddedLength)
     {
         Tag = tag;
@@ -38,12 +42,16 @@ public ref struct M3uaParameterReader
     private ReadOnlySpan<byte> _remaining;
 
     /// <summary>Creates a reader over an encoded M3UA parameter block.</summary>
+    /// <param name="parameters">The encoded parameter block.</param>
     public M3uaParameterReader(ReadOnlySpan<byte> parameters)
     {
         _remaining = parameters;
     }
 
     /// <summary>Reads the next parameter, returning false at end of input or on error.</summary>
+    /// <param name="parameter">The decoded parameter on success.</param>
+    /// <param name="error">An error message if decoding fails.</param>
+    /// <returns>True if a parameter was decoded; otherwise false.</returns>
     public bool TryRead(out M3uaParameter parameter, out string? error)
     {
         parameter = default;
@@ -92,6 +100,11 @@ public ref struct M3uaParameterReader
     }
 
     /// <summary>Finds the first parameter with the specified tag.</summary>
+    /// <param name="parameters">The encoded parameter block.</param>
+    /// <param name="tag">The tag to search for.</param>
+    /// <param name="value">The matching parameter value on success.</param>
+    /// <param name="error">An error message if parsing fails or the parameter is not found.</param>
+    /// <returns>True if the parameter was found; otherwise false.</returns>
     public static bool TryFind(
         ReadOnlySpan<byte> parameters,
         M3uaParameterTag tag,
@@ -126,12 +139,20 @@ public ref struct M3uaParameterReader
 public static class M3uaParameterWriter
 {
     /// <summary>Returns the padded encoded length for a value of the supplied length.</summary>
+    /// <param name="valueLength">The parameter value length.</param>
+    /// <returns>The encoded TLV length rounded up to a 32-bit boundary.</returns>
     public static int GetPaddedLength(int valueLength)
     {
         return M3uaProtocol.AlignToUInt32(M3uaProtocol.ParameterHeaderLength + valueLength);
     }
 
     /// <summary>Writes a complete M3UA TLV parameter.</summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="tag">The parameter tag.</param>
+    /// <param name="value">The parameter value bytes.</param>
+    /// <param name="written">The number of bytes written, including padding.</param>
+    /// <param name="error">Set if the parameter cannot be written.</param>
+    /// <returns>True if the parameter was written; otherwise false.</returns>
     public static bool TryWrite(
         Span<byte> buffer,
         M3uaParameterTag tag,
@@ -151,6 +172,12 @@ public static class M3uaParameterWriter
     }
 
     /// <summary>Writes an M3UA TLV header and clears the trailing padding bytes.</summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="tag">The parameter tag.</param>
+    /// <param name="valueLength">The value length that will follow the TLV header.</param>
+    /// <param name="paddedLength">The encoded parameter length including padding.</param>
+    /// <param name="error">Set if the header cannot be written.</param>
+    /// <returns>True if the header was written; otherwise false.</returns>
     public static bool TryWriteHeader(
         Span<byte> buffer,
         M3uaParameterTag tag,

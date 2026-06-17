@@ -19,6 +19,6 @@ public enum SubsystemNumber : byte
     SGSN = 149,
     /// <summary>Gateway Mobile Location Centre (GMLC).</summary>
     GMLC = 145,
-    /// <summary>Short Message Service Centre (SMSC) – example value.</summary>
+    /// <summary>Short Message Service Centre (SMSC) - example value.</summary>
     SMSC = 254
 }

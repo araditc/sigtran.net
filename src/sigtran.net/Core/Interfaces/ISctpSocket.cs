@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Interfaces;
 
 /// <summary>
-/// Represents an abstract transport supporting SCTP‑like semantics.  The
+/// Represents an abstract transport supporting SCTP-like semantics.  The
 /// SIGTRAN stack uses this interface to send and receive complete
-/// protocol data units (e.g. M3UA messages) over a connection‑oriented
+/// protocol data units (e.g. M3UA messages) over a connection-oriented
 /// transport.  A simple TCP adapter is provided for development; a
 /// production system would replace it with a proper SCTP implementation.
 /// </summary>

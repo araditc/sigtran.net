@@ -3,6 +3,8 @@ using sigtran.net.Layers.M3UA;
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
+Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
+Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -96,6 +98,51 @@ static void M3uaParameterReaderSkipsPadding()
         M3uaParameterReader.TryFind(parameters, M3uaParameterTag.RoutingContext, out ReadOnlySpan<byte> found, out string? findError),
         findError ?? "routing context not found");
     AssertSequence(routingContext, found, "found routing context");
+}
+
+static void M3uaBuildsAspUp()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    byte[] info = [0x6E, 0x6F, 0x64, 0x65];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUp(buffer, aspIdentifier: 0x01020304, info, out int written, out string? error),
+        error ?? "ASP Up build failed");
+
+    AssertEqual(24, written, "ASP Up length");
+    AssertSequence([0x01, 0x00, 0x03, 0x01], buffer.Slice(0, 4), "ASP Up header");
+    AssertSequence([0x00, 0x00, 0x00, 0x18], buffer.Slice(4, 4), "ASP Up message length");
+    AssertSequence([0x00, 0x11, 0x00, 0x08], buffer.Slice(8, 4), "ASP Identifier TLV");
+    AssertSequence([0x01, 0x02, 0x03, 0x04], buffer.Slice(12, 4), "ASP Identifier value");
+    AssertSequence([0x00, 0x04, 0x00, 0x08], buffer.Slice(16, 4), "Info String TLV");
+    AssertSequence(info, buffer.Slice(20, 4), "Info String value");
+
+    M3uaMessage message = new();
+    Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "ASP Up decode failed");
+    AssertEqual(M3uaMessageClass.Aspsm, message.MessageClass, "ASP Up class");
+    AssertEqual((byte)M3uaAspsmMessageType.AspUp, message.MessageType, "ASP Up type");
+}
+
+static void M3uaBuildsHeartbeatAck()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    byte[] heartbeatData = [0x10, 0x20, 0x30, 0x40, 0x50];
+
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeatAck(buffer, heartbeatData, out int written, out string? error),
+        error ?? "Heartbeat Ack build failed");
+
+    AssertEqual(20, written, "Heartbeat Ack length");
+    AssertSequence([0x01, 0x00, 0x03, 0x06], buffer.Slice(0, 4), "Heartbeat Ack header");
+    AssertSequence([0x00, 0x00, 0x00, 0x14], buffer.Slice(4, 4), "Heartbeat Ack message length");
+    AssertSequence([0x00, 0x09, 0x00, 0x09], buffer.Slice(8, 4), "Heartbeat Data TLV");
+    AssertSequence(heartbeatData, buffer.Slice(12, heartbeatData.Length), "Heartbeat Data value");
+    AssertSequence([0x00, 0x00, 0x00], buffer.Slice(17, 3), "Heartbeat Data padding");
+
+    Assert(
+        M3uaParameterReader.TryFind(buffer.Slice(8, written - 8), M3uaParameterTag.HeartbeatData, out ReadOnlySpan<byte> found, out string? findError),
+        findError ?? "Heartbeat Data not found");
+    AssertSequence(heartbeatData, found, "found Heartbeat Data");
 }
 
 static void Run(string name, Action test)

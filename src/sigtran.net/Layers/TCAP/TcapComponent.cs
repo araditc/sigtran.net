@@ -17,7 +17,7 @@ public abstract class TcapComponent
 
     /// <summary>
     /// Encodes this component into a byte array according to a simplified
-    /// format.  Subclasses must implement this to provide type‑specific
+    /// format.  Subclasses must implement this to provide type-specific
     /// markers and layout.
     /// </summary>
     /// <returns>The encoded bytes of the component.</returns>
