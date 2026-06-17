@@ -84,9 +84,16 @@ routes.Clear();
 
 ## Inspection
 
+`Count` and `IsEmpty` expose lightweight table status for health checks and configuration validation.
+
 `Snapshot` returns a stable array copy of routes in insertion order. `TryFindByName` returns the first route with the requested name, which is useful for diagnostics, admin APIs, and configuration validation.
 
 ```csharp
+if (routes.IsEmpty)
+{
+    throw new InvalidOperationException("No M3UA DATA routes are configured.");
+}
+
 M3uaPayloadRoute[] snapshot = routes.Snapshot();
 
 if (routes.TryFindByName("map-home", out M3uaPayloadRoute? route))

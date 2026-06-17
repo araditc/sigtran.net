@@ -354,12 +354,16 @@ static void M3uaRouteTableRemovesAndClearsRoutes()
     M3uaPayloadRoute first = new("first", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
     M3uaPayloadRoute second = new("second", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: 5);
 
+    Assert(table.IsEmpty, "new route table should be empty");
     Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
     Assert(table.TryAdd(second, out string? secondError), secondError ?? "second route add failed");
+    AssertEqual(2, table.Count, "route table count after add");
+    Assert(!table.IsEmpty, "route table should not be empty after add");
 
     M3uaPayloadRoute sameSelectors = new("renamed", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
     Assert(table.TryRemove(sameSelectors, out string? removeError), removeError ?? "route remove failed");
     AssertEqual(1, table.Routes.Count, "route count after remove");
+    AssertEqual(1, table.Count, "route table Count after remove");
     AssertEqual("second", table.Routes[0].Name, "remaining route");
 
     Assert(!table.TryRemove(sameSelectors, out string? missingError), "missing route remove should fail");
@@ -367,6 +371,8 @@ static void M3uaRouteTableRemovesAndClearsRoutes()
 
     table.Clear();
     AssertEqual(0, table.Routes.Count, "route count after clear");
+    AssertEqual(0, table.Count, "route table Count after clear");
+    Assert(table.IsEmpty, "route table should be empty after clear");
 }
 
 static void M3uaRouteTableReplacesRoutesBySelector()

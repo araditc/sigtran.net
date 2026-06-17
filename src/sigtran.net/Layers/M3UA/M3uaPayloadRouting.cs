@@ -96,6 +96,12 @@ public sealed class M3uaPayloadRouteTable
     /// <summary>The registered routes in insertion order.</summary>
     public IReadOnlyList<M3uaPayloadRoute> Routes => _routes;
 
+    /// <summary>The number of registered routes.</summary>
+    public int Count => _routes.Count;
+
+    /// <summary>Whether the route table has no registered routes.</summary>
+    public bool IsEmpty => _routes.Count == 0;
+
     /// <summary>
     /// Adds a route if no existing route has the same selectors.
     /// </summary>
