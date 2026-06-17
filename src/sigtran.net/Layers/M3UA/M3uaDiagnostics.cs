@@ -8,6 +8,42 @@ namespace sigtran.net.Layers.M3UA;
 public static class M3uaDiagnostics
 {
     /// <summary>
+    /// Formats a compact one-line summary of an ASP session.
+    /// </summary>
+    /// <param name="session">The ASP session to summarize.</param>
+    /// <returns>A compact ASP session summary.</returns>
+    public static string FormatAspSessionSummary(M3uaAspSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        StringBuilder builder = new();
+        builder.Append("ASP state=");
+        builder.Append(session.State);
+        builder.Append(" aspId=");
+        builder.Append(session.AspIdentifier.HasValue ? session.AspIdentifier.Value.ToString() : "none");
+        builder.Append(" trafficMode=");
+        builder.Append(session.TrafficModeType.HasValue ? session.TrafficModeType.Value.ToString() : "none");
+        builder.Append(" routingContexts=");
+        if (session.RoutingContexts.IsEmpty)
+        {
+            builder.Append("none");
+            return builder.ToString();
+        }
+
+        for (int i = 0; i < session.RoutingContexts.Length; i++)
+        {
+            if (i > 0)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(session.RoutingContexts[i]);
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
     /// Formats bytes as an offset-based hexadecimal dump without writing to a console or logger.
     /// </summary>
     /// <param name="data">The bytes to format.</param>

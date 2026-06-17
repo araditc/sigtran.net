@@ -10,6 +10,16 @@
 string dump = M3uaDiagnostics.FormatHexDump(packet, bytesPerLine: 16);
 ```
 
+## ASP Session Summary
+
+`FormatAspSessionSummary` formats the current ASP state, ASP Identifier, Traffic Mode, and Routing Contexts in one line.
+
+```csharp
+string asp = M3uaDiagnostics.FormatAspSessionSummary(aspSession);
+```
+
+Use it for health endpoints, reconnect logs, and startup diagnostics without binding the SDK to a logging framework.
+
 ## Header Summary
 
 `TryFormatSummary` validates the M3UA common header and returns a compact one-line summary.

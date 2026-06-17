@@ -895,6 +895,15 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         !M3uaDiagnostics.TryFormatParameterInventory(badParameter, out _, out string? badParameterError),
         "bad parameter inventory should fail");
     Assert(badParameterError?.Contains("exceeds remaining buffer", StringComparison.Ordinal) == true, badParameterError ?? "missing bad parameter error");
+
+    M3uaAspSession session = new(M3uaAspState.Inactive);
+    Span<byte> activeAckBuffer = stackalloc byte[64];
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(activeAckBuffer, M3uaTrafficModeType.Loadshare, [100, 200], ReadOnlySpan<byte>.Empty, out int activeAckWritten, out string? activeAckError),
+        activeAckError ?? "ASP Active Ack build failed");
+    M3uaMessage activeAck = DecodeMessage(activeAckBuffer.Slice(0, activeAckWritten));
+    Assert(session.TryApplyAcknowledgement(activeAck, out _, out string? sessionError), sessionError ?? "ASP session apply failed");
+    AssertEqual("ASP state=Active aspId=none trafficMode=Loadshare routingContexts=100,200", M3uaDiagnostics.FormatAspSessionSummary(session), "ASP session summary");
 }
 
 static void M3uaAspClientCompletesStartupHandshake()
