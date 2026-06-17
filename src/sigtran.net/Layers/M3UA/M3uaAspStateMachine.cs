@@ -26,6 +26,8 @@ public enum M3uaAspEvent
     AspInactiveAcknowledged,
     /// <summary>An ASP Down acknowledgement was received or accepted.</summary>
     AspDownAcknowledged,
+    /// <summary>A Heartbeat acknowledgement was received or accepted.</summary>
+    HeartbeatAcknowledged,
     /// <summary>The SCTP association or underlying transport failed.</summary>
     TransportLost
 }
@@ -91,6 +93,7 @@ public sealed class M3uaAspStateMachine
         M3uaAspState? to = (State, @event) switch
         {
             (_, M3uaAspEvent.TransportLost) => M3uaAspState.Down,
+            (_, M3uaAspEvent.HeartbeatAcknowledged) => State,
             (M3uaAspState.Down, M3uaAspEvent.AspUpAcknowledged) => M3uaAspState.Inactive,
             (M3uaAspState.Inactive, M3uaAspEvent.AspActiveAcknowledged) => M3uaAspState.Active,
             (M3uaAspState.Active, M3uaAspEvent.AspInactiveAcknowledged) => M3uaAspState.Inactive,

@@ -12,6 +12,8 @@ Run("M3UA parses ASP Active into a typed ASPTM message", M3uaParsesAspActive);
 Run("M3UA rejects malformed typed Routing Context", M3uaRejectsMalformedTypedRoutingContext);
 Run("M3UA ASP state machine follows the active lifecycle", M3uaAspStateMachineFollowsActiveLifecycle);
 Run("M3UA ASP state machine rejects invalid transitions", M3uaAspStateMachineRejectsInvalidTransitions);
+Run("M3UA ASP session applies acknowledgement lifecycle messages", M3uaAspSessionAppliesAcknowledgementLifecycle);
+Run("M3UA ASP session rejects acknowledgement messages in the wrong state", M3uaAspSessionRejectsWrongStateAcknowledgement);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -316,6 +318,86 @@ static void M3uaAspStateMachineRejectsInvalidTransitions()
     Assert(!lost.Changed, "TransportLost from Down should not change state");
 }
 
+static void M3uaAspSessionAppliesAcknowledgementLifecycle()
+{
+    M3uaAspSession session = new();
+    Span<byte> buffer = stackalloc byte[64];
+
+    Assert(
+        M3uaMessageBuilder.BuildAspUpAck(buffer, 0x0000002A, ReadOnlySpan<byte>.Empty, out int written, out string? buildUpError),
+        buildUpError ?? "ASP Up Ack build failed");
+    M3uaMessage upAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        session.TryApplyAcknowledgement(upAck, out M3uaAspStateTransition up, out string? upError),
+        upError ?? "ASP Up Ack session apply failed");
+    AssertEqual(M3uaAspState.Inactive, session.State, "session state after ASP Up Ack");
+    AssertEqual(M3uaAspEvent.AspUpAcknowledged, up.Event, "ASP Up Ack event");
+    AssertEqual((uint?)0x0000002A, session.AspIdentifier, "session ASP Identifier");
+
+    uint[] routingContexts = [100, 200];
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Loadshare, routingContexts, ReadOnlySpan<byte>.Empty, out written, out string? buildActiveError),
+        buildActiveError ?? "ASP Active Ack build failed");
+    M3uaMessage activeAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        session.TryApplyAcknowledgement(activeAck, out M3uaAspStateTransition active, out string? activeError),
+        activeError ?? "ASP Active Ack session apply failed");
+    AssertEqual(M3uaAspState.Active, session.State, "session state after ASP Active Ack");
+    AssertEqual(M3uaAspEvent.AspActiveAcknowledged, active.Event, "ASP Active Ack event");
+    AssertEqual((M3uaTrafficModeType?)M3uaTrafficModeType.Loadshare, session.TrafficModeType, "session Traffic Mode");
+    AssertSequence([0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0xC8], UInt32SpanToBytes(session.RoutingContexts), "session Routing Contexts");
+
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeatAck(buffer, [0x01, 0x02], out written, out string? buildBeatError),
+        buildBeatError ?? "Heartbeat Ack build failed");
+    M3uaMessage heartbeatAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        session.TryApplyAcknowledgement(heartbeatAck, out M3uaAspStateTransition heartbeat, out string? heartbeatError),
+        heartbeatError ?? "Heartbeat Ack session apply failed");
+    AssertEqual(M3uaAspState.Active, session.State, "session state after Heartbeat Ack");
+    AssertEqual(M3uaAspEvent.HeartbeatAcknowledged, heartbeat.Event, "Heartbeat Ack event");
+    Assert(!heartbeat.Changed, "Heartbeat Ack should not change state");
+
+    Assert(
+        M3uaMessageBuilder.BuildAspInactiveAck(buffer, [100], ReadOnlySpan<byte>.Empty, out written, out string? buildInactiveError),
+        buildInactiveError ?? "ASP Inactive Ack build failed");
+    M3uaMessage inactiveAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        session.TryApplyAcknowledgement(inactiveAck, out M3uaAspStateTransition inactive, out string? inactiveError),
+        inactiveError ?? "ASP Inactive Ack session apply failed");
+    AssertEqual(M3uaAspState.Inactive, session.State, "session state after ASP Inactive Ack");
+    AssertEqual(M3uaAspEvent.AspInactiveAcknowledged, inactive.Event, "ASP Inactive Ack event");
+    AssertSequence([0x00, 0x00, 0x00, 0x64], UInt32SpanToBytes(session.RoutingContexts), "session inactive Routing Contexts");
+
+    Assert(
+        M3uaMessageBuilder.BuildAspDownAck(buffer, ReadOnlySpan<byte>.Empty, out written, out string? buildDownError),
+        buildDownError ?? "ASP Down Ack build failed");
+    M3uaMessage downAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        session.TryApplyAcknowledgement(downAck, out M3uaAspStateTransition down, out string? downError),
+        downError ?? "ASP Down Ack session apply failed");
+    AssertEqual(M3uaAspState.Down, session.State, "session state after ASP Down Ack");
+    AssertEqual(M3uaAspEvent.AspDownAcknowledged, down.Event, "ASP Down Ack event");
+    AssertEqual(null, session.TrafficModeType, "session Traffic Mode after ASP Down Ack");
+    AssertEqual(0, session.RoutingContexts.Length, "session Routing Context count after ASP Down Ack");
+}
+
+static void M3uaAspSessionRejectsWrongStateAcknowledgement()
+{
+    M3uaAspSession session = new();
+    Span<byte> buffer = stackalloc byte[32];
+    Assert(
+        M3uaMessageBuilder.BuildAspActiveAck(buffer, M3uaTrafficModeType.Override, [1], ReadOnlySpan<byte>.Empty, out int written, out string? buildError),
+        buildError ?? "ASP Active Ack build failed");
+
+    M3uaMessage activeAck = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        !session.TryApplyAcknowledgement(activeAck, out _, out string? error),
+        "ASP Active Ack from Down should be rejected by session");
+    Assert(error?.Contains("Cannot apply", StringComparison.Ordinal) == true, error ?? "missing session transition error");
+    AssertEqual(M3uaAspState.Down, session.State, "session state after rejected acknowledgement");
+}
+
 static void Run(string name, Action test)
 {
     try
@@ -366,4 +448,11 @@ static byte[] UInt32SpanToBytes(ReadOnlySpan<uint> values)
     }
 
     return bytes;
+}
+
+static M3uaMessage DecodeMessage(ReadOnlySpan<byte> encoded)
+{
+    M3uaMessage message = new();
+    Assert(message.TryDecode(encoded, out string? error), error ?? "message decode failed");
+    return message;
 }
