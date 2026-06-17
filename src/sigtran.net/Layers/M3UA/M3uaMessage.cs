@@ -108,6 +108,16 @@ public class M3uaMessage : ISigtranMessage
     }
 
     /// <summary>
+    /// Determines whether the message contains at least one parameter with the supplied TLV tag.
+    /// </summary>
+    /// <param name="tag">The parameter tag to find.</param>
+    /// <returns>True if the parameter is present; otherwise false.</returns>
+    public bool HasParameter(M3uaParameterTag tag)
+    {
+        return TryGetParameter(tag, out _, out _);
+    }
+
+    /// <summary>
     /// Extracts the Protocol Data parameter from the TLV list.
     /// </summary>
     /// <param name="protocolData">A span over the protocol data value.</param>
