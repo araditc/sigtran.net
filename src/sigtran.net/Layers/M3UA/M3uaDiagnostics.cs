@@ -90,4 +90,64 @@ public static class M3uaDiagnostics
         summary = $"M3UA v{message.Version} class={message.MessageClass} type={message.MessageType} kind={typedMessage!.Kind} length={message.MessageLength} parameters={message.Parameters.Length}";
         return true;
     }
+
+    /// <summary>
+    /// Decodes an M3UA packet and formats a one-line inventory of its TLV parameters.
+    /// </summary>
+    /// <param name="packet">The encoded M3UA packet.</param>
+    /// <param name="inventory">The formatted parameter inventory on success.</param>
+    /// <param name="error">An error message when the packet or parameter block cannot be decoded.</param>
+    /// <returns>True if the parameter inventory was formatted; otherwise false.</returns>
+    public static bool TryFormatParameterInventory(ReadOnlySpan<byte> packet, out string inventory, out string? error)
+    {
+        M3uaMessage message = new();
+        if (!message.TryDecode(packet, out error))
+        {
+            inventory = string.Empty;
+            return false;
+        }
+
+        StringBuilder builder = new();
+        builder.Append("M3UA parameters count=");
+        int count = 0;
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            if (count == 0)
+            {
+                builder.Append('0');
+                builder.Append(" [");
+            }
+            else
+            {
+                builder.Append(", ");
+            }
+
+            builder.Append(parameter.Tag);
+            builder.Append(" length=");
+            builder.Append(parameter.Length);
+            builder.Append(" value=");
+            builder.Append(parameter.Value.Length);
+            builder.Append(" padded=");
+            builder.Append(parameter.PaddedLength);
+            count++;
+        }
+
+        if (error is not null)
+        {
+            inventory = string.Empty;
+            return false;
+        }
+
+        if (count == 0)
+        {
+            inventory = "M3UA parameters count=0";
+            return true;
+        }
+
+        builder.Replace("count=0", $"count={count}", 0, "M3UA parameters count=0".Length);
+        builder.Append(']');
+        inventory = builder.ToString();
+        return true;
+    }
 }

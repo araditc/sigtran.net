@@ -35,3 +35,16 @@ if (M3uaDiagnostics.TryFormatTypedSummary(packet, out string typed, out string? 
 ```
 
 The typed summary adds `kind`, such as `PayloadData`, `AspStateMaintenance`, `Error`, or `RegistrationResponse`. Unsupported messages return false with the dispatcher error.
+
+## Parameter Inventory
+
+`TryFormatParameterInventory` decodes the common header and walks the TLV parameter block. It reports the parameter count plus each tag, encoded length, value length, and padded length.
+
+```csharp
+if (M3uaDiagnostics.TryFormatParameterInventory(packet, out string inventory, out string? error))
+{
+    logger.LogTrace("{M3uaParameters}", inventory);
+}
+```
+
+This helper is useful when comparing SDK output with packet captures or SG traces, especially before a full typed parser exists for a message variant.

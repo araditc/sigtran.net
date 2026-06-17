@@ -827,6 +827,10 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         M3uaDiagnostics.TryFormatTypedSummary(buffer.Slice(0, written), out string typedSummary, out string? typedSummaryError),
         typedSummaryError ?? "typed summary format failed");
     AssertEqual("M3UA v1 class=Aspsm type=3 kind=AspStateMaintenance length=16 parameters=8", typedSummary, "M3UA typed summary");
+    Assert(
+        M3uaDiagnostics.TryFormatParameterInventory(buffer.Slice(0, written), out string inventory, out string? inventoryError),
+        inventoryError ?? "parameter inventory failed");
+    AssertEqual("M3UA parameters count=1 [HeartbeatData length=6 value=2 padded=8]", inventory, "M3UA parameter inventory");
 
     Span<byte> unsupported = stackalloc byte[8];
     unsupported[0] = 1;
@@ -842,6 +846,18 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         !M3uaDiagnostics.TryFormatSummary([0x01, 0x00], out _, out string? malformedError),
         "malformed summary should fail");
     Assert(malformedError?.Contains("too short", StringComparison.Ordinal) == true, malformedError ?? "missing malformed summary error");
+
+    Span<byte> badParameter = stackalloc byte[12];
+    badParameter[0] = 1;
+    badParameter[2] = (byte)M3uaMessageClass.Aspsm;
+    badParameter[3] = (byte)M3uaAspsmMessageType.Heartbeat;
+    badParameter[7] = 12;
+    badParameter[9] = (byte)M3uaParameterTag.HeartbeatData;
+    badParameter[11] = 16;
+    Assert(
+        !M3uaDiagnostics.TryFormatParameterInventory(badParameter, out _, out string? badParameterError),
+        "bad parameter inventory should fail");
+    Assert(badParameterError?.Contains("exceeds remaining buffer", StringComparison.Ordinal) == true, badParameterError ?? "missing bad parameter error");
 }
 
 static void M3uaAspClientCompletesStartupHandshake()
