@@ -10,6 +10,8 @@ Run("M3UA builds ASP Inactive Ack with Routing Context", M3uaBuildsAspInactiveAc
 Run("M3UA parses ASP Up into a typed ASPSM message", M3uaParsesAspUp);
 Run("M3UA parses ASP Active into a typed ASPTM message", M3uaParsesAspActive);
 Run("M3UA rejects malformed typed Routing Context", M3uaRejectsMalformedTypedRoutingContext);
+Run("M3UA ASP state machine follows the active lifecycle", M3uaAspStateMachineFollowsActiveLifecycle);
+Run("M3UA ASP state machine rejects invalid transitions", M3uaAspStateMachineRejectsInvalidTransitions);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -262,6 +264,56 @@ static void M3uaRejectsMalformedTypedRoutingContext()
         !M3uaTypedMessageParser.TryParseAsptm(message, out _, out string? parseError),
         "malformed Routing Context should be rejected");
     Assert(parseError?.Contains("non-empty multiple of 4 bytes", StringComparison.Ordinal) == true, parseError ?? "missing parse error");
+}
+
+static void M3uaAspStateMachineFollowsActiveLifecycle()
+{
+    M3uaAspStateMachine machine = new();
+    AssertEqual(M3uaAspState.Down, machine.State, "initial ASP state");
+
+    Assert(
+        machine.TryApply(M3uaAspEvent.AspUpAcknowledged, out M3uaAspStateTransition up, out string? upError),
+        upError ?? "ASP Up Ack transition failed");
+    AssertEqual(M3uaAspState.Down, up.From, "ASP Up Ack from");
+    AssertEqual(M3uaAspState.Inactive, up.To, "ASP Up Ack to");
+    Assert(up.Changed, "ASP Up Ack should change state");
+
+    Assert(
+        machine.TryApply(M3uaAspEvent.AspActiveAcknowledged, out M3uaAspStateTransition active, out string? activeError),
+        activeError ?? "ASP Active Ack transition failed");
+    AssertEqual(M3uaAspState.Active, machine.State, "active ASP state");
+    AssertEqual(M3uaAspState.Inactive, active.From, "ASP Active Ack from");
+    AssertEqual(M3uaAspState.Active, active.To, "ASP Active Ack to");
+
+    Assert(
+        machine.TryApply(M3uaAspEvent.AspInactiveAcknowledged, out M3uaAspStateTransition inactive, out string? inactiveError),
+        inactiveError ?? "ASP Inactive Ack transition failed");
+    AssertEqual(M3uaAspState.Inactive, machine.State, "inactive ASP state");
+    AssertEqual(M3uaAspState.Active, inactive.From, "ASP Inactive Ack from");
+    AssertEqual(M3uaAspState.Inactive, inactive.To, "ASP Inactive Ack to");
+
+    Assert(
+        machine.TryApply(M3uaAspEvent.AspDownAcknowledged, out M3uaAspStateTransition down, out string? downError),
+        downError ?? "ASP Down Ack transition failed");
+    AssertEqual(M3uaAspState.Down, machine.State, "down ASP state");
+    AssertEqual(M3uaAspState.Inactive, down.From, "ASP Down Ack from");
+    AssertEqual(M3uaAspState.Down, down.To, "ASP Down Ack to");
+}
+
+static void M3uaAspStateMachineRejectsInvalidTransitions()
+{
+    M3uaAspStateMachine machine = new();
+    Assert(
+        !machine.TryApply(M3uaAspEvent.AspActiveAcknowledged, out _, out string? error),
+        "ASP Active Ack from Down should be rejected");
+    Assert(error?.Contains("Cannot apply", StringComparison.Ordinal) == true, error ?? "missing invalid transition error");
+    AssertEqual(M3uaAspState.Down, machine.State, "state after rejected transition");
+
+    Assert(
+        machine.TryApply(M3uaAspEvent.TransportLost, out M3uaAspStateTransition lost, out string? lostError),
+        lostError ?? "TransportLost transition failed");
+    AssertEqual(M3uaAspState.Down, lost.To, "TransportLost target");
+    Assert(!lost.Changed, "TransportLost from Down should not change state");
 }
 
 static void Run(string name, Action test)
