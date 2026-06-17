@@ -15,6 +15,7 @@ Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplica
 Run("M3UA route table removes and clears routes", M3uaRouteTableRemovesAndClearsRoutes);
 Run("M3UA route table snapshots and finds routes by name", M3uaRouteTableSnapshotsAndFindsRoutesByName);
 Run("M3UA route table replaces routes by selector", M3uaRouteTableReplacesRoutesBySelector);
+Run("M3UA route table adds or replaces routes by selector", M3uaRouteTableAddsOrReplacesRoutesBySelector);
 Run("M3UA inbound processor updates ASP state and routes DATA", M3uaInboundProcessorUpdatesAspStateAndRoutesData);
 Run("M3UA inbound processor can require active ASP for DATA", M3uaInboundProcessorCanRequireActiveAspForData);
 Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist);
@@ -409,6 +410,25 @@ static void M3uaRouteTableReplacesRoutesBySelector()
     M3uaPayloadRoute missing = new("missing", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: null);
     Assert(!table.TryReplace(missing, out string? missingError), "missing selector replace should fail");
     Assert(missingError?.Contains("No route", StringComparison.Ordinal) == true, missingError ?? "missing replace error");
+}
+
+static void M3uaRouteTableAddsOrReplacesRoutesBySelector()
+{
+    M3uaPayloadRouteTable table = new();
+    M3uaPayloadRoute first = new("first", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute replacement = new("replacement", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute second = new("second", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: null);
+
+    table.AddOrReplace(first, out bool firstReplaced);
+    table.AddOrReplace(replacement, out bool replacementReplaced);
+    table.AddOrReplace(second, out bool secondReplaced);
+
+    Assert(!firstReplaced, "first route should be added");
+    Assert(replacementReplaced, "replacement route should replace same selectors");
+    Assert(!secondReplaced, "second route should be added");
+    AssertEqual(2, table.Count, "add-or-replace route count");
+    AssertEqual("replacement", table.Routes[0].Name, "replaced route name");
+    AssertEqual("second", table.Routes[1].Name, "added route name");
 }
 
 static void M3uaRouteTableSnapshotsAndFindsRoutesByName()

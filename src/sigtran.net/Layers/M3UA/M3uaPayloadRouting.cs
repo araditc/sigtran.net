@@ -175,6 +175,28 @@ public sealed class M3uaPayloadRouteTable
     }
 
     /// <summary>
+    /// Adds the supplied route or replaces an existing route with the same selectors.
+    /// </summary>
+    /// <param name="route">The route to add or use as a replacement.</param>
+    /// <param name="replaced">True when an existing route was replaced; false when a new route was added.</param>
+    public void AddOrReplace(M3uaPayloadRoute route, out bool replaced)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        for (int i = 0; i < _routes.Count; i++)
+        {
+            if (_routes[i].HasSameSelectors(route))
+            {
+                _routes[i] = route;
+                replaced = true;
+                return;
+            }
+        }
+
+        _routes.Add(route);
+        replaced = false;
+    }
+
+    /// <summary>
     /// Removes all registered routes.
     /// </summary>
     public void Clear()
