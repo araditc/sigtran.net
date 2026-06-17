@@ -155,6 +155,71 @@ public sealed class M3uaNotifyMessage
 }
 
 /// <summary>
+/// Represents a single Affected Point Code entry.
+/// </summary>
+public readonly struct M3uaAffectedPointCode
+{
+    /// <summary>Creates an Affected Point Code entry.</summary>
+    /// <param name="mask">The affected point-code mask.</param>
+    /// <param name="pointCode">The affected point code, encoded in the low 24 bits.</param>
+    public M3uaAffectedPointCode(byte mask, uint pointCode)
+    {
+        Mask = mask;
+        PointCode = pointCode & 0x00FF_FFFF;
+    }
+
+    /// <summary>The affected point-code mask.</summary>
+    public byte Mask { get; }
+
+    /// <summary>The affected point code, encoded in the low 24 bits.</summary>
+    public uint PointCode { get; }
+}
+
+/// <summary>
+/// Represents a typed SS7 Signalling Network Management message.
+/// </summary>
+public sealed class M3uaSsnmMessage
+{
+    private readonly uint[] _routingContexts;
+    private readonly M3uaAffectedPointCode[] _affectedPointCodes;
+
+    /// <summary>Creates a typed SSNM message.</summary>
+    /// <param name="messageType">The SSNM message type.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    public M3uaSsnmMessage(
+        M3uaSsnmMessageType messageType,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlyMemory<byte> infoString)
+    {
+        MessageType = messageType;
+        NetworkAppearance = networkAppearance;
+        _routingContexts = routingContexts.ToArray();
+        _affectedPointCodes = affectedPointCodes.ToArray();
+        InfoString = infoString;
+    }
+
+    /// <summary>The SSNM message type.</summary>
+    public M3uaSsnmMessageType MessageType { get; }
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Routing Context values.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+
+    /// <summary>The affected point-code entries.</summary>
+    public ReadOnlySpan<M3uaAffectedPointCode> AffectedPointCodes => _affectedPointCodes;
+
+    /// <summary>The optional Info String value.</summary>
+    public ReadOnlyMemory<byte> InfoString { get; }
+}
+
+/// <summary>
 /// Converts generic M3UA messages into typed messages used by session state machines.
 /// </summary>
 public static class M3uaTypedMessageParser
@@ -373,6 +438,121 @@ public static class M3uaTypedMessageParser
         }
 
         typedMessage = new(statusType.Value, statusInformation, aspIdentifier, routingContexts, infoString);
+        return true;
+    }
+
+    /// <summary>
+    /// Parses a common SSNM message containing Network Appearance, Routing Context,
+    /// Affected Point Code, and Info String parameters.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseSsnm(
+        M3uaMessage message,
+        out M3uaSsnmMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (message.MessageClass != M3uaMessageClass.Ssnm)
+        {
+            error = $"Expected SSNM message class, got {message.MessageClass}";
+            return false;
+        }
+
+        if (!Enum.IsDefined(typeof(M3uaSsnmMessageType), message.MessageType))
+        {
+            error = $"Unknown SSNM message type {message.MessageType}";
+            return false;
+        }
+
+        M3uaSsnmMessageType messageType = (M3uaSsnmMessageType)message.MessageType;
+        uint? networkAppearance = null;
+        uint[] routingContexts = Array.Empty<uint>();
+        M3uaAffectedPointCode[] affectedPointCodes = Array.Empty<M3uaAffectedPointCode>();
+        byte[] infoString = Array.Empty<byte>();
+        bool hasRoutingContext = false;
+        bool hasAffectedPointCode = false;
+        bool hasInfoString = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (hasRoutingContext)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+                    {
+                        return false;
+                    }
+
+                    hasRoutingContext = true;
+                    break;
+
+                case M3uaParameterTag.AffectedPointCode:
+                    if (hasAffectedPointCode)
+                    {
+                        error = "Duplicate Affected Point Code parameter";
+                        return false;
+                    }
+
+                    if (!TryReadAffectedPointCodes(parameter.Value, out affectedPointCodes, out error))
+                    {
+                        return false;
+                    }
+
+                    hasAffectedPointCode = true;
+                    break;
+
+                case M3uaParameterTag.InfoString:
+                    if (hasInfoString)
+                    {
+                        error = "Duplicate Info String parameter";
+                        return false;
+                    }
+
+                    hasInfoString = true;
+                    infoString = parameter.Value.ToArray();
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!hasAffectedPointCode)
+        {
+            error = "Missing Affected Point Code parameter";
+            return false;
+        }
+
+        typedMessage = new(messageType, networkAppearance, routingContexts, affectedPointCodes, infoString);
         return true;
     }
 
@@ -668,6 +848,31 @@ public static class M3uaTypedMessageParser
         for (int i = 0; i < result.Length; i++)
         {
             result[i] = BinaryPrimitives.ReadUInt32BigEndian(value.Slice(i * sizeof(uint), sizeof(uint)));
+        }
+
+        return true;
+    }
+
+    private static bool TryReadAffectedPointCodes(
+        ReadOnlySpan<byte> value,
+        out M3uaAffectedPointCode[] result,
+        out string? error)
+    {
+        result = Array.Empty<M3uaAffectedPointCode>();
+        error = null;
+
+        if (value.IsEmpty || (value.Length % sizeof(uint)) != 0)
+        {
+            error = "Affected Point Code parameter length must be a non-empty multiple of 4 bytes";
+            return false;
+        }
+
+        result = new M3uaAffectedPointCode[value.Length / sizeof(uint)];
+        for (int i = 0; i < result.Length; i++)
+        {
+            ReadOnlySpan<byte> entry = value.Slice(i * sizeof(uint), sizeof(uint));
+            uint pointCode = ((uint)entry[1] << 16) | ((uint)entry[2] << 8) | entry[3];
+            result[i] = new(entry[0], pointCode);
         }
 
         return true;

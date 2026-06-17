@@ -17,6 +17,8 @@ Run("M3UA ASP session rejects acknowledgement messages in the wrong state", M3ua
 Run("M3UA parses Management Error messages", M3uaParsesManagementError);
 Run("M3UA parses Management Notify messages", M3uaParsesManagementNotify);
 Run("M3UA rejects invalid Management Notify status information", M3uaRejectsInvalidManagementNotifyStatusInformation);
+Run("M3UA parses SSNM Destination Unavailable messages", M3uaParsesSsnmDestinationUnavailable);
+Run("M3UA rejects SSNM messages without Affected Point Code", M3uaRejectsSsnmWithoutAffectedPointCode);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -476,6 +478,65 @@ static void M3uaRejectsInvalidManagementNotifyStatusInformation()
         !M3uaTypedMessageParser.TryParseNotify(message, out _, out string? parseError),
         "invalid Notify status information should be rejected");
     Assert(parseError?.Contains("Unknown Notify Status Information", StringComparison.Ordinal) == true, parseError ?? "missing Notify parse error");
+}
+
+static void M3uaParsesSsnmDestinationUnavailable()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    uint[] routingContexts = [0x00000012];
+    M3uaAffectedPointCode[] affectedPointCodes =
+    [
+        new(mask: 0x00, pointCode: 0x00123456),
+        new(mask: 0xFF, pointCode: 0x0000ABCD)
+    ];
+    byte[] info = [0x64, 0x75, 0x6E, 0x61];
+
+    Assert(
+        M3uaMessageBuilder.BuildDestinationUnavailable(
+            buffer,
+            networkAppearance: 0x00000005,
+            routingContexts,
+            affectedPointCodes,
+            info,
+            out int written,
+            out string? buildError),
+        buildError ?? "DUNA build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.Ssnm, message.MessageClass, "DUNA message class");
+    AssertEqual((byte)M3uaSsnmMessageType.DestinationUnavailable, message.MessageType, "DUNA message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseSsnm(message, out M3uaSsnmMessage? typed, out string? parseError),
+        parseError ?? "DUNA typed parse failed");
+
+    AssertEqual(M3uaSsnmMessageType.DestinationUnavailable, typed!.MessageType, "typed DUNA type");
+    AssertEqual((uint?)0x00000005, typed.NetworkAppearance, "typed DUNA Network Appearance");
+    AssertSequence([0x00, 0x00, 0x00, 0x12], UInt32SpanToBytes(typed.RoutingContexts), "typed DUNA Routing Contexts");
+    AssertEqual(2, typed.AffectedPointCodes.Length, "typed affected point-code count");
+    AssertEqual((byte)0x00, typed.AffectedPointCodes[0].Mask, "first affected point-code mask");
+    AssertEqual((uint)0x00123456, typed.AffectedPointCodes[0].PointCode, "first affected point-code value");
+    AssertEqual((byte)0xFF, typed.AffectedPointCodes[1].Mask, "second affected point-code mask");
+    AssertEqual((uint)0x0000ABCD, typed.AffectedPointCodes[1].PointCode, "second affected point-code value");
+    AssertSequence(info, typed.InfoString.Span, "typed DUNA Info String");
+}
+
+static void M3uaRejectsSsnmWithoutAffectedPointCode()
+{
+    Span<byte> buffer = stackalloc byte[32];
+    buffer[0] = 1;
+    buffer[1] = 0;
+    buffer[2] = (byte)M3uaMessageClass.Ssnm;
+    buffer[3] = (byte)M3uaSsnmMessageType.DestinationAvailable;
+    buffer[4] = 0;
+    buffer[5] = 0;
+    buffer[6] = 0;
+    buffer[7] = 8;
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, 8));
+    Assert(
+        !M3uaTypedMessageParser.TryParseSsnm(message, out _, out string? parseError),
+        "SSNM without Affected Point Code should be rejected");
+    Assert(parseError?.Contains("Missing Affected Point Code", StringComparison.Ordinal) == true, parseError ?? "missing SSNM parse error");
 }
 
 static void Run(string name, Action test)

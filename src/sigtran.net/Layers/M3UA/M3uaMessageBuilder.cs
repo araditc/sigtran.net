@@ -343,6 +343,130 @@ public static class M3uaMessageBuilder
     }
 
     /// <summary>
+    /// Builds a Destination Unavailable SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDestinationUnavailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildCommonSsnmMessage(
+            buffer,
+            M3uaSsnmMessageType.DestinationUnavailable,
+            networkAppearance,
+            routingContexts,
+            affectedPointCodes,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination Available SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDestinationAvailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildCommonSsnmMessage(
+            buffer,
+            M3uaSsnmMessageType.DestinationAvailable,
+            networkAppearance,
+            routingContexts,
+            affectedPointCodes,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination State Audit SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDestinationStateAudit(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildCommonSsnmMessage(
+            buffer,
+            M3uaSsnmMessageType.DestinationStateAudit,
+            networkAppearance,
+            routingContexts,
+            affectedPointCodes,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
+    /// Builds a Destination Restricted SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDestinationRestricted(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        return BuildCommonSsnmMessage(
+            buffer,
+            M3uaSsnmMessageType.DestinationRestricted,
+            networkAppearance,
+            routingContexts,
+            affectedPointCodes,
+            infoString,
+            out written,
+            out error);
+    }
+
+    /// <summary>
     /// Builds an ASP Active message.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
@@ -552,6 +676,60 @@ public static class M3uaMessageBuilder
         return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
     }
 
+    private static bool BuildCommonSsnmMessage(
+        Span<byte> buffer,
+        M3uaSsnmMessageType messageType,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (affectedPointCodes.IsEmpty)
+        {
+            error = "At least one Affected Point Code is required";
+            return false;
+        }
+
+        error = null;
+        int parameterLength = (networkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + M3uaParameterWriter.GetPaddedLength(affectedPointCodes.Length * sizeof(uint))
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Ssnm, (byte)messageType, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (networkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.NetworkAppearance, networkAppearance.Value, out int paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        if (!TryWriteAffectedPointCodeParameter(buffer, affectedPointCodes, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
     private static bool BuildRoutingContextInfoMessage(
         Span<byte> buffer,
         byte messageType,
@@ -684,6 +862,33 @@ public static class M3uaMessageBuilder
         for (int i = 0; i < values.Length; i++)
         {
             BinaryPrimitives.WriteUInt32BigEndian(valueBuffer.Slice(i * sizeof(uint), sizeof(uint)), values[i]);
+        }
+
+        offset += written;
+        return true;
+    }
+
+    private static bool TryWriteAffectedPointCodeParameter(
+        Span<byte> buffer,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ref int offset,
+        out string? error)
+    {
+        int valueLength = affectedPointCodes.Length * sizeof(uint);
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.AffectedPointCode, valueLength, out int written, out error))
+        {
+            return false;
+        }
+
+        Span<byte> valueBuffer = buffer.Slice(offset + M3uaProtocol.ParameterHeaderLength, valueLength);
+        for (int i = 0; i < affectedPointCodes.Length; i++)
+        {
+            M3uaAffectedPointCode affectedPointCode = affectedPointCodes[i];
+            int entryOffset = i * sizeof(uint);
+            valueBuffer[entryOffset] = affectedPointCode.Mask;
+            valueBuffer[entryOffset + 1] = (byte)((affectedPointCode.PointCode >> 16) & 0xFF);
+            valueBuffer[entryOffset + 2] = (byte)((affectedPointCode.PointCode >> 8) & 0xFF);
+            valueBuffer[entryOffset + 3] = (byte)(affectedPointCode.PointCode & 0xFF);
         }
 
         offset += written;
