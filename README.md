@@ -1,246 +1,99 @@
-# SIGTRAN Project – Phase 3 Progress (TCAP Integration)
+# SIGTRAN.NET
 
-## Overview
+SIGTRAN.NET is a .NET 10 SDK for building SS7-over-IP applications. The project is being shaped from an early proof of concept into a standards-oriented, open-source SDK with stable public APIs, documented protocol behavior, and byte-level tests.
 
-This phase focuses on integrating the Transaction Capabilities Application Part (TCAP) layer on top of the SCCP implementation from Phase 2.  It includes the introduction of a new enumeration for TCAP operation codes, and initial encode/decode support for the two primary component types we need in early end‑to‑end tests: **Invoke** and **ReturnResult**.  The goal is to produce a byte‑array representation that can be carried inside the SCCP UDT message’s `UserData` field and subsequently transported by M3UA.
+The first production milestone is M3UA over a transport abstraction. SCCP, TCAP, and MAP code still exist in the repository, but those layers are currently experimental until their simplified encodings are replaced with standards-based implementations.
 
-We intentionally use a **simplified encoding scheme** to bootstrap testing quickly; real TCAP uses ASN.1 BER encoding which is far more complex.  The simplified scheme outlined here packs the minimal fields required for our test scenarios in a fixed order.
+## Current Status
 
-## TCAP Operation Codes
+| Area | Status |
+| --- | --- |
+| SDK packaging | .NET 10 library, NuGet metadata, XML documentation generation, package validation |
+| M3UA common framing | Header parser, TLV reader/writer, padding handling, Protocol Data support |
+| M3UA ASPSM | ASP Up/Down, Heartbeat, acknowledgements, typed parsing |
+| M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
+| M3UA management | Error and Notify builders/parsers |
+| M3UA SSNM | DUNA, DAVA, DAUD, DRST, DUPU, and SCON builders/parsers |
+| ASP state | Local acknowledgement-driven ASP session state machine |
+| SCTP | Transport contract plus a development TCP adapter; production SCTP is planned |
+| SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
 
-Operation codes identify the service or action requested via an Invoke component.  In MAP‑SMS, common operation codes include sending and delivering short messages.  Below is an initial enumeration (`TcapOperationCode`) containing a few representative values.  These can be extended to match the full MAP specification later.
+## Requirements
+
+- .NET 10 SDK
+- Windows or Linux development environment
+- Git for source control
+
+## Build And Test
+
+```powershell
+dotnet build src\sigtran.net.sln
+dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
+dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
+```
+
+Public API XML comments are required. The library treats missing public documentation (`CS1591`) as an error so that generated NuGet packages remain usable by downstream developers.
+
+## M3UA Example
 
 ```csharp
-namespace SigtranStack.Layers.TCAP
+using sigtran.net.Layers.M3UA;
+
+Span<byte> buffer = stackalloc byte[256];
+M3uaAffectedPointCode[] affected =
+[
+    new(mask: 0, pointCode: 0x00112233)
+];
+
+bool built = M3uaMessageBuilder.BuildSignallingCongestion(
+    buffer,
+    networkAppearance: 7,
+    routingContexts: [0x55],
+    affectedPointCodes: affected,
+    concernedDestination: new M3uaAffectedPointCode(0, 0x0000AAAA),
+    congestionLevel: 2,
+    infoString: "scon"u8,
+    out int written,
+    out string? error);
+
+if (!built)
 {
-    /// <summary>
-    /// Represents high‑level TCAP/MAP operation codes.  In a real implementation these
-    /// map to ASN.1 Object Identifiers defined in 3GPP TS 29.002.  We use
-    /// small integers for early test cases.
-    /// </summary>
-    public enum TcapOperationCode : byte
-    {
-        /// <summary>Unknown or undefined operation.</summary>
-        None = 0,
+    throw new InvalidOperationException(error);
+}
 
-        /// <summary>MAP operation to send a mobile‑originated short message (MO‑ForwardSM).</summary>
-        MoForwardShortMessage = 1,
+M3uaMessage message = new();
+if (!message.TryDecode(buffer[..written], out error))
+{
+    throw new InvalidOperationException(error);
+}
 
-        /// <summary>MAP operation to send a mobile‑terminated short message (MT‑ForwardSM).</summary>
-        MtForwardShortMessage = 2,
-
-        /// <summary>MAP operation to alert the Service Centre that a mobile is reachable.</summary>
-        AlertServiceCentre = 3,
-
-        /// <summary>MAP operation to report short message delivery status.</summary>
-        ReportSmDeliveryStatus = 4
-    }
+if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
+        message,
+        out M3uaSignallingCongestionMessage? scon,
+        out error))
+{
+    throw new InvalidOperationException(error);
 }
 ```
 
-## Component Base Class
+## Documentation
 
-All TCAP components share a few common fields: an **Invoke ID** to correlate requests and responses, an **operation code** (for Invoke and ReturnResult), and a byte array of **parameters** (which in our simplified scheme are left as raw payloads).  The abstract base class `TcapComponent` defines these fields and declares `Encode()` and `Decode()` methods that subclasses must implement.
+- [SDK roadmap](docs/SDK_ROADMAP.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [M3UA implementation notes](docs/M3UA.md)
+- [Quality and contribution rules](docs/QUALITY.md)
 
-```csharp
-namespace SigtranStack.Layers.TCAP
-{
-    using System;
+## Project Direction
 
-    /// <summary>
-    /// Base class for TCAP components.  Provides common properties and enforces
-    /// encoding/decoding semantics via abstract methods.
-    /// </summary>
-    public abstract class TcapComponent
-    {
-        /// <summary>
-        /// Gets the invoke identifier associated with this component.  For Invoke
-        /// this is generated by the sender; for ReturnResult it refers back to
-        /// the original Invoke.
-        /// </summary>
-        public byte InvokeId { get; protected set; }
+The roadmap is intentionally conservative:
 
-        /// <summary>
-        /// Gets the operation code associated with this component.
-        /// </summary>
-        public TcapOperationCode OperationCode { get; protected set; }
+1. Finish binary-correct M3UA.
+2. Add a production SCTP transport story.
+3. Replace simplified SCCP with standards-based SCCP.
+4. Replace simplified TCAP with ASN.1 BER based TCAP.
+5. Add MAP SMS profiles and high-level client APIs.
+6. Add interoperability tooling, simulators, CI, and release automation.
 
-        /// <summary>
-        /// Gets the parameters for this component.  In real TCAP these are ASN.1
-        /// encoded structures; here we treat them as opaque bytes.
-        /// </summary>
-        public ReadOnlyMemory<byte> Parameters { get; protected set; }
+## License
 
-        /// <summary>
-        /// Encodes the component into a byte array according to the simplified format.
-        /// </summary>
-        /// <returns>Encoded bytes representing the component.</returns>
-        public abstract byte[] Encode();
-
-        /// <summary>
-        /// Parses a component from encoded bytes.  Subclasses should verify the
-        /// component type marker and populate properties accordingly.
-        /// </summary>
-        /// <param name="data">Byte span containing the component.</param>
-        /// <returns>True on success; false otherwise.</returns>
-        public abstract bool TryDecode(ReadOnlySpan<byte> data);
-    }
-}
-```
-
-## Invoke Component
-
-Invoke components request a remote operation.  Our simplified encoding uses the following layout:
-
-| Offset | Length | Purpose |
-|-------:|--------|---------|
-| 0      | 1      | Type = 0xA1 for Invoke |
-| 1      | 1      | Invoke ID |
-| 2      | 1      | Operation Code |
-| 3      | 1      | Length of Parameters (N) |
-| 4..   | N      | Parameter bytes |
-
-`Encode()` constructs a byte array accordingly.  `TryDecode()` validates the type marker, checks bounds, and populates fields.
-
-```csharp
-namespace SigtranStack.Layers.TCAP
-{
-    using System;
-
-    /// <summary>
-    /// Represents a TCAP Invoke component for simplified testing.  Uses a
-    /// fixed layout and 8‑bit invoke IDs and operation codes.
-    /// </summary>
-    public sealed class TcapInvokeComponent : TcapComponent
-    {
-        /// <summary>
-        /// Constructs a new Invoke component with given fields.
-        /// </summary>
-        public TcapInvokeComponent(byte invokeId, TcapOperationCode opCode, ReadOnlyMemory<byte> parameters)
-        {
-            InvokeId = invokeId;
-            OperationCode = opCode;
-            Parameters = parameters;
-        }
-
-        /// <inheritdoc />
-        public override byte[] Encode()
-        {
-            int len = Parameters.Length;
-            byte[] buffer = new byte[4 + len];
-            buffer[0] = 0xA1; // Invoke type marker
-            buffer[1] = InvokeId;
-            buffer[2] = (byte)OperationCode;
-            buffer[3] = (byte)len;
-            if (len > 0)
-            {
-                Parameters.Span.CopyTo(buffer.AsSpan(4));
-            }
-            return buffer;
-        }
-
-        /// <inheritdoc />
-        public override bool TryDecode(ReadOnlySpan<byte> data)
-        {
-            if (data.Length < 4) return false;
-            if (data[0] != 0xA1) return false;
-            byte id = data[1];
-            TcapOperationCode op = (TcapOperationCode)data[2];
-            int plen = data[3];
-            if (data.Length < 4 + plen) return false;
-            InvokeId = id;
-            OperationCode = op;
-            Parameters = data.Slice(4, plen).ToArray();
-            return true;
-        }
-    }
-}
-```
-
-## ReturnResult Component
-
-A ReturnResult component conveys the successful outcome of a previously issued Invoke.  Our simplified format mirrors the Invoke structure but uses a different type marker (`0xA2`).  The operation code is repeated for completeness.
-
-```csharp
-namespace SigtranStack.Layers.TCAP
-{
-    using System;
-
-    /// <summary>
-    /// Represents a TCAP ReturnResult component for simplified testing.
-    /// </summary>
-    public sealed class TcapReturnResultComponent : TcapComponent
-    {
-        /// <summary>
-        /// Constructs a new ReturnResult component.
-        /// </summary>
-        public TcapReturnResultComponent(byte invokeId, TcapOperationCode opCode, ReadOnlyMemory<byte> parameters)
-        {
-            InvokeId = invokeId;
-            OperationCode = opCode;
-            Parameters = parameters;
-        }
-
-        /// <inheritdoc />
-        public override byte[] Encode()
-        {
-            int len = Parameters.Length;
-            byte[] buffer = new byte[4 + len];
-            buffer[0] = 0xA2; // ReturnResult type marker
-            buffer[1] = InvokeId;
-            buffer[2] = (byte)OperationCode;
-            buffer[3] = (byte)len;
-            if (len > 0)
-            {
-                Parameters.Span.CopyTo(buffer.AsSpan(4));
-            }
-            return buffer;
-        }
-
-        /// <inheritdoc />
-        public override bool TryDecode(ReadOnlySpan<byte> data)
-        {
-            if (data.Length < 4) return false;
-            if (data[0] != 0xA2) return false;
-            byte id = data[1];
-            TcapOperationCode op = (TcapOperationCode)data[2];
-            int plen = data[3];
-            if (data.Length < 4 + plen) return false;
-            InvokeId = id;
-            OperationCode = op;
-            Parameters = data.Slice(4, plen).ToArray();
-            return true;
-        }
-    }
-}
-```
-
-## Using TCAP Components in an End‑to‑End Test
-
-The `Encode()` methods produce raw byte arrays that can be passed as the `UserData` in an `SccpMessage`.  For example:
-
-```csharp
-// Create a TCAP Invoke asking to forward a mobile‑originated short message
-var invoke = new TcapInvokeComponent(1, TcapOperationCode.MoForwardShortMessage,
-    parameters: new byte[] { 0x01, 0x02, 0x03 });
-byte[] tcapBytes = invoke.Encode();
-
-// Build a UDT with these bytes and send down via SCCP/M3UA
-var udt = new SccpMessage
-{
-    ProtocolClass = 0,
-    CalledParty = new SccpAddress { Subsystem = SubsystemNumber.MAP },
-    CallingParty = new SccpAddress { Subsystem = SubsystemNumber.MAP },
-    UserData = tcapBytes
-};
-byte[] sccpPayload = udt.EncodeUdt();
-```
-
-On the receiving side, the bytes can be parsed back into a `TcapInvokeComponent` or `TcapReturnResultComponent` by examining the first byte (0xA1 or 0xA2).  The `TryDecode()` method will populate the Invoke ID, Operation Code and Parameters accordingly.  More component types (e.g., ReturnError, Reject) can be added later following the same pattern.
-
-## Next Steps
-
-1. **Integrate TCAP into the SCCP layer**: modify the `SccpLayer` to produce and consume `TcapComponent` objects rather than raw `byte[]` for clarity.
-2. **Implement TCAP Dialogue management**: connect `TcapDialogue` with `TcapComponent` encode/decode so that it can build full messages (with multiple components) and track transaction state.
-3. **Support additional component types**: ReturnError and Reject should be added with appropriate simplified encoding.
-4. **Transition to ASN.1 BER**: once the simplified path is proven, replace the custom encoding with proper BER encoding using an ASN.1 library.
+This project is licensed under the Apache License 2.0.

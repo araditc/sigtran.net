@@ -220,6 +220,56 @@ public sealed class M3uaSsnmMessage
 }
 
 /// <summary>
+/// Represents a typed Signalling Congestion message.
+/// </summary>
+public sealed class M3uaSignallingCongestionMessage
+{
+    private readonly uint[] _routingContexts;
+    private readonly M3uaAffectedPointCode[] _affectedPointCodes;
+
+    /// <summary>Creates a typed Signalling Congestion message.</summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="concernedDestination">The optional concerned destination point code.</param>
+    /// <param name="congestionLevel">The optional Congestion Indications level.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    public M3uaSignallingCongestionMessage(
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        M3uaAffectedPointCode? concernedDestination,
+        uint? congestionLevel,
+        ReadOnlyMemory<byte> infoString)
+    {
+        NetworkAppearance = networkAppearance;
+        _routingContexts = routingContexts.ToArray();
+        _affectedPointCodes = affectedPointCodes.ToArray();
+        ConcernedDestination = concernedDestination;
+        CongestionLevel = congestionLevel;
+        InfoString = infoString;
+    }
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Routing Context values.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+
+    /// <summary>The affected point-code entries.</summary>
+    public ReadOnlySpan<M3uaAffectedPointCode> AffectedPointCodes => _affectedPointCodes;
+
+    /// <summary>The optional concerned destination point code.</summary>
+    public M3uaAffectedPointCode? ConcernedDestination { get; }
+
+    /// <summary>The optional Congestion Indications level.</summary>
+    public uint? CongestionLevel { get; }
+
+    /// <summary>The optional Info String value.</summary>
+    public ReadOnlyMemory<byte> InfoString { get; }
+}
+
+/// <summary>
 /// Represents a typed Destination User Part Unavailable message.
 /// </summary>
 public sealed class M3uaDestinationUserPartUnavailableMessage
@@ -739,6 +789,153 @@ public static class M3uaTypedMessageParser
         }
 
         typedMessage = new(networkAppearance, routingContexts, affectedPointCodes[0], cause.Value, userIdentity.Value, infoString);
+        return true;
+    }
+
+    /// <summary>
+    /// Parses a Signalling Congestion message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseSignallingCongestion(
+        M3uaMessage message,
+        out M3uaSignallingCongestionMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (message.MessageClass != M3uaMessageClass.Ssnm || message.MessageType != (byte)M3uaSsnmMessageType.SignallingCongestion)
+        {
+            error = $"Expected SCON message, got class {message.MessageClass} type {message.MessageType}";
+            return false;
+        }
+
+        uint? networkAppearance = null;
+        uint[] routingContexts = Array.Empty<uint>();
+        M3uaAffectedPointCode[] affectedPointCodes = Array.Empty<M3uaAffectedPointCode>();
+        M3uaAffectedPointCode? concernedDestination = null;
+        uint? congestionLevel = null;
+        byte[] infoString = Array.Empty<byte>();
+        bool hasRoutingContext = false;
+        bool hasAffectedPointCode = false;
+        bool hasConcernedDestination = false;
+        bool hasInfoString = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (hasRoutingContext)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+                    {
+                        return false;
+                    }
+
+                    hasRoutingContext = true;
+                    break;
+
+                case M3uaParameterTag.AffectedPointCode:
+                    if (hasAffectedPointCode)
+                    {
+                        error = "Duplicate Affected Point Code parameter";
+                        return false;
+                    }
+
+                    if (!TryReadAffectedPointCodes(parameter.Value, out affectedPointCodes, out error))
+                    {
+                        return false;
+                    }
+
+                    hasAffectedPointCode = true;
+                    break;
+
+                case M3uaParameterTag.ConcernedDestination:
+                    if (hasConcernedDestination)
+                    {
+                        error = "Duplicate Concerned Destination parameter";
+                        return false;
+                    }
+
+                    if (!TryReadAffectedPointCodes(parameter.Value, out M3uaAffectedPointCode[] concernedDestinations, out error))
+                    {
+                        return false;
+                    }
+
+                    if (concernedDestinations.Length != 1)
+                    {
+                        error = "Concerned Destination must contain exactly one point code";
+                        return false;
+                    }
+
+                    hasConcernedDestination = true;
+                    concernedDestination = concernedDestinations[0];
+                    break;
+
+                case M3uaParameterTag.CongestionIndications:
+                    if (congestionLevel.HasValue)
+                    {
+                        error = "Duplicate Congestion Indications parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint parsedCongestionLevel, out error))
+                    {
+                        return false;
+                    }
+
+                    congestionLevel = parsedCongestionLevel;
+                    break;
+
+                case M3uaParameterTag.InfoString:
+                    if (hasInfoString)
+                    {
+                        error = "Duplicate Info String parameter";
+                        return false;
+                    }
+
+                    hasInfoString = true;
+                    infoString = parameter.Value.ToArray();
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!hasAffectedPointCode)
+        {
+            error = "Missing Affected Point Code parameter";
+            return false;
+        }
+
+        typedMessage = new(networkAppearance, routingContexts, affectedPointCodes, concernedDestination, congestionLevel, infoString);
         return true;
     }
 

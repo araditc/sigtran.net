@@ -1,0 +1,42 @@
+# Architecture
+
+SIGTRAN.NET is organized as layered protocol components with explicit boundaries between transport, adaptation, network signalling, transaction handling, and application profiles.
+
+## Layer Model
+
+| Layer | Responsibility | Current maturity |
+| --- | --- | --- |
+| SCTP transport | Association lifecycle, streams, PPID, reconnect, async I/O | Contract only; TCP adapter is development-only |
+| M3UA | MTP3 user adaptation, ASP state, routing context, SSNM, management | Active production path |
+| SCCP | Global title and subsystem routing, UDT/XUDT/LUDT | Experimental proof of concept |
+| TCAP | Dialogues, components, transaction IDs, BER encoding | Experimental proof of concept |
+| MAP | SMS operation profiles over TCAP | Experimental proof of concept |
+
+## Design Principles
+
+- Protocol encoders write into caller-provided buffers where practical.
+- Decoders validate lengths, padding, and required parameters before exposing typed messages.
+- Public APIs must carry XML documentation because the package is intended for external SDK users.
+- Experimental layers stay clearly labelled until they match the relevant standards.
+- Transport concerns are kept behind interfaces so M3UA can run over production SCTP later without changing protocol APIs.
+
+## M3UA Flow
+
+1. A transport implementation receives an M3UA byte stream from an SCTP association.
+2. `M3uaMessage` validates the common header and exposes the parameter block.
+3. `M3uaParameterReader` walks RFC-style TLV parameters and skips padding.
+4. `M3uaTypedMessageParser` converts generic messages into typed ASPSM, ASPTM, management, and SSNM objects.
+5. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
+6. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
+
+## Production Boundaries
+
+The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, and MAP APIs are not stable yet. Any commercial integration should isolate those experimental APIs behind application-owned adapters until their encodings are replaced.
+
+## Planned Stabilization Order
+
+1. M3UA binary correctness and public API polish.
+2. Production SCTP transport and association lifecycle events.
+3. Standards-based SCCP encode/decode.
+4. ASN.1 BER TCAP encode/decode.
+5. MAP SMS operation models and high-level client APIs.

@@ -467,6 +467,97 @@ public static class M3uaMessageBuilder
     }
 
     /// <summary>
+    /// Builds a Signalling Congestion SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCodes">The affected point-code entries.</param>
+    /// <param name="concernedDestination">The optional concerned destination point code.</param>
+    /// <param name="congestionLevel">The optional Congestion Indications level.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildSignallingCongestion(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        M3uaAffectedPointCode? concernedDestination,
+        uint? congestionLevel,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (affectedPointCodes.IsEmpty)
+        {
+            error = "At least one Affected Point Code is required";
+            return false;
+        }
+
+        error = null;
+        int parameterLength = (networkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + M3uaParameterWriter.GetPaddedLength(affectedPointCodes.Length * sizeof(uint))
+                              + (concernedDestination.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + (congestionLevel.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Ssnm, (byte)M3uaSsnmMessageType.SignallingCongestion, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (networkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.NetworkAppearance, networkAppearance.Value, out int paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        if (!TryWriteAffectedPointCodeParameter(buffer, affectedPointCodes, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        if (concernedDestination.HasValue)
+        {
+            ReadOnlySpan<M3uaAffectedPointCode> concernedDestinations = stackalloc[] { concernedDestination.Value };
+            if (!TryWriteAffectedPointCodeParameter(buffer, M3uaParameterTag.ConcernedDestination, concernedDestinations, ref offset, out error))
+            {
+                written = 0;
+                return false;
+            }
+        }
+
+        if (congestionLevel.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.CongestionIndications, congestionLevel.Value, out int congestionWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += congestionWritten;
+        }
+
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
+    /// <summary>
     /// Builds a Destination User Part Unavailable SSNM message.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
@@ -963,8 +1054,18 @@ public static class M3uaMessageBuilder
         ref int offset,
         out string? error)
     {
+        return TryWriteAffectedPointCodeParameter(buffer, M3uaParameterTag.AffectedPointCode, affectedPointCodes, ref offset, out error);
+    }
+
+    private static bool TryWriteAffectedPointCodeParameter(
+        Span<byte> buffer,
+        M3uaParameterTag tag,
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes,
+        ref int offset,
+        out string? error)
+    {
         int valueLength = affectedPointCodes.Length * sizeof(uint);
-        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), M3uaParameterTag.AffectedPointCode, valueLength, out int written, out error))
+        if (!M3uaParameterWriter.TryWriteHeader(buffer.Slice(offset), tag, valueLength, out int written, out error))
         {
             return false;
         }

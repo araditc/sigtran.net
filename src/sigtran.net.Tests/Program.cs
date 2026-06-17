@@ -21,6 +21,8 @@ Run("M3UA parses SSNM Destination Unavailable messages", M3uaParsesSsnmDestinati
 Run("M3UA rejects SSNM messages without Affected Point Code", M3uaRejectsSsnmWithoutAffectedPointCode);
 Run("M3UA parses SSNM Destination User Part Unavailable messages", M3uaParsesDestinationUserPartUnavailable);
 Run("M3UA rejects DUPU with non-zero affected point-code mask", M3uaRejectsDupuWithNonZeroMask);
+Run("M3UA parses SSNM Signalling Congestion messages", M3uaParsesSignallingCongestion);
+Run("M3UA rejects SCON without Affected Point Code", M3uaRejectsSconWithoutAffectedPointCode);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -593,6 +595,63 @@ static void M3uaRejectsDupuWithNonZeroMask()
             out string? buildError),
         "DUPU with non-zero mask should be rejected");
     Assert(buildError?.Contains("mask must be 0", StringComparison.Ordinal) == true, buildError ?? "missing DUPU mask error");
+}
+
+static void M3uaParsesSignallingCongestion()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    uint[] routingContexts = [0x00000055];
+    M3uaAffectedPointCode[] affectedPointCodes = [new(mask: 0, pointCode: 0x00112233)];
+    M3uaAffectedPointCode concernedDestination = new(mask: 0, pointCode: 0x0000AAAA);
+    byte[] info = [0x73, 0x63, 0x6F, 0x6E];
+
+    Assert(
+        M3uaMessageBuilder.BuildSignallingCongestion(
+            buffer,
+            networkAppearance: 0x00000007,
+            routingContexts,
+            affectedPointCodes,
+            concernedDestination,
+            congestionLevel: 2,
+            info,
+            out int written,
+            out string? buildError),
+        buildError ?? "SCON build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.Ssnm, message.MessageClass, "SCON message class");
+    AssertEqual((byte)M3uaSsnmMessageType.SignallingCongestion, message.MessageType, "SCON message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseSignallingCongestion(message, out M3uaSignallingCongestionMessage? typed, out string? parseError),
+        parseError ?? "SCON typed parse failed");
+
+    AssertEqual((uint?)0x00000007, typed!.NetworkAppearance, "typed SCON Network Appearance");
+    AssertSequence([0x00, 0x00, 0x00, 0x55], UInt32SpanToBytes(typed.RoutingContexts), "typed SCON Routing Contexts");
+    AssertEqual(1, typed.AffectedPointCodes.Length, "typed SCON affected point-code count");
+    AssertEqual((byte)0, typed.AffectedPointCodes[0].Mask, "typed SCON affected point-code mask");
+    AssertEqual((uint)0x00112233, typed.AffectedPointCodes[0].PointCode, "typed SCON affected point-code value");
+    AssertEqual((byte)0, typed.ConcernedDestination!.Value.Mask, "typed SCON concerned destination mask");
+    AssertEqual((uint)0x0000AAAA, typed.ConcernedDestination.Value.PointCode, "typed SCON concerned destination value");
+    AssertEqual((uint?)2, typed.CongestionLevel, "typed SCON congestion level");
+    AssertSequence(info, typed.InfoString.Span, "typed SCON Info String");
+}
+
+static void M3uaRejectsSconWithoutAffectedPointCode()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    Assert(
+        !M3uaMessageBuilder.BuildSignallingCongestion(
+            buffer,
+            networkAppearance: null,
+            ReadOnlySpan<uint>.Empty,
+            ReadOnlySpan<M3uaAffectedPointCode>.Empty,
+            concernedDestination: null,
+            congestionLevel: null,
+            ReadOnlySpan<byte>.Empty,
+            out _,
+            out string? buildError),
+        "SCON without Affected Point Code should be rejected");
+    Assert(buildError?.Contains("Affected Point Code", StringComparison.Ordinal) == true, buildError ?? "missing SCON affected point-code error");
 }
 
 static void Run(string name, Action test)
