@@ -106,6 +106,14 @@ static void M3uaProtocolExposesPublicMetadata()
     AssertEqual((byte)1, M3uaProtocol.Version, "protocol version");
     AssertEqual(8, M3uaProtocol.HeaderLength, "protocol header length");
     AssertEqual(4, M3uaProtocol.ParameterHeaderLength, "protocol parameter header length");
+
+    M3uaProtocolCapabilities capabilities = M3uaProtocol.Capabilities;
+    Assert(capabilities.SupportsPayloadData, "capabilities should include Payload Data");
+    Assert(capabilities.SupportsAspLifecycle, "capabilities should include ASP lifecycle");
+    Assert(capabilities.SupportsManagement, "capabilities should include Management");
+    Assert(capabilities.SupportsSsnm, "capabilities should include SSNM");
+    Assert(capabilities.SupportsRkm, "capabilities should include RKM");
+    Assert(capabilities.SupportsTransportSession, "capabilities should include transport session");
 }
 
 static void M3uaDecoderReturnsProtocolDataValue()

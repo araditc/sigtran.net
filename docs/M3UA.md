@@ -4,6 +4,8 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 
 `M3uaProtocol` exposes public protocol metadata through `Name`, `Specification`, `PackageName`, `Version`, `HeaderLength`, and `ParameterHeaderLength`. Use these constants for diagnostics, generated capability reports, and compatibility checks instead of duplicating literal values.
 
+`M3uaProtocol.Capabilities` returns a `M3uaProtocolCapabilities` snapshot for coarse feature discovery, including DATA, ASP lifecycle, Management, SSNM, RKM, and the transport session facade.
+
 ## Implemented Message Families
 
 | Family | Message types |

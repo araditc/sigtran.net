@@ -23,6 +23,15 @@ public static class M3uaProtocol
     /// <summary>The fixed TLV parameter header length in octets.</summary>
     public const int ParameterHeaderLength = 4;
 
+    /// <summary>The current M3UA capability snapshot exposed by this SDK build.</summary>
+    public static M3uaProtocolCapabilities Capabilities => new(
+        supportsPayloadData: true,
+        supportsAspLifecycle: true,
+        supportsManagement: true,
+        supportsSsnm: true,
+        supportsRkm: true,
+        supportsTransportSession: true);
+
     /// <summary>Rounds a byte length up to the next 32-bit boundary.</summary>
     /// <param name="length">The byte length to align.</param>
     /// <returns>The aligned byte length.</returns>
@@ -31,6 +40,53 @@ public static class M3uaProtocol
         int remainder = length & 0x3;
         return remainder == 0 ? length : length + (4 - remainder);
     }
+}
+
+/// <summary>
+/// Describes the M3UA feature families supported by the current SDK build.
+/// </summary>
+public readonly struct M3uaProtocolCapabilities
+{
+    /// <summary>Creates a capability snapshot.</summary>
+    /// <param name="supportsPayloadData">Whether Payload Data builders and parsers are available.</param>
+    /// <param name="supportsAspLifecycle">Whether ASP lifecycle messages and client helpers are available.</param>
+    /// <param name="supportsManagement">Whether Management Error and Notify messages are available.</param>
+    /// <param name="supportsSsnm">Whether Signalling Network Management messages are available.</param>
+    /// <param name="supportsRkm">Whether Routing Key Management messages and client helpers are available.</param>
+    /// <param name="supportsTransportSession">Whether the async M3UA transport session facade is available.</param>
+    public M3uaProtocolCapabilities(
+        bool supportsPayloadData,
+        bool supportsAspLifecycle,
+        bool supportsManagement,
+        bool supportsSsnm,
+        bool supportsRkm,
+        bool supportsTransportSession)
+    {
+        SupportsPayloadData = supportsPayloadData;
+        SupportsAspLifecycle = supportsAspLifecycle;
+        SupportsManagement = supportsManagement;
+        SupportsSsnm = supportsSsnm;
+        SupportsRkm = supportsRkm;
+        SupportsTransportSession = supportsTransportSession;
+    }
+
+    /// <summary>Whether Payload Data builders and parsers are available.</summary>
+    public bool SupportsPayloadData { get; }
+
+    /// <summary>Whether ASP lifecycle messages and client helpers are available.</summary>
+    public bool SupportsAspLifecycle { get; }
+
+    /// <summary>Whether Management Error and Notify messages are available.</summary>
+    public bool SupportsManagement { get; }
+
+    /// <summary>Whether Signalling Network Management messages are available.</summary>
+    public bool SupportsSsnm { get; }
+
+    /// <summary>Whether Routing Key Management messages and client helpers are available.</summary>
+    public bool SupportsRkm { get; }
+
+    /// <summary>Whether the async M3UA transport session facade is available.</summary>
+    public bool SupportsTransportSession { get; }
 }
 
 /// <summary>M3UA message classes defined by RFC 4666 section 3.1.2.</summary>
