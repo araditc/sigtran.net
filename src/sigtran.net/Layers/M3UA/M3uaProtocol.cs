@@ -124,6 +124,38 @@ public enum M3uaOtherNotifyStatus : ushort
     AspFailure = 3
 }
 
+/// <summary>Unavailability Cause values used by DUPU User/Cause parameters.</summary>
+public enum M3uaUserPartUnavailableCause : ushort
+{
+    /// <summary>The unavailability reason is unknown.</summary>
+    Unknown = 0,
+    /// <summary>The remote user is unequipped.</summary>
+    UnequippedRemoteUser = 1,
+    /// <summary>The remote user is inaccessible.</summary>
+    InaccessibleRemoteUser = 2
+}
+
+/// <summary>Common MTP3-User Identity values used by DUPU User/Cause parameters.</summary>
+public enum M3uaMtp3UserIdentity : ushort
+{
+    /// <summary>SCCP user identity.</summary>
+    Sccp = 3,
+    /// <summary>TUP user identity.</summary>
+    Tup = 4,
+    /// <summary>ISUP user identity.</summary>
+    Isup = 5,
+    /// <summary>Broadband ISUP user identity.</summary>
+    BroadbandIsup = 9,
+    /// <summary>Satellite ISUP user identity.</summary>
+    SatelliteIsup = 10,
+    /// <summary>AAL type 2 signalling user identity.</summary>
+    AalType2Signalling = 12,
+    /// <summary>Bearer Independent Call Control user identity.</summary>
+    Bicc = 13,
+    /// <summary>Gateway Control Protocol user identity.</summary>
+    GatewayControlProtocol = 14
+}
+
 /// <summary>Transfer message types.</summary>
 public enum M3uaTransferMessageType : byte
 {

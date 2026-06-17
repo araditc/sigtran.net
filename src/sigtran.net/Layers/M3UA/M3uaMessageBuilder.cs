@@ -467,6 +467,82 @@ public static class M3uaMessageBuilder
     }
 
     /// <summary>
+    /// Builds a Destination User Part Unavailable SSNM message.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCode">The affected point-code entry. The mask must be zero.</param>
+    /// <param name="cause">The unavailability cause.</param>
+    /// <param name="userIdentity">The unavailable MTP3-user identity.</param>
+    /// <param name="infoString">The optional Info String value encoded as bytes.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public static bool BuildDestinationUserPartUnavailable(
+        Span<byte> buffer,
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        M3uaAffectedPointCode affectedPointCode,
+        M3uaUserPartUnavailableCause cause,
+        M3uaMtp3UserIdentity userIdentity,
+        ReadOnlySpan<byte> infoString,
+        out int written,
+        out string? error)
+    {
+        written = 0;
+        if (affectedPointCode.Mask != 0)
+        {
+            error = "DUPU Affected Point Code mask must be 0";
+            return false;
+        }
+
+        int parameterLength = (networkAppearance.HasValue ? M3uaParameterWriter.GetPaddedLength(sizeof(uint)) : 0)
+                              + GetOptionalUInt32ListParameterLength(routingContexts)
+                              + M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                              + M3uaParameterWriter.GetPaddedLength(sizeof(uint))
+                              + GetOptionalBytesParameterLength(infoString);
+        if (!TryWriteMessageHeader(buffer, M3uaMessageClass.Ssnm, (byte)M3uaSsnmMessageType.DestinationUserPartUnavailable, parameterLength, out written, out error))
+        {
+            return false;
+        }
+
+        int offset = M3uaProtocol.HeaderLength;
+        if (networkAppearance.HasValue)
+        {
+            if (!TryWriteUInt32Parameter(buffer.Slice(offset), M3uaParameterTag.NetworkAppearance, networkAppearance.Value, out int paramWritten, out error))
+            {
+                written = 0;
+                return false;
+            }
+
+            offset += paramWritten;
+        }
+
+        if (!TryWriteOptionalUInt32ListParameter(buffer, M3uaParameterTag.RoutingContext, routingContexts, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        ReadOnlySpan<M3uaAffectedPointCode> affectedPointCodes = stackalloc[] { affectedPointCode };
+        if (!TryWriteAffectedPointCodeParameter(buffer, affectedPointCodes, ref offset, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        if (!TryWriteUserCauseParameter(buffer.Slice(offset), cause, userIdentity, out int userCauseWritten, out error))
+        {
+            written = 0;
+            return false;
+        }
+
+        offset += userCauseWritten;
+        return TryWriteOptionalBytesParameter(buffer, M3uaParameterTag.InfoString, infoString, ref offset, out error);
+    }
+
+    /// <summary>
     /// Builds an ASP Active message.
     /// </summary>
     /// <param name="buffer">The destination buffer.</param>
@@ -837,6 +913,19 @@ public static class M3uaMessageBuilder
         BinaryPrimitives.WriteUInt16BigEndian(valueBuffer, (ushort)statusType);
         BinaryPrimitives.WriteUInt16BigEndian(valueBuffer.Slice(2, 2), statusInformation);
         return M3uaParameterWriter.TryWrite(buffer, M3uaParameterTag.Status, valueBuffer, out written, out error);
+    }
+
+    private static bool TryWriteUserCauseParameter(
+        Span<byte> buffer,
+        M3uaUserPartUnavailableCause cause,
+        M3uaMtp3UserIdentity userIdentity,
+        out int written,
+        out string? error)
+    {
+        Span<byte> valueBuffer = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt16BigEndian(valueBuffer, (ushort)cause);
+        BinaryPrimitives.WriteUInt16BigEndian(valueBuffer.Slice(2, 2), (ushort)userIdentity);
+        return M3uaParameterWriter.TryWrite(buffer, M3uaParameterTag.UserCause, valueBuffer, out written, out error);
     }
 
     private static bool TryWriteOptionalUInt32ListParameter(

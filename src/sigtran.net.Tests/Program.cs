@@ -19,6 +19,8 @@ Run("M3UA parses Management Notify messages", M3uaParsesManagementNotify);
 Run("M3UA rejects invalid Management Notify status information", M3uaRejectsInvalidManagementNotifyStatusInformation);
 Run("M3UA parses SSNM Destination Unavailable messages", M3uaParsesSsnmDestinationUnavailable);
 Run("M3UA rejects SSNM messages without Affected Point Code", M3uaRejectsSsnmWithoutAffectedPointCode);
+Run("M3UA parses SSNM Destination User Part Unavailable messages", M3uaParsesDestinationUserPartUnavailable);
+Run("M3UA rejects DUPU with non-zero affected point-code mask", M3uaRejectsDupuWithNonZeroMask);
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
@@ -537,6 +539,60 @@ static void M3uaRejectsSsnmWithoutAffectedPointCode()
         !M3uaTypedMessageParser.TryParseSsnm(message, out _, out string? parseError),
         "SSNM without Affected Point Code should be rejected");
     Assert(parseError?.Contains("Missing Affected Point Code", StringComparison.Ordinal) == true, parseError ?? "missing SSNM parse error");
+}
+
+static void M3uaParsesDestinationUserPartUnavailable()
+{
+    Span<byte> buffer = stackalloc byte[80];
+    uint[] routingContexts = [0x00000044];
+    M3uaAffectedPointCode affectedPointCode = new(mask: 0, pointCode: 0x00012345);
+    byte[] info = [0x64, 0x75, 0x70, 0x75];
+
+    Assert(
+        M3uaMessageBuilder.BuildDestinationUserPartUnavailable(
+            buffer,
+            networkAppearance: 0x00000007,
+            routingContexts,
+            affectedPointCode,
+            M3uaUserPartUnavailableCause.InaccessibleRemoteUser,
+            M3uaMtp3UserIdentity.Sccp,
+            info,
+            out int written,
+            out string? buildError),
+        buildError ?? "DUPU build failed");
+
+    M3uaMessage message = DecodeMessage(buffer.Slice(0, written));
+    AssertEqual(M3uaMessageClass.Ssnm, message.MessageClass, "DUPU message class");
+    AssertEqual((byte)M3uaSsnmMessageType.DestinationUserPartUnavailable, message.MessageType, "DUPU message type");
+    Assert(
+        M3uaTypedMessageParser.TryParseDestinationUserPartUnavailable(message, out M3uaDestinationUserPartUnavailableMessage? typed, out string? parseError),
+        parseError ?? "DUPU typed parse failed");
+
+    AssertEqual((uint?)0x00000007, typed!.NetworkAppearance, "typed DUPU Network Appearance");
+    AssertSequence([0x00, 0x00, 0x00, 0x44], UInt32SpanToBytes(typed.RoutingContexts), "typed DUPU Routing Contexts");
+    AssertEqual((byte)0, typed.AffectedPointCode.Mask, "typed DUPU mask");
+    AssertEqual((uint)0x00012345, typed.AffectedPointCode.PointCode, "typed DUPU point code");
+    AssertEqual(M3uaUserPartUnavailableCause.InaccessibleRemoteUser, typed.Cause, "typed DUPU cause");
+    AssertEqual(M3uaMtp3UserIdentity.Sccp, typed.UserIdentity, "typed DUPU user identity");
+    AssertSequence(info, typed.InfoString.Span, "typed DUPU Info String");
+}
+
+static void M3uaRejectsDupuWithNonZeroMask()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    Assert(
+        !M3uaMessageBuilder.BuildDestinationUserPartUnavailable(
+            buffer,
+            networkAppearance: null,
+            ReadOnlySpan<uint>.Empty,
+            new M3uaAffectedPointCode(mask: 1, pointCode: 0x00012345),
+            M3uaUserPartUnavailableCause.Unknown,
+            M3uaMtp3UserIdentity.Sccp,
+            ReadOnlySpan<byte>.Empty,
+            out _,
+            out string? buildError),
+        "DUPU with non-zero mask should be rejected");
+    Assert(buildError?.Contains("mask must be 0", StringComparison.Ordinal) == true, buildError ?? "missing DUPU mask error");
 }
 
 static void Run(string name, Action test)

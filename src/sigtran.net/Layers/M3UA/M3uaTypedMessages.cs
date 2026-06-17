@@ -220,6 +220,55 @@ public sealed class M3uaSsnmMessage
 }
 
 /// <summary>
+/// Represents a typed Destination User Part Unavailable message.
+/// </summary>
+public sealed class M3uaDestinationUserPartUnavailableMessage
+{
+    private readonly uint[] _routingContexts;
+
+    /// <summary>Creates a typed Destination User Part Unavailable message.</summary>
+    /// <param name="networkAppearance">The optional Network Appearance value.</param>
+    /// <param name="routingContexts">The optional Routing Context values.</param>
+    /// <param name="affectedPointCode">The affected destination point code.</param>
+    /// <param name="cause">The unavailability cause.</param>
+    /// <param name="userIdentity">The unavailable MTP3-user identity.</param>
+    /// <param name="infoString">The optional Info String value.</param>
+    public M3uaDestinationUserPartUnavailableMessage(
+        uint? networkAppearance,
+        ReadOnlySpan<uint> routingContexts,
+        M3uaAffectedPointCode affectedPointCode,
+        M3uaUserPartUnavailableCause cause,
+        M3uaMtp3UserIdentity userIdentity,
+        ReadOnlyMemory<byte> infoString)
+    {
+        NetworkAppearance = networkAppearance;
+        _routingContexts = routingContexts.ToArray();
+        AffectedPointCode = affectedPointCode;
+        Cause = cause;
+        UserIdentity = userIdentity;
+        InfoString = infoString;
+    }
+
+    /// <summary>The optional Network Appearance value.</summary>
+    public uint? NetworkAppearance { get; }
+
+    /// <summary>The optional Routing Context values.</summary>
+    public ReadOnlySpan<uint> RoutingContexts => _routingContexts;
+
+    /// <summary>The affected destination point code.</summary>
+    public M3uaAffectedPointCode AffectedPointCode { get; }
+
+    /// <summary>The unavailability cause.</summary>
+    public M3uaUserPartUnavailableCause Cause { get; }
+
+    /// <summary>The unavailable MTP3-user identity.</summary>
+    public M3uaMtp3UserIdentity UserIdentity { get; }
+
+    /// <summary>The optional Info String value.</summary>
+    public ReadOnlyMemory<byte> InfoString { get; }
+}
+
+/// <summary>
 /// Converts generic M3UA messages into typed messages used by session state machines.
 /// </summary>
 public static class M3uaTypedMessageParser
@@ -557,6 +606,143 @@ public static class M3uaTypedMessageParser
     }
 
     /// <summary>
+    /// Parses a Destination User Part Unavailable message.
+    /// </summary>
+    /// <param name="message">The decoded M3UA message.</param>
+    /// <param name="typedMessage">The typed message on success.</param>
+    /// <param name="error">An error message if parsing fails.</param>
+    /// <returns>True if the message was parsed; otherwise false.</returns>
+    public static bool TryParseDestinationUserPartUnavailable(
+        M3uaMessage message,
+        out M3uaDestinationUserPartUnavailableMessage? typedMessage,
+        out string? error)
+    {
+        typedMessage = null;
+        error = null;
+
+        if (message.MessageClass != M3uaMessageClass.Ssnm || message.MessageType != (byte)M3uaSsnmMessageType.DestinationUserPartUnavailable)
+        {
+            error = $"Expected DUPU message, got class {message.MessageClass} type {message.MessageType}";
+            return false;
+        }
+
+        uint? networkAppearance = null;
+        uint[] routingContexts = Array.Empty<uint>();
+        M3uaAffectedPointCode[] affectedPointCodes = Array.Empty<M3uaAffectedPointCode>();
+        M3uaUserPartUnavailableCause? cause = null;
+        M3uaMtp3UserIdentity? userIdentity = null;
+        byte[] infoString = Array.Empty<byte>();
+        bool hasRoutingContext = false;
+        bool hasAffectedPointCode = false;
+        bool hasInfoString = false;
+
+        M3uaParameterReader reader = new(message.Parameters.Span);
+        while (reader.TryRead(out M3uaParameter parameter, out error))
+        {
+            switch (parameter.Tag)
+            {
+                case M3uaParameterTag.NetworkAppearance:
+                    if (networkAppearance.HasValue)
+                    {
+                        error = "Duplicate Network Appearance parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32(parameter.Value, parameter.Tag, out uint appearance, out error))
+                    {
+                        return false;
+                    }
+
+                    networkAppearance = appearance;
+                    break;
+
+                case M3uaParameterTag.RoutingContext:
+                    if (hasRoutingContext)
+                    {
+                        error = "Duplicate Routing Context parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUInt32List(parameter.Value, parameter.Tag, out routingContexts, out error))
+                    {
+                        return false;
+                    }
+
+                    hasRoutingContext = true;
+                    break;
+
+                case M3uaParameterTag.AffectedPointCode:
+                    if (hasAffectedPointCode)
+                    {
+                        error = "Duplicate Affected Point Code parameter";
+                        return false;
+                    }
+
+                    if (!TryReadAffectedPointCodes(parameter.Value, out affectedPointCodes, out error))
+                    {
+                        return false;
+                    }
+
+                    hasAffectedPointCode = true;
+                    break;
+
+                case M3uaParameterTag.UserCause:
+                    if (cause.HasValue)
+                    {
+                        error = "Duplicate User/Cause parameter";
+                        return false;
+                    }
+
+                    if (!TryReadUserCause(parameter.Value, out M3uaUserPartUnavailableCause parsedCause, out M3uaMtp3UserIdentity parsedUser, out error))
+                    {
+                        return false;
+                    }
+
+                    cause = parsedCause;
+                    userIdentity = parsedUser;
+                    break;
+
+                case M3uaParameterTag.InfoString:
+                    if (hasInfoString)
+                    {
+                        error = "Duplicate Info String parameter";
+                        return false;
+                    }
+
+                    hasInfoString = true;
+                    infoString = parameter.Value.ToArray();
+                    break;
+            }
+        }
+
+        if (error is not null)
+        {
+            return false;
+        }
+
+        if (!hasAffectedPointCode || affectedPointCodes.Length != 1)
+        {
+            error = "DUPU requires exactly one Affected Point Code";
+            return false;
+        }
+
+        if (affectedPointCodes[0].Mask != 0)
+        {
+            error = "DUPU Affected Point Code mask must be 0";
+            return false;
+        }
+
+        if (!cause.HasValue || !userIdentity.HasValue)
+        {
+            error = "Missing User/Cause parameter";
+            return false;
+        }
+
+        typedMessage = new(networkAppearance, routingContexts, affectedPointCodes[0], cause.Value, userIdentity.Value, infoString);
+        return true;
+    }
+
+    /// <summary>
     /// Parses an ASP State Maintenance message.
     /// </summary>
     /// <param name="message">The decoded M3UA message.</param>
@@ -875,6 +1061,41 @@ public static class M3uaTypedMessageParser
             result[i] = new(entry[0], pointCode);
         }
 
+        return true;
+    }
+
+    private static bool TryReadUserCause(
+        ReadOnlySpan<byte> value,
+        out M3uaUserPartUnavailableCause cause,
+        out M3uaMtp3UserIdentity userIdentity,
+        out string? error)
+    {
+        cause = default;
+        userIdentity = default;
+        error = null;
+
+        if (value.Length != sizeof(uint))
+        {
+            error = "User/Cause parameter must contain exactly 4 bytes";
+            return false;
+        }
+
+        ushort rawCause = BinaryPrimitives.ReadUInt16BigEndian(value);
+        ushort rawUser = BinaryPrimitives.ReadUInt16BigEndian(value.Slice(2, 2));
+        if (!Enum.IsDefined(typeof(M3uaUserPartUnavailableCause), rawCause))
+        {
+            error = $"Unknown User Part Unavailable Cause {rawCause}";
+            return false;
+        }
+
+        if (!Enum.IsDefined(typeof(M3uaMtp3UserIdentity), rawUser))
+        {
+            error = $"Unknown MTP3-User Identity {rawUser}";
+            return false;
+        }
+
+        cause = (M3uaUserPartUnavailableCause)rawCause;
+        userIdentity = (M3uaMtp3UserIdentity)rawUser;
         return true;
     }
 }
