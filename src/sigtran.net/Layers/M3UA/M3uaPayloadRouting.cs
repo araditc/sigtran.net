@@ -121,6 +121,38 @@ public sealed class M3uaPayloadRouteTable
     }
 
     /// <summary>
+    /// Removes the first route with the same selectors as the supplied route.
+    /// </summary>
+    /// <param name="route">The route selectors to remove.</param>
+    /// <param name="error">An error message if no matching route exists.</param>
+    /// <returns>True if a route was removed; otherwise false.</returns>
+    public bool TryRemove(M3uaPayloadRoute route, out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        error = null;
+
+        for (int i = 0; i < _routes.Count; i++)
+        {
+            if (_routes[i].HasSameSelectors(route))
+            {
+                _routes.RemoveAt(i);
+                return true;
+            }
+        }
+
+        error = "No route with the same selectors exists.";
+        return false;
+    }
+
+    /// <summary>
+    /// Removes all registered routes.
+    /// </summary>
+    public void Clear()
+    {
+        _routes.Clear();
+    }
+
+    /// <summary>
     /// Resolves a Payload Data message to the most specific matching route.
     /// </summary>
     /// <param name="message">The typed Payload Data message to resolve.</param>

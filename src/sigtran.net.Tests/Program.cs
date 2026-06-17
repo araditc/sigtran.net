@@ -10,6 +10,7 @@ Run("M3UA dispatcher rejects unsupported message types", M3uaDispatcherRejectsUn
 Run("M3UA route table resolves the most specific DATA route", M3uaRouteTableResolvesMostSpecificDataRoute);
 Run("M3UA route table rejects ambiguous DATA routes", M3uaRouteTableRejectsAmbiguousDataRoutes);
 Run("M3UA route table rejects duplicate selectors", M3uaRouteTableRejectsDuplicateSelectors);
+Run("M3UA route table removes and clears routes", M3uaRouteTableRemovesAndClearsRoutes);
 Run("M3UA inbound processor updates ASP state and routes DATA", M3uaInboundProcessorUpdatesAspStateAndRoutesData);
 Run("M3UA inbound processor can require active ASP for DATA", M3uaInboundProcessorCanRequireActiveAspForData);
 Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboundProcessorRejectsUnroutedDataWhenRoutesExist);
@@ -317,6 +318,27 @@ static void M3uaRouteTableRejectsDuplicateSelectors()
     Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
     Assert(!table.TryAdd(second, out string? secondError), "duplicate selectors should be rejected");
     Assert(secondError?.Contains("same selectors", StringComparison.Ordinal) == true, secondError ?? "missing duplicate route error");
+}
+
+static void M3uaRouteTableRemovesAndClearsRoutes()
+{
+    M3uaPayloadRouteTable table = new();
+    M3uaPayloadRoute first = new("first", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    M3uaPayloadRoute second = new("second", networkAppearance: null, routingContext: 200, destinationPointCode: null, serviceIndicator: 5);
+
+    Assert(table.TryAdd(first, out string? firstError), firstError ?? "first route add failed");
+    Assert(table.TryAdd(second, out string? secondError), secondError ?? "second route add failed");
+
+    M3uaPayloadRoute sameSelectors = new("renamed", networkAppearance: 7, routingContext: 100, destinationPointCode: 2, serviceIndicator: 3);
+    Assert(table.TryRemove(sameSelectors, out string? removeError), removeError ?? "route remove failed");
+    AssertEqual(1, table.Routes.Count, "route count after remove");
+    AssertEqual("second", table.Routes[0].Name, "remaining route");
+
+    Assert(!table.TryRemove(sameSelectors, out string? missingError), "missing route remove should fail");
+    Assert(missingError?.Contains("No route", StringComparison.Ordinal) == true, missingError ?? "missing route remove error");
+
+    table.Clear();
+    AssertEqual(0, table.Routes.Count, "route count after clear");
 }
 
 static void M3uaInboundProcessorUpdatesAspStateAndRoutesData()

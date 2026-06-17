@@ -54,6 +54,23 @@ if (!routes.TryResolve(data, out M3uaPayloadRoute? route, out error))
 
 `TryAdd` rejects a route when an existing route has the exact same selectors. Route names can differ, but selector duplicates are not allowed because they make traffic ownership unclear.
 
+## Route Updates
+
+`TryRemove` removes the first route with the same selectors as the supplied route. The route name does not need to match. `Clear` removes all routes, which is useful when an application reloads routing configuration from a trusted source.
+
+```csharp
+routes.TryRemove(
+    new M3uaPayloadRoute(
+        name: "old-name-is-ok",
+        networkAppearance: 7,
+        routingContext: 100,
+        destinationPointCode: 0x00040506,
+        serviceIndicator: 3),
+    out error);
+
+routes.Clear();
+```
+
 ## Current Scope
 
-This table resolves already-decoded DATA messages. It does not yet enforce ASP active state, traffic mode policy, or multi-ASP load-sharing decisions. Those belong in a later Application Server model.
+This table resolves already-decoded DATA messages. It does not yet enforce ASP active state, traffic mode policy, multi-ASP load-sharing decisions, or cross-thread synchronization. Those belong in a later Application Server model.

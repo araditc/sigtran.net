@@ -52,6 +52,8 @@ When `requireActiveAspForPayload` is `true`, DATA is rejected unless the ASP ses
 
 If the route table is empty, DATA can still be accepted without a route. If routes exist, DATA must match exactly one best route.
 
+Routes can be added, removed, or cleared on the `M3uaPayloadRouteTable`. Applications that mutate routes while processing traffic should protect the table with their own synchronization until a later Application Server model provides coordinated reconfiguration.
+
 ## Current Scope
 
 This processor is intentionally synchronous and packet-oriented. Async transport receive loops should call it after reading one complete M3UA packet from SCTP or a test transport. Future transport work can layer channel-based receive APIs on top of this processor.
