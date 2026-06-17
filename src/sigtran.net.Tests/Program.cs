@@ -1,4 +1,5 @@
 using sigtran.net.Layers.M3UA;
+using sigtran.net.Core.Interfaces;
 
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
@@ -15,6 +16,9 @@ Run("M3UA inbound processor rejects unrouted DATA when routes exist", M3uaInboun
 Run("M3UA outbound processor applies defaults to DATA", M3uaOutboundProcessorAppliesDefaultsToData);
 Run("M3UA outbound processor can require active ASP for DATA", M3uaOutboundProcessorCanRequireActiveAspForData);
 Run("M3UA outbound processor builds ASP Active with default Routing Context", M3uaOutboundProcessorBuildsAspActiveWithDefaultRoutingContext);
+Run("M3UA transport session sends outbound DATA", M3uaTransportSessionSendsOutboundData);
+Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceivesInboundData);
+Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
 Run("M3UA parameter reader skips padding between TLVs", M3uaParameterReaderSkipsPadding);
 Run("M3UA builds ASP Up with ASP Identifier and Info String", M3uaBuildsAspUp);
 Run("M3UA builds Heartbeat Ack with unchanged heartbeat data", M3uaBuildsHeartbeatAck);
@@ -485,6 +489,75 @@ static void M3uaOutboundProcessorBuildsAspActiveWithDefaultRoutingContext()
         parseError ?? "outbound ASP Active parse failed");
     AssertEqual(M3uaAsptmMessageType.AspActive, typed!.MessageType, "outbound ASP Active type");
     AssertSequence([0x00, 0x00, 0x00, 0x64], UInt32SpanToBytes(typed.RoutingContexts), "outbound ASP Active Routing Context");
+}
+
+static void M3uaTransportSessionSendsOutboundData()
+{
+    FakeSctpSocket socket = new();
+    M3uaOutboundProcessor outbound = new(networkAppearance: 7, routingContext: 100);
+    using M3uaTransportSession session = new(socket, outboundProcessor: outbound, leaveOpen: true);
+
+    session.SendPayloadDataAsync(
+        userPayload: new byte[] { 0xCA, 0xFE },
+        originatingPointCode: 1,
+        destinationPointCode: 2,
+        serviceIndicator: 3,
+        networkIndicator: 2,
+        messagePriority: 0,
+        signallingLinkSelection: 7,
+        correlationId: 42).GetAwaiter().GetResult();
+
+    AssertEqual(1, socket.SentPackets.Count, "sent packet count");
+    M3uaMessage message = DecodeMessage(socket.SentPackets[0].Span);
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(message, out M3uaPayloadDataMessage? typed, out string? parseError),
+        parseError ?? "sent DATA parse failed");
+    AssertEqual((uint?)7, typed!.NetworkAppearance, "sent DATA Network Appearance");
+    AssertEqual((uint?)100, typed.RoutingContext, "sent DATA Routing Context");
+    AssertEqual((uint?)42, typed.CorrelationId, "sent DATA Correlation Id");
+    AssertSequence([0xCA, 0xFE], typed.UserPayload, "sent DATA payload");
+}
+
+static void M3uaTransportSessionReceivesInboundData()
+{
+    Span<byte> buffer = stackalloc byte[96];
+    Assert(
+        M3uaMessageBuilder.BuildPayloadData(
+            buffer,
+            userPayload: [0x01, 0x02],
+            opc: 1,
+            dpc: 2,
+            si: 3,
+            ni: 2,
+            mp: 0,
+            sls: 7,
+            networkAppearance: null,
+            routingContext: 100,
+            correlationId: null,
+            out int written,
+            out string? buildError),
+        buildError ?? "inbound DATA build failed");
+
+    FakeSctpSocket socket = new();
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+    M3uaPayloadRouteTable routes = new();
+    Assert(routes.TryAdd(new M3uaPayloadRoute("sccp", null, routingContext: 100, null, serviceIndicator: 3), out string? addError), addError ?? "route add failed");
+    M3uaInboundProcessor inbound = new(new M3uaAspSession(M3uaAspState.Active), routes, requireActiveAspForPayload: true);
+    using M3uaTransportSession session = new(socket, inboundProcessor: inbound, leaveOpen: true);
+
+    M3uaInboundProcessingResult? result = session.ReceiveAsync().GetAwaiter().GetResult();
+    Assert(result is not null, "received result should not be null");
+    AssertEqual(M3uaTypedMessageKind.PayloadData, result!.TypedMessage.Kind, "received typed kind");
+    AssertEqual("sccp", result.PayloadRoute!.Name, "received route");
+}
+
+static void M3uaTransportSessionDisposesOwnedSocket()
+{
+    FakeSctpSocket socket = new();
+    M3uaTransportSession session = new(socket);
+    session.Dispose();
+
+    Assert(socket.Disposed, "owned socket should be disposed");
 }
 
 static void M3uaParameterReaderSkipsPadding()
@@ -1238,4 +1311,41 @@ static M3uaMessage DecodeMessage(ReadOnlySpan<byte> encoded)
     M3uaMessage message = new();
     Assert(message.TryDecode(encoded, out string? error), error ?? "message decode failed");
     return message;
+}
+
+internal sealed class FakeSctpSocket : ISctpSocket
+{
+    private readonly Queue<byte[]> _receivePackets = new();
+
+    public List<ReadOnlyMemory<byte>> SentPackets { get; } = new();
+
+    public bool Disposed { get; private set; }
+
+    public Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default)
+    {
+        SentPackets.Add(data.ToArray());
+        return Task.CompletedTask;
+    }
+
+    public Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken ct = default)
+    {
+        if (_receivePackets.Count == 0)
+        {
+            return Task.FromResult(0);
+        }
+
+        byte[] packet = _receivePackets.Dequeue();
+        packet.CopyTo(buffer);
+        return Task.FromResult(packet.Length);
+    }
+
+    public void QueueReceive(byte[] packet)
+    {
+        _receivePackets.Enqueue(packet);
+    }
+
+    public void Dispose()
+    {
+        Disposed = true;
+    }
 }

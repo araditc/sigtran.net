@@ -58,6 +58,8 @@ For application code that handles multiple M3UA message families, `M3uaTypedMess
 
 `M3uaOutboundProcessor` provides state-aware outbound builders for ASP lifecycle messages and DATA, including configured Network Appearance and Routing Context defaults.
 
+`M3uaTransportSession` connects processors to an `ISctpSocket` so applications can receive one complete M3UA PDU or send common outbound M3UA messages asynchronously.
+
 ## Transfer Notes
 
 DATA messages are modeled with a typed parser so callers can access Network Appearance, Routing Context, OPC, DPC, SI, NI, MP, SLS, user payload, and Correlation Id without manually decoding the Protocol Data parameter.
