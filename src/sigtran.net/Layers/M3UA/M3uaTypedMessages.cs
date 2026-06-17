@@ -716,6 +716,27 @@ public sealed class M3uaTypedMessage
 public static class M3uaTypedMessageParser
 {
     /// <summary>
+    /// Determines whether the dispatcher has typed parser support for a message class and type.
+    /// </summary>
+    /// <param name="messageClass">The M3UA message class.</param>
+    /// <param name="messageType">The message type within the class.</param>
+    /// <returns>True if the dispatcher can parse the message into a typed model; otherwise false.</returns>
+    public static bool IsSupported(M3uaMessageClass messageClass, byte messageType)
+    {
+        return messageClass switch
+        {
+            M3uaMessageClass.Management => messageType is (byte)M3uaManagementMessageType.Error
+                or (byte)M3uaManagementMessageType.Notify,
+            M3uaMessageClass.Transfer => messageType == (byte)M3uaTransferMessageType.PayloadData,
+            M3uaMessageClass.Ssnm => Enum.IsDefined(typeof(M3uaSsnmMessageType), messageType),
+            M3uaMessageClass.Aspsm => Enum.IsDefined(typeof(M3uaAspsmMessageType), messageType),
+            M3uaMessageClass.Asptm => Enum.IsDefined(typeof(M3uaAsptmMessageType), messageType),
+            M3uaMessageClass.RoutingKeyManagement => Enum.IsDefined(typeof(M3uaRoutingKeyManagementMessageType), messageType),
+            _ => false
+        };
+    }
+
+    /// <summary>
     /// Parses any currently supported M3UA message into its concrete typed model.
     /// </summary>
     /// <param name="message">The decoded M3UA message.</param>

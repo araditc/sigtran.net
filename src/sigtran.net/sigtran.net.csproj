@@ -9,11 +9,15 @@
     <Description>A .NET 10 SDK for building SIGTRAN applications, starting with SCTP, M3UA, SCCP, TCAP, and MAP primitives.</Description>
     <Authors>SIGTRAN.NET contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>sigtran;m3ua;sctp;ss7;telecom;dotnet</PackageTags>
+    <PackageReleaseNotes>Alpha package focused on M3UA framing, typed parsing, ASP lifecycle helpers, routing, diagnostics, and transport abstractions.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/araditc/sigtran.net.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/araditc/sigtran.net</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <WarningsAsErrors>CS1591</WarningsAsErrors>
     <EnablePackageValidation>true</EnablePackageValidation>
     <AnalysisLevel>latest</AnalysisLevel>

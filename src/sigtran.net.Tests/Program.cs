@@ -5,6 +5,7 @@ Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPa
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
+Run("M3UA reports supported typed message kinds", M3uaReportsSupportedTypedMessageKinds);
 Run("M3UA dispatches known typed messages", M3uaDispatchesKnownTypedMessages);
 Run("M3UA dispatcher rejects unsupported message types", M3uaDispatcherRejectsUnsupportedMessageTypes);
 Run("M3UA route table resolves the most specific DATA route", M3uaRouteTableResolvesMostSpecificDataRoute);
@@ -184,6 +185,25 @@ static void M3uaRejectsPayloadDataWithoutProtocolData()
         !M3uaTypedMessageParser.TryParsePayloadData(message, out _, out string? parseError),
         "DATA without Protocol Data should be rejected");
     Assert(parseError?.Contains("Missing Protocol Data", StringComparison.Ordinal) == true, parseError ?? "missing DATA parse error");
+}
+
+static void M3uaReportsSupportedTypedMessageKinds()
+{
+    Assert(
+        M3uaTypedMessageParser.IsSupported(M3uaMessageClass.Transfer, (byte)M3uaTransferMessageType.PayloadData),
+        "Payload Data should be supported");
+    Assert(
+        M3uaTypedMessageParser.IsSupported(M3uaMessageClass.Aspsm, (byte)M3uaAspsmMessageType.HeartbeatAck),
+        "Heartbeat Ack should be supported");
+    Assert(
+        M3uaTypedMessageParser.IsSupported(M3uaMessageClass.RoutingKeyManagement, (byte)M3uaRoutingKeyManagementMessageType.RegistrationResponse),
+        "Registration Response should be supported");
+    Assert(
+        !M3uaTypedMessageParser.IsSupported(M3uaMessageClass.Management, 0x7F),
+        "Unknown Management message should not be supported");
+    Assert(
+        !M3uaTypedMessageParser.IsSupported((M3uaMessageClass)0x7F, 0x01),
+        "Unknown message class should not be supported");
 }
 
 static void M3uaDispatchesKnownTypedMessages()

@@ -12,6 +12,8 @@ dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
 dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
 ```
 
+Alpha package publishing should also follow [Alpha release checklist](ALPHA_RELEASE.md).
+
 ## Public API Documentation
 
 All public types and members must have XML documentation comments. The library treats `CS1591` as an error, so undocumented public API changes fail the build.

@@ -1,0 +1,25 @@
+# Alpha Release Checklist
+
+SIGTRAN.NET alpha releases are M3UA-focused. SCCP, TCAP, and MAP remain experimental until their simplified encodings are replaced with standards-based implementations.
+
+## Required Verification
+
+Run the same checks used during development before publishing a package:
+
+```powershell
+dotnet build src\sigtran.net.sln
+dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
+dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
+```
+
+## Package Metadata
+
+The package includes Apache-2.0 licensing, repository URLs, package tags, release notes, XML documentation, package validation, and symbol package generation.
+
+## Public API Gate
+
+Public API additions must include XML comments. The library treats missing public XML documentation as `CS1591` errors.
+
+## Supported Message Discovery
+
+Use `M3uaTypedMessageParser.IsSupported` when an application wants to check whether a message class and type can be dispatched into a typed SDK model before attempting full parsing.
