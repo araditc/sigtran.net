@@ -41,6 +41,16 @@ bool ok = outbound.TryBuildPayloadData(
 
 Passing `null` for Network Appearance or Routing Context lets the processor use its configured defaults. Explicit values override defaults for that single DATA message.
 
+If a typed DATA model is already available, use the typed overload.
+
+```csharp
+bool typedOk = outbound.TryBuildPayloadData(
+    buffer,
+    payloadDataMessage,
+    out written,
+    out error);
+```
+
 ## State Policy
 
 When `requireActiveAspForPayload` is `true`, DATA building fails unless `AspSession.State` is `Active`. This mirrors the inbound processor option and helps applications avoid sending user payloads before ASP activation is complete.

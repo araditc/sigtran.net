@@ -590,6 +590,30 @@ static void M3uaOutboundProcessorAppliesDefaultsToData()
     AssertEqual((uint?)100, typed.RoutingContext, "outbound DATA default Routing Context");
     AssertEqual((uint?)42, typed.CorrelationId, "outbound DATA Correlation Id");
     AssertSequence([0xAA], typed.UserPayload, "outbound DATA payload");
+
+    M3uaPayloadDataMessage typedInput = new(
+        networkAppearance: 8,
+        routingContext: 200,
+        originatingPointCode: 3,
+        destinationPointCode: 4,
+        serviceIndicator: 5,
+        networkIndicator: 2,
+        messagePriority: 1,
+        signallingLinkSelection: 9,
+        userPayload: [0xBB],
+        correlationId: 43);
+    Assert(
+        processor.TryBuildPayloadData(buffer, typedInput, out written, out string? typedBuildError),
+        typedBuildError ?? "typed outbound DATA build failed");
+
+    M3uaMessage typedMessage = DecodeMessage(buffer.Slice(0, written));
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(typedMessage, out M3uaPayloadDataMessage? typedOutput, out string? typedParseError),
+        typedParseError ?? "typed outbound DATA parse failed");
+    AssertEqual((uint?)8, typedOutput!.NetworkAppearance, "typed outbound DATA Network Appearance");
+    AssertEqual((uint?)200, typedOutput.RoutingContext, "typed outbound DATA Routing Context");
+    AssertEqual((uint?)43, typedOutput.CorrelationId, "typed outbound DATA Correlation Id");
+    AssertSequence([0xBB], typedOutput.UserPayload, "typed outbound DATA payload");
 }
 
 static void M3uaOutboundProcessorCanRequireActiveAspForData()

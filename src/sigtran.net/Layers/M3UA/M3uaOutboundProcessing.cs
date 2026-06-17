@@ -427,6 +427,37 @@ public sealed class M3uaOutboundProcessor
             out error);
     }
 
+    /// <summary>
+    /// Builds a Payload Data message from a typed Payload Data model.
+    /// </summary>
+    /// <param name="buffer">The destination buffer.</param>
+    /// <param name="message">The typed Payload Data message.</param>
+    /// <param name="written">The number of bytes written on success.</param>
+    /// <param name="error">Set if the message cannot be built.</param>
+    /// <returns>True if the message was built; otherwise false.</returns>
+    public bool TryBuildPayloadData(
+        Span<byte> buffer,
+        M3uaPayloadDataMessage message,
+        out int written,
+        out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        return TryBuildPayloadData(
+            buffer,
+            message.UserPayload,
+            message.OriginatingPointCode,
+            message.DestinationPointCode,
+            message.ServiceIndicator,
+            message.NetworkIndicator,
+            message.MessagePriority,
+            message.SignallingLinkSelection,
+            message.NetworkAppearance,
+            message.RoutingContext,
+            message.CorrelationId,
+            out written,
+            out error);
+    }
+
     private ReadOnlySpan<uint> GetRoutingContextSpan(Span<uint> scratch)
     {
         if (!RoutingContext.HasValue)
