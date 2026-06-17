@@ -428,7 +428,9 @@ static void M3uaRouteTableAddsOrReplacesRoutesBySelector()
     Assert(!secondReplaced, "second route should be added");
     AssertEqual(2, table.Count, "add-or-replace route count");
     AssertEqual("replacement", table.Routes[0].Name, "replaced route name");
+    AssertEqual("NA=7 RC=100 DPC=2 SI=3", table.Routes[0].DescribeSelectors(), "replaced route selectors");
     AssertEqual("second", table.Routes[1].Name, "added route name");
+    AssertEqual("NA=* RC=200 DPC=* SI=*", table.Routes[1].DescribeSelectors(), "wildcard route selectors");
 }
 
 static void M3uaRouteTableSnapshotsAndFindsRoutesByName()

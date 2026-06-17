@@ -15,6 +15,12 @@
 
 Any selector can be omitted. Omitted selectors act as wildcards.
 
+`DescribeSelectors` formats selectors deterministically for diagnostics and admin surfaces.
+
+```csharp
+string selectors = route.DescribeSelectors(); // NA=7 RC=100 DPC=263430 SI=3
+```
+
 ## Resolution
 
 The route table finds all matching routes and selects the most specific route. Specificity is the number of concrete selectors on the route.

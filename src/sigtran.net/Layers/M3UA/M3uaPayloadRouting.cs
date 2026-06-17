@@ -79,10 +79,25 @@ public sealed class M3uaPayloadRoute
                && ServiceIndicator == other.ServiceIndicator;
     }
 
+    /// <summary>
+    /// Formats the route selectors in a deterministic diagnostic form.
+    /// </summary>
+    /// <returns>A compact selector description.</returns>
+    public string DescribeSelectors()
+    {
+        return $"NA={FormatSelector(NetworkAppearance)} RC={FormatSelector(RoutingContext)} DPC={FormatSelector(DestinationPointCode)} SI={FormatSelector(ServiceIndicator)}";
+    }
+
     private static bool MatchesOptional<T>(T? selector, T? value)
         where T : struct
     {
         return !selector.HasValue || (value.HasValue && EqualityComparer<T>.Default.Equals(selector.Value, value.Value));
+    }
+
+    private static string FormatSelector<T>(T? selector)
+        where T : struct
+    {
+        return selector.HasValue ? selector.Value.ToString() ?? string.Empty : "*";
     }
 }
 
