@@ -85,7 +85,7 @@ Registration Response carries one or more Registration Result parameters. Each r
 
 The status is exposed as `M3uaRegistrationStatus`.
 
-Registration results expose `IsSuccess`. Registration responses expose `AllSuccessful` and `TryFindResult(localRoutingKeyIdentifier, out result)` for correlating SG responses to requested Routing Keys.
+Registration results expose `IsSuccess`. Registration responses expose `AllSuccessful`, `TryFindResult(localRoutingKeyIdentifier, out result)`, and `TryGetAssignedRoutingContext(localRoutingKeyIdentifier, out routingContext)` for correlating SG responses to requested Routing Keys.
 
 ## Deregistration
 

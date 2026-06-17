@@ -1956,6 +1956,9 @@ static void M3uaExposesRkmResponseConvenienceHelpers()
     Assert(!registration.Results[1].IsSuccess, "second registration result should be failure");
     Assert(registration.TryFindResult(0x0000002A, out M3uaRegistrationResult registrationResult), "registration result should be found");
     AssertEqual((uint)0x00000064, registrationResult.RoutingContext, "found registration Routing Context");
+    Assert(registration.TryGetAssignedRoutingContext(0x0000002A, out uint assignedRoutingContext), "assigned Routing Context should be found");
+    AssertEqual((uint)0x00000064, assignedRoutingContext, "assigned Routing Context value");
+    Assert(!registration.TryGetAssignedRoutingContext(0x0000002B, out _), "failed registration should not expose assigned Routing Context");
     Assert(!registration.TryFindResult(0x0000002C, out _), "missing registration result should not be found");
 
     M3uaDeregistrationResponseMessage deregistration = new(

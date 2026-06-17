@@ -550,6 +550,24 @@ public sealed class M3uaRegistrationResponseMessage
         result = default;
         return false;
     }
+
+    /// <summary>
+    /// Finds the assigned Routing Context for a successfully registered Local-RK-Identifier.
+    /// </summary>
+    /// <param name="localRoutingKeyIdentifier">The Local-RK-Identifier to find.</param>
+    /// <param name="routingContext">The assigned Routing Context on success.</param>
+    /// <returns>True if a successful registration result was found; otherwise false.</returns>
+    public bool TryGetAssignedRoutingContext(uint localRoutingKeyIdentifier, out uint routingContext)
+    {
+        if (TryFindResult(localRoutingKeyIdentifier, out M3uaRegistrationResult result) && result.IsSuccess)
+        {
+            routingContext = result.RoutingContext;
+            return true;
+        }
+
+        routingContext = 0;
+        return false;
+    }
 }
 
 /// <summary>
