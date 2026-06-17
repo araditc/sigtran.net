@@ -21,6 +21,7 @@ Run("M3UA transport session receives inbound DATA", M3uaTransportSessionReceives
 Run("M3UA transport session waits for typed messages", M3uaTransportSessionWaitsForTypedMessages);
 Run("M3UA transport session waits for ASP transitions", M3uaTransportSessionWaitsForAspTransitions);
 Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposesOwnedSocket);
+Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
@@ -641,6 +642,35 @@ static void M3uaTransportSessionDisposesOwnedSocket()
     session.Dispose();
 
     Assert(socket.Disposed, "owned socket should be disposed");
+}
+
+static void M3uaTransportSessionTracksCounters()
+{
+    Span<byte> buffer = stackalloc byte[64];
+    FakeSctpSocket socket = new();
+    Assert(
+        M3uaMessageBuilder.BuildHeartbeat(buffer, [0x01], out int written, out string? buildError),
+        buildError ?? "Heartbeat build failed");
+    socket.QueueReceive(buffer.Slice(0, written).ToArray());
+
+    using M3uaTransportSession session = new(socket, leaveOpen: true);
+    session.SendHeartbeatAsync(new byte[] { 0x02 }).GetAwaiter().GetResult();
+    M3uaInboundProcessingResult? result = session.ReceiveAsync().GetAwaiter().GetResult();
+    Assert(result is not null, "counter receive result should not be null");
+
+    InvalidOperationException exception = AssertThrows<InvalidOperationException>(() =>
+        session.SendDestinationUnavailableAsync(
+            networkAppearance: null,
+            routingContexts: ReadOnlyMemory<uint>.Empty,
+            affectedPointCodes: ReadOnlyMemory<M3uaAffectedPointCode>.Empty,
+            infoString: ReadOnlyMemory<byte>.Empty).GetAwaiter().GetResult());
+    Assert(exception.Message.Contains("Affected Point Code", StringComparison.Ordinal), exception.Message);
+
+    M3uaTransportSessionCounters counters = session.Counters;
+    AssertEqual(1L, counters.SentPdus, "counter sent PDUs");
+    AssertEqual(1L, counters.ReceivedPdus, "counter received PDUs");
+    AssertEqual(1L, counters.SendFailures, "counter send failures");
+    AssertEqual(0L, counters.ReceiveFailures, "counter receive failures");
 }
 
 static void M3uaDiagnosticsFormatHexAndSummaries()

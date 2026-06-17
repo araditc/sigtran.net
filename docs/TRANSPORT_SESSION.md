@@ -15,6 +15,7 @@
 - Send Management Error and Notify messages.
 - Send SSNM DUNA, DAVA, DAUD, DRST, DUPU, and SCON messages.
 - Send encoded packets through `ISctpSocket`.
+- Expose session-local send, receive, and failure counters.
 - Manage rented buffers with `ArrayPool<byte>`.
 
 ## Example
@@ -78,6 +79,18 @@ M3uaInboundProcessingResult activeAck = await session.ReceiveUntilTransitionAsyn
     maxMessages: 8,
     ct);
 ```
+
+## Counters
+
+`Counters` returns a snapshot of session-local packet counters.
+
+```csharp
+M3uaTransportSessionCounters counters = session.Counters;
+long sent = counters.SentPdus;
+long received = counters.ReceivedPdus;
+```
+
+The counters are intentionally framework-neutral. Applications can export them through OpenTelemetry, Prometheus, logs, or their own health endpoints.
 
 ## Current Scope
 

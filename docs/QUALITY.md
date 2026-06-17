@@ -26,6 +26,7 @@ Good comments should explain protocol meaning, units, optionality, and important
 - Verify big-endian encoding and TLV padded length behavior.
 - Document whether the feature is production-ready or experimental.
 - Add diagnostics coverage when a feature changes packet visibility or operational troubleshooting.
+- Add counter or health-signal coverage when a feature changes send/receive behavior.
 
 ## API Stability
 

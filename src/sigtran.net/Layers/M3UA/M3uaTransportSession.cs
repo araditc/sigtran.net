@@ -5,12 +5,47 @@ using sigtran.net.Core.Interfaces;
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
+/// Snapshot of transport-session packet counters.
+/// </summary>
+public readonly struct M3uaTransportSessionCounters
+{
+    /// <summary>Creates a counter snapshot.</summary>
+    /// <param name="sentPdus">The number of successfully sent M3UA PDUs.</param>
+    /// <param name="receivedPdus">The number of successfully received and processed M3UA PDUs.</param>
+    /// <param name="sendFailures">The number of outbound build or send failures.</param>
+    /// <param name="receiveFailures">The number of inbound receive or processing failures.</param>
+    public M3uaTransportSessionCounters(long sentPdus, long receivedPdus, long sendFailures, long receiveFailures)
+    {
+        SentPdus = sentPdus;
+        ReceivedPdus = receivedPdus;
+        SendFailures = sendFailures;
+        ReceiveFailures = receiveFailures;
+    }
+
+    /// <summary>The number of successfully sent M3UA PDUs.</summary>
+    public long SentPdus { get; }
+
+    /// <summary>The number of successfully received and processed M3UA PDUs.</summary>
+    public long ReceivedPdus { get; }
+
+    /// <summary>The number of outbound build or send failures.</summary>
+    public long SendFailures { get; }
+
+    /// <summary>The number of inbound receive or processing failures.</summary>
+    public long ReceiveFailures { get; }
+}
+
+/// <summary>
 /// Connects M3UA processors to an SCTP-like transport.
 /// </summary>
 public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
 {
     private readonly ISctpSocket _socket;
     private readonly bool _leaveOpen;
+    private long _sentPdus;
+    private long _receivedPdus;
+    private long _sendFailures;
+    private long _receiveFailures;
     private bool _disposed;
 
     /// <summary>Creates a transport-backed M3UA session.</summary>
@@ -47,6 +82,13 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     /// <summary>The maximum inbound or outbound M3UA PDU size in bytes.</summary>
     public int MaxPduSize { get; }
 
+    /// <summary>A snapshot of packet counters for this transport session.</summary>
+    public M3uaTransportSessionCounters Counters => new(
+        Interlocked.Read(ref _sentPdus),
+        Interlocked.Read(ref _receivedPdus),
+        Interlocked.Read(ref _sendFailures),
+        Interlocked.Read(ref _receiveFailures));
+
     /// <summary>
     /// Receives and processes one complete M3UA PDU.
     /// </summary>
@@ -56,6 +98,7 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     {
         ThrowIfDisposed();
         byte[] rented = ArrayPool<byte>.Shared.Rent(MaxPduSize);
+        bool failureCounted = false;
         try
         {
             int received = await _socket.ReceiveAsync(rented.AsMemory(0, MaxPduSize), ct).ConfigureAwait(false);
@@ -66,10 +109,22 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
 
             if (!InboundProcessor.TryProcess(rented.AsSpan(0, received), out M3uaInboundProcessingResult? result, out string? error))
             {
+                Interlocked.Increment(ref _receiveFailures);
+                failureCounted = true;
                 throw new InvalidOperationException(error);
             }
 
+            Interlocked.Increment(ref _receivedPdus);
             return result;
+        }
+        catch
+        {
+            if (!failureCounted)
+            {
+                Interlocked.Increment(ref _receiveFailures);
+            }
+
+            throw;
         }
         finally
         {
@@ -584,14 +639,27 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
     {
         ThrowIfDisposed();
         byte[] rented = ArrayPool<byte>.Shared.Rent(MaxPduSize);
+        bool failureCounted = false;
         try
         {
             if (!builder(rented.AsSpan(0, MaxPduSize), out int written, out string? error))
             {
+                Interlocked.Increment(ref _sendFailures);
+                failureCounted = true;
                 throw new InvalidOperationException(error);
             }
 
             await _socket.SendAsync(rented.AsMemory(0, written), ct).ConfigureAwait(false);
+            Interlocked.Increment(ref _sentPdus);
+        }
+        catch
+        {
+            if (!failureCounted)
+            {
+                Interlocked.Increment(ref _sendFailures);
+            }
+
+            throw;
         }
         finally
         {
