@@ -251,6 +251,14 @@ static void M3uaReportsSupportedTypedMessageKinds()
     Assert(
         !M3uaTypedMessageParser.IsSupported((M3uaMessageClass)0x7F, 0x01),
         "Unknown message class should not be supported");
+    Assert(
+        M3uaTypedMessageParser.TryRequireSupported(M3uaMessageClass.Transfer, (byte)M3uaTransferMessageType.PayloadData, out string? supportedError),
+        supportedError ?? "Payload Data should be required as supported");
+    AssertEqual(null, supportedError, "supported require error");
+    Assert(
+        !M3uaTypedMessageParser.TryRequireSupported(M3uaMessageClass.Management, 0x7F, out string? unsupportedError),
+        "Unknown Management message should not be required as supported");
+    Assert(unsupportedError?.Contains("class=Management type=127", StringComparison.Ordinal) == true, unsupportedError ?? "missing unsupported require error");
 }
 
 static void M3uaDispatchesKnownTypedMessages()

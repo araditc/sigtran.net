@@ -25,12 +25,20 @@ switch (typed.Kind)
 }
 ```
 
-Use `IsSupported` when an application only needs a capability check for a message class and type before running a full parser.
+Use `IsSupported` when an application only needs a capability check for a message class and type before running a full parser. Use `TryRequireSupported` when the caller also wants the SDK-standard unsupported-message error text.
 
 ```csharp
 bool supported = M3uaTypedMessageParser.IsSupported(
     message.MessageClass,
     message.MessageType);
+
+if (!M3uaTypedMessageParser.TryRequireSupported(
+        message.MessageClass,
+        message.MessageType,
+        out error))
+{
+    logger.LogWarning("{Reason}", error);
+}
 ```
 
 ## Supported Kinds
@@ -54,7 +62,7 @@ bool supported = M3uaTypedMessageParser.IsSupported(
 
 - The dispatcher only returns supported, validated typed messages.
 - Unsupported message classes or message types return `false` with a descriptive error.
-- `IsSupported` reports dispatcher coverage without validating message-specific parameters.
+- `IsSupported` and `TryRequireSupported` report dispatcher coverage without validating message-specific parameters.
 - Message-specific parser validation still applies, including required parameters and duplicate singleton checks.
 - The `As<T>()` helper performs a normal cast, so callers should match `Kind` before casting.
 - RKM response models include status convenience helpers for common result correlation.

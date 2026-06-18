@@ -755,6 +755,25 @@ public static class M3uaTypedMessageParser
     }
 
     /// <summary>
+    /// Verifies whether the dispatcher supports a message class and type.
+    /// </summary>
+    /// <param name="messageClass">The M3UA message class.</param>
+    /// <param name="messageType">The message type within the class.</param>
+    /// <param name="error">An error message when the dispatcher does not support the pair.</param>
+    /// <returns>True if the dispatcher can parse the message into a typed model; otherwise false.</returns>
+    public static bool TryRequireSupported(M3uaMessageClass messageClass, byte messageType, out string? error)
+    {
+        if (IsSupported(messageClass, messageType))
+        {
+            error = null;
+            return true;
+        }
+
+        error = $"Unsupported M3UA message class/type: class={messageClass} type={messageType}";
+        return false;
+    }
+
+    /// <summary>
     /// Parses any currently supported M3UA message into its concrete typed model.
     /// </summary>
     /// <param name="message">The decoded M3UA message.</param>
