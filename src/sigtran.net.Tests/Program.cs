@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Sockets;
 
 using sigtran.net.Layers.M3UA;
+using sigtran.net.Layers.MTP3;
 using sigtran.net.Layers.SCTP;
 using sigtran.net.Core.Interfaces;
 
+Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -84,6 +86,26 @@ Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConve
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
+
+static void Mtp3RoutingLabelAndSioRoundTrip()
+{
+    Mtp3ServiceInformationOctet sio = new(Mtp3ServiceIndicator.Sccp, networkIndicator: 2, messagePriority: 1);
+    byte encodedSio = sio.Encode();
+    AssertEqual((byte)0x93, encodedSio, "MTP3 SIO encoding");
+    Mtp3ServiceInformationOctet decodedSio = Mtp3ServiceInformationOctet.Decode(encodedSio);
+    AssertEqual(Mtp3ServiceIndicator.Sccp, decodedSio.ServiceIndicator, "MTP3 decoded SI");
+    AssertEqual((byte)2, decodedSio.NetworkIndicator, "MTP3 decoded NI");
+    AssertEqual((byte)1, decodedSio.MessagePriority, "MTP3 decoded MP");
+
+    Mtp3RoutingLabel label = new(destinationPointCode: 0x1234, originatingPointCode: 0x2345, signallingLinkSelection: 0x0A);
+    Span<byte> bytes = stackalloc byte[4];
+    label.Encode(bytes);
+    AssertSequence([0x34, 0x52, 0xD1, 0xA8], bytes, "MTP3 routing label bytes");
+    Mtp3RoutingLabel decoded = Mtp3RoutingLabel.Decode(bytes);
+    AssertEqual(0x1234U, decoded.DestinationPointCode, "MTP3 decoded DPC");
+    AssertEqual(0x2345U, decoded.OriginatingPointCode, "MTP3 decoded OPC");
+    AssertEqual((byte)0x0A, decoded.SignallingLinkSelection, "MTP3 decoded SLS");
+}
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
 {
