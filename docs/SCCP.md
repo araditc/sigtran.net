@@ -104,3 +104,20 @@ SccpExtendedUnitdataMessage segmented = new(
     segmentPayload,
     segmentation);
 ```
+
+## Long Unitdata
+
+`SccpLongUnitdataMessage` carries larger connectionless payloads with 16-bit pointer and length fields.
+
+```csharp
+SccpLongUnitdataMessage ludt = new(
+    new SccpProtocolClass(SccpConnectionlessClass.Class1),
+    hopCounter: 9,
+    called,
+    calling,
+    largePayload);
+
+byte[] encoded = ludt.Encode();
+```
+
+Use LUDT when the SCCP user data cannot fit inside the one-octet length field used by UDT and XUDT.

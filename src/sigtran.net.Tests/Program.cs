@@ -14,6 +14,7 @@ Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableP
 Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
 Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTrips);
 Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmentationOptionalParameter);
+Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -254,6 +255,31 @@ static void SccpXudtCarriesSegmentationOptionalParameter()
     AssertEqual(0x00010203U, decoded!.Segmentation?.LocalReference, "SCCP decoded segmentation reference");
     AssertEqual((byte)1, decoded.Segmentation?.RemainingSegments, "SCCP decoded segmentation remaining");
     Assert(decoded.Segmentation?.FirstSegment == false, "SCCP decoded segmentation first flag");
+}
+
+static void SccpLudtCodecCarriesLongUserData()
+{
+    SccpPartyAddress called = new(SccpRoutingIndicator.RouteOnSubsystemNumber, subsystemNumber: SubsystemNumber.MAP, pointCode: 0x0101);
+    SccpPartyAddress calling = new(SccpRoutingIndicator.RouteOnSubsystemNumber, subsystemNumber: SubsystemNumber.MSC, pointCode: 0x0102);
+    byte[] payload = Enumerable.Range(0, 300).Select(i => (byte)i).ToArray();
+
+    SccpLongUnitdataMessage message = new(
+        new SccpProtocolClass(SccpConnectionlessClass.Class1),
+        hopCounter: 9,
+        called,
+        calling,
+        payload);
+
+    byte[] encoded = message.Encode();
+    AssertEqual((byte)SccpMessageType.LongUnitdata, encoded[0], "SCCP LUDT message type");
+    AssertSequence([0x00, 0x08], encoded.AsSpan(3, 2), "SCCP LUDT called pointer");
+    AssertSequence([0x00, 0x0C], encoded.AsSpan(5, 2), "SCCP LUDT calling pointer");
+    AssertSequence([0x00, 0x10], encoded.AsSpan(7, 2), "SCCP LUDT data pointer");
+    AssertSequence([0x01, 0x2C], encoded.AsSpan(23, 2), "SCCP LUDT data length");
+
+    Assert(SccpLongUnitdataMessage.TryDecode(encoded, out SccpLongUnitdataMessage? decoded, out string? error), error ?? "SCCP LUDT decode failed");
+    AssertEqual((byte)9, decoded!.HopCounter, "SCCP decoded LUDT hop counter");
+    AssertSequence(payload, decoded.UserData.Span, "SCCP decoded LUDT data");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
