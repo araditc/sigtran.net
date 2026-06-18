@@ -9,6 +9,7 @@ using sigtran.net.Core.Interfaces;
 
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
+Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -120,6 +121,25 @@ static void SccpProtocolConstantsExposeConnectionlessClasses()
     SccpProtocolClass decoded = SccpProtocolClass.Decode(0x81);
     AssertEqual(SccpConnectionlessClass.Class1, decoded.ConnectionlessClass, "SCCP decoded protocol class");
     Assert(decoded.ReturnMessageOnError, "SCCP return-on-error flag");
+}
+
+static void SccpPartyAddressEncodesSsnAndGlobalTitle()
+{
+    SccpPartyAddress address = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        subsystemNumber: SubsystemNumber.MAP,
+        pointCode: 0x1234,
+        globalTitle: new SccpGlobalTitle("44123456789", translationType: 0, numberingPlan: 1, natureOfAddress: 4));
+
+    byte[] encoded = address.Encode();
+    AssertEqual((byte)0x13, encoded[0], "SCCP party address indicator");
+    AssertSequence([0x13, 0x34, 0x12, 0x06, 0x00, 0x11, 0x04, 0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], encoded, "SCCP party address bytes");
+
+    Assert(SccpPartyAddress.TryDecode(encoded, out SccpPartyAddress? decoded, out string? error), error ?? "SCCP party address decode failed");
+    AssertEqual(SccpRoutingIndicator.RouteOnGlobalTitle, decoded!.RoutingIndicator, "SCCP decoded routing indicator");
+    AssertEqual(SubsystemNumber.MAP, decoded.SubsystemNumber, "SCCP decoded SSN");
+    AssertEqual((ushort)0x1234, decoded.PointCode, "SCCP decoded point code");
+    AssertEqual("44123456789", decoded.GlobalTitle?.Digits, "SCCP decoded GT digits");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
