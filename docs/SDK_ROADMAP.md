@@ -42,6 +42,8 @@ The current repository is a useful proof of concept, but it is not yet an intero
 - Add SCCP UDT/XUDT/LUDT parsing, called/calling party address indicators, SSN, global title formats, segmentation/reassembly, return cause, and protocol classes.
 - Add route-on-SSN and route-on-GT APIs suitable for SMS/MAP users.
 
+Status: SDK foundation is complete for internal APIs and byte-level tests. Production claims still require external SCCP interoperability vectors and trace validation.
+
 ## Phase 4 - TCAP
 
 - Replace simplified TCAP encoding with ASN.1 BER.

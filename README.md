@@ -28,7 +28,8 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | MTP3 | Service information octet and ITU-style routing label primitives for SCCP payload routing |
 | SCTP | Phase 2 foundation complete: packet transport contract, connection options, reconnect policy, health snapshots, stream selection, SIGTRAN PPID helpers, optional stream/PPID metadata, association lifecycle models, and metadata-aware development TCP adapter |
 | SCTP readiness | Foundation readiness report with capability count; native SCTP implementation and interoperability verification remain the production gate |
-| SCCP | Phase 3 foundation includes connectionless message types, protocol class primitives, party address indicators, SSN, point code, TBCD global title support, pointer-based UDT, XUDT hop-counter/segmentation encode-decode, LUDT long-payload support, and UDTS return-cause messages |
+| SCCP | Phase 3 foundation complete: MTP3 boundary, route-on-SSN/GT APIs, connectionless message types, protocol class primitives, party address indicators, SSN, point code, TBCD global title support, pointer-based UDT, XUDT hop-counter/segmentation encode-decode, LUDT long-payload support, and UDTS return-cause messages |
+| SCCP readiness | Foundation readiness report with capability count; external interoperability vectors and trace validation remain the production gate |
 | TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
 
 ## Requirements
@@ -118,7 +119,7 @@ The roadmap is intentionally conservative:
 
 1. Finish remaining M3UA protocol coverage and API polish.
 2. Add a production SCTP transport story.
-3. Replace simplified SCCP with standards-based SCCP.
+3. Harden SCCP with external interoperability vectors and trace validation.
 4. Replace simplified TCAP with ASN.1 BER based TCAP.
 5. Add MAP SMS profiles and high-level client APIs.
 6. Add interoperability tooling, simulators, CI, and release automation.

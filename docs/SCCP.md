@@ -137,3 +137,31 @@ byte[] encoded = udts.Encode();
 ```
 
 Use UDTS when an incoming UDT cannot be delivered and the protocol class asks for return-on-error behavior.
+
+## Routing
+
+`SccpRouteTable` resolves application routes by subsystem number or global title prefix.
+
+```csharp
+SccpRouteTable routes = new();
+routes.Add(new SccpRoute("map", SccpRouteSelector.ForSubsystem(SubsystemNumber.MAP)));
+routes.Add(new SccpRoute("smsc-uk", SccpRouteSelector.ForGlobalTitlePrefix("44123")));
+
+if (routes.TryResolve(calledParty, out SccpRoute? route))
+{
+    string name = route.Name;
+}
+```
+
+Global title routes use longest-prefix matching. SSN routes can optionally include a point code for more specific routing.
+
+## Readiness
+
+`SccpPhase3Readiness.GetReport()` reports the current Phase 3 status. The SDK foundation is ready when MTP3 routing, party addressing, UDT/XUDT/LUDT codecs, segmentation, service messages, and routing APIs are present.
+
+```csharp
+SccpPhase3ReadinessReport report = SccpPhase3Readiness.GetReport();
+bool foundationReady = report.FoundationReady;
+```
+
+Production readiness remains false until external SCCP interoperability vectors and network trace validation are added.

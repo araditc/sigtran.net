@@ -16,6 +16,8 @@ Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTri
 Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmentationOptionalParameter);
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
+Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
+Run("SCCP phase 3 readiness reports foundation status", SccpPhase3ReadinessReportsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -303,6 +305,41 @@ static void SccpUdtsCodecCarriesReturnCause()
     Assert(SccpUnitdataServiceMessage.TryDecode(encoded, out SccpUnitdataServiceMessage? decoded, out string? error), error ?? "SCCP UDTS decode failed");
     AssertEqual(SccpReturnCause.SubsystemFailure, decoded!.ReturnCause, "SCCP decoded UDTS cause");
     AssertSequence([0xDE, 0xAD], decoded.UserData.Span, "SCCP decoded UDTS data");
+}
+
+static void SccpRouteTableResolvesSsnAndGlobalTitleRoutes()
+{
+    SccpRouteTable table = new();
+    table.Add(new SccpRoute("map-default", SccpRouteSelector.ForSubsystem(SubsystemNumber.MAP)));
+    table.Add(new SccpRoute("smsc-uk", SccpRouteSelector.ForGlobalTitlePrefix("44123")));
+    table.Add(new SccpRoute("smsc-uk-specific", SccpRouteSelector.ForGlobalTitlePrefix("4412345")));
+
+    SccpPartyAddress ssnAddress = new(SccpRoutingIndicator.RouteOnSubsystemNumber, subsystemNumber: SubsystemNumber.MAP, pointCode: 0x0101);
+    Assert(table.TryResolve(ssnAddress, out SccpRoute? ssnRoute), "SCCP SSN route should resolve");
+    AssertEqual("map-default", ssnRoute!.Name, "SCCP SSN route name");
+
+    SccpPartyAddress gtAddress = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        subsystemNumber: SubsystemNumber.MAP,
+        globalTitle: new SccpGlobalTitle("44123456789"));
+    Assert(table.TryResolve(gtAddress, out SccpRoute? gtRoute), "SCCP GT route should resolve");
+    AssertEqual("smsc-uk-specific", gtRoute!.Name, "SCCP longest GT prefix route");
+    AssertEqual(3, table.Snapshot().Count, "SCCP route snapshot count");
+}
+
+static void SccpPhase3ReadinessReportsFoundationStatus()
+{
+    AssertEqual("MTP3 and SCCP foundation", SccpPhase3Readiness.ReleaseLabel, "SCCP readiness label");
+    AssertEqual(6, SccpPhase3Readiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
+    Assert(
+        SccpPhase3Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        SccpPhase3Readiness.ProductionGateDescription);
+
+    SccpPhase3ReadinessReport report = SccpPhase3Readiness.GetReport();
+    Assert(report.FoundationReady, "SCCP foundation should be ready");
+    Assert(!report.IsProductionReady, "SCCP should not claim production readiness without interop vectors");
+    AssertEqual(6, report.FoundationCapabilityCount, "SCCP completed foundation capabilities");
+    Assert(report.Describe().Contains("foundationCapabilities=6/6", StringComparison.Ordinal), report.Describe());
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
