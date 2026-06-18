@@ -15,6 +15,7 @@ Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip)
 Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
+Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -246,6 +247,23 @@ static void TcapDialogueControllerTracksStateAndInvokeTimeouts()
     AssertEqual(TcapDialoguePhase.Continuing, dialogue.Phase, "TCAP continue dialogue phase");
     dialogue.End();
     AssertEqual(TcapDialoguePhase.Ended, dialogue.Phase, "TCAP ended dialogue phase");
+}
+
+static void TcapAllocatorsIssueTransactionAndInvokeIdentifiers()
+{
+    TcapTransactionIdAllocator transactionIds = new(firstValue: 0xFE, maxValue: 0xFF);
+    AssertEqual("FE", transactionIds.Allocate().ToString(), "TCAP transaction allocator first id");
+    AssertEqual("FF", transactionIds.Allocate().ToString(), "TCAP transaction allocator second id");
+    AssertEqual("01", transactionIds.Allocate().ToString(), "TCAP transaction allocator wraps");
+
+    TcapInvokeRegistry invokes = new();
+    byte first = invokes.Allocate();
+    AssertEqual((byte)1, first, "TCAP invoke allocator first id");
+    invokes.Register(9);
+    AssertEqual(2, invokes.Count, "TCAP invoke registry count");
+    AssertThrows<InvalidOperationException>(() => invokes.Register(9));
+    Assert(invokes.Complete(first), "TCAP invoke registry completes allocated id");
+    AssertEqual(1, invokes.Count, "TCAP invoke registry count after complete");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

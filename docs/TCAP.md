@@ -116,3 +116,17 @@ dialogue.RegisterInvoke(invokeId: 1, sentAt: DateTimeOffset.UtcNow);
 ```
 
 The controller validates invalid transitions, duplicate pending invokes, invoke concurrency limits, and timeout checks. It is intended to become the state core behind higher-level TCAP/MAP APIs.
+
+## Allocation
+
+`TcapTransactionIdAllocator` and `TcapInvokeRegistry` provide deterministic allocation and duplicate detection for transaction and invoke identifiers.
+
+```csharp
+TcapTransactionIdAllocator transactionIds = new();
+TcapTransactionId tid = transactionIds.Allocate();
+
+TcapInvokeRegistry invokes = new();
+byte invokeId = invokes.Allocate();
+```
+
+The allocator deliberately avoids hidden transport or threading behavior. Callers can wrap it with their own synchronization policy where needed.
