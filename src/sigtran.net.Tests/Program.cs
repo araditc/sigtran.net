@@ -287,6 +287,7 @@ static void TcapPhase4ReadinessReportsFoundationStatus()
 {
     AssertEqual("TCAP BER foundation", TcapPhase4Readiness.ReleaseLabel, "TCAP readiness label");
     AssertEqual(7, TcapPhase4Readiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
+    AssertEqual(7, TcapPhase4Readiness.GetFoundationCapabilities().Count, "TCAP readiness capability name count");
     Assert(
         TcapPhase4Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         TcapPhase4Readiness.ProductionGateDescription);

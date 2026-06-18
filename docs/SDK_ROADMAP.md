@@ -50,6 +50,8 @@ Status: SDK foundation is complete for internal APIs and byte-level tests. Produ
 - Implement dialogue portions, transaction IDs, Begin, Continue, End, Abort, Unidirectional, Invoke, ReturnResult, ReturnError, and Reject.
 - Add dialogue state, invoke timers, duplicate detection, abort/error propagation, and allocation policies for transaction IDs.
 
+Status: SDK foundation is complete for BER primitives, transaction envelopes, component codecs, dialogue portions, state controls, allocation helpers, and session builders. Production claims still require external TCAP interoperability vectors and MAP profile validation.
+
 ## Phase 5 - MAP SMS Profile
 
 - Add MAP operation models and ASN.1 bindings for common SMS flows.

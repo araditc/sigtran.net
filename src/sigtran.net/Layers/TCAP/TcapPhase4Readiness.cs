@@ -98,6 +98,22 @@ public static class TcapPhase4Readiness
     /// <summary>Explains the remaining production gate.</summary>
     public const string ProductionGateDescription = "External TCAP interoperability vectors and MAP profile validation are required before production claims.";
 
+    /// <summary>Returns the foundation capability names tracked by the readiness report.</summary>
+    /// <returns>The foundation capability names.</returns>
+    public static IReadOnlyList<string> GetFoundationCapabilities()
+    {
+        return
+        [
+            "BER TLV primitives",
+            "Transaction identifiers and package tags",
+            "Component codecs",
+            "Transaction envelope",
+            "Dialogue portion",
+            "Dialogue state controls",
+            "Session builder"
+        ];
+    }
+
     /// <summary>Builds the current Phase 4 readiness report.</summary>
     /// <returns>The current Phase 4 readiness report.</returns>
     public static TcapPhase4ReadinessReport GetReport()

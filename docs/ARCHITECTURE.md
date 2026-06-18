@@ -9,7 +9,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 | SCTP transport | Association lifecycle, streams, PPID, reconnect, async I/O | Contract only; TCP adapter is development-only |
 | M3UA | MTP3 user adaptation, ASP state, routing context, SSNM, management, RKM | Active production path |
 | SCCP | Global title and subsystem routing, UDT/XUDT/LUDT | Experimental proof of concept |
-| TCAP | Dialogues, components, transaction IDs, BER encoding | Experimental proof of concept |
+| TCAP | Dialogues, components, transaction IDs, BER encoding | Foundation complete; interop vectors pending |
 | MAP | SMS operation profiles over TCAP | Experimental proof of concept |
 
 ## Design Principles
@@ -44,5 +44,5 @@ The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, and MAP
 1. M3UA binary correctness and public API polish.
 2. Production SCTP transport and association lifecycle events.
 3. Standards-based SCCP encode/decode.
-4. ASN.1 BER TCAP encode/decode.
+4. TCAP external interoperability vectors and MAP profile validation.
 5. MAP SMS operation models and high-level client APIs.
