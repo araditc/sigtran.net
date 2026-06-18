@@ -20,6 +20,7 @@ Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIs
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
 Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessReportsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
+Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -316,6 +317,21 @@ static void MapSmsOperationCatalogAndParameterSetEncodeBer()
     Assert(MapSmsParameterSet.TryDecode(encoded, out MapSmsParameterSet? decoded, out string? error), error ?? "MAP parameter decode failed");
     AssertEqual(2, decoded!.Snapshot().Count, "MAP decoded parameter count");
     AssertSequence([0xAA], decoded.Snapshot()[1].Value.Span, "MAP decoded second parameter");
+}
+
+static void MapSmsAddressPrimitivesEncodeTbcdDigits()
+{
+    byte[] tbcd = MapSmsAddress.EncodeTbcd("44123456789");
+    AssertSequence([0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], tbcd, "MAP TBCD bytes");
+    AssertEqual("44123456789", MapSmsAddress.DecodeTbcd(tbcd, oddDigitCount: true), "MAP decoded TBCD digits");
+
+    MapSmsAddress msisdn = new(MapSmsAddressKind.Msisdn, "+44123456789");
+    byte[] encoded = msisdn.Encode();
+    AssertSequence([0x01, 0x04, 0x01, 0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], encoded, "MAP MSISDN address bytes");
+    MapSmsAddress decoded = MapSmsAddress.Decode(encoded, oddDigitCount: true);
+    AssertEqual(MapSmsAddressKind.Msisdn, decoded.Kind, "MAP decoded address kind");
+    AssertEqual("44123456789", decoded.Digits, "MAP decoded address digits");
+    AssertThrows<ArgumentException>(() => new MapSmsAddress(MapSmsAddressKind.Imsi, "12A"));
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

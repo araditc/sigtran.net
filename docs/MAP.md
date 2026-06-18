@@ -31,3 +31,17 @@ byte[] encoded = parameters.Encode();
 ```
 
 Operation-specific models build on this container so the public APIs can stay typed while still preserving deterministic BER payloads.
+
+## Address Primitives
+
+`MapSmsAddress` represents MSISDN, IMSI, and service-centre identities with TBCD digit encoding.
+
+```csharp
+MapSmsAddress msisdn = new(
+    MapSmsAddressKind.Msisdn,
+    "+44123456789");
+
+byte[] encoded = msisdn.Encode();
+```
+
+The address payload stores address kind, nature of address, numbering plan, and TBCD digits. Operation-specific models reuse this primitive instead of duplicating digit encoding rules.
