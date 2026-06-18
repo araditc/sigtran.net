@@ -103,12 +103,20 @@ routes.Clear();
 
 `Count` and `IsEmpty` expose lightweight table status for health checks and configuration validation.
 
+`Validate` returns a route-table validation snapshot. The default alpha gate requires at least one route and no duplicate route names.
+
 `Snapshot` returns a stable array copy of routes in insertion order. `TryFindByName` returns the first route with the requested name, which is useful for diagnostics, admin APIs, and configuration validation.
 
 ```csharp
 if (routes.IsEmpty)
 {
     throw new InvalidOperationException("No M3UA DATA routes are configured.");
+}
+
+M3uaPayloadRouteTableValidation validation = routes.Validate();
+if (!validation.IsValid)
+{
+    throw new InvalidOperationException("Invalid M3UA route table.");
 }
 
 M3uaPayloadRoute[] snapshot = routes.Snapshot();

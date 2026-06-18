@@ -465,11 +465,20 @@ static void M3uaRouteTableAddsOrReplacesRoutesBySelector()
     Assert(!firstReplaced, "first route should be added");
     Assert(replacementReplaced, "replacement route should replace same selectors");
     Assert(!secondReplaced, "second route should be added");
+    M3uaPayloadRouteTableValidation validation = table.Validate();
+    Assert(validation.IsValid, "route table should be valid");
+    AssertEqual(2, validation.RouteCount, "route validation count");
+    AssertEqual(0, validation.DuplicateNameCount, "route validation duplicate names");
     AssertEqual(2, table.Count, "add-or-replace route count");
     AssertEqual("replacement", table.Routes[0].Name, "replaced route name");
     AssertEqual("NA=7 RC=100 DPC=2 SI=3", table.Routes[0].DescribeSelectors(), "replaced route selectors");
     AssertEqual("second", table.Routes[1].Name, "added route name");
     AssertEqual("NA=* RC=200 DPC=* SI=*", table.Routes[1].DescribeSelectors(), "wildcard route selectors");
+
+    table.AddOrReplace(new M3uaPayloadRoute("second", networkAppearance: null, routingContext: 201, destinationPointCode: null, serviceIndicator: null), out _);
+    M3uaPayloadRouteTableValidation duplicateValidation = table.Validate();
+    Assert(!duplicateValidation.IsValid, "duplicate route names should invalidate validation snapshot");
+    Assert(duplicateValidation.HasDuplicateNames, "duplicate names should be reported");
 }
 
 static void M3uaRouteTableSnapshotsAndFindsRoutesByName()

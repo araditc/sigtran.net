@@ -1,6 +1,36 @@
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
+/// Validation snapshot for an M3UA Payload Data route table.
+/// </summary>
+public readonly struct M3uaPayloadRouteTableValidation
+{
+    /// <summary>Creates a route-table validation snapshot.</summary>
+    /// <param name="routeCount">The number of registered routes.</param>
+    /// <param name="duplicateNameCount">The number of route entries whose name duplicates an earlier route.</param>
+    public M3uaPayloadRouteTableValidation(int routeCount, int duplicateNameCount)
+    {
+        RouteCount = routeCount;
+        DuplicateNameCount = duplicateNameCount;
+    }
+
+    /// <summary>The number of registered routes.</summary>
+    public int RouteCount { get; }
+
+    /// <summary>The number of route entries whose name duplicates an earlier route.</summary>
+    public int DuplicateNameCount { get; }
+
+    /// <summary>Whether the route table has no registered routes.</summary>
+    public bool IsEmpty => RouteCount == 0;
+
+    /// <summary>Whether any route name appears more than once.</summary>
+    public bool HasDuplicateNames => DuplicateNameCount > 0;
+
+    /// <summary>Whether the route table passes the default alpha validation gate.</summary>
+    public bool IsValid => !IsEmpty && !HasDuplicateNames;
+}
+
+/// <summary>
 /// Describes an application route for incoming M3UA Payload Data messages.
 /// </summary>
 public sealed class M3uaPayloadRoute
@@ -226,6 +256,25 @@ public sealed class M3uaPayloadRouteTable
     public M3uaPayloadRoute[] Snapshot()
     {
         return _routes.ToArray();
+    }
+
+    /// <summary>
+    /// Builds a validation snapshot for the registered routes.
+    /// </summary>
+    /// <returns>A route-table validation snapshot.</returns>
+    public M3uaPayloadRouteTableValidation Validate()
+    {
+        HashSet<string> seenNames = new(StringComparer.Ordinal);
+        int duplicateNameCount = 0;
+        for (int i = 0; i < _routes.Count; i++)
+        {
+            if (!seenNames.Add(_routes[i].Name))
+            {
+                duplicateNameCount++;
+            }
+        }
+
+        return new(_routes.Count, duplicateNameCount);
     }
 
     /// <summary>
