@@ -95,3 +95,12 @@ SctpTransportHealth health = new(
     sentMessages: 100,
     receivedMessages: 99);
 ```
+
+## Readiness Report
+
+`SctpTransportReadiness.GetReport()` reports the current phase status. The foundation is ready when metadata, lifecycle, options, reconnect policy, and the development adapter are present. Production readiness remains false until a native SCTP implementation is added and verified.
+
+```csharp
+SctpTransportReadinessReport report = SctpTransportReadiness.GetReport();
+bool canShipNativeSctp = report.IsProductionReady;
+```

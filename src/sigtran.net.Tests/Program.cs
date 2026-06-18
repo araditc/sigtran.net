@@ -13,6 +13,7 @@ Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectio
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
+Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -216,6 +217,15 @@ static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()
     {
         listener.Stop();
     }
+}
+
+static void SctpTransportReadinessReportsFoundationStatus()
+{
+    AssertEqual("SCTP transport foundation", SctpTransportReadiness.ReleaseLabel, "SCTP readiness label");
+    SctpTransportReadinessReport report = SctpTransportReadiness.GetReport();
+    Assert(report.FoundationReady, "SCTP foundation should be ready");
+    Assert(!report.IsProductionReady, "SCTP should not be production-ready without native implementation");
+    Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()
