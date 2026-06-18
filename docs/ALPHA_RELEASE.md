@@ -23,3 +23,15 @@ Public API additions must include XML comments. The library treats missing publi
 ## Supported Message Discovery
 
 Use `M3uaTypedMessageParser.IsSupported` when an application wants to check whether a message class and type can be dispatched into a typed SDK model before attempting full parsing.
+
+## Readiness Report
+
+`M3uaAlphaReadiness.GetReport()` returns a framework-neutral alpha readiness report covering package metadata, XML documentation enforcement, M3UA protocol coverage, transport abstraction availability, and the experimental status of SCCP/TCAP/MAP.
+
+```csharp
+M3uaAlphaReadinessReport report = M3uaAlphaReadiness.GetReport();
+if (!report.IsReady)
+{
+    throw new InvalidOperationException(report.Describe());
+}
+```

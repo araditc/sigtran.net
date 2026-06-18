@@ -3,6 +3,7 @@ using sigtran.net.Core.Interfaces;
 
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
+Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
@@ -136,6 +137,20 @@ static void M3uaProtocolExposesPublicMetadata()
     Assert(capabilities.SupportsSsnm, "capabilities should include SSNM");
     Assert(capabilities.SupportsRkm, "capabilities should include RKM");
     Assert(capabilities.SupportsTransportSession, "capabilities should include transport session");
+}
+
+static void M3uaAlphaReadinessReportDescribesReleaseGate()
+{
+    M3uaAlphaReadinessReport report = M3uaAlphaReadiness.GetReport();
+    Assert(report.IsReady, "M3UA alpha readiness report should be ready");
+    Assert(report.HasPackageMetadata, "alpha report package metadata");
+    Assert(report.RequiresXmlDocumentation, "alpha report XML docs");
+    Assert(report.HasM3uaProtocolCoverage, "alpha report protocol coverage");
+    Assert(report.HasTransportAbstraction, "alpha report transport abstraction");
+    Assert(report.MarksUpperLayersExperimental, "alpha report experimental upper layers");
+    Assert(
+        report.Describe().Contains("m3uaAlphaReady=True", StringComparison.Ordinal),
+        report.Describe());
 }
 
 static void M3uaDecoderReturnsProtocolDataValue()
