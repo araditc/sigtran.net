@@ -44,6 +44,39 @@ public sealed class M3uaAspStartupOptions
 
     /// <summary>The maximum inbound messages to inspect while waiting for each acknowledgement.</summary>
     public int MaxHandshakeMessages { get; }
+
+    /// <summary>
+    /// Validates that option values can be encoded in M3UA startup messages.
+    /// </summary>
+    /// <param name="error">An error message when an option cannot be encoded.</param>
+    /// <returns>True if the options are valid; otherwise false.</returns>
+    public bool TryValidate(out string? error)
+    {
+        const int maxParameterValueLength = ushort.MaxValue - M3uaProtocol.ParameterHeaderLength;
+        if (AspUpInfoString.Length > maxParameterValueLength)
+        {
+            error = $"ASP Up Info String length {AspUpInfoString.Length} exceeds M3UA parameter value limit {maxParameterValueLength}.";
+            return false;
+        }
+
+        if (AspActiveInfoString.Length > maxParameterValueLength)
+        {
+            error = $"ASP Active Info String length {AspActiveInfoString.Length} exceeds M3UA parameter value limit {maxParameterValueLength}.";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Formats a compact diagnostic summary of the startup options.
+    /// </summary>
+    /// <returns>A compact startup option summary.</returns>
+    public string Describe()
+    {
+        return $"aspId={(AspIdentifier.HasValue ? AspIdentifier.Value.ToString() : "none")} trafficMode={(TrafficModeType.HasValue ? TrafficModeType.Value.ToString() : "none")} upInfoBytes={AspUpInfoString.Length} activeInfoBytes={AspActiveInfoString.Length} maxHandshakeMessages={MaxHandshakeMessages}";
+    }
 }
 
 /// <summary>
@@ -94,6 +127,10 @@ public sealed class M3uaAspClient
         CancellationToken ct = default)
     {
         options ??= new M3uaAspStartupOptions();
+        if (!options.TryValidate(out string? optionsError))
+        {
+            throw new InvalidOperationException(optionsError);
+        }
 
         await _session.SendAspUpAsync(options.AspIdentifier, options.AspUpInfoString, ct).ConfigureAwait(false);
         M3uaInboundProcessingResult upAck = await _session.ReceiveUntilTransitionAsync(

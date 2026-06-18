@@ -32,6 +32,7 @@ Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters
 Run("M3UA transport session notifies ASP transport loss", M3uaTransportSessionNotifiesAspTransportLoss);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
+Run("M3UA ASP startup options validate and describe settings", M3uaAspStartupOptionsValidateAndDescribeSettings);
 Run("M3UA ASP client resets before startup handshake", M3uaAspClientResetsBeforeStartupHandshake);
 Run("M3UA ASP client fails when acknowledgement is missing", M3uaAspClientFailsWhenAcknowledgementIsMissing);
 Run("M3UA transport session sends Heartbeat", M3uaTransportSessionSendsHeartbeat);
@@ -1044,6 +1045,23 @@ static void M3uaAspClientCompletesStartupHandshake()
     AssertEqual(2, socket.SentPackets.Count, "ASP client sent packet count");
     AssertEqual((byte)M3uaAspsmMessageType.AspUp, DecodeMessage(socket.SentPackets[0].Span).MessageType, "ASP client first sent type");
     AssertEqual((byte)M3uaAsptmMessageType.AspActive, DecodeMessage(socket.SentPackets[1].Span).MessageType, "ASP client second sent type");
+}
+
+static void M3uaAspStartupOptionsValidateAndDescribeSettings()
+{
+    M3uaAspStartupOptions options = new(
+        aspIdentifier: 42,
+        trafficModeType: M3uaTrafficModeType.Loadshare,
+        aspUpInfoString: new byte[] { 0x01, 0x02 },
+        aspActiveInfoString: new byte[] { 0x03 },
+        maxHandshakeMessages: 4);
+
+    Assert(options.TryValidate(out string? validError), validError ?? "valid options should pass");
+    AssertEqual("aspId=42 trafficMode=Loadshare upInfoBytes=2 activeInfoBytes=1 maxHandshakeMessages=4", options.Describe(), "startup options description");
+
+    M3uaAspStartupOptions tooLarge = new(aspUpInfoString: new byte[ushort.MaxValue]);
+    Assert(!tooLarge.TryValidate(out string? invalidError), "oversized Info String should fail validation");
+    Assert(invalidError?.Contains("exceeds M3UA parameter value limit", StringComparison.Ordinal) == true, invalidError ?? "missing oversized Info String error");
 }
 
 static void M3uaAspClientResetsBeforeStartupHandshake()

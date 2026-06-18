@@ -16,7 +16,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA inbound processing | Decode, typed dispatch, ASP ACK state updates, and DATA route resolution |
 | M3UA outbound processing | State-aware builders with association defaults for ASP lifecycle, RKM, and typed DATA |
 | M3UA transport session | Async receive/send/wait facade with typed DATA send, Heartbeat acknowledgement, transport-loss notification, and resettable counters |
-| M3UA ASP client | ASP startup/reset, heartbeat, and shutdown helpers using transport wait APIs |
+| M3UA ASP client | ASP startup/reset option validation, heartbeat, and shutdown helpers using transport wait APIs |
 | M3UA ASPSM | ASP Up/Down, Heartbeat, acknowledgements, typed parsing |
 | M3UA ASPTM | ASP Active/Inactive, acknowledgements, typed parsing |
 | M3UA management | Error and Notify builders/parsers plus transport send helpers |

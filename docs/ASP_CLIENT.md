@@ -78,6 +78,8 @@ M3uaAspStartupResult result = await client.StartAsync(
 | `AspActiveInfoString` | Optional Info String sent in ASP Active |
 | `MaxHandshakeMessages` | Maximum inbound messages inspected while waiting for each startup acknowledgement |
 
+`M3uaAspStartupOptions.TryValidate(out error)` checks that Info String values fit M3UA TLV limits before packets are built. `Describe()` returns a compact diagnostic string for startup logs.
+
 ## Failure Behavior
 
 The client throws when:
@@ -85,6 +87,7 @@ The client throws when:
 - The transport closes before the expected acknowledgement arrives.
 - The inbound processor rejects an acknowledgement or state transition.
 - The expected acknowledgement is not seen within `MaxHandshakeMessages`.
+- Startup options cannot be encoded into valid M3UA parameters.
 
 ## Current Scope
 
