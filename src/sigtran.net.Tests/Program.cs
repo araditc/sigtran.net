@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.Sockets;
+
 using sigtran.net.Layers.M3UA;
 using sigtran.net.Layers.SCTP;
 using sigtran.net.Core.Interfaces;
@@ -9,6 +12,7 @@ Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRe
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
+Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -178,6 +182,40 @@ static void SctpTransportHealthSnapshotsExposeAssociationDetails()
     AssertEqual(local, health.LocalEndpoint, "SCTP health local endpoint");
     AssertEqual(10L, health.SentMessages, "SCTP health sent messages");
     AssertEqual(11L, health.ReceivedMessages, "SCTP health received messages");
+}
+
+static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()
+{
+    TcpListener listener = new(IPAddress.Loopback, 0);
+    listener.Start();
+    try
+    {
+        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        Task<TcpClient> acceptTask = listener.AcceptTcpClientAsync();
+        TcpClient client = new();
+        client.Connect(IPAddress.Loopback, port);
+        using TcpClient server = acceptTask.GetAwaiter().GetResult();
+
+        using TcpSctpAdapter clientAdapter = new(client);
+        using TcpSctpAdapter serverAdapter = new(server);
+        ISctpMetadataSocket metadataSocket = serverAdapter;
+
+        clientAdapter.SendAsync(new byte[] { 0x01, 0x02, 0x03 }).GetAwaiter().GetResult();
+        byte[] receiveBuffer = new byte[16];
+        SctpReceiveResult received = metadataSocket.ReceiveAsync(receiveBuffer).GetAwaiter().GetResult();
+
+        AssertEqual(3, received.BytesReceived, "TCP adapter received byte count");
+        AssertEqual(SctpPayloadProtocolIdentifiers.M3ua, received.Metadata.PayloadProtocolIdentifier, "TCP adapter metadata PPID");
+        AssertSequence([0x01, 0x02, 0x03], receiveBuffer.AsSpan(0, received.BytesReceived), "TCP adapter received payload");
+
+        SctpTransportHealth clientHealth = clientAdapter.GetHealthSnapshot(new SctpEndpoint("127.0.0.1", port));
+        AssertEqual(1L, clientHealth.SentMessages, "TCP adapter sent health count");
+        Assert(clientHealth.IsEstablished, "TCP adapter health should be established");
+    }
+    finally
+    {
+        listener.Stop();
+    }
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()

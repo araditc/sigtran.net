@@ -25,7 +25,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | M3UA RKM | REG/DEREG builders, parsers, strict client helpers, assigned-context lookup, and response status utilities |
 | M3UA diagnostics | ASP session summaries, alpha packet validation, header summaries, typed message summaries, parameter inventories, and offset-based hex dump formatting |
 | ASP state | Local acknowledgement-driven ASP session state machine with reset and Routing Context inspection |
-| SCTP | Packet transport contract, connection options, reconnect policy, health snapshots, stream selection, SIGTRAN PPID helpers, optional stream/PPID metadata, association lifecycle models, and development TCP adapter |
+| SCTP | Packet transport contract, connection options, reconnect policy, health snapshots, stream selection, SIGTRAN PPID helpers, optional stream/PPID metadata, association lifecycle models, and metadata-aware development TCP adapter |
 | SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
 
 ## Requirements

@@ -12,10 +12,12 @@ namespace sigtran.net.Layers.SCTP;
 /// suitable for production use but allows development and testing on
 /// systems where SCTP is unavailable.
 /// </summary>
-public sealed class TcpSctpAdapter : ISctpSocket
+public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
 {
     private readonly TcpClient _client;
     private readonly NetworkStream _stream;
+    private long _sentMessages;
+    private long _receivedMessages;
     private bool _disposed;
 
     /// <summary>
@@ -30,8 +32,20 @@ public sealed class TcpSctpAdapter : ISctpSocket
         _stream = _client.GetStream();
     }
 
+    /// <summary>The metadata attached to packets sent through the development TCP adapter.</summary>
+    public SctpPayloadMetadata DefaultMetadata { get; } = new(streamId: 0, payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua);
+
+    /// <summary>The current development adapter association state.</summary>
+    public SctpAssociationState AssociationState => _disposed ? SctpAssociationState.Closed : SctpAssociationState.Established;
+
     /// <inheritdoc />
     public async Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default)
+    {
+        await SendAsync(data, DefaultMetadata, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task SendAsync(ReadOnlyMemory<byte> data, SctpPayloadMetadata metadata, CancellationToken ct = default)
     {
         if (_disposed)
         {
@@ -54,10 +68,42 @@ public sealed class TcpSctpAdapter : ISctpSocket
         // capturing context; we intentionally await sequentially to preserve order.
         await _stream.WriteAsync(prefix, ct).ConfigureAwait(false);
         await _stream.WriteAsync(data, ct).ConfigureAwait(false);
+        Interlocked.Increment(ref _sentMessages);
     }
 
     /// <inheritdoc />
     public async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken ct = default)
+    {
+        SctpReceiveResult result = await ReceiveWithMetadataAsync(buffer, ct).ConfigureAwait(false);
+        return result.BytesReceived;
+    }
+
+    /// <inheritdoc />
+    async Task<SctpReceiveResult> ISctpMetadataSocket.ReceiveAsync(Memory<byte> buffer, CancellationToken ct)
+    {
+        return await ReceiveWithMetadataAsync(buffer, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Captures a development transport health snapshot.
+    /// </summary>
+    /// <param name="remoteEndpoint">The logical remote endpoint to report.</param>
+    /// <param name="localEndpoint">The optional logical local endpoint to report.</param>
+    /// <returns>An SCTP transport health snapshot.</returns>
+    public SctpTransportHealth GetHealthSnapshot(SctpEndpoint remoteEndpoint, SctpEndpoint? localEndpoint = null)
+    {
+        return new(
+            AssociationState,
+            remoteEndpoint,
+            localEndpoint,
+            outboundStreams: 1,
+            inboundStreams: 1,
+            defaultPayloadProtocolIdentifier: DefaultMetadata.PayloadProtocolIdentifier,
+            sentMessages: Interlocked.Read(ref _sentMessages),
+            receivedMessages: Interlocked.Read(ref _receivedMessages));
+    }
+
+    private async Task<SctpReceiveResult> ReceiveWithMetadataAsync(Memory<byte> buffer, CancellationToken ct)
     {
         if (_disposed)
         {
@@ -69,7 +115,7 @@ public sealed class TcpSctpAdapter : ISctpSocket
         int r = await _stream.ReadAsync(prefix.AsMemory(0, 4), ct).ConfigureAwait(false);
         if (r == 0)
         {
-            return 0; // remote closed
+            return new(0, DefaultMetadata); // remote closed
         }
 
         if (r < 4)
@@ -97,7 +143,9 @@ public sealed class TcpSctpAdapter : ISctpSocket
             }
             offset += n;
         }
-        return length;
+
+        Interlocked.Increment(ref _receivedMessages);
+        return new(length, DefaultMetadata);
     }
 
     /// <inheritdoc />
