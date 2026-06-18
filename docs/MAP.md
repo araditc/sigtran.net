@@ -83,3 +83,16 @@ byte[] parameters = mt.Encode();
 ```
 
 `MapSmsOperations.CreateMtForwardSm(smRpDa, smRpOa, userData)` produces the typed BER-shaped payload.
+
+## SendRoutingInfoForSM
+
+`MapSendRoutingInfoForShortMessage` models the route lookup request used before MT delivery.
+
+```csharp
+MapSendRoutingInfoForShortMessage sri = new(
+    msisdn,
+    serviceCentreAddress,
+    gprsSupportIndicator: true);
+
+byte[] parameters = sri.Encode();
+```

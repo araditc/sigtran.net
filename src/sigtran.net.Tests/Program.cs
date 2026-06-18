@@ -23,6 +23,7 @@ Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCat
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
 Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
 Run("MAP MT-ForwardSM model encodes required parameters", MapMtForwardSmModelEncodesRequiredParameters);
+Run("MAP SendRoutingInfoForSM model encodes routing parameters", MapSendRoutingInfoForSmModelEncodesRoutingParameters);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -369,6 +370,20 @@ static void MapMtForwardSmModelEncodesRequiredParameters()
 
     byte[] helper = MapSmsOperations.CreateMtForwardSm(decoded.SmRpDa, decoded.SmRpOa, decoded.SmRpUi.Span);
     AssertSequence(encoded, helper, "MAP MT helper encoding");
+}
+
+static void MapSendRoutingInfoForSmModelEncodesRoutingParameters()
+{
+    MapSendRoutingInfoForShortMessage sri = new(
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"),
+        gprsSupportIndicator: true);
+
+    byte[] encoded = sri.Encode();
+    Assert(MapSendRoutingInfoForShortMessage.TryDecode(encoded, out MapSendRoutingInfoForShortMessage? decoded, out string? error), error ?? "MAP SRI-SM decode failed");
+    AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP SRI decoded MSISDN");
+    AssertEqual(MapSmsAddressKind.ServiceCentre, decoded.ServiceCentreAddress.Kind, "MAP SRI decoded SC address kind");
+    Assert(decoded.GprsSupportIndicator, "MAP SRI decoded GPRS indicator");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
