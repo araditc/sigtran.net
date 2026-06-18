@@ -12,6 +12,8 @@ dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
 dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
 ```
 
+`M3uaAlphaReadiness.RequiredVerificationCommandCount` is `3` and mirrors this checklist. `M3uaAlphaReadiness.ReleaseLabel` is `M3UA alpha`.
+
 ## Package Metadata
 
 The package includes Apache-2.0 licensing, repository URLs, package tags, release notes, XML documentation, package validation, and symbol package generation.
@@ -23,6 +25,8 @@ Public API additions must include XML comments. The library treats missing publi
 ## Supported Message Discovery
 
 Use `M3uaTypedMessageParser.IsSupported` when an application wants to check whether a message class and type can be dispatched into a typed SDK model before attempting full parsing.
+
+Use `M3uaDiagnostics.TryValidateSupportedPacket` for a fast packet-level alpha gate: common framing, TLV walkability, and typed-dispatcher support.
 
 ## Readiness Report
 

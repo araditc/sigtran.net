@@ -63,6 +63,12 @@ public readonly struct M3uaAlphaReadinessReport
 /// </summary>
 public static class M3uaAlphaReadiness
 {
+    /// <summary>The release label for the current alpha gate.</summary>
+    public const string ReleaseLabel = "M3UA alpha";
+
+    /// <summary>The number of required local verification commands in the alpha release checklist.</summary>
+    public const int RequiredVerificationCommandCount = 3;
+
     /// <summary>
     /// Builds the current M3UA alpha readiness report.
     /// </summary>

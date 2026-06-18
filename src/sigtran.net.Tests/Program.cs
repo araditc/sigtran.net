@@ -141,6 +141,8 @@ static void M3uaProtocolExposesPublicMetadata()
 
 static void M3uaAlphaReadinessReportDescribesReleaseGate()
 {
+    AssertEqual("M3UA alpha", M3uaAlphaReadiness.ReleaseLabel, "alpha release label");
+    AssertEqual(3, M3uaAlphaReadiness.RequiredVerificationCommandCount, "alpha verification command count");
     M3uaAlphaReadinessReport report = M3uaAlphaReadiness.GetReport();
     Assert(report.IsReady, "M3UA alpha readiness report should be ready");
     Assert(report.HasPackageMetadata, "alpha report package metadata");
