@@ -3,6 +3,7 @@ using sigtran.net.Layers.SCTP;
 using sigtran.net.Core.Interfaces;
 
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
+Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -84,6 +85,14 @@ static void SctpPayloadMetadataStoresStreamAndPpidValues()
     SctpReceiveResult result = new(bytesReceived: 12, metadata);
     AssertEqual(12, result.BytesReceived, "SCTP receive byte count");
     AssertEqual((ushort)2, result.Metadata.StreamId, "SCTP receive metadata stream");
+}
+
+static void SctpAssociationEventsDescribeLifecycleState()
+{
+    SctpAssociationEvent established = new(SctpAssociationEventType.Established, SctpAssociationState.Established, reason: "connected");
+    AssertEqual(SctpAssociationEventType.Established, established.EventType, "SCTP event type");
+    AssertEqual(SctpAssociationState.Established, established.State, "SCTP event state");
+    AssertEqual("connected", established.Reason, "SCTP event reason");
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()

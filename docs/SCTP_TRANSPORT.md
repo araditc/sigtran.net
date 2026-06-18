@@ -18,3 +18,7 @@ SctpPayloadMetadata metadata = new(
 ## Compatibility
 
 The metadata contract is optional. Existing `ISctpSocket` implementations continue to work for M3UA packet send/receive. A native SCTP transport should implement both interfaces so higher layers can opt into SCTP-specific behavior without breaking the current M3UA session facade.
+
+## Association Lifecycle
+
+`SctpAssociationState` and `SctpAssociationEvent` define the lifecycle vocabulary for production transports. Native implementations should report transitions such as connect start, established, reconnect start, shutdown, closed, and failed using these SDK types.
