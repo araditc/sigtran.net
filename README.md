@@ -30,7 +30,8 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | SCTP readiness | Foundation readiness report with capability count; native SCTP implementation and interoperability verification remain the production gate |
 | SCCP | Phase 3 foundation complete: MTP3 boundary, route-on-SSN/GT APIs, connectionless message types, protocol class primitives, party address indicators, SSN, point code, TBCD global title support, pointer-based UDT, XUDT hop-counter/segmentation encode-decode, LUDT long-payload support, and UDTS return-cause messages |
 | SCCP readiness | Foundation readiness report with capability count; external interoperability vectors and trace validation remain the production gate |
-| TCAP | Phase 4 foundation includes ASN.1 BER TLV primitives, package tags, transaction identifiers, BER Invoke/ReturnResult/ReturnError/Reject components, transaction message envelopes, dialogue portion application-context support, dialogue state/timeout control, and identifier allocation helpers |
+| TCAP | Phase 4 foundation includes ASN.1 BER TLV primitives, package tags, transaction identifiers, BER Invoke/ReturnResult/ReturnError/Reject components, transaction message envelopes, dialogue portion application-context support, dialogue state/timeout control, identifier allocation helpers, and Begin/End session builders |
+| TCAP readiness | Foundation readiness report with capability count; external TCAP interoperability vectors and MAP profile validation remain the production gate |
 | MAP | Experimental proof-of-concept code; not yet interoperable |
 
 ## Requirements

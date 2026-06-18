@@ -130,3 +130,28 @@ byte invokeId = invokes.Allocate();
 ```
 
 The allocator deliberately avoids hidden transport or threading behavior. Callers can wrap it with their own synchronization policy where needed.
+
+## Session Builder
+
+`TcapSessionBuilder` creates common Begin/Invoke and End/ReturnResult messages while allocating transaction and invoke identifiers.
+
+```csharp
+TcapSessionBuilder builder = new();
+
+TcapBuiltInvoke built = builder.BeginInvoke(
+    mapContext,
+    TcapOperationCode.MoForwardShortMessage,
+    parameters);
+
+byte[] end = builder.EndResult(
+    built.OriginatingTransactionId,
+    built.InvokeId,
+    TcapOperationCode.MoForwardShortMessage,
+    resultParameters);
+```
+
+## Readiness
+
+`TcapPhase4Readiness.GetReport()` reports the current TCAP BER foundation status. The foundation is complete when BER primitives, transaction models, component codecs, transaction envelopes, dialogue portions, dialogue state controls, and the session builder are present.
+
+Production readiness remains false until external TCAP interoperability vectors and MAP profile validation are added.

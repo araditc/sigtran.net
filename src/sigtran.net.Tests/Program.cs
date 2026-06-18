@@ -16,6 +16,8 @@ Run("TCAP transaction message wraps component portion", TcapTransactionMessageWr
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
+Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
+Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessReportsFoundationStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -264,6 +266,36 @@ static void TcapAllocatorsIssueTransactionAndInvokeIdentifiers()
     AssertThrows<InvalidOperationException>(() => invokes.Register(9));
     Assert(invokes.Complete(first), "TCAP invoke registry completes allocated id");
     AssertEqual(1, invokes.Count, "TCAP invoke registry count after complete");
+}
+
+static void TcapSessionBuilderCreatesBeginAndEndMessages()
+{
+    TcapSessionBuilder builder = new(new TcapTransactionIdAllocator(firstValue: 3), new TcapInvokeRegistry());
+    TcapBuiltInvoke built = builder.BeginInvoke(new TcapObjectIdentifier(0, 0, 17, 773, 1, 1, 1), TcapOperationCode.MoForwardShortMessage, new byte[] { 0xCA });
+    AssertEqual("03", built.OriginatingTransactionId.ToString(), "TCAP built transaction id");
+    AssertEqual((byte)1, built.InvokeId, "TCAP built invoke id");
+    Assert(TcapTransactionMessage.TryDecode(built.EncodedMessage, out TcapTransactionMessage? decodedBegin, out string? error), error ?? "TCAP built Begin decode failed");
+    AssertEqual(TcapPackageType.Begin, decodedBegin!.PackageType, "TCAP built Begin package");
+
+    byte[] end = builder.EndResult(built.OriginatingTransactionId, built.InvokeId, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x01 });
+    Assert(TcapTransactionMessage.TryDecode(end, out TcapTransactionMessage? decodedEnd, out error), error ?? "TCAP built End decode failed");
+    AssertEqual(TcapPackageType.End, decodedEnd!.PackageType, "TCAP built End package");
+    AssertEqual("03", decodedEnd.DestinationTransactionId?.ToString(), "TCAP built End destination id");
+}
+
+static void TcapPhase4ReadinessReportsFoundationStatus()
+{
+    AssertEqual("TCAP BER foundation", TcapPhase4Readiness.ReleaseLabel, "TCAP readiness label");
+    AssertEqual(7, TcapPhase4Readiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
+    Assert(
+        TcapPhase4Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        TcapPhase4Readiness.ProductionGateDescription);
+
+    TcapPhase4ReadinessReport report = TcapPhase4Readiness.GetReport();
+    Assert(report.FoundationReady, "TCAP foundation should be ready");
+    Assert(!report.IsProductionReady, "TCAP should not claim production readiness without interop vectors");
+    AssertEqual(7, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
+    Assert(report.Describe().Contains("foundationCapabilities=7/7", StringComparison.Ordinal), report.Describe());
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
