@@ -7,6 +7,7 @@ Run("SCTP association events describe lifecycle state", SctpAssociationEventsDes
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
+Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -139,6 +140,22 @@ static void SctpStreamSelectionPoliciesChooseOutboundStreams()
     AssertEqual((ushort)3, roundRobin.SelectStream(7), "round-robin modulo stream");
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 0));
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 2, fixedStreamId: 2));
+}
+
+static void SctpReconnectPoliciesComputeBoundedDelays()
+{
+    SctpReconnectPolicy policy = new(
+        maxAttempts: 4,
+        initialDelay: TimeSpan.FromMilliseconds(100),
+        maxDelay: TimeSpan.FromMilliseconds(250),
+        backoffMultiplier: 2.0);
+
+    Assert(policy.IsEnabled, "reconnect should be enabled");
+    AssertEqual(TimeSpan.FromMilliseconds(100), policy.GetDelay(1), "first reconnect delay");
+    AssertEqual(TimeSpan.FromMilliseconds(200), policy.GetDelay(2), "second reconnect delay");
+    AssertEqual(TimeSpan.FromMilliseconds(250), policy.GetDelay(3), "bounded reconnect delay");
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpReconnectPolicy(maxAttempts: -1));
+    AssertThrows<ArgumentOutOfRangeException>(() => policy.GetDelay(0));
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()

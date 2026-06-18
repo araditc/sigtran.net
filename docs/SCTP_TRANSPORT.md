@@ -63,3 +63,17 @@ ushort streamId = policy.SelectStream(sequence: messageNumber);
 ```
 
 Fixed mode always uses one stream id. Round-robin mode applies modulo to a caller-provided sequence value so transports can remain stateless if they prefer.
+
+## Reconnect Policy
+
+`SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.
+
+```csharp
+SctpReconnectPolicy reconnect = new(
+    maxAttempts: 5,
+    initialDelay: TimeSpan.FromSeconds(1),
+    maxDelay: TimeSpan.FromSeconds(30),
+    backoffMultiplier: 2.0);
+```
+
+The policy is deterministic and does not sleep by itself. Transport implementations call `GetDelay(attempt)` and decide how to schedule reconnect attempts.
