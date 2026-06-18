@@ -22,3 +22,19 @@ The metadata contract is optional. Existing `ISctpSocket` implementations contin
 ## Association Lifecycle
 
 `SctpAssociationState` and `SctpAssociationEvent` define the lifecycle vocabulary for production transports. Native implementations should report transitions such as connect start, established, reconnect start, shutdown, closed, and failed using these SDK types.
+
+## Connection Options
+
+`SctpEndpoint` and `SctpConnectionOptions` define the configuration surface for a production transport.
+
+```csharp
+SctpConnectionOptions options = new(
+    remoteEndpoint: new SctpEndpoint("sg.example.net", 2905),
+    localEndpoint: new SctpEndpoint("0.0.0.0", 2905),
+    outboundStreams: 8,
+    inboundStreams: 8,
+    defaultPayloadProtocolIdentifier: 3,
+    connectTimeout: TimeSpan.FromSeconds(5));
+```
+
+The model validates endpoint host, port range, and positive stream counts before a native transport attempts an association.

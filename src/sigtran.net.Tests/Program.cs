@@ -4,6 +4,7 @@ using sigtran.net.Core.Interfaces;
 
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
+Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -93,6 +94,27 @@ static void SctpAssociationEventsDescribeLifecycleState()
     AssertEqual(SctpAssociationEventType.Established, established.EventType, "SCTP event type");
     AssertEqual(SctpAssociationState.Established, established.State, "SCTP event state");
     AssertEqual("connected", established.Reason, "SCTP event reason");
+}
+
+static void SctpConnectionOptionsValidateEndpointsAndStreamCounts()
+{
+    SctpEndpoint remote = new("sg.example.net", 2905);
+    SctpConnectionOptions options = new(
+        remote,
+        localEndpoint: new SctpEndpoint("0.0.0.0", 2905),
+        outboundStreams: 8,
+        inboundStreams: 8,
+        defaultPayloadProtocolIdentifier: 3,
+        connectTimeout: TimeSpan.FromSeconds(5));
+
+    AssertEqual("sg.example.net:2905", remote.ToString(), "SCTP endpoint string");
+    AssertEqual((ushort)8, options.OutboundStreams, "SCTP outbound streams");
+    AssertEqual((ushort)8, options.InboundStreams, "SCTP inbound streams");
+    AssertEqual((uint)3, options.DefaultPayloadProtocolIdentifier, "SCTP default PPID");
+    AssertEqual(TimeSpan.FromSeconds(5), options.ConnectTimeout, "SCTP connect timeout");
+
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpEndpoint("sg", 0));
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpConnectionOptions(remote, outboundStreams: 0));
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()
