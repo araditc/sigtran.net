@@ -133,3 +133,16 @@ MapSmsDeliveryStatus status = MapSmsErrorMapper.ToDeliveryStatus(
 MapSmsExtensionContainer extensions = new();
 extensions.Add(tagNumber: 5, value);
 ```
+
+## TCAP Client Facade
+
+`MapSmsTcapClient` builds TCAP Begin/Invoke transactions for SMS operations.
+
+```csharp
+MapSmsTcapClient client = new();
+
+TcapBuiltInvoke built = client.BeginMoForwardShortMessage(mo);
+byte[] tcapMessage = built.EncodedMessage;
+```
+
+The facade hides TCAP transaction-id, invoke-id, dialogue portion, and component wrapping while keeping the encoded transaction available for lower-level routing.

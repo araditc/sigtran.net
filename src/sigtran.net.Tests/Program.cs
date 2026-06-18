@@ -27,6 +27,7 @@ Run("MAP SendRoutingInfoForSM model encodes routing parameters", MapSendRoutingI
 Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeliveryStatusModelEncodesDeliveryStatus);
 Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
+Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -427,6 +428,23 @@ static void MapSmsErrorMapperAndExtensionContainerEncodeValues()
     AssertSequence([0x85, 0x02, 0xCA, 0xFE], encoded, "MAP extension container bytes");
     Assert(MapSmsExtensionContainer.TryDecode(encoded, out MapSmsExtensionContainer? decoded, out string? error), error ?? "MAP extension decode failed");
     AssertEqual(1, decoded!.Snapshot().Count, "MAP extension count");
+}
+
+static void MapSmsTcapClientBuildsBeginInvokeTransactions()
+{
+    MapSmsTcapClient client = new(new TcapSessionBuilder(new TcapTransactionIdAllocator(firstValue: 7), new TcapInvokeRegistry()));
+    MapMoForwardShortMessage mo = new(
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"),
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new byte[] { 0x11 });
+
+    TcapBuiltInvoke built = client.BeginMoForwardShortMessage(mo);
+    AssertEqual("07", built.OriginatingTransactionId.ToString(), "MAP TCAP built transaction id");
+    Assert(TcapTransactionMessage.TryDecode(built.EncodedMessage, out TcapTransactionMessage? transaction, out string? error), error ?? "MAP TCAP transaction decode failed");
+    Assert(TcapBerInvokeComponent.TryDecode(transaction!.ComponentPortion.Span, out TcapBerInvokeComponent? invoke, out error), error ?? "MAP TCAP invoke decode failed");
+    AssertEqual((TcapOperationCode)MapSmsOperationCode.MoForwardShortMessage, invoke!.OperationCode, "MAP TCAP operation code");
+    Assert(MapMoForwardShortMessage.TryDecode(invoke.Parameters.Span, out MapMoForwardShortMessage? decodedMo, out error), error ?? "MAP TCAP MO params decode failed");
+    AssertEqual("989121234567", decodedMo!.SmRpOa.Digits, "MAP TCAP decoded MO originator");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
