@@ -51,3 +51,21 @@ byte[] encoded = invoke.Encode();
 ```
 
 The existing simplified `TcapInvokeComponent` remains for compatibility during migration. New TCAP work should use the BER component types.
+
+`TcapBerReturnResultComponent`, `TcapBerReturnErrorComponent`, and `TcapBerRejectComponent` complete the basic component outcome set.
+
+```csharp
+TcapBerReturnResultComponent result = new(
+    invokeId: 7,
+    TcapOperationCode.MoForwardShortMessage,
+    resultParameters);
+
+TcapBerReturnErrorComponent errorComponent = new(
+    invokeId: 7,
+    TcapReturnErrorCode.SystemFailure,
+    errorParameters);
+
+TcapBerRejectComponent reject = new(
+    invokeId: 7,
+    TcapRejectProblemCode.DuplicateInvokeId);
+```

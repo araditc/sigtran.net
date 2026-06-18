@@ -11,6 +11,7 @@ using sigtran.net.Core.Interfaces;
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
+Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -160,6 +161,29 @@ static void TcapBerInvokeComponentRoundTrips()
     AssertEqual((byte)3, decoded.LinkedInvokeId, "TCAP decoded linked Invoke ID");
     AssertEqual(TcapOperationCode.MoForwardShortMessage, decoded.OperationCode, "TCAP decoded operation code");
     AssertSequence([0xAA, 0xBB], decoded.Parameters.Span, "TCAP decoded Invoke parameters");
+}
+
+static void TcapBerOutcomeComponentsRoundTrip()
+{
+    TcapBerReturnResultComponent result = new(7, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x10, 0x20 });
+    byte[] resultBytes = result.Encode();
+    AssertSequence([0xA2, 0x0A, 0x02, 0x01, 0x07, 0x02, 0x01, 0x01, 0x04, 0x02, 0x10, 0x20], resultBytes, "TCAP ReturnResult bytes");
+    Assert(TcapBerReturnResultComponent.TryDecode(resultBytes, out TcapBerReturnResultComponent? decodedResult, out string? error), error ?? "TCAP ReturnResult decode failed");
+    AssertEqual((byte)7, decodedResult!.InvokeId, "TCAP ReturnResult invoke id");
+    AssertEqual(TcapOperationCode.MoForwardShortMessage, decodedResult.OperationCode, "TCAP ReturnResult operation");
+    AssertSequence([0x10, 0x20], decodedResult.Parameters.Span, "TCAP ReturnResult parameters");
+
+    TcapBerReturnErrorComponent returnError = new(7, TcapReturnErrorCode.SystemFailure, new byte[] { 0x01 });
+    byte[] errorBytes = returnError.Encode();
+    Assert(TcapBerReturnErrorComponent.TryDecode(errorBytes, out TcapBerReturnErrorComponent? decodedError, out error), error ?? "TCAP ReturnError decode failed");
+    AssertEqual(TcapReturnErrorCode.SystemFailure, decodedError!.ErrorCode, "TCAP ReturnError code");
+    AssertSequence([0x01], decodedError.Parameters.Span, "TCAP ReturnError parameters");
+
+    TcapBerRejectComponent reject = new(7, TcapRejectProblemCode.DuplicateInvokeId);
+    byte[] rejectBytes = reject.Encode();
+    AssertSequence([0xA4, 0x06, 0x02, 0x01, 0x07, 0x02, 0x01, 0x02], rejectBytes, "TCAP Reject bytes");
+    Assert(TcapBerRejectComponent.TryDecode(rejectBytes, out TcapBerRejectComponent? decodedReject, out error), error ?? "TCAP Reject decode failed");
+    AssertEqual(TcapRejectProblemCode.DuplicateInvokeId, decodedReject!.ProblemCode, "TCAP Reject problem code");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
