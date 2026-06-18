@@ -12,6 +12,7 @@ Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstan
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
 Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
 Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
+Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTrips);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -205,6 +206,21 @@ static void SccpXudtCodecPreservesHopCounter()
     AssertEqual((byte)12, decoded!.HopCounter, "SCCP decoded XUDT hop counter");
     Assert(decoded.ProtocolClass.ReturnMessageOnError, "SCCP decoded XUDT return-on-error");
     AssertSequence([0x01, 0x02, 0x03], decoded.UserData.Span, "SCCP decoded XUDT data");
+}
+
+static void SccpSegmentationParameterRoundTrips()
+{
+    SccpSegmentationParameter segmentation = new(localReference: 0x00A1B2C3, remainingSegments: 3, firstSegment: true);
+    Span<byte> encoded = stackalloc byte[SccpSegmentationParameter.EncodedLength];
+    segmentation.Encode(encoded);
+    AssertSequence([0x83, 0xA1, 0xB2, 0xC3], encoded, "SCCP segmentation bytes");
+
+    SccpSegmentationParameter decoded = SccpSegmentationParameter.Decode(encoded);
+    AssertEqual(0x00A1B2C3U, decoded.LocalReference, "SCCP decoded segmentation local reference");
+    AssertEqual((byte)3, decoded.RemainingSegments, "SCCP decoded remaining segments");
+    Assert(decoded.FirstSegment, "SCCP decoded first segment flag");
+    Assert(decoded.Describe().Contains("remaining=3", StringComparison.Ordinal), decoded.Describe());
+    AssertThrows<ArgumentOutOfRangeException>(() => new SccpSegmentationParameter(0x01000000, 0, false));
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
