@@ -58,3 +58,16 @@ if (M3uaDiagnostics.TryFormatParameterInventory(packet, out string inventory, ou
 ```
 
 This helper is useful when comparing SDK output with packet captures or SG traces, especially before a full typed parser exists for a message variant.
+
+## Alpha Packet Validation
+
+`TryValidateSupportedPacket` is a release-gate helper for encoded packets. It validates common framing, counts the TLV parameter block, and verifies that the typed dispatcher supports the message class and type.
+
+```csharp
+if (!M3uaDiagnostics.TryValidateSupportedPacket(packet, out M3uaPacketValidationResult result, out string? error))
+{
+    throw new InvalidOperationException(error);
+}
+```
+
+It does not replace message-specific typed parsing; it is a fast alpha readiness check before deeper protocol validation.

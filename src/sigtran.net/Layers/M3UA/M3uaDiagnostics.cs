@@ -3,6 +3,32 @@ using System.Text;
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
+/// Result of validating an encoded M3UA packet for alpha release gates.
+/// </summary>
+public readonly struct M3uaPacketValidationResult
+{
+    /// <summary>Creates a packet validation result.</summary>
+    /// <param name="header">The decoded common-header preview.</param>
+    /// <param name="parameterCount">The decoded TLV parameter count.</param>
+    /// <param name="dispatcherSupported">Whether the typed dispatcher supports the message class and type.</param>
+    public M3uaPacketValidationResult(M3uaHeaderPreview header, int parameterCount, bool dispatcherSupported)
+    {
+        Header = header;
+        ParameterCount = parameterCount;
+        DispatcherSupported = dispatcherSupported;
+    }
+
+    /// <summary>The decoded common-header preview.</summary>
+    public M3uaHeaderPreview Header { get; }
+
+    /// <summary>The decoded TLV parameter count.</summary>
+    public int ParameterCount { get; }
+
+    /// <summary>Whether the typed dispatcher supports the message class and type.</summary>
+    public bool DispatcherSupported { get; }
+}
+
+/// <summary>
 /// Provides formatting helpers for M3UA diagnostics and protocol tracing.
 /// </summary>
 public static class M3uaDiagnostics
@@ -98,6 +124,41 @@ public static class M3uaDiagnostics
         }
 
         summary = $"M3UA v{message.Version} class={message.MessageClass} type={message.MessageType} length={message.MessageLength} parameters={message.Parameters.Length}";
+        return true;
+    }
+
+    /// <summary>
+    /// Validates common framing, TLV structure, and typed-dispatcher support for an encoded M3UA packet.
+    /// </summary>
+    /// <param name="packet">The encoded M3UA packet.</param>
+    /// <param name="result">The packet validation result on success.</param>
+    /// <param name="error">An error message when validation fails.</param>
+    /// <returns>True if the packet passes the alpha validation gate; otherwise false.</returns>
+    public static bool TryValidateSupportedPacket(ReadOnlySpan<byte> packet, out M3uaPacketValidationResult result, out string? error)
+    {
+        result = default;
+        if (!M3uaProtocol.TryReadHeader(packet, out M3uaHeaderPreview header, out error))
+        {
+            return false;
+        }
+
+        M3uaMessage message = new();
+        if (!message.TryDecode(packet, out error))
+        {
+            return false;
+        }
+
+        if (!message.TryGetParameterCount(out int parameterCount, out error))
+        {
+            return false;
+        }
+
+        if (!M3uaTypedMessageParser.TryRequireSupported(message.MessageClass, message.MessageType, out error))
+        {
+            return false;
+        }
+
+        result = new(header, parameterCount, dispatcherSupported: true);
         return true;
     }
 

@@ -953,6 +953,12 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         typedSummaryError ?? "typed summary format failed");
     AssertEqual("M3UA v1 class=Aspsm type=3 kind=AspStateMaintenance length=16 parameters=8", typedSummary, "M3UA typed summary");
     Assert(
+        M3uaDiagnostics.TryValidateSupportedPacket(buffer.Slice(0, written), out M3uaPacketValidationResult validation, out string? validationError),
+        validationError ?? "supported packet validation failed");
+    AssertEqual(M3uaMessageClass.Aspsm, validation.Header.MessageClass, "validation header class");
+    AssertEqual(1, validation.ParameterCount, "validation parameter count");
+    Assert(validation.DispatcherSupported, "validation dispatcher support");
+    Assert(
         M3uaDiagnostics.TryFormatParameterInventory(buffer.Slice(0, written), out string inventory, out string? inventoryError),
         inventoryError ?? "parameter inventory failed");
     AssertEqual("M3UA parameters count=1 [HeartbeatData length=6 value=2 padded=8]", inventory, "M3UA parameter inventory");
@@ -966,6 +972,10 @@ static void M3uaDiagnosticsFormatHexAndSummaries()
         !M3uaDiagnostics.TryFormatTypedSummary(unsupported, out _, out string? unsupportedError),
         "unsupported typed summary should fail");
     Assert(unsupportedError?.Contains("Unsupported Management message type", StringComparison.Ordinal) == true, unsupportedError ?? "missing unsupported typed summary error");
+    Assert(
+        !M3uaDiagnostics.TryValidateSupportedPacket(unsupported, out _, out string? unsupportedValidationError),
+        "unsupported packet validation should fail");
+    Assert(unsupportedValidationError?.Contains("class=Management type=127", StringComparison.Ordinal) == true, unsupportedValidationError ?? "missing unsupported validation error");
 
     Assert(
         !M3uaDiagnostics.TryFormatSummary([0x01, 0x00], out _, out string? malformedError),
