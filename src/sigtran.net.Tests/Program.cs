@@ -22,6 +22,7 @@ Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessRepor
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
 Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
+Run("MAP MT-ForwardSM model encodes required parameters", MapMtForwardSmModelEncodesRequiredParameters);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -351,6 +352,23 @@ static void MapMoForwardSmModelEncodesRequiredParameters()
 
     byte[] helper = MapSmsOperations.CreateMoForwardSm(decoded.SmRpDa, decoded.SmRpOa, decoded.SmRpUi.Span);
     AssertSequence(encoded, helper, "MAP MO helper encoding");
+}
+
+static void MapMtForwardSmModelEncodesRequiredParameters()
+{
+    MapMtForwardShortMessage mt = new(
+        new MapSmsAddress(MapSmsAddressKind.Imsi, "432109876543210"),
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"),
+        new byte[] { 0x21, 0x43 });
+
+    byte[] encoded = mt.Encode();
+    Assert(MapMtForwardShortMessage.TryDecode(encoded, out MapMtForwardShortMessage? decoded, out string? error), error ?? "MAP MT decode failed");
+    AssertEqual(MapSmsAddressKind.Imsi, decoded!.SmRpDa.Kind, "MAP MT decoded DA kind");
+    AssertEqual(MapSmsAddressKind.ServiceCentre, decoded.SmRpOa.Kind, "MAP MT decoded OA kind");
+    AssertSequence([0x21, 0x43], decoded.SmRpUi.Span, "MAP MT decoded user information");
+
+    byte[] helper = MapSmsOperations.CreateMtForwardSm(decoded.SmRpDa, decoded.SmRpOa, decoded.SmRpUi.Span);
+    AssertSequence(encoded, helper, "MAP MT helper encoding");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

@@ -40,4 +40,16 @@ public static class MapSmsOperations
     {
         return userData.ToArray();
     }
+
+    /// <summary>
+    /// Creates BER-shaped Mobile-Terminated Forward Short Message parameters.
+    /// </summary>
+    /// <param name="smRpDa">The destination address.</param>
+    /// <param name="smRpOa">The originating address.</param>
+    /// <param name="userData">The short message transfer protocol data unit.</param>
+    /// <returns>The encoded operation parameters.</returns>
+    public static byte[] CreateMtForwardSm(MapSmsAddress smRpDa, MapSmsAddress smRpOa, ReadOnlySpan<byte> userData)
+    {
+        return new MapMtForwardShortMessage(smRpDa, smRpOa, userData.ToArray()).Encode();
+    }
 }

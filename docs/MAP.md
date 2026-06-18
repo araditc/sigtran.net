@@ -64,3 +64,22 @@ byte[] parameters = mo.Encode();
 ```
 
 `MapSmsOperations.CreateMoForwardSm(smRpDa, smRpOa, userData)` is a compatibility helper that produces the same BER-shaped parameter payload.
+
+## MT-ForwardSM
+
+`MapMtForwardShortMessage` models MT-ForwardSM with the same shared SMS profile fields:
+
+- SM-RP-DA
+- SM-RP-OA
+- SM-RP-UI
+
+```csharp
+MapMtForwardShortMessage mt = new(
+    smRpDa,
+    smRpOa,
+    tpdu);
+
+byte[] parameters = mt.Encode();
+```
+
+`MapSmsOperations.CreateMtForwardSm(smRpDa, smRpOa, userData)` produces the typed BER-shaped payload.
