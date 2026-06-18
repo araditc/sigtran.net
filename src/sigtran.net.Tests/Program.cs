@@ -222,9 +222,15 @@ static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()
 static void SctpTransportReadinessReportsFoundationStatus()
 {
     AssertEqual("SCTP transport foundation", SctpTransportReadiness.ReleaseLabel, "SCTP readiness label");
+    AssertEqual(5, SctpTransportReadiness.RequiredFoundationCapabilityCount, "SCTP foundation capability count");
+    Assert(
+        SctpTransportReadiness.ProductionGateDescription.Contains("Native SCTP", StringComparison.Ordinal),
+        SctpTransportReadiness.ProductionGateDescription);
     SctpTransportReadinessReport report = SctpTransportReadiness.GetReport();
+    AssertEqual(5, report.FoundationCapabilityCount, "Completed SCTP foundation capabilities");
     Assert(report.FoundationReady, "SCTP foundation should be ready");
     Assert(!report.IsProductionReady, "SCTP should not be production-ready without native implementation");
+    Assert(report.Describe().Contains("foundationCapabilities=5/5", StringComparison.Ordinal), report.Describe());
     Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
 }
 

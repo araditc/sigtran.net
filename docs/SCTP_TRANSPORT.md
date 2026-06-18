@@ -104,3 +104,11 @@ SctpTransportHealth health = new(
 SctpTransportReadinessReport report = SctpTransportReadiness.GetReport();
 bool canShipNativeSctp = report.IsProductionReady;
 ```
+
+The report exposes `FoundationCapabilityCount` and `RequiredFoundationCapabilityCount` so release tooling can verify that all foundation capabilities are present before native SCTP work starts.
+
+## Production Boundary
+
+Phase 2 completes the SDK-level SCTP foundation: metadata contracts, association lifecycle vocabulary, connection options, reconnect policy, stream selection, PPID helpers, health snapshots, readiness reporting, and a metadata-aware TCP development adapter.
+
+The remaining production gate is explicit: native SCTP implementation and interoperability verification are required before this SDK can be used as a production SCTP stack.

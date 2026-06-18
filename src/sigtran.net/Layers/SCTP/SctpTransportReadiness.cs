@@ -46,13 +46,17 @@ public readonly struct SctpTransportReadinessReport
     /// <summary>Whether a native production SCTP implementation is available.</summary>
     public bool HasNativeSctpImplementation { get; }
 
+    /// <summary>Number of completed foundation capabilities in the report.</summary>
+    public int FoundationCapabilityCount =>
+        Count(HasMetadataContract)
+        + Count(HasAssociationLifecycleModel)
+        + Count(HasConnectionOptions)
+        + Count(HasReconnectPolicy)
+        + Count(HasDevelopmentAdapter);
+
     /// <summary>Whether the foundation needed to implement native SCTP is ready.</summary>
     public bool FoundationReady =>
-        HasMetadataContract
-        && HasAssociationLifecycleModel
-        && HasConnectionOptions
-        && HasReconnectPolicy
-        && HasDevelopmentAdapter;
+        FoundationCapabilityCount == SctpTransportReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether the SCTP phase is production-ready.</summary>
     public bool IsProductionReady => FoundationReady && HasNativeSctpImplementation;
@@ -63,8 +67,10 @@ public readonly struct SctpTransportReadinessReport
     /// <returns>A compact readiness summary.</returns>
     public string Describe()
     {
-        return $"sctpFoundationReady={FoundationReady} sctpProductionReady={IsProductionReady} metadata={HasMetadataContract} lifecycle={HasAssociationLifecycleModel} options={HasConnectionOptions} reconnect={HasReconnectPolicy} developmentAdapter={HasDevelopmentAdapter} nativeSctp={HasNativeSctpImplementation}";
+        return $"sctpFoundationReady={FoundationReady} sctpProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{SctpTransportReadiness.RequiredFoundationCapabilityCount} metadata={HasMetadataContract} lifecycle={HasAssociationLifecycleModel} options={HasConnectionOptions} reconnect={HasReconnectPolicy} developmentAdapter={HasDevelopmentAdapter} nativeSctp={HasNativeSctpImplementation}";
     }
+
+    private static int Count(bool value) => value ? 1 : 0;
 }
 
 /// <summary>
@@ -74,6 +80,12 @@ public static class SctpTransportReadiness
 {
     /// <summary>The release label for the current SCTP transport phase.</summary>
     public const string ReleaseLabel = "SCTP transport foundation";
+
+    /// <summary>The number of foundation capabilities required before native SCTP implementation work starts.</summary>
+    public const int RequiredFoundationCapabilityCount = 5;
+
+    /// <summary>Explains the production gate that remains after the SCTP foundation phase.</summary>
+    public const string ProductionGateDescription = "Native SCTP implementation and interoperability verification are required before production use.";
 
     /// <summary>
     /// Builds the current SCTP transport readiness report.
