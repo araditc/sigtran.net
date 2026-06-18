@@ -5,8 +5,10 @@ using sigtran.net.Layers.M3UA;
 using sigtran.net.Layers.MTP3;
 using sigtran.net.Layers.SCCP;
 using sigtran.net.Layers.SCTP;
+using sigtran.net.Layers.TCAP;
 using sigtran.net.Core.Interfaces;
 
+Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -97,6 +99,29 @@ Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConve
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
+
+static void TcapBerElementEncodesShortAndLongLengths()
+{
+    Span<byte> shortBuffer = stackalloc byte[8];
+    TcapBerTag invokeTag = new(TcapBerTagClass.ContextSpecific, constructed: true, number: 1);
+    Assert(TcapBer.TryWriteElement(shortBuffer, invokeTag, [0x01, 0x02], out int shortWritten, out string? error), error ?? "BER short write failed");
+    AssertEqual(4, shortWritten, "BER short written length");
+    AssertSequence([0xA1, 0x02, 0x01, 0x02], shortBuffer.Slice(0, shortWritten), "BER short element bytes");
+    Assert(TcapBer.TryReadElement(shortBuffer.Slice(0, shortWritten), out TcapBerElement shortElement, out error), error ?? "BER short read failed");
+    AssertEqual(TcapBerTagClass.ContextSpecific, shortElement.Tag.TagClass, "BER short tag class");
+    Assert(shortElement.Tag.Constructed, "BER short tag constructed");
+    AssertEqual((byte)1, shortElement.Tag.Number, "BER short tag number");
+    AssertSequence([0x01, 0x02], shortElement.Value.Span, "BER short value");
+
+    byte[] longValue = Enumerable.Range(0, 130).Select(i => (byte)i).ToArray();
+    byte[] longBuffer = new byte[140];
+    Assert(TcapBer.TryWriteElement(longBuffer, new TcapBerTag(TcapBerTagClass.Universal, constructed: false, number: 4), longValue, out int longWritten, out error), error ?? "BER long write failed");
+    AssertEqual((byte)0x04, longBuffer[0], "BER octet string tag");
+    AssertEqual((byte)0x81, longBuffer[1], "BER long length marker");
+    AssertEqual((byte)130, longBuffer[2], "BER long length value");
+    Assert(TcapBer.TryReadElement(longBuffer.AsSpan(0, longWritten), out TcapBerElement longElement, out error), error ?? "BER long read failed");
+    AssertEqual(130, longElement.Value.Length, "BER long value length");
+}
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
 {
