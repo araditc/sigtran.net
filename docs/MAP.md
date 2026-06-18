@@ -45,3 +45,22 @@ byte[] encoded = msisdn.Encode();
 ```
 
 The address payload stores address kind, nature of address, numbering plan, and TBCD digits. Operation-specific models reuse this primitive instead of duplicating digit encoding rules.
+
+## MO-ForwardSM
+
+`MapMoForwardShortMessage` models the required MO-ForwardSM SMS profile parameters:
+
+- SM-RP-DA
+- SM-RP-OA
+- SM-RP-UI
+
+```csharp
+MapMoForwardShortMessage mo = new(
+    smRpDa,
+    smRpOa,
+    tpdu);
+
+byte[] parameters = mo.Encode();
+```
+
+`MapSmsOperations.CreateMoForwardSm(smRpDa, smRpOa, userData)` is a compatibility helper that produces the same BER-shaped parameter payload.

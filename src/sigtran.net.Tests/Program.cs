@@ -21,6 +21,7 @@ Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCre
 Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessReportsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
+Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -332,6 +333,24 @@ static void MapSmsAddressPrimitivesEncodeTbcdDigits()
     AssertEqual(MapSmsAddressKind.Msisdn, decoded.Kind, "MAP decoded address kind");
     AssertEqual("44123456789", decoded.Digits, "MAP decoded address digits");
     AssertThrows<ArgumentException>(() => new MapSmsAddress(MapSmsAddressKind.Imsi, "12A"));
+}
+
+static void MapMoForwardSmModelEncodesRequiredParameters()
+{
+    MapMoForwardShortMessage mo = new(
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"),
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new byte[] { 0x11, 0x22 });
+
+    byte[] encoded = mo.Encode();
+    Assert(encoded[0] == 0x80 && encoded.Contains((byte)0x82), "MAP MO encoded parameter tags should be present");
+    Assert(MapMoForwardShortMessage.TryDecode(encoded, out MapMoForwardShortMessage? decoded, out string? error), error ?? "MAP MO decode failed");
+    AssertEqual(MapSmsAddressKind.ServiceCentre, decoded!.SmRpDa.Kind, "MAP MO decoded DA kind");
+    AssertEqual("989121234567", decoded.SmRpOa.Digits, "MAP MO decoded OA digits");
+    AssertSequence([0x11, 0x22], decoded.SmRpUi.Span, "MAP MO decoded user information");
+
+    byte[] helper = MapSmsOperations.CreateMoForwardSm(decoded.SmRpDa, decoded.SmRpOa, decoded.SmRpUi.Span);
+    AssertSequence(encoded, helper, "MAP MO helper encoding");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
