@@ -9,6 +9,7 @@ using sigtran.net.Layers.TCAP;
 using sigtran.net.Core.Interfaces;
 
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
+Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -121,6 +122,26 @@ static void TcapBerElementEncodesShortAndLongLengths()
     AssertEqual((byte)130, longBuffer[2], "BER long length value");
     Assert(TcapBer.TryReadElement(longBuffer.AsSpan(0, longWritten), out TcapBerElement longElement, out error), error ?? "BER long read failed");
     AssertEqual(130, longElement.Value.Length, "BER long value length");
+}
+
+static void TcapTransactionIdentifiersUseBerContextTags()
+{
+    TcapTransactionId transactionId = TcapTransactionId.FromUInt32(0x010203);
+    AssertEqual(3, transactionId.Length, "TCAP transaction id length");
+    AssertEqual("010203", transactionId.ToString(), "TCAP transaction id hex");
+
+    Span<byte> buffer = stackalloc byte[8];
+    Assert(
+        TcapBer.TryWriteElement(buffer, TcapTransactionTags.TransactionId(originating: true), transactionId.ToArray(), out int written, out string? error),
+        error ?? "TCAP transaction id write failed");
+    AssertSequence([0x88, 0x03, 0x01, 0x02, 0x03], buffer.Slice(0, written), "TCAP originating transaction id TLV");
+    Assert(TcapBer.TryReadElement(buffer.Slice(0, written), out TcapBerElement element, out error), error ?? "TCAP transaction id read failed");
+    AssertEqual(TcapBerTagClass.ContextSpecific, element.Tag.TagClass, "TCAP transaction id tag class");
+    AssertEqual((byte)TcapTransactionTags.OriginatingTransactionId, element.Tag.Number, "TCAP transaction id tag number");
+
+    TcapBerTag beginTag = TcapTransactionTags.Package(TcapPackageType.Begin);
+    AssertEqual((byte)0x62, beginTag.Encode(), "TCAP Begin package tag");
+    AssertThrows<ArgumentException>(() => new TcapTransactionId(ReadOnlySpan<byte>.Empty));
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
