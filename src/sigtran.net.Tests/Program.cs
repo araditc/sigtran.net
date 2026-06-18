@@ -139,6 +139,8 @@ static void M3uaDecoderReturnsProtocolDataValue()
     Assert(message.TryDecode(buffer.Slice(0, written), out string? decodeError), decodeError ?? "decode failed");
     AssertEqual(M3uaMessageClass.Transfer, message.MessageClass, "message class");
     AssertEqual((byte)M3uaTransferMessageType.PayloadData, message.MessageType, "message type");
+    Assert(message.TryGetParameterCount(out int parameterCount, out string? countError), countError ?? "parameter count failed");
+    AssertEqual(1, parameterCount, "message parameter count");
     Assert(message.HasParameter(M3uaParameterTag.ProtocolData), "Protocol Data should be present");
     Assert(!message.HasParameter(M3uaParameterTag.HeartbeatData), "Heartbeat Data should not be present");
     Assert(message.TryGetParameter(M3uaParameterTag.ProtocolData, out ReadOnlySpan<byte> genericProtocolData, out string? genericProtocolError), genericProtocolError ?? "generic Protocol Data missing");

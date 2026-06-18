@@ -58,7 +58,7 @@ if (!M3uaTypedMessageParser.TryParseAsptm(
 
 For application code that handles multiple M3UA message families, `M3uaTypedMessageParser.TryParseKnown` dispatches supported messages into a `M3uaTypedMessage` result with a `Kind` discriminator and concrete typed model.
 
-Common framing also exposes `M3uaMessage.HasParameter(tag)` and `M3uaMessage.TryGetParameter(tag, out value, out error)` for callers that need raw TLV checks before or outside typed parsing. `TryGetProtocolData` is a convenience wrapper over the same lookup path.
+Common framing also exposes `M3uaMessage.TryGetParameterCount(out count, out error)`, `M3uaMessage.HasParameter(tag)`, and `M3uaMessage.TryGetParameter(tag, out value, out error)` for callers that need raw TLV checks before or outside typed parsing. `TryGetProtocolData` is a convenience wrapper over the same lookup path.
 
 `M3uaParameterReader.TryCount(parameters, out count, out error)` counts a raw parameter block with the same validation rules used by the streaming reader.
 

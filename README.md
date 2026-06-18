@@ -9,7 +9,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Area | Status |
 | --- | --- |
 | SDK packaging | .NET 10 library, NuGet metadata, XML documentation, package validation, symbols |
-| M3UA common framing | Protocol metadata, header parser, TLV reader/writer, parameter count/presence/lookup, padding handling |
+| M3UA common framing | Protocol metadata, header parser, message parameter count, TLV reader/writer, parameter presence/lookup, padding handling |
 | M3UA capability discovery | Protocol metadata, capability snapshots, and typed parser support checks by message class and type |
 | M3UA transfer | DATA builders/parsers with Network Appearance, Routing Context, Protocol Data, and Correlation Id |
 | M3UA DATA routing | Mutable Payload route table with selector matching, descriptions, inspection, add-or-replace, snapshots, and name lookup |

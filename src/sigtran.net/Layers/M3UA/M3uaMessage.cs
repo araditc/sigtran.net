@@ -118,6 +118,17 @@ public class M3uaMessage : ISigtranMessage
     }
 
     /// <summary>
+    /// Counts the decoded TLV parameters in this message.
+    /// </summary>
+    /// <param name="count">The decoded parameter count on success.</param>
+    /// <param name="error">An error message if the parameter block is malformed.</param>
+    /// <returns>True if all parameters were counted; otherwise false.</returns>
+    public bool TryGetParameterCount(out int count, out string? error)
+    {
+        return M3uaParameterReader.TryCount(Parameters.Span, out count, out error);
+    }
+
+    /// <summary>
     /// Extracts the Protocol Data parameter from the TLV list.
     /// </summary>
     /// <param name="protocolData">A span over the protocol data value.</param>
