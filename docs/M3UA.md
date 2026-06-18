@@ -6,6 +6,8 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 
 `M3uaProtocol.Capabilities` returns a `M3uaProtocolCapabilities` snapshot for coarse feature discovery, including DATA, ASP lifecycle, Management, SSNM, RKM, and the transport session facade.
 
+`M3uaProtocol.TryReadHeader(packet, out header, out error)` reads the fixed common header without validating version or message support. Use it for packet triage before deciding whether to reject, decode, or log a malformed packet.
+
 ## Implemented Message Families
 
 | Family | Message types |

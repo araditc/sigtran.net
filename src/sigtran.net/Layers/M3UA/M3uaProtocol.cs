@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 namespace sigtran.net.Layers.M3UA;
 
 /// <summary>
@@ -40,6 +42,68 @@ public static class M3uaProtocol
         int remainder = length & 0x3;
         return remainder == 0 ? length : length + (4 - remainder);
     }
+
+    /// <summary>
+    /// Reads the fixed M3UA common header without validating protocol support.
+    /// </summary>
+    /// <param name="packet">The encoded packet bytes.</param>
+    /// <param name="header">The decoded common-header preview on success.</param>
+    /// <param name="error">An error message if the packet is too short for the common header.</param>
+    /// <returns>True if the common header was read; otherwise false.</returns>
+    public static bool TryReadHeader(ReadOnlySpan<byte> packet, out M3uaHeaderPreview header, out string? error)
+    {
+        header = default;
+        if (packet.Length < HeaderLength)
+        {
+            error = "M3UA buffer too short for header";
+            return false;
+        }
+
+        header = new(
+            version: packet[0],
+            reserved: packet[1],
+            messageClass: (M3uaMessageClass)packet[2],
+            messageType: packet[3],
+            messageLength: BinaryPrimitives.ReadUInt32BigEndian(packet.Slice(4, 4)));
+        error = null;
+        return true;
+    }
+}
+
+/// <summary>
+/// A lightweight preview of the fixed M3UA common header.
+/// </summary>
+public readonly struct M3uaHeaderPreview
+{
+    /// <summary>Creates a common-header preview.</summary>
+    /// <param name="version">The raw M3UA version byte.</param>
+    /// <param name="reserved">The raw reserved header byte.</param>
+    /// <param name="messageClass">The raw message class value.</param>
+    /// <param name="messageType">The raw message type value.</param>
+    /// <param name="messageLength">The raw message length value.</param>
+    public M3uaHeaderPreview(byte version, byte reserved, M3uaMessageClass messageClass, byte messageType, uint messageLength)
+    {
+        Version = version;
+        Reserved = reserved;
+        MessageClass = messageClass;
+        MessageType = messageType;
+        MessageLength = messageLength;
+    }
+
+    /// <summary>The raw M3UA version byte.</summary>
+    public byte Version { get; }
+
+    /// <summary>The raw reserved header byte.</summary>
+    public byte Reserved { get; }
+
+    /// <summary>The raw message class value.</summary>
+    public M3uaMessageClass MessageClass { get; }
+
+    /// <summary>The raw message type value.</summary>
+    public byte MessageType { get; }
+
+    /// <summary>The raw message length value.</summary>
+    public uint MessageLength { get; }
 }
 
 /// <summary>

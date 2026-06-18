@@ -106,6 +106,20 @@ static void M3uaProtocolExposesPublicMetadata()
     AssertEqual((byte)1, M3uaProtocol.Version, "protocol version");
     AssertEqual(8, M3uaProtocol.HeaderLength, "protocol header length");
     AssertEqual(4, M3uaProtocol.ParameterHeaderLength, "protocol parameter header length");
+    Span<byte> headerBuffer = stackalloc byte[8];
+    headerBuffer[0] = 2;
+    headerBuffer[1] = 1;
+    headerBuffer[2] = (byte)M3uaMessageClass.Management;
+    headerBuffer[3] = 0x7F;
+    headerBuffer[7] = 8;
+    Assert(M3uaProtocol.TryReadHeader(headerBuffer, out M3uaHeaderPreview preview, out string? previewError), previewError ?? "header preview failed");
+    AssertEqual((byte)2, preview.Version, "header preview version");
+    AssertEqual((byte)1, preview.Reserved, "header preview reserved");
+    AssertEqual(M3uaMessageClass.Management, preview.MessageClass, "header preview class");
+    AssertEqual((byte)0x7F, preview.MessageType, "header preview type");
+    AssertEqual((uint)8, preview.MessageLength, "header preview length");
+    Assert(!M3uaProtocol.TryReadHeader([0x01, 0x00], out _, out string? shortHeaderError), "short header preview should fail");
+    Assert(shortHeaderError?.Contains("too short", StringComparison.Ordinal) == true, shortHeaderError ?? "missing short header error");
 
     M3uaProtocolCapabilities capabilities = M3uaProtocol.Capabilities;
     Assert(capabilities.SupportsPayloadData, "capabilities should include Payload Data");
