@@ -77,7 +77,7 @@ SccpExtendedUnitdataMessage xudt = new(
     userData);
 ```
 
-The current XUDT codec rejects optional parameters during decode. Segmentation support is introduced separately so segmented delivery can be tested without overloading the base XUDT contract.
+When `Segmentation` is present, the XUDT codec writes an optional parameter list with the segmentation parameter and end marker. Unknown optional parameters are skipped during decode; malformed optional parameter lengths are rejected.
 
 ## Segmentation
 
@@ -93,4 +93,14 @@ Span<byte> value = stackalloc byte[SccpSegmentationParameter.EncodedLength];
 segmentation.Encode(value);
 ```
 
-The parameter is validated independently before being connected to optional-parameter message encoding.
+The parameter can be used directly with `SccpExtendedUnitdataMessage`:
+
+```csharp
+SccpExtendedUnitdataMessage segmented = new(
+    new SccpProtocolClass(SccpConnectionlessClass.Class1),
+    hopCounter: 10,
+    called,
+    calling,
+    segmentPayload,
+    segmentation);
+```

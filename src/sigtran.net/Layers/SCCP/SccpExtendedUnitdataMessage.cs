@@ -11,12 +11,14 @@ public sealed class SccpExtendedUnitdataMessage
     /// <param name="calledParty">The called party address.</param>
     /// <param name="callingParty">The calling party address.</param>
     /// <param name="userData">The SCCP user data.</param>
+    /// <param name="segmentation">The optional segmentation parameter.</param>
     public SccpExtendedUnitdataMessage(
         SccpProtocolClass protocolClass,
         byte hopCounter,
         SccpPartyAddress calledParty,
         SccpPartyAddress callingParty,
-        ReadOnlyMemory<byte> userData)
+        ReadOnlyMemory<byte> userData,
+        SccpSegmentationParameter? segmentation = null)
     {
         if (hopCounter == 0)
         {
@@ -33,6 +35,7 @@ public sealed class SccpExtendedUnitdataMessage
         CalledParty = calledParty ?? throw new ArgumentNullException(nameof(calledParty));
         CallingParty = callingParty ?? throw new ArgumentNullException(nameof(callingParty));
         UserData = userData;
+        Segmentation = segmentation;
     }
 
     /// <summary>The SCCP protocol class.</summary>
@@ -50,6 +53,9 @@ public sealed class SccpExtendedUnitdataMessage
     /// <summary>The SCCP user data.</summary>
     public ReadOnlyMemory<byte> UserData { get; }
 
+    /// <summary>The optional segmentation parameter.</summary>
+    public SccpSegmentationParameter? Segmentation { get; }
+
     /// <summary>Encodes this message as SCCP XUDT bytes.</summary>
     /// <returns>The encoded SCCP XUDT bytes.</returns>
     public byte[] Encode()
@@ -61,7 +67,8 @@ public sealed class SccpExtendedUnitdataMessage
             throw new InvalidOperationException("SCCP XUDT addresses must fit in one length octet.");
         }
 
-        int totalLength = 7 + 1 + called.Length + 1 + calling.Length + 1 + UserData.Length;
+        int optionalLength = Segmentation.HasValue ? 1 + 1 + SccpSegmentationParameter.EncodedLength + 1 : 0;
+        int totalLength = 7 + 1 + called.Length + 1 + calling.Length + 1 + UserData.Length + optionalLength;
         if (totalLength > byte.MaxValue)
         {
             throw new InvalidOperationException("SCCP XUDT total length must fit in one message.");
@@ -74,12 +81,23 @@ public sealed class SccpExtendedUnitdataMessage
         result[3] = 4;
         result[4] = checked((byte)(3 + 1 + called.Length));
         result[5] = checked((byte)(2 + 1 + called.Length + 1 + calling.Length));
-        result[6] = 0;
+        result[6] = Segmentation.HasValue
+            ? checked((byte)(1 + 1 + called.Length + 1 + calling.Length + 1 + UserData.Length))
+            : (byte)0;
 
         int offset = 7;
         WriteVariable(result, ref offset, called);
         WriteVariable(result, ref offset, calling);
         WriteVariable(result, ref offset, UserData.Span);
+        if (Segmentation.HasValue)
+        {
+            result[offset++] = (byte)SccpOptionalParameterName.Segmentation;
+            result[offset++] = SccpSegmentationParameter.EncodedLength;
+            Segmentation.Value.Encode(result.AsSpan(offset, SccpSegmentationParameter.EncodedLength));
+            offset += SccpSegmentationParameter.EncodedLength;
+            result[offset] = (byte)SccpOptionalParameterName.EndOfOptionalParameters;
+        }
+
         return result;
     }
 
@@ -110,12 +128,6 @@ public sealed class SccpExtendedUnitdataMessage
             return false;
         }
 
-        if (data[6] != 0)
-        {
-            error = "SCCP XUDT optional parameters are not supported by this decoder";
-            return false;
-        }
-
         if (!TryReadVariable(data, pointerIndex: 3, out ReadOnlySpan<byte> calledBytes, out error)
             || !TryReadVariable(data, pointerIndex: 4, out ReadOnlySpan<byte> callingBytes, out error)
             || !TryReadVariable(data, pointerIndex: 5, out ReadOnlySpan<byte> userData, out error))
@@ -129,12 +141,19 @@ public sealed class SccpExtendedUnitdataMessage
             return false;
         }
 
+        SccpSegmentationParameter? segmentation = null;
+        if (data[6] != 0 && !TryReadOptionalParameters(data, pointerIndex: 6, out segmentation, out error))
+        {
+            return false;
+        }
+
         message = new(
             SccpProtocolClass.Decode(data[1]),
             data[2],
             calledParty!,
             callingParty!,
-            userData.ToArray());
+            userData.ToArray(),
+            segmentation);
         return true;
     }
 
@@ -165,5 +184,53 @@ public sealed class SccpExtendedUnitdataMessage
 
         value = data.Slice(start + 1, length);
         return true;
+    }
+
+    private static bool TryReadOptionalParameters(
+        ReadOnlySpan<byte> data,
+        int pointerIndex,
+        out SccpSegmentationParameter? segmentation,
+        out string? error)
+    {
+        segmentation = null;
+        error = null;
+        int offset = pointerIndex + data[pointerIndex];
+        if (offset <= pointerIndex || offset >= data.Length)
+        {
+            error = "SCCP XUDT optional parameter pointer is outside the message";
+            return false;
+        }
+
+        while (offset < data.Length)
+        {
+            SccpOptionalParameterName name = (SccpOptionalParameterName)data[offset++];
+            if (name == SccpOptionalParameterName.EndOfOptionalParameters)
+            {
+                return true;
+            }
+
+            if (offset >= data.Length)
+            {
+                error = "SCCP XUDT optional parameter is missing length";
+                return false;
+            }
+
+            int length = data[offset++];
+            if (offset + length > data.Length)
+            {
+                error = "SCCP XUDT optional parameter length exceeds the message";
+                return false;
+            }
+
+            if (name == SccpOptionalParameterName.Segmentation)
+            {
+                segmentation = SccpSegmentationParameter.Decode(data.Slice(offset, length));
+            }
+
+            offset += length;
+        }
+
+        error = "SCCP XUDT optional parameters are missing the end marker";
+        return false;
     }
 }

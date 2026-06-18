@@ -13,6 +13,7 @@ Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSs
 Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
 Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
 Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTrips);
+Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmentationOptionalParameter);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -221,6 +222,38 @@ static void SccpSegmentationParameterRoundTrips()
     Assert(decoded.FirstSegment, "SCCP decoded first segment flag");
     Assert(decoded.Describe().Contains("remaining=3", StringComparison.Ordinal), decoded.Describe());
     AssertThrows<ArgumentOutOfRangeException>(() => new SccpSegmentationParameter(0x01000000, 0, false));
+}
+
+static void SccpXudtCarriesSegmentationOptionalParameter()
+{
+    SccpPartyAddress called = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        subsystemNumber: SubsystemNumber.MAP,
+        globalTitle: new SccpGlobalTitle("44123456789"));
+    SccpPartyAddress calling = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        subsystemNumber: SubsystemNumber.MSC,
+        pointCode: 0x0102);
+    SccpSegmentationParameter segmentation = new(0x00010203, remainingSegments: 1, firstSegment: false);
+
+    SccpExtendedUnitdataMessage message = new(
+        new SccpProtocolClass(SccpConnectionlessClass.Class1),
+        hopCounter: 10,
+        called,
+        calling,
+        new byte[] { 0xAA, 0xBB, 0xCC },
+        segmentation);
+
+    byte[] encoded = message.Encode();
+    AssertEqual((byte)22, encoded[6], "SCCP XUDT optional pointer");
+    AssertEqual((byte)SccpOptionalParameterName.Segmentation, encoded[^7], "SCCP XUDT segmentation parameter name");
+    AssertEqual((byte)SccpSegmentationParameter.EncodedLength, encoded[^6], "SCCP XUDT segmentation parameter length");
+    AssertEqual((byte)SccpOptionalParameterName.EndOfOptionalParameters, encoded[^1], "SCCP XUDT optional end marker");
+
+    Assert(SccpExtendedUnitdataMessage.TryDecode(encoded, out SccpExtendedUnitdataMessage? decoded, out string? error), error ?? "SCCP segmented XUDT decode failed");
+    AssertEqual(0x00010203U, decoded!.Segmentation?.LocalReference, "SCCP decoded segmentation reference");
+    AssertEqual((byte)1, decoded.Segmentation?.RemainingSegments, "SCCP decoded segmentation remaining");
+    Assert(decoded.Segmentation?.FirstSegment == false, "SCCP decoded segmentation first flag");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
