@@ -903,6 +903,12 @@ static void M3uaTransportSessionTracksCounters()
     AssertEqual(1L, counters.ReceivedPdus, "counter received PDUs");
     AssertEqual(1L, counters.SendFailures, "counter send failures");
     AssertEqual(0L, counters.ReceiveFailures, "counter receive failures");
+
+    M3uaTransportSessionHealth health = session.GetHealthSnapshot();
+    AssertEqual(M3uaAspState.Down, health.AspState, "health ASP state");
+    AssertEqual(1L, health.Counters.SentPdus, "health sent PDUs");
+    AssertEqual(session.MaxPduSize, health.MaxPduSize, "health max PDU size");
+    Assert(!health.IsDisposed, "health should show active session");
 }
 
 static void M3uaTransportSessionResetsCounters()
@@ -921,6 +927,9 @@ static void M3uaTransportSessionResetsCounters()
     AssertEqual(0L, afterReset.ReceivedPdus, "counter received PDUs after reset");
     AssertEqual(0L, afterReset.SendFailures, "counter send failures after reset");
     AssertEqual(0L, afterReset.ReceiveFailures, "counter receive failures after reset");
+
+    session.Dispose();
+    Assert(session.GetHealthSnapshot().IsDisposed, "health should show disposed session");
 }
 
 static void M3uaTransportSessionNotifiesAspTransportLoss()

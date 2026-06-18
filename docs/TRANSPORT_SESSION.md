@@ -104,6 +104,14 @@ session.ResetCounters();
 
 The counters are intentionally framework-neutral. Applications can export them through OpenTelemetry, Prometheus, logs, or their own health endpoints.
 
+## Health Snapshot
+
+`GetHealthSnapshot` captures ASP state, counters, maximum PDU size, and disposed state in a framework-neutral object.
+
+```csharp
+M3uaTransportSessionHealth health = session.GetHealthSnapshot();
+```
+
 ## Transport Loss
 
 `TryNotifyTransportLost` applies the ASP `TransportLost` event through the session facade. Use it when the socket, SCTP association, or hosting layer detects a connection failure outside `ReceiveAsync`.

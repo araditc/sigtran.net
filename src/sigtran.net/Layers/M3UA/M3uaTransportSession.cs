@@ -36,6 +36,41 @@ public readonly struct M3uaTransportSessionCounters
 }
 
 /// <summary>
+/// Snapshot of transport-session health values.
+/// </summary>
+public readonly struct M3uaTransportSessionHealth
+{
+    /// <summary>Creates a transport-session health snapshot.</summary>
+    /// <param name="aspState">The current ASP lifecycle state.</param>
+    /// <param name="counters">The session counter snapshot.</param>
+    /// <param name="maxPduSize">The configured maximum PDU size.</param>
+    /// <param name="isDisposed">Whether the session has been disposed.</param>
+    public M3uaTransportSessionHealth(
+        M3uaAspState aspState,
+        M3uaTransportSessionCounters counters,
+        int maxPduSize,
+        bool isDisposed)
+    {
+        AspState = aspState;
+        Counters = counters;
+        MaxPduSize = maxPduSize;
+        IsDisposed = isDisposed;
+    }
+
+    /// <summary>The current ASP lifecycle state.</summary>
+    public M3uaAspState AspState { get; }
+
+    /// <summary>The session counter snapshot.</summary>
+    public M3uaTransportSessionCounters Counters { get; }
+
+    /// <summary>The configured maximum PDU size.</summary>
+    public int MaxPduSize { get; }
+
+    /// <summary>Whether the session has been disposed.</summary>
+    public bool IsDisposed { get; }
+}
+
+/// <summary>
 /// Connects M3UA processors to an SCTP-like transport.
 /// </summary>
 public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
@@ -98,6 +133,15 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
         Interlocked.Exchange(ref _receivedPdus, 0);
         Interlocked.Exchange(ref _sendFailures, 0);
         Interlocked.Exchange(ref _receiveFailures, 0);
+    }
+
+    /// <summary>
+    /// Captures a framework-neutral health snapshot for this transport session.
+    /// </summary>
+    /// <returns>A transport-session health snapshot.</returns>
+    public M3uaTransportSessionHealth GetHealthSnapshot()
+    {
+        return new(InboundProcessor.AspSession.State, Counters, MaxPduSize, _disposed);
     }
 
     /// <summary>
