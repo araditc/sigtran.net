@@ -15,6 +15,7 @@ Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
 Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTrips);
 Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmentationOptionalParameter);
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
+Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -280,6 +281,28 @@ static void SccpLudtCodecCarriesLongUserData()
     Assert(SccpLongUnitdataMessage.TryDecode(encoded, out SccpLongUnitdataMessage? decoded, out string? error), error ?? "SCCP LUDT decode failed");
     AssertEqual((byte)9, decoded!.HopCounter, "SCCP decoded LUDT hop counter");
     AssertSequence(payload, decoded.UserData.Span, "SCCP decoded LUDT data");
+}
+
+static void SccpUdtsCodecCarriesReturnCause()
+{
+    SccpPartyAddress called = new(SccpRoutingIndicator.RouteOnSubsystemNumber, subsystemNumber: SubsystemNumber.MAP, pointCode: 0x0101);
+    SccpPartyAddress calling = new(SccpRoutingIndicator.RouteOnSubsystemNumber, subsystemNumber: SubsystemNumber.MSC, pointCode: 0x0102);
+    SccpUnitdataServiceMessage message = new(
+        SccpReturnCause.SubsystemFailure,
+        called,
+        calling,
+        new byte[] { 0xDE, 0xAD });
+
+    byte[] encoded = message.Encode();
+    AssertEqual((byte)SccpMessageType.UnitdataService, encoded[0], "SCCP UDTS message type");
+    AssertEqual((byte)SccpReturnCause.SubsystemFailure, encoded[1], "SCCP UDTS return cause");
+    AssertEqual((byte)3, encoded[2], "SCCP UDTS called pointer");
+    AssertEqual((byte)7, encoded[3], "SCCP UDTS calling pointer");
+    AssertEqual((byte)11, encoded[4], "SCCP UDTS data pointer");
+
+    Assert(SccpUnitdataServiceMessage.TryDecode(encoded, out SccpUnitdataServiceMessage? decoded, out string? error), error ?? "SCCP UDTS decode failed");
+    AssertEqual(SccpReturnCause.SubsystemFailure, decoded!.ReturnCause, "SCCP decoded UDTS cause");
+    AssertSequence([0xDE, 0xAD], decoded.UserData.Span, "SCCP decoded UDTS data");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()

@@ -121,3 +121,19 @@ byte[] encoded = ludt.Encode();
 ```
 
 Use LUDT when the SCCP user data cannot fit inside the one-octet length field used by UDT and XUDT.
+
+## Service Messages
+
+`SccpReturnCause` and `SccpUnitdataServiceMessage` model returned connectionless messages.
+
+```csharp
+SccpUnitdataServiceMessage udts = new(
+    SccpReturnCause.SubsystemFailure,
+    called,
+    calling,
+    returnedPayload);
+
+byte[] encoded = udts.Encode();
+```
+
+Use UDTS when an incoming UDT cannot be delivered and the protocol class asks for return-on-error behavior.
