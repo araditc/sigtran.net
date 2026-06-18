@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
+using sigtran.net.Layers.MAP;
 using sigtran.net.Layers.M3UA;
 using sigtran.net.Layers.MTP3;
 using sigtran.net.Layers.SCCP;
@@ -18,6 +19,7 @@ Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueCon
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
 Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessReportsFoundationStatus);
+Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -297,6 +299,23 @@ static void TcapPhase4ReadinessReportsFoundationStatus()
     Assert(!report.IsProductionReady, "TCAP should not claim production readiness without interop vectors");
     AssertEqual(7, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
     Assert(report.Describe().Contains("foundationCapabilities=7/7", StringComparison.Ordinal), report.Describe());
+}
+
+static void MapSmsOperationCatalogAndParameterSetEncodeBer()
+{
+    Assert(MapSmsOperationCatalog.TryGet(MapSmsOperationCode.MoForwardShortMessage, out MapSmsOperationMetadata metadata), "MAP MO operation metadata should exist");
+    AssertEqual("mo-ForwardSM", metadata.Name, "MAP MO operation name");
+    AssertEqual(5, MapSmsOperationCatalog.GetSupportedOperations().Count, "MAP supported SMS operation count");
+
+    MapSmsParameterSet parameters = new();
+    parameters.Add(0, [0x01, 0x02]);
+    parameters.Add(1, [0xAA]);
+    byte[] encoded = parameters.Encode();
+    AssertSequence([0x80, 0x02, 0x01, 0x02, 0x81, 0x01, 0xAA], encoded, "MAP SMS parameter set BER");
+
+    Assert(MapSmsParameterSet.TryDecode(encoded, out MapSmsParameterSet? decoded, out string? error), error ?? "MAP parameter decode failed");
+    AssertEqual(2, decoded!.Snapshot().Count, "MAP decoded parameter count");
+    AssertSequence([0xAA], decoded.Snapshot()[1].Value.Span, "MAP decoded second parameter");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

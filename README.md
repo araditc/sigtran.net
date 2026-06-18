@@ -32,7 +32,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | SCCP readiness | Foundation readiness report with capability count; external interoperability vectors and trace validation remain the production gate |
 | TCAP | Phase 4 foundation complete: ASN.1 BER TLV primitives, package tags, transaction identifiers, BER Invoke/ReturnResult/ReturnError/Reject components, transaction message envelopes, dialogue portion application-context support, dialogue state/timeout control, identifier allocation helpers, and Begin/End session builders |
 | TCAP readiness | Foundation readiness report with capability count; external TCAP interoperability vectors and MAP profile validation remain the production gate |
-| MAP | Experimental proof-of-concept code; not yet interoperable |
+| MAP | Phase 5 foundation started with SMS operation metadata and BER context-specific parameter containers |
 
 ## Requirements
 
@@ -112,6 +112,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [MTP3 Routing](docs/MTP3.md)
 - [SCCP](docs/SCCP.md)
 - [TCAP](docs/TCAP.md)
+- [MAP SMS Profile](docs/MAP.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
