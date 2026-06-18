@@ -13,6 +13,7 @@ Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifi
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
 Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip);
 Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
+Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -203,6 +204,25 @@ static void TcapTransactionMessageWrapsComponentPortion()
     Assert(!decoded.ComponentPortion.IsEmpty, "TCAP decoded component portion should be present");
     Assert(TcapBerInvokeComponent.TryDecode(decoded.ComponentPortion.Span, out TcapBerInvokeComponent? decodedInvoke, out error), error ?? "TCAP decoded component portion failed");
     AssertEqual(TcapOperationCode.MtForwardShortMessage, decodedInvoke!.OperationCode, "TCAP decoded nested invoke operation");
+}
+
+static void TcapDialoguePortionCarriesApplicationContext()
+{
+    TcapObjectIdentifier oid = new(0, 0, 17, 773, 1, 1, 1);
+    TcapDialoguePortion dialogue = new(oid, new byte[] { 0x55, 0x66 });
+    byte[] encoded = dialogue.Encode();
+    AssertEqual((byte)0x06, encoded[0], "TCAP dialogue OID tag");
+    Assert(TcapDialoguePortion.TryDecode(encoded, out TcapDialoguePortion? decoded, out string? error), error ?? "TCAP dialogue decode failed");
+    AssertEqual("0.0.17.773.1.1.1", decoded!.ApplicationContext.ToString(), "TCAP decoded application context");
+    AssertSequence([0x55, 0x66], decoded.UserInformation.Span, "TCAP decoded dialogue user information");
+
+    TcapTransactionMessage begin = new(
+        TcapPackageType.Begin,
+        originatingTransactionId: TcapTransactionId.FromUInt32(1),
+        dialoguePortion: encoded);
+    Assert(TcapTransactionMessage.TryDecode(begin.Encode(), out TcapTransactionMessage? decodedBegin, out error), error ?? "TCAP transaction with dialogue decode failed");
+    Assert(TcapDialoguePortion.TryDecode(decodedBegin!.DialoguePortion.Span, out TcapDialoguePortion? nested, out error), error ?? "TCAP nested dialogue decode failed");
+    AssertEqual(oid.ToString(), nested!.ApplicationContext.ToString(), "TCAP nested dialogue OID");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

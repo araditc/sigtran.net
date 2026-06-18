@@ -84,3 +84,20 @@ byte[] encoded = begin.Encode();
 ```
 
 The envelope supports Begin, Continue, End, Abort, and Unidirectional package tags. Dialogue portion bytes are accepted as an optional payload and are modeled more strongly by the dialogue portion APIs.
+
+## Dialogue Portion
+
+`TcapObjectIdentifier` and `TcapDialoguePortion` model the application context and optional user information carried by dialogue-capable TCAP packages.
+
+```csharp
+TcapObjectIdentifier mapContext = new(0, 0, 17, 773, 1, 1, 1);
+TcapDialoguePortion dialogue = new(mapContext, userInformation);
+
+TcapTransactionMessage begin = new(
+    TcapPackageType.Begin,
+    originatingTransactionId: TcapTransactionId.FromUInt32(1),
+    dialoguePortion: dialogue.Encode(),
+    componentPortion: invoke.Encode());
+```
+
+MAP-specific application contexts are introduced later, but the BER OID and user-information boundary is now explicit.
