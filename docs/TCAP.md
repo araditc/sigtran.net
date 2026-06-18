@@ -69,3 +69,18 @@ TcapBerRejectComponent reject = new(
     invokeId: 7,
     TcapRejectProblemCode.DuplicateInvokeId);
 ```
+
+## Transaction Messages
+
+`TcapTransactionMessage` wraps transaction ids, dialogue portion bytes, and component portion bytes inside a TCAP package.
+
+```csharp
+TcapTransactionMessage begin = new(
+    TcapPackageType.Begin,
+    originatingTransactionId: TcapTransactionId.FromUInt32(0x0102),
+    componentPortion: invoke.Encode());
+
+byte[] encoded = begin.Encode();
+```
+
+The envelope supports Begin, Continue, End, Abort, and Unidirectional package tags. Dialogue portion bytes are accepted as an optional payload and are modeled more strongly by the dialogue portion APIs.

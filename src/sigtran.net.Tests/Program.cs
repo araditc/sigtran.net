@@ -12,6 +12,7 @@ Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShor
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
 Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip);
+Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -184,6 +185,24 @@ static void TcapBerOutcomeComponentsRoundTrip()
     AssertSequence([0xA4, 0x06, 0x02, 0x01, 0x07, 0x02, 0x01, 0x02], rejectBytes, "TCAP Reject bytes");
     Assert(TcapBerRejectComponent.TryDecode(rejectBytes, out TcapBerRejectComponent? decodedReject, out error), error ?? "TCAP Reject decode failed");
     AssertEqual(TcapRejectProblemCode.DuplicateInvokeId, decodedReject!.ProblemCode, "TCAP Reject problem code");
+}
+
+static void TcapTransactionMessageWrapsComponentPortion()
+{
+    TcapBerInvokeComponent invoke = new(1, TcapOperationCode.MtForwardShortMessage, new byte[] { 0xAA });
+    TcapTransactionMessage begin = new(
+        TcapPackageType.Begin,
+        originatingTransactionId: TcapTransactionId.FromUInt32(0x0102),
+        componentPortion: invoke.Encode());
+
+    byte[] encoded = begin.Encode();
+    AssertEqual((byte)0x62, encoded[0], "TCAP Begin package tag");
+    Assert(TcapTransactionMessage.TryDecode(encoded, out TcapTransactionMessage? decoded, out string? error), error ?? "TCAP transaction decode failed");
+    AssertEqual(TcapPackageType.Begin, decoded!.PackageType, "TCAP decoded package type");
+    AssertEqual("0102", decoded.OriginatingTransactionId?.ToString(), "TCAP decoded originating id");
+    Assert(!decoded.ComponentPortion.IsEmpty, "TCAP decoded component portion should be present");
+    Assert(TcapBerInvokeComponent.TryDecode(decoded.ComponentPortion.Span, out TcapBerInvokeComponent? decodedInvoke, out error), error ?? "TCAP decoded component portion failed");
+    AssertEqual(TcapOperationCode.MtForwardShortMessage, decodedInvoke!.OperationCode, "TCAP decoded nested invoke operation");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
