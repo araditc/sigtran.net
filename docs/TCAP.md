@@ -35,3 +35,19 @@ TcapBer.TryWriteElement(
 ```
 
 Transaction identifiers are limited to four octets so they remain compatible with common TCAP deployments and compact enough for deterministic logging.
+
+## Components
+
+`TcapBerInvokeComponent` encodes a TCAP Invoke component using BER component tags and nested integer/octet-string fields.
+
+```csharp
+TcapBerInvokeComponent invoke = new(
+    invokeId: 7,
+    TcapOperationCode.MoForwardShortMessage,
+    parameters,
+    linkedInvokeId: null);
+
+byte[] encoded = invoke.Encode();
+```
+
+The existing simplified `TcapInvokeComponent` remains for compatibility during migration. New TCAP work should use the BER component types.

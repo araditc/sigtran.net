@@ -10,6 +10,7 @@ using sigtran.net.Core.Interfaces;
 
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
+Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -142,6 +143,23 @@ static void TcapTransactionIdentifiersUseBerContextTags()
     TcapBerTag beginTag = TcapTransactionTags.Package(TcapPackageType.Begin);
     AssertEqual((byte)0x62, beginTag.Encode(), "TCAP Begin package tag");
     AssertThrows<ArgumentException>(() => new TcapTransactionId(ReadOnlySpan<byte>.Empty));
+}
+
+static void TcapBerInvokeComponentRoundTrips()
+{
+    TcapBerInvokeComponent invoke = new(
+        invokeId: 7,
+        TcapOperationCode.MoForwardShortMessage,
+        new byte[] { 0xAA, 0xBB },
+        linkedInvokeId: 3);
+
+    byte[] encoded = invoke.Encode();
+    AssertSequence([0xA1, 0x0D, 0x02, 0x01, 0x07, 0x02, 0x01, 0x03, 0x02, 0x01, 0x01, 0x04, 0x02, 0xAA, 0xBB], encoded, "TCAP BER Invoke bytes");
+    Assert(TcapBerInvokeComponent.TryDecode(encoded, out TcapBerInvokeComponent? decoded, out string? error), error ?? "TCAP BER Invoke decode failed");
+    AssertEqual((byte)7, decoded!.InvokeId, "TCAP decoded Invoke ID");
+    AssertEqual((byte)3, decoded.LinkedInvokeId, "TCAP decoded linked Invoke ID");
+    AssertEqual(TcapOperationCode.MoForwardShortMessage, decoded.OperationCode, "TCAP decoded operation code");
+    AssertSequence([0xAA, 0xBB], decoded.Parameters.Span, "TCAP decoded Invoke parameters");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
