@@ -109,3 +109,15 @@ MapReportShortMessageDeliveryStatus report = new(
 
 byte[] parameters = report.Encode();
 ```
+
+## AlertServiceCentre
+
+`MapAlertServiceCentre` models the alert sent when a subscriber becomes reachable again.
+
+```csharp
+MapAlertServiceCentre alert = new(
+    msisdn,
+    serviceCentreAddress);
+
+byte[] parameters = alert.Encode();
+```

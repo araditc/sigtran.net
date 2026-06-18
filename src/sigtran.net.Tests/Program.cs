@@ -25,6 +25,7 @@ Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEnc
 Run("MAP MT-ForwardSM model encodes required parameters", MapMtForwardSmModelEncodesRequiredParameters);
 Run("MAP SendRoutingInfoForSM model encodes routing parameters", MapSendRoutingInfoForSmModelEncodesRoutingParameters);
 Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeliveryStatusModelEncodesDeliveryStatus);
+Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -398,6 +399,18 @@ static void MapReportSmDeliveryStatusModelEncodesDeliveryStatus()
     Assert(MapReportShortMessageDeliveryStatus.TryDecode(encoded, out MapReportShortMessageDeliveryStatus? decoded, out string? error), error ?? "MAP ReportSM decode failed");
     AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP ReportSM decoded MSISDN");
     AssertEqual(MapSmsDeliveryStatus.MemoryCapacityExceeded, decoded.DeliveryStatus, "MAP ReportSM decoded status");
+}
+
+static void MapAlertServiceCentreModelEncodesAlertParameters()
+{
+    MapAlertServiceCentre alert = new(
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"));
+
+    byte[] encoded = alert.Encode();
+    Assert(MapAlertServiceCentre.TryDecode(encoded, out MapAlertServiceCentre? decoded, out string? error), error ?? "MAP AlertSC decode failed");
+    AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP AlertSC decoded MSISDN");
+    AssertEqual("441234", decoded.ServiceCentreAddress.Digits, "MAP AlertSC decoded SC address");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
