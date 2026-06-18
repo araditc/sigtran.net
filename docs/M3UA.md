@@ -8,6 +8,8 @@ M3UA is the first production-focused layer in SIGTRAN.NET. The implementation fo
 
 `M3uaProtocol.TryReadHeader(packet, out header, out error)` reads the fixed common header without validating version or message support. Use it for packet triage before deciding whether to reject, decode, or log a malformed packet.
 
+`M3uaProtocol.TryValidateMessageLength(messageLength, availableLength, out error)` centralizes the alpha length gate: at least one common header, no more than available bytes, and 32-bit alignment.
+
 ## Implemented Message Families
 
 | Family | Message types |

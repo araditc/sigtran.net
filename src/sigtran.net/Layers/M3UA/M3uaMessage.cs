@@ -66,15 +66,8 @@ public class M3uaMessage : ISigtranMessage
         }
 
         uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(buffer.Slice(4, 4));
-        if (messageLength < M3uaProtocol.HeaderLength || messageLength > (uint)buffer.Length)
+        if (!M3uaProtocol.TryValidateMessageLength(messageLength, buffer.Length, out error))
         {
-            error = $"Invalid M3UA length {messageLength}";
-            return false;
-        }
-
-        if ((messageLength & 0x3) != 0)
-        {
-            error = $"M3UA message length {messageLength} is not 32-bit aligned";
             return false;
         }
 

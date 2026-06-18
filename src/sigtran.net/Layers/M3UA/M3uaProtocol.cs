@@ -68,6 +68,37 @@ public static class M3uaProtocol
         error = null;
         return true;
     }
+
+    /// <summary>
+    /// Validates an M3UA message length against the common header, available bytes, and 32-bit alignment rules.
+    /// </summary>
+    /// <param name="messageLength">The message length from the M3UA common header.</param>
+    /// <param name="availableLength">The number of available packet bytes.</param>
+    /// <param name="error">An error message when the length is invalid.</param>
+    /// <returns>True if the message length is valid; otherwise false.</returns>
+    public static bool TryValidateMessageLength(uint messageLength, int availableLength, out string? error)
+    {
+        if (availableLength < 0)
+        {
+            error = "Available packet length must not be negative";
+            return false;
+        }
+
+        if (messageLength < HeaderLength || messageLength > (uint)availableLength)
+        {
+            error = $"Invalid M3UA length {messageLength}";
+            return false;
+        }
+
+        if ((messageLength & 0x3) != 0)
+        {
+            error = $"M3UA message length {messageLength} is not 32-bit aligned";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
 }
 
 /// <summary>

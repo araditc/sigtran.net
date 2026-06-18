@@ -120,6 +120,13 @@ static void M3uaProtocolExposesPublicMetadata()
     AssertEqual((uint)8, preview.MessageLength, "header preview length");
     Assert(!M3uaProtocol.TryReadHeader([0x01, 0x00], out _, out string? shortHeaderError), "short header preview should fail");
     Assert(shortHeaderError?.Contains("too short", StringComparison.Ordinal) == true, shortHeaderError ?? "missing short header error");
+    Assert(M3uaProtocol.TryValidateMessageLength(8, availableLength: 8, out string? validLengthError), validLengthError ?? "valid length failed");
+    Assert(!M3uaProtocol.TryValidateMessageLength(4, availableLength: 8, out string? shortLengthError), "short message length should fail");
+    Assert(shortLengthError?.Contains("Invalid M3UA length 4", StringComparison.Ordinal) == true, shortLengthError ?? "missing short length error");
+    Assert(!M3uaProtocol.TryValidateMessageLength(12, availableLength: 8, out string? oversizedLengthError), "oversized message length should fail");
+    Assert(oversizedLengthError?.Contains("Invalid M3UA length 12", StringComparison.Ordinal) == true, oversizedLengthError ?? "missing oversized length error");
+    Assert(!M3uaProtocol.TryValidateMessageLength(10, availableLength: 12, out string? unalignedLengthError), "unaligned message length should fail");
+    Assert(unalignedLengthError?.Contains("not 32-bit aligned", StringComparison.Ordinal) == true, unalignedLengthError ?? "missing unaligned length error");
 
     M3uaProtocolCapabilities capabilities = M3uaProtocol.Capabilities;
     Assert(capabilities.SupportsPayloadData, "capabilities should include Payload Data");
