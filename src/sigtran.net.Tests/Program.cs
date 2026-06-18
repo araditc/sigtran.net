@@ -8,6 +8,7 @@ Run("SCTP connection options validate endpoints and stream counts", SctpConnecti
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
+Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -156,6 +157,27 @@ static void SctpReconnectPoliciesComputeBoundedDelays()
     AssertEqual(TimeSpan.FromMilliseconds(250), policy.GetDelay(3), "bounded reconnect delay");
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpReconnectPolicy(maxAttempts: -1));
     AssertThrows<ArgumentOutOfRangeException>(() => policy.GetDelay(0));
+}
+
+static void SctpTransportHealthSnapshotsExposeAssociationDetails()
+{
+    SctpEndpoint remote = new("sg.example.net", 2905);
+    SctpEndpoint local = new("0.0.0.0", 2905);
+    SctpTransportHealth health = new(
+        SctpAssociationState.Established,
+        remote,
+        local,
+        outboundStreams: 8,
+        inboundStreams: 8,
+        defaultPayloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua,
+        sentMessages: 10,
+        receivedMessages: 11);
+
+    Assert(health.IsEstablished, "SCTP health should be established");
+    AssertEqual(remote, health.RemoteEndpoint, "SCTP health remote endpoint");
+    AssertEqual(local, health.LocalEndpoint, "SCTP health local endpoint");
+    AssertEqual(10L, health.SentMessages, "SCTP health sent messages");
+    AssertEqual(11L, health.ReceivedMessages, "SCTP health received messages");
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()
