@@ -63,3 +63,18 @@ byte[] encoded = udt.Encode();
 ```
 
 The older `SccpMessage` class remains for compatibility during migration, but new code should use `SccpUnitdataMessage`.
+
+## Extended Unitdata
+
+`SccpExtendedUnitdataMessage` adds the XUDT fixed fields, including hop counter and the optional-parameter pointer slot.
+
+```csharp
+SccpExtendedUnitdataMessage xudt = new(
+    new SccpProtocolClass(SccpConnectionlessClass.Class1, returnMessageOnError: true),
+    hopCounter: 12,
+    called,
+    calling,
+    userData);
+```
+
+The current XUDT codec rejects optional parameters during decode. Segmentation support is introduced separately so segmented delivery can be tested without overloading the base XUDT contract.

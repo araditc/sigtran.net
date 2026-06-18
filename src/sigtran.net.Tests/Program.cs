@@ -11,6 +11,7 @@ Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
 Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
+Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -171,6 +172,39 @@ static void SccpUdtCodecUsesVariableParameterPointers()
     AssertEqual("44123456789", decoded.CalledParty.GlobalTitle?.Digits, "SCCP decoded UDT called GT");
     AssertEqual(SubsystemNumber.MSC, decoded.CallingParty.SubsystemNumber, "SCCP decoded UDT calling SSN");
     AssertSequence([0xCA, 0xFE], decoded.UserData.Span, "SCCP decoded UDT data");
+}
+
+static void SccpXudtCodecPreservesHopCounter()
+{
+    SccpPartyAddress called = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        subsystemNumber: SubsystemNumber.MAP,
+        globalTitle: new SccpGlobalTitle("44123456789"));
+    SccpPartyAddress calling = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        subsystemNumber: SubsystemNumber.MSC,
+        pointCode: 0x0102);
+
+    SccpExtendedUnitdataMessage message = new(
+        new SccpProtocolClass(SccpConnectionlessClass.Class1, returnMessageOnError: true),
+        hopCounter: 12,
+        called,
+        calling,
+        new byte[] { 0x01, 0x02, 0x03 });
+
+    byte[] encoded = message.Encode();
+    AssertEqual((byte)SccpMessageType.ExtendedUnitdata, encoded[0], "SCCP XUDT message type");
+    AssertEqual((byte)0x81, encoded[1], "SCCP XUDT protocol class");
+    AssertEqual((byte)12, encoded[2], "SCCP XUDT hop counter");
+    AssertEqual((byte)4, encoded[3], "SCCP XUDT called pointer");
+    AssertEqual((byte)15, encoded[4], "SCCP XUDT calling pointer");
+    AssertEqual((byte)19, encoded[5], "SCCP XUDT data pointer");
+    AssertEqual((byte)0, encoded[6], "SCCP XUDT optional pointer");
+
+    Assert(SccpExtendedUnitdataMessage.TryDecode(encoded, out SccpExtendedUnitdataMessage? decoded, out string? error), error ?? "SCCP XUDT decode failed");
+    AssertEqual((byte)12, decoded!.HopCounter, "SCCP decoded XUDT hop counter");
+    Assert(decoded.ProtocolClass.ReturnMessageOnError, "SCCP decoded XUDT return-on-error");
+    AssertSequence([0x01, 0x02, 0x03], decoded.UserData.Span, "SCCP decoded XUDT data");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
