@@ -14,6 +14,7 @@ Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
 Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip);
 Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
+Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -223,6 +224,28 @@ static void TcapDialoguePortionCarriesApplicationContext()
     Assert(TcapTransactionMessage.TryDecode(begin.Encode(), out TcapTransactionMessage? decodedBegin, out error), error ?? "TCAP transaction with dialogue decode failed");
     Assert(TcapDialoguePortion.TryDecode(decodedBegin!.DialoguePortion.Span, out TcapDialoguePortion? nested, out error), error ?? "TCAP nested dialogue decode failed");
     AssertEqual(oid.ToString(), nested!.ApplicationContext.ToString(), "TCAP nested dialogue OID");
+}
+
+static void TcapDialogueControllerTracksStateAndInvokeTimeouts()
+{
+    DateTimeOffset sentAt = new(2026, 6, 18, 12, 0, 0, TimeSpan.Zero);
+    TcapDialogueController dialogue = new(
+        dialogueId: 100,
+        new TcapInvokeTimeoutPolicy(TimeSpan.FromSeconds(5), maxPendingInvokes: 1));
+
+    AssertEqual(TcapDialoguePhase.Idle, dialogue.Phase, "TCAP initial dialogue phase");
+    dialogue.Begin();
+    AssertEqual(TcapDialoguePhase.Open, dialogue.Phase, "TCAP begin dialogue phase");
+    dialogue.RegisterInvoke(1, sentAt);
+    AssertEqual(1, dialogue.PendingInvokeCount, "TCAP pending invoke count");
+    Assert(!dialogue.IsInvokeTimedOut(1, sentAt.AddSeconds(4)), "TCAP invoke should not be timed out yet");
+    Assert(dialogue.IsInvokeTimedOut(1, sentAt.AddSeconds(5)), "TCAP invoke should be timed out");
+    AssertThrows<InvalidOperationException>(() => dialogue.RegisterInvoke(1, sentAt));
+    Assert(dialogue.CompleteInvoke(1), "TCAP pending invoke should complete");
+    dialogue.Continue();
+    AssertEqual(TcapDialoguePhase.Continuing, dialogue.Phase, "TCAP continue dialogue phase");
+    dialogue.End();
+    AssertEqual(TcapDialoguePhase.Ended, dialogue.Phase, "TCAP ended dialogue phase");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

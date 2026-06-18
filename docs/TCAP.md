@@ -101,3 +101,18 @@ TcapTransactionMessage begin = new(
 ```
 
 MAP-specific application contexts are introduced later, but the BER OID and user-information boundary is now explicit.
+
+## Dialogue State
+
+`TcapDialogueController` tracks the BER transaction dialogue lifecycle independently of the older simplified `TcapDialogue` class.
+
+```csharp
+TcapDialogueController dialogue = new(
+    dialogueId: 100,
+    new TcapInvokeTimeoutPolicy(TimeSpan.FromSeconds(30), maxPendingInvokes: 256));
+
+dialogue.Begin();
+dialogue.RegisterInvoke(invokeId: 1, sentAt: DateTimeOffset.UtcNow);
+```
+
+The controller validates invalid transitions, duplicate pending invokes, invoke concurrency limits, and timeout checks. It is intended to become the state core behind higher-level TCAP/MAP APIs.
