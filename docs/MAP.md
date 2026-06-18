@@ -96,3 +96,16 @@ MapSendRoutingInfoForShortMessage sri = new(
 
 byte[] parameters = sri.Encode();
 ```
+
+## ReportSM-DeliveryStatus
+
+`MapReportShortMessageDeliveryStatus` models delivery status reports with MSISDN, service centre address, and `MapSmsDeliveryStatus`.
+
+```csharp
+MapReportShortMessageDeliveryStatus report = new(
+    msisdn,
+    serviceCentreAddress,
+    MapSmsDeliveryStatus.MemoryCapacityExceeded);
+
+byte[] parameters = report.Encode();
+```

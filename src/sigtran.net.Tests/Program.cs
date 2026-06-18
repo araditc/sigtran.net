@@ -24,6 +24,7 @@ Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEnco
 Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
 Run("MAP MT-ForwardSM model encodes required parameters", MapMtForwardSmModelEncodesRequiredParameters);
 Run("MAP SendRoutingInfoForSM model encodes routing parameters", MapSendRoutingInfoForSmModelEncodesRoutingParameters);
+Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeliveryStatusModelEncodesDeliveryStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -384,6 +385,19 @@ static void MapSendRoutingInfoForSmModelEncodesRoutingParameters()
     AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP SRI decoded MSISDN");
     AssertEqual(MapSmsAddressKind.ServiceCentre, decoded.ServiceCentreAddress.Kind, "MAP SRI decoded SC address kind");
     Assert(decoded.GprsSupportIndicator, "MAP SRI decoded GPRS indicator");
+}
+
+static void MapReportSmDeliveryStatusModelEncodesDeliveryStatus()
+{
+    MapReportShortMessageDeliveryStatus report = new(
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "441234"),
+        MapSmsDeliveryStatus.MemoryCapacityExceeded);
+
+    byte[] encoded = report.Encode();
+    Assert(MapReportShortMessageDeliveryStatus.TryDecode(encoded, out MapReportShortMessageDeliveryStatus? decoded, out string? error), error ?? "MAP ReportSM decode failed");
+    AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP ReportSM decoded MSISDN");
+    AssertEqual(MapSmsDeliveryStatus.MemoryCapacityExceeded, decoded.DeliveryStatus, "MAP ReportSM decoded status");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()
