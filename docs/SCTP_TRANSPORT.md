@@ -1,0 +1,20 @@
+# SCTP Transport
+
+Phase 2 stabilizes the production SCTP transport boundary. The existing `ISctpSocket` remains the packet-oriented contract used by M3UA. Production transports can additionally implement `ISctpMetadataSocket` when stream id, PPID, and unordered delivery metadata are available.
+
+## Payload Metadata
+
+`SctpPayloadMetadata` captures the SCTP stream id, Payload Protocol Identifier, and unordered flag for one SCTP user message.
+
+```csharp
+SctpPayloadMetadata metadata = new(
+    streamId: 1,
+    payloadProtocolIdentifier: 3,
+    unordered: false);
+```
+
+`SctpReceiveResult` pairs the received payload byte count with the associated metadata.
+
+## Compatibility
+
+The metadata contract is optional. Existing `ISctpSocket` implementations continue to work for M3UA packet send/receive. A native SCTP transport should implement both interfaces so higher layers can opt into SCTP-specific behavior without breaking the current M3UA session facade.

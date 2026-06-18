@@ -1,6 +1,8 @@
 using sigtran.net.Layers.M3UA;
+using sigtran.net.Layers.SCTP;
 using sigtran.net.Core.Interfaces;
 
+Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -71,6 +73,18 @@ Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConve
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
+
+static void SctpPayloadMetadataStoresStreamAndPpidValues()
+{
+    SctpPayloadMetadata metadata = new(streamId: 2, payloadProtocolIdentifier: 3, unordered: true);
+    AssertEqual((ushort)2, metadata.StreamId, "SCTP metadata stream");
+    AssertEqual((uint)3, metadata.PayloadProtocolIdentifier, "SCTP metadata PPID");
+    Assert(metadata.Unordered, "SCTP metadata unordered flag");
+
+    SctpReceiveResult result = new(bytesReceived: 12, metadata);
+    AssertEqual(12, result.BytesReceived, "SCTP receive byte count");
+    AssertEqual((ushort)2, result.Metadata.StreamId, "SCTP receive metadata stream");
+}
 
 static void M3uaPayloadDataUsesNetworkOrder()
 {
