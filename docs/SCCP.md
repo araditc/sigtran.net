@@ -38,3 +38,28 @@ byte[] encoded = called.Encode();
 ```
 
 `SccpGlobalTitle` currently supports numeric TBCD digits with translation type, numbering plan, and nature of address fields. Unsupported global title indicator forms are rejected during decode instead of being silently misread.
+
+## Unitdata
+
+`SccpUnitdataMessage` encodes and decodes UDT messages with the Q.713-style fixed part and variable parameter pointers:
+
+- message type
+- protocol class
+- called party address pointer
+- calling party address pointer
+- data pointer
+- length-prefixed called party address
+- length-prefixed calling party address
+- length-prefixed user data
+
+```csharp
+SccpUnitdataMessage udt = new(
+    new SccpProtocolClass(SccpConnectionlessClass.Class0),
+    called,
+    calling,
+    userData);
+
+byte[] encoded = udt.Encode();
+```
+
+The older `SccpMessage` class remains for compatibility during migration, but new code should use `SccpUnitdataMessage`.

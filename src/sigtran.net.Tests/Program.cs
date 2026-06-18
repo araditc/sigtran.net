@@ -10,6 +10,7 @@ using sigtran.net.Core.Interfaces;
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
+Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -140,6 +141,36 @@ static void SccpPartyAddressEncodesSsnAndGlobalTitle()
     AssertEqual(SubsystemNumber.MAP, decoded.SubsystemNumber, "SCCP decoded SSN");
     AssertEqual((ushort)0x1234, decoded.PointCode, "SCCP decoded point code");
     AssertEqual("44123456789", decoded.GlobalTitle?.Digits, "SCCP decoded GT digits");
+}
+
+static void SccpUdtCodecUsesVariableParameterPointers()
+{
+    SccpPartyAddress called = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        subsystemNumber: SubsystemNumber.MAP,
+        globalTitle: new SccpGlobalTitle("44123456789"));
+    SccpPartyAddress calling = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        subsystemNumber: SubsystemNumber.MSC,
+        pointCode: 0x0102);
+
+    SccpUnitdataMessage message = new(
+        new SccpProtocolClass(SccpConnectionlessClass.Class0),
+        called,
+        calling,
+        new byte[] { 0xCA, 0xFE });
+
+    byte[] encoded = message.Encode();
+    AssertEqual((byte)SccpMessageType.Unitdata, encoded[0], "SCCP UDT message type");
+    AssertEqual((byte)3, encoded[2], "SCCP called pointer");
+    AssertEqual((byte)14, encoded[3], "SCCP calling pointer");
+    AssertEqual((byte)18, encoded[4], "SCCP data pointer");
+
+    Assert(SccpUnitdataMessage.TryDecode(encoded, out SccpUnitdataMessage? decoded, out string? error), error ?? "SCCP UDT decode failed");
+    AssertEqual(SccpConnectionlessClass.Class0, decoded!.ProtocolClass.ConnectionlessClass, "SCCP decoded UDT protocol class");
+    AssertEqual("44123456789", decoded.CalledParty.GlobalTitle?.Digits, "SCCP decoded UDT called GT");
+    AssertEqual(SubsystemNumber.MSC, decoded.CallingParty.SubsystemNumber, "SCCP decoded UDT calling SSN");
+    AssertSequence([0xCA, 0xFE], decoded.UserData.Span, "SCCP decoded UDT data");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()
