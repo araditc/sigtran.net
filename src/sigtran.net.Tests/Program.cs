@@ -3,10 +3,12 @@ using System.Net.Sockets;
 
 using sigtran.net.Layers.M3UA;
 using sigtran.net.Layers.MTP3;
+using sigtran.net.Layers.SCCP;
 using sigtran.net.Layers.SCTP;
 using sigtran.net.Core.Interfaces;
 
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
+Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -105,6 +107,19 @@ static void Mtp3RoutingLabelAndSioRoundTrip()
     AssertEqual(0x1234U, decoded.DestinationPointCode, "MTP3 decoded DPC");
     AssertEqual(0x2345U, decoded.OriginatingPointCode, "MTP3 decoded OPC");
     AssertEqual((byte)0x0A, decoded.SignallingLinkSelection, "MTP3 decoded SLS");
+}
+
+static void SccpProtocolConstantsExposeConnectionlessClasses()
+{
+    AssertEqual((byte)0x09, (byte)SccpMessageType.Unitdata, "SCCP UDT message type");
+    AssertEqual((byte)0x11, (byte)SccpMessageType.ExtendedUnitdata, "SCCP XUDT message type");
+    AssertEqual((byte)0x13, (byte)SccpMessageType.LongUnitdata, "SCCP LUDT message type");
+
+    SccpProtocolClass protocolClass = new(SccpConnectionlessClass.Class1, returnMessageOnError: true);
+    AssertEqual((byte)0x81, protocolClass.Encode(), "SCCP protocol class encoding");
+    SccpProtocolClass decoded = SccpProtocolClass.Decode(0x81);
+    AssertEqual(SccpConnectionlessClass.Class1, decoded.ConnectionlessClass, "SCCP decoded protocol class");
+    Assert(decoded.ReturnMessageOnError, "SCCP return-on-error flag");
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()

@@ -28,7 +28,8 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | MTP3 | Service information octet and ITU-style routing label primitives for SCCP payload routing |
 | SCTP | Phase 2 foundation complete: packet transport contract, connection options, reconnect policy, health snapshots, stream selection, SIGTRAN PPID helpers, optional stream/PPID metadata, association lifecycle models, and metadata-aware development TCP adapter |
 | SCTP readiness | Foundation readiness report with capability count; native SCTP implementation and interoperability verification remain the production gate |
-| SCCP/TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
+| SCCP | Phase 3 foundation started with connectionless message type and protocol class primitives; legacy simplified UDT still being replaced |
+| TCAP/MAP | Experimental proof-of-concept code; not yet interoperable |
 
 ## Requirements
 
@@ -106,6 +107,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [M3UA Signalling Network Management](docs/SSNM.md)
 - [M3UA Routing Key Management](docs/RKM.md)
 - [MTP3 Routing](docs/MTP3.md)
+- [SCCP](docs/SCCP.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
