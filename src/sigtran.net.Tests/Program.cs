@@ -6,6 +6,7 @@ Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataSt
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
+Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -126,6 +127,18 @@ static void SctpPpidHelpersRecognizeSigtranPayloadIdentifiers()
     Assert(SctpPayloadProtocolIdentifiers.TryRequireKnown(SctpPayloadProtocolIdentifiers.M3ua, out string? knownError), knownError ?? "known PPID failed");
     Assert(!SctpPayloadProtocolIdentifiers.TryRequireKnown(999, out string? unknownError), "unknown PPID should fail");
     Assert(unknownError?.Contains("999", StringComparison.Ordinal) == true, unknownError ?? "missing unknown PPID error");
+}
+
+static void SctpStreamSelectionPoliciesChooseOutboundStreams()
+{
+    SctpStreamSelectionPolicy fixedPolicy = new(SctpStreamSelectionMode.Fixed, streamCount: 4, fixedStreamId: 2);
+    AssertEqual((ushort)2, fixedPolicy.SelectStream(sequence: 99), "fixed stream selection");
+
+    SctpStreamSelectionPolicy roundRobin = new(SctpStreamSelectionMode.RoundRobin, streamCount: 4);
+    AssertEqual((ushort)0, roundRobin.SelectStream(0), "round-robin first stream");
+    AssertEqual((ushort)3, roundRobin.SelectStream(7), "round-robin modulo stream");
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 0));
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 2, fixedStreamId: 2));
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()

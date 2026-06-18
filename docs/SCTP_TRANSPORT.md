@@ -49,3 +49,17 @@ The model validates endpoint host, port range, and positive stream counts before
 | `M2pa` | `5` |
 
 Use `TryRequireKnown` at transport boundaries when unknown PPIDs should be rejected before M3UA processing.
+
+## Stream Selection
+
+`SctpStreamSelectionPolicy` standardizes outbound stream selection.
+
+```csharp
+SctpStreamSelectionPolicy policy = new(
+    SctpStreamSelectionMode.RoundRobin,
+    streamCount: 8);
+
+ushort streamId = policy.SelectStream(sequence: messageNumber);
+```
+
+Fixed mode always uses one stream id. Round-robin mode applies modulo to a caller-provided sequence value so transports can remain stateless if they prefer.
