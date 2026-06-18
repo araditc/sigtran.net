@@ -26,6 +26,7 @@ Run("MAP MT-ForwardSM model encodes required parameters", MapMtForwardSmModelEnc
 Run("MAP SendRoutingInfoForSM model encodes routing parameters", MapSendRoutingInfoForSmModelEncodesRoutingParameters);
 Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeliveryStatusModelEncodesDeliveryStatus);
 Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
+Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -411,6 +412,21 @@ static void MapAlertServiceCentreModelEncodesAlertParameters()
     Assert(MapAlertServiceCentre.TryDecode(encoded, out MapAlertServiceCentre? decoded, out string? error), error ?? "MAP AlertSC decode failed");
     AssertEqual("989121234567", decoded!.Msisdn.Digits, "MAP AlertSC decoded MSISDN");
     AssertEqual("441234", decoded.ServiceCentreAddress.Digits, "MAP AlertSC decoded SC address");
+}
+
+static void MapSmsErrorMapperAndExtensionContainerEncodeValues()
+{
+    AssertEqual(
+        MapSmsDeliveryStatus.AbsentSubscriber,
+        MapSmsErrorMapper.ToDeliveryStatus(MapSmsErrorCode.AbsentSubscriberForShortMessage),
+        "MAP absent subscriber error mapping");
+
+    MapSmsExtensionContainer extensions = new();
+    extensions.Add(5, [0xCA, 0xFE]);
+    byte[] encoded = extensions.Encode();
+    AssertSequence([0x85, 0x02, 0xCA, 0xFE], encoded, "MAP extension container bytes");
+    Assert(MapSmsExtensionContainer.TryDecode(encoded, out MapSmsExtensionContainer? decoded, out string? error), error ?? "MAP extension decode failed");
+    AssertEqual(1, decoded!.Snapshot().Count, "MAP extension count");
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

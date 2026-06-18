@@ -121,3 +121,15 @@ MapAlertServiceCentre alert = new(
 
 byte[] parameters = alert.Encode();
 ```
+
+## Errors And Extensions
+
+`MapSmsErrorMapper` maps MAP SMS errors into delivery-status categories. `MapSmsExtensionContainer` preserves extension parameters as BER context-specific TLVs.
+
+```csharp
+MapSmsDeliveryStatus status = MapSmsErrorMapper.ToDeliveryStatus(
+    MapSmsErrorCode.AbsentSubscriberForShortMessage);
+
+MapSmsExtensionContainer extensions = new();
+extensions.Add(tagNumber: 5, value);
+```
