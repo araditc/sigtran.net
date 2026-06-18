@@ -38,3 +38,14 @@ SctpConnectionOptions options = new(
 ```
 
 The model validates endpoint host, port range, and positive stream counts before a native transport attempts an association.
+
+## Payload Protocol Identifiers
+
+`SctpPayloadProtocolIdentifiers` defines SIGTRAN PPID constants currently recognized by the SDK:
+
+| Name | Value |
+| --- | --- |
+| `M3ua` | `3` |
+| `M2pa` | `5` |
+
+Use `TryRequireKnown` at transport boundaries when unknown PPIDs should be rejected before M3UA processing.

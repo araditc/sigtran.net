@@ -5,6 +5,7 @@ using sigtran.net.Core.Interfaces;
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
+Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
 Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
@@ -115,6 +116,16 @@ static void SctpConnectionOptionsValidateEndpointsAndStreamCounts()
 
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpEndpoint("sg", 0));
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpConnectionOptions(remote, outboundStreams: 0));
+}
+
+static void SctpPpidHelpersRecognizeSigtranPayloadIdentifiers()
+{
+    AssertEqual((uint)3, SctpPayloadProtocolIdentifiers.M3ua, "M3UA PPID");
+    Assert(SctpPayloadProtocolIdentifiers.IsKnown(SctpPayloadProtocolIdentifiers.M3ua), "M3UA PPID should be known");
+    Assert(SctpPayloadProtocolIdentifiers.IsKnown(SctpPayloadProtocolIdentifiers.M2pa), "M2PA PPID should be known");
+    Assert(SctpPayloadProtocolIdentifiers.TryRequireKnown(SctpPayloadProtocolIdentifiers.M3ua, out string? knownError), knownError ?? "known PPID failed");
+    Assert(!SctpPayloadProtocolIdentifiers.TryRequireKnown(999, out string? unknownError), "unknown PPID should fail");
+    Assert(unknownError?.Contains("999", StringComparison.Ordinal) == true, unknownError ?? "missing unknown PPID error");
 }
 
 static void M3uaPayloadDataUsesNetworkOrder()
