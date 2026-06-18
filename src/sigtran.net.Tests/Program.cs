@@ -28,6 +28,7 @@ Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeli
 Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
+Run("MAP SMS phase 5 readiness reports foundation status", MapSmsPhase5ReadinessReportsFoundationStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -445,6 +446,21 @@ static void MapSmsTcapClientBuildsBeginInvokeTransactions()
     AssertEqual((TcapOperationCode)MapSmsOperationCode.MoForwardShortMessage, invoke!.OperationCode, "MAP TCAP operation code");
     Assert(MapMoForwardShortMessage.TryDecode(invoke.Parameters.Span, out MapMoForwardShortMessage? decodedMo, out error), error ?? "MAP TCAP MO params decode failed");
     AssertEqual("989121234567", decodedMo!.SmRpOa.Digits, "MAP TCAP decoded MO originator");
+}
+
+static void MapSmsPhase5ReadinessReportsFoundationStatus()
+{
+    AssertEqual("MAP SMS profile foundation", MapSmsPhase5Readiness.ReleaseLabel, "MAP readiness label");
+    AssertEqual(8, MapSmsPhase5Readiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
+    Assert(
+        MapSmsPhase5Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        MapSmsPhase5Readiness.ProductionGateDescription);
+
+    MapSmsPhase5ReadinessReport report = MapSmsPhase5Readiness.GetReport();
+    Assert(report.FoundationReady, "MAP SMS foundation should be ready");
+    Assert(!report.IsProductionReady, "MAP SMS should not claim production readiness without interop vectors");
+    AssertEqual(8, report.FoundationCapabilityCount, "MAP completed foundation capabilities");
+    Assert(report.Describe().Contains("foundationCapabilities=8/8", StringComparison.Ordinal), report.Describe());
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

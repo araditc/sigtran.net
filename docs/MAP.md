@@ -146,3 +146,9 @@ byte[] tcapMessage = built.EncodedMessage;
 ```
 
 The facade hides TCAP transaction-id, invoke-id, dialogue portion, and component wrapping while keeping the encoded transaction available for lower-level routing.
+
+## Readiness
+
+`MapSmsPhase5Readiness.GetReport()` reports the current MAP SMS profile status. The foundation is complete when operation metadata, address primitives, ForwardSM codecs, SRI-SM, delivery status, AlertServiceCentre, errors/extensions, and the TCAP client facade are present.
+
+Production readiness remains false until external MAP SMS interoperability vectors and operator-profile validation are added.

@@ -58,6 +58,8 @@ Status: SDK foundation is complete for BER primitives, transaction envelopes, co
 - Prioritize MO-ForwardSM, MT-ForwardSM, SRI-SM, ReportSM-DeliveryStatus, AlertServiceCentre, error mapping, and extension containers.
 - Provide high-level client APIs that hide SCCP/TCAP plumbing without blocking access to lower-level protocol objects.
 
+Status: SDK foundation is complete for MAP SMS operation metadata, typed SMS parameters, TCAP client builders, errors, and extensions. Production claims still require external MAP SMS interoperability vectors and operator-profile validation.
+
 ## Phase 6 - Interoperability And Tooling
 
 - Build Wireshark-friendly trace logging and hex dump helpers.
