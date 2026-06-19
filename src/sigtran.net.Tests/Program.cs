@@ -57,6 +57,7 @@ Run("SIGTRAN configuration profiles separate development lab and production", Si
 Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubleshootingIndexMapsSymptomsToNextActions);
 Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIndexExposesOnboardingApis);
 Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
+Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -788,6 +789,17 @@ static void SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProducti
     Assert(report.DeveloperAdoptionReady, "developer adoption foundation should be ready");
     Assert(!report.CommercialReady, "commercial readiness should still require external gates");
     Assert(!report.EnterpriseProductionReady, "enterprise production adoption should wait for commercial readiness");
+}
+
+static void SigtranDocumentationReadinessReportsDeveloperDocsGate()
+{
+    SigtranDocumentationReadinessReport report = SigtranDocumentationReadiness.GetReport();
+
+    Assert(report.HasRoadmap, "documentation readiness should include roadmap");
+    Assert(report.HasQuickstart, "documentation readiness should include quickstart");
+    Assert(report.HasApiIndex, "documentation readiness should include API index");
+    Assert(report.HasTroubleshooting, "documentation readiness should include troubleshooting");
+    Assert(report.DeveloperDocsReady, "developer docs should be ready");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

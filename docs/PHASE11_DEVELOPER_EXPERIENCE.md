@@ -59,3 +59,9 @@ The index complements XML documentation by naming the first APIs a new user shou
 `SigtranAdoptionGates.GetReport()` separates developer adoption readiness from enterprise production readiness.
 
 Developer adoption is ready when quickstart, samples, configuration profiles, troubleshooting, and API index are present. Enterprise production adoption still requires commercial readiness.
+
+## Documentation Readiness
+
+`SigtranDocumentationReadiness.GetReport()` exposes the developer documentation gate.
+
+Developer documentation is ready when roadmap, quickstart, API index, and troubleshooting material are available.
