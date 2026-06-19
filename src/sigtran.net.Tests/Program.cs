@@ -69,6 +69,7 @@ Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMa
 Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
 Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
 Run("SIGTRAN operations CI profile requires operations readiness", SigtranOperationsCiProfileRequiresOperationsReadiness);
+Run("SIGTRAN phase 12 status summarizes operations foundation", SigtranPhase12StatusSummarizesOperationsFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -924,6 +925,17 @@ static void SigtranOperationsCiProfileRequiresOperationsReadiness()
     AssertEqual("operations", profile.Name, "operations CI profile name");
     Assert(profile.Commands.Any(static command => command.Contains("dotnet build", StringComparison.Ordinal)), "operations CI should include build");
     Assert(profile.RequiresOperationsReadiness, "operations CI should require operations readiness");
+}
+
+static void SigtranPhase12StatusSummarizesOperationsFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase12Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase12Status.CompletedUnitCount, "Phase 12 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 12 capability count");
+    Assert(capabilities.Contains("operations-ci-profile"), "Phase 12 should include operations CI profile");
+    Assert(SigtranPhase12Status.FoundationReady, SigtranPhase12Status.Describe());
+    Assert(!SigtranPhase12Status.ProductionOperationsReady, SigtranPhase12Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

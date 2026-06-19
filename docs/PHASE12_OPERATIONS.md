@@ -49,3 +49,7 @@ Production operations remain blocked until wider commercial readiness is complet
 ## Operations CI
 
 `SigtranOperationsCi.CreateDefault()` reuses the official build, test, and pack commands while requiring operations readiness.
+
+## Phase Status
+
+`SigtranPhase12Status.Describe()` summarizes the completed Phase 12 units and separates operations foundation readiness from production operations readiness.

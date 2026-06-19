@@ -121,7 +121,7 @@ Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sa
 - Keep operations readiness separate from commercial production readiness.
 - Make production support expectations visible to enterprise adopters.
 
-Status: Phase 12 has started with the production operations capability catalog.
+Status: Phase 12 is foundation-ready for operations capability catalog, runbook catalog, incident response targets, health check matrix, rollback plan, maintenance policy, support handbook, operations readiness, operations CI profile, and phase documentation. Production operations remain blocked until commercial readiness is complete.
 
 ## Recommended First Deliverable
 
