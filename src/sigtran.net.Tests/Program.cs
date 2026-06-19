@@ -68,6 +68,7 @@ Run("SIGTRAN rollback plan defines package recovery steps", SigtranRollbackPlanD
 Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMaintenancePolicyGatesProtocolAndTransportChanges);
 Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
 Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
+Run("SIGTRAN operations CI profile requires operations readiness", SigtranOperationsCiProfileRequiresOperationsReadiness);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -914,6 +915,15 @@ static void SigtranOperationsReadinessSeparatesFoundationFromProduction()
     Assert(report.FoundationReady, "operations foundation should be ready");
     Assert(!report.CommercialReady, "commercial readiness should still require external gates");
     Assert(!report.ProductionOperationsReady, "production operations should wait for commercial readiness");
+}
+
+static void SigtranOperationsCiProfileRequiresOperationsReadiness()
+{
+    SigtranOperationsCiProfile profile = SigtranOperationsCi.CreateDefault();
+
+    AssertEqual("operations", profile.Name, "operations CI profile name");
+    Assert(profile.Commands.Any(static command => command.Contains("dotnet build", StringComparison.Ordinal)), "operations CI should include build");
+    Assert(profile.RequiresOperationsReadiness, "operations CI should require operations readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -37,3 +37,9 @@ Release CI is intended for manual dispatch and version tags. It requires `NUGET_
 Phase 11 adds `SigtranDeveloperExperienceCi.CreateDefault()` as the metadata contract for validating developer experience gates.
 
 The profile reuses build, test, and pack commands and requires documentation readiness plus adoption readiness.
+
+## Operations CI
+
+Phase 12 adds `SigtranOperationsCi.CreateDefault()` as the metadata contract for validating operations readiness.
+
+The profile reuses build, test, and pack commands and requires operations readiness.

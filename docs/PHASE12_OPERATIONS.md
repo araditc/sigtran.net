@@ -45,3 +45,7 @@ The plan stops publication, communicates the affected version, preserves artifac
 `SigtranOperationsReadiness.GetReport()` separates operations foundation readiness from production operations readiness.
 
 Production operations remain blocked until wider commercial readiness is complete.
+
+## Operations CI
+
+`SigtranOperationsCi.CreateDefault()` reuses the official build, test, and pack commands while requiring operations readiness.
