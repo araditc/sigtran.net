@@ -90,6 +90,16 @@ Run("SIGTRAN resource budget requires allocation tracking", SigtranResourceBudge
 Run("SIGTRAN performance readiness separates foundation from benchmark evidence", SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence);
 Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformanceCiProfileKeepsBenchmarksOptIn);
 Run("SIGTRAN phase 14 status summarizes performance foundation", SigtranPhase14StatusSummarizesPerformanceFoundation);
+Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
+Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
+Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
+Run("SIGTRAN deprecation policy requires obsolete migration and release notes", SigtranDeprecationPolicyRequiresObsoleteMigrationAndReleaseNotes);
+Run("SIGTRAN migration guides require code samples", SigtranMigrationGuidesRequireCodeSamples);
+Run("SIGTRAN breaking change review requires baseline migration and approval", SigtranBreakingChangeReviewRequiresBaselineMigrationAndApproval);
+Run("SIGTRAN public API baseline covers known surfaces", SigtranPublicApiBaselineCoversKnownSurfaces);
+Run("SIGTRAN API lifecycle readiness separates foundation from stable claims", SigtranApiLifecycleReadinessSeparatesFoundationFromStableClaims);
+Run("SIGTRAN API lifecycle CI profile requires public API diff review", SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview);
+Run("SIGTRAN phase 15 status summarizes API lifecycle foundation", SigtranPhase15StatusSummarizesApiLifecycleFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1149,6 +1159,104 @@ static void SigtranPhase14StatusSummarizesPerformanceFoundation()
     Assert(capabilities.Contains("performance-ci-profile"), "Phase 14 should include performance CI profile");
     Assert(SigtranPhase14Status.FoundationReady, SigtranPhase14Status.Describe());
     Assert(!SigtranPhase14Status.ProductionPerformanceReady, SigtranPhase14Status.Describe());
+}
+
+static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()
+{
+    IReadOnlyList<SigtranApiSurface> surfaces = SigtranApiSurfaceCatalog.GetSurfaces();
+
+    AssertEqual(6, surfaces.Count, "API surface count");
+    Assert(surfaces.Any(surface => surface.Name == "M3UA" && surface.Category == SigtranApiSurfaceCategory.Codec), "M3UA codec surface should be present");
+    Assert(surfaces.Any(surface => surface.Name == "CoreUtilities" && surface.Category == SigtranApiSurfaceCategory.Governance), "governance surface should be present");
+}
+
+static void SigtranApiStabilityContractsMarkPreStableSurfaces()
+{
+    IReadOnlyList<SigtranApiStabilityContract> contracts = SigtranApiStability.GetContracts();
+
+    AssertEqual(6, contracts.Count, "API stability contract count");
+    Assert(contracts.Any(contract => contract.Surface == "M3UA" && contract.Level == SigtranApiStabilityLevel.Preview), "M3UA should be preview");
+    Assert(contracts.Any(contract => contract.Surface == "MAP" && contract.Level == SigtranApiStabilityLevel.Experimental), "MAP should be experimental");
+    Assert(contracts.All(contract => contract.AllowsBreakingChangesBeforeStable), "pre-stable contracts should allow breaking changes");
+}
+
+static void SigtranApiVersionMatrixSeparatesPreStableAndStableLines()
+{
+    IReadOnlyList<SigtranApiVersionMatrixEntry> entries = SigtranApiVersionMatrix.GetEntries();
+
+    AssertEqual(2, entries.Count, "API version matrix count");
+    Assert(entries.Any(entry => entry.ReleaseLine == "0.x" && entry.AcceptsBreakingChanges), "0.x should accept pre-stable breaking changes");
+    Assert(entries.Any(entry => entry.ReleaseLine == "1.x" && !entry.AcceptsBreakingChanges), "1.x should reject breaking changes without major version");
+}
+
+static void SigtranDeprecationPolicyRequiresObsoleteMigrationAndReleaseNotes()
+{
+    SigtranDeprecationPolicy policy = SigtranDeprecationPolicies.CreateStableDefault();
+
+    Assert(policy.MinimumNoticePeriod >= TimeSpan.FromDays(90), "deprecation notice should be at least 90 days");
+    Assert(policy.RequiresObsoleteAttribute, "deprecation should require ObsoleteAttribute");
+    Assert(policy.RequiresMigrationGuide, "deprecation should require migration guide");
+    Assert(policy.RequiresReleaseNotes, "deprecation should require release notes");
+    Assert(policy.IsStableLifecyclePolicy, "deprecation policy should satisfy stable lifecycle requirements");
+}
+
+static void SigtranMigrationGuidesRequireCodeSamples()
+{
+    IReadOnlyList<SigtranMigrationGuideEntry> entries = SigtranMigrationGuides.GetEntries();
+
+    AssertEqual(3, entries.Count, "migration guide count");
+    Assert(entries.All(entry => entry.RequiresCodeSamples), "migration guides should require code samples");
+    Assert(entries.Any(entry => entry.Id == "prestable-to-1.0"), "prestable to 1.0 migration guide should be planned");
+}
+
+static void SigtranBreakingChangeReviewRequiresBaselineMigrationAndApproval()
+{
+    SigtranBreakingChangeReviewPolicy policy = SigtranBreakingChangeReview.CreateDefault();
+
+    Assert(policy.RequiresApiBaselineDiff, "breaking-change review should require API baseline diff");
+    Assert(policy.RequiresMigrationGuide, "breaking-change review should require migration guide");
+    Assert(policy.RequiresMaintainerApproval, "breaking-change review should require maintainer approval");
+    Assert(policy.RequiresMajorVersionAfterStable, "stable breaking changes should require major version");
+    Assert(policy.IsCommercialApiGovernanceReady, "breaking-change review should be commercial governance ready");
+}
+
+static void SigtranPublicApiBaselineCoversKnownSurfaces()
+{
+    SigtranPublicApiBaselineManifest manifest = SigtranPublicApiBaseline.CreateCurrent();
+
+    AssertEqual("prestable-public-api", manifest.Name, "public API baseline name");
+    Assert(manifest.RequiresDiffReview, "public API baseline should require diff review");
+    Assert(manifest.CoversKnownSurfaces, "public API baseline should cover known surfaces");
+}
+
+static void SigtranApiLifecycleReadinessSeparatesFoundationFromStableClaims()
+{
+    SigtranApiLifecycleReadinessReport report = SigtranApiLifecycleReadiness.GetReport();
+
+    Assert(report.FoundationReady, "API lifecycle foundation should be ready");
+    Assert(!report.CommercialReady, "API lifecycle readiness should still depend on commercial gates");
+    Assert(!report.StableApiLifecycleReady, "stable API lifecycle should not be claimed before commercial readiness");
+}
+
+static void SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview()
+{
+    SigtranApiLifecycleCiProfile profile = SigtranApiLifecycleCi.CreateDefault();
+
+    AssertEqual("api-lifecycle", profile.Name, "API lifecycle CI profile name");
+    Assert(profile.Commands.Count >= 3, "API lifecycle CI should reuse official verification commands");
+    Assert(profile.RequiresApiLifecycleReadiness, "API lifecycle CI should require readiness");
+    Assert(profile.RequiresPublicApiDiffReview, "API lifecycle CI should require public API diff review");
+}
+
+static void SigtranPhase15StatusSummarizesApiLifecycleFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase15Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase15Status.CompletedUnitCount, "Phase 15 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 15 capability count");
+    Assert(capabilities.Contains("api-lifecycle-ci-profile"), "Phase 15 should include API lifecycle CI profile");
+    Assert(SigtranPhase15Status.FoundationReady, SigtranPhase15Status.Describe());
+    Assert(!SigtranPhase15Status.StableApiLifecycleReady, SigtranPhase15Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

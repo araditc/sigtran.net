@@ -55,3 +55,9 @@ The profile reuses build, test, and pack commands and requires compliance readin
 Phase 14 adds `SigtranPerformanceCi.CreateDefault()` as the metadata contract for validating performance readiness.
 
 The profile reuses build, test, and pack commands, requires performance readiness, and keeps long-running benchmarks opt-in.
+
+## API Lifecycle CI
+
+Phase 15 adds `SigtranApiLifecycleCi.CreateDefault()` as the metadata contract for validating API lifecycle readiness.
+
+The profile reuses build, test, and pack commands and requires public API diff review for API-shaping changes.

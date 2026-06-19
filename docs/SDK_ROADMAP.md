@@ -139,6 +139,14 @@ Status: Phase 13 is foundation-ready for compliance capability catalog, audit ev
 
 Status: Phase 14 is foundation-ready for performance capability catalog, benchmark scenario catalog, capacity profile, throughput targets, latency budgets, load-test plan, resource budget, performance readiness, performance CI profile, and phase documentation. Production performance claims remain blocked until representative native SCTP and external-peer benchmark evidence is captured and retained.
 
+## Phase 15 - API Stability Deprecation And Migration Readiness
+
+- Add public API surface catalog, stability contracts, version-line matrix, deprecation policy, migration guide catalog, breaking-change review, and API baseline foundations.
+- Keep API lifecycle foundation readiness separate from stable API lifecycle claims.
+- Make API-shaping changes visible and reviewable for open-source and commercial adopters.
+
+Status: Phase 15 is foundation-ready for API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, API lifecycle readiness, API lifecycle CI profile, and phase documentation. Stable API lifecycle claims remain blocked until wider commercial readiness is complete and protocol surfaces have the required validation evidence.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
