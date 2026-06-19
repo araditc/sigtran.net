@@ -34,3 +34,12 @@ The contract validates the project file text so packaging metadata remains testa
 - `Sigtran.Net.1.0.0.snupkg`
 
 The layout contract gives release gates a deterministic way to find package artifacts before integrity, signing, provenance, and publish checks run.
+
+## Unit 4 - Dry-Run Publish Plan
+
+`SigtranNuGetPublishPlan` separates two publication modes:
+
+- `DryRun`, which validates package creation and local NuGet verification without requiring an API key.
+- `Publish`, which contains the guarded `dotnet nuget push` command and requires a NuGet API key.
+
+This keeps release rehearsals safe while still documenting the exact publish command used after all gates pass.

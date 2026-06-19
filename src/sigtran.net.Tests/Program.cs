@@ -176,6 +176,7 @@ Run("SIGTRAN release promotion gate allows complete release evidence", SigtranRe
 Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionPolicyAcceptsSemVerTags);
 Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadataContractMatchesProjectFile);
 Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExposesNupkgAndSymbols);
+Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPublishPlansSeparateDryRunAndPublish);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2175,6 +2176,18 @@ static void SigtranPackageLayoutExposesNupkgAndSymbols()
     AssertEqual(2, artifacts.Count, "package layout artifact count");
     Assert(artifacts.Any(static artifact => artifact.Path.EndsWith("Sigtran.Net.1.0.0.nupkg", StringComparison.Ordinal)), "package layout should include nupkg");
     Assert(artifacts.Any(static artifact => artifact.Path.EndsWith("Sigtran.Net.1.0.0.snupkg", StringComparison.Ordinal)), "package layout should include snupkg");
+}
+
+static void SigtranNuGetPublishPlansSeparateDryRunAndPublish()
+{
+    SigtranNuGetPublishPlan dryRun = SigtranNuGetPublishPlans.CreateDryRun();
+    SigtranNuGetPublishPlan publish = SigtranNuGetPublishPlans.CreatePublish();
+
+    Assert(dryRun.IsDryRunSafe, "dry-run publish plan should not upload packages");
+    Assert(!dryRun.RequiresApiKey, "dry-run publish plan should not require API key");
+    Assert(publish.IsPublishCapable, "publish plan should include NuGet push");
+    Assert(publish.RequiresApiKey, "publish plan should require API key");
+    AssertEqual(dryRun.Source, publish.Source, "NuGet source should match between dry-run and publish");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
