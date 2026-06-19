@@ -54,3 +54,11 @@ SigtranReleaseCandidateManifest manifest =
 ```
 
 Release candidates can be published after internal gates pass. Promotion to commercial production remains blocked until the commercial readiness report is fully green.
+
+## Package Governance
+
+`SigtranPackageGovernance.CreateCurrentPolicy()` describes the package metadata already present: license, README, repository metadata, and symbols.
+
+`SigtranPackageGovernance.CreateCommercialTargetPolicy()` adds the commercial governance target: package signing and SBOM publication.
+
+Commercial release governance remains incomplete until signing and SBOM automation are added to the release pipeline.

@@ -17,3 +17,5 @@ The profile targets `.NET 10` through the `10.0.x` SDK band.
 The workflow at `.github/workflows/dotnet.yml` runs on pushes and pull requests against `main`.
 
 It restores the solution, builds in Release mode, runs the test harness, and packs the SDK. This keeps package validation, XML documentation enforcement, and byte-level protocol tests on the same path used before each manual commit.
+
+Phase 7 package governance keeps package signing and SBOM generation as commercial release gates. They are not yet part of the default CI workflow.

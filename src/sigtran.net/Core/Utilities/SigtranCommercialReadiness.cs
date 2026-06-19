@@ -75,6 +75,6 @@ public static class SigtranCommercialReadiness
             hasCiVerification: SigtranCiVerification.CreateDefaultProfile().Steps.Count > 0,
             hasNativeSctpVerification: SigtranNativeSctpSupport.IsProductionVerified(),
             hasExternalInteroperabilityEvidence: SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(),
-            hasReleaseGovernance: false);
+            hasReleaseGovernance: SigtranPackageGovernance.CreateCommercialTargetPolicy().IsSatisfiedByCurrentPackage);
     }
 }
