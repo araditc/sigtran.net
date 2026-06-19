@@ -72,3 +72,15 @@ This prevents an alpha package from being promoted to the public stable channel 
 - The `.snupkg` symbol package.
 
 The manifest is the handoff point from local packaging to signing, SBOM, provenance, and commercial evidence retention.
+
+## Unit 8 - Publication Evidence Manifest
+
+`SigtranPublicationEvidenceManifest` records the final publication evidence shape:
+
+- Package version.
+- Publication channel.
+- Package integrity completion.
+- Supply-chain promotion evidence.
+- Commercial evidence readiness.
+
+The manifest remains incomplete unless integrity, supply-chain, and commercial evidence are all present.

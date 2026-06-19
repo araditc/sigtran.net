@@ -180,6 +180,7 @@ Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPubl
 Run("SIGTRAN publication credential policy requires commercial secrets", SigtranPublicationCredentialPolicyRequiresCommercialSecrets);
 Run("SIGTRAN publication channel policy separates prerelease and stable", SigtranPublicationChannelPolicySeparatesPrereleaseAndStable);
 Run("SIGTRAN package integrity manifest requires package digests", SigtranPackageIntegrityManifestRequiresPackageDigests);
+Run("SIGTRAN publication evidence manifest requires integrity and release evidence", SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidence);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2230,6 +2231,21 @@ static void SigtranPackageIntegrityManifestRequiresPackageDigests()
     Assert(!incomplete.IsComplete, "package integrity manifest should require symbol package digest");
     Assert(complete.IsComplete, "package integrity manifest should be complete with package and symbol digests");
     AssertEqual(2, complete.Entries.Count, "package integrity entry count");
+}
+
+static void SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidence()
+{
+    SigtranPublicationEvidenceManifest incomplete = new(
+        "1.0.0",
+        SigtranPublishChannelKind.Stable,
+        packageIntegrityComplete: true,
+        supplyChainPromotionReady: false,
+        commercialEvidenceReady: true);
+    SigtranPublicationEvidenceManifest complete = SigtranPublicationEvidenceManifest.CreateCompleteSample();
+
+    Assert(!incomplete.IsComplete, "publication evidence should require supply-chain evidence");
+    Assert(complete.IsComplete, "publication evidence should be complete with integrity and release evidence");
+    AssertEqual(SigtranPublishChannelKind.Stable, complete.Channel, "publication evidence channel");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
