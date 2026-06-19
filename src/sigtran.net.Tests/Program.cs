@@ -20,6 +20,7 @@ Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogEx
 Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
 Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
 Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSummarizesCompletedTooling);
+Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -268,6 +269,16 @@ static void SigtranPhase6StatusSummarizesCompletedTooling()
     AssertEqual(10, capabilities.Count, "Phase 6 capability count");
     Assert(capabilities.Contains("interoperability-readiness-report"), "Phase 6 status should include readiness report");
     Assert(SigtranPhase6Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase6Status.Describe());
+}
+
+static void SigtranCommercialReadinessReportsReleaseGates()
+{
+    SigtranCommercialReadinessReport report = SigtranCommercialReadiness.GetReport();
+
+    Assert(report.InternalReleaseReady, "commercial readiness should see internal release foundation");
+    Assert(!report.CommercialReady, "commercial readiness should wait for external gates");
+    Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
+    Assert(report.Describe().Contains("externalInterop=False", StringComparison.Ordinal), report.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

@@ -35,6 +35,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | MAP | Phase 5 foundation complete: SMS operation metadata, BER context-specific parameter containers, TBCD address primitives, MO/MT-ForwardSM codecs, SendRoutingInfoForSM, ReportSM-DeliveryStatus, AlertServiceCentre, error mapping, extension containers, and TCAP client facade |
 | MAP readiness | Foundation readiness report with capability count; external MAP SMS interoperability vectors and operator-profile validation remain the production gate |
 | Interoperability tooling | Phase 6 foundation-ready: trace frames, Wireshark-friendly hex dumps, conformance vectors, built-in M3UA/MAP vectors, simulator scripts, MAP SMS flow builders, local TCP samples, sample catalog, CI profile, and readiness report; production gate is external interoperability lab evidence |
+| Commercial readiness | Phase 7 started: internal release readiness is available; commercial production readiness requires native SCTP verification, external interoperability evidence, and release governance |
 
 ## Requirements
 
@@ -117,6 +118,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [MAP SMS Profile](docs/MAP.md)
 - [Interoperability and Tooling](docs/INTEROPERABILITY.md)
 - [Phase 6 Summary](docs/PHASE6_SUMMARY.md)
+- [Phase 7 Commercialization](docs/PHASE7_COMMERCIALIZATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [References](docs/REFERENCES.md)
@@ -132,6 +134,7 @@ The roadmap is intentionally conservative:
 4. Harden TCAP with external interoperability vectors and MAP profile validation.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
+7. Complete commercial readiness gates and publish governed release candidates.
 
 ## License
 
