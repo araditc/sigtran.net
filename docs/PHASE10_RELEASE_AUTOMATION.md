@@ -43,3 +43,9 @@ The default plan requires author signing and a timestamp authority. Signing mate
 `SigtranReleaseProvenanceFactory.Create()` records the source repository, commit SHA, release workflow, and artifact manifest path for a release.
 
 Every governed release should preserve this provenance beside package artifacts and checksums.
+
+## Release Notes
+
+`SigtranReleaseNotesFactory.CreateAlpha()` creates structured alpha release notes with SemVer validation and required change entries.
+
+Release notes are publishable only when the version is SemVer-compatible and at least one notable change is recorded.

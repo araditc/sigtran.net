@@ -45,6 +45,7 @@ Run("SIGTRAN release artifact manifest tracks package artifacts and digests", Si
 Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
 Run("SIGTRAN package signing plan marks commercial release requirement", SigtranPackageSigningPlanMarksCommercialReleaseRequirement);
 Run("SIGTRAN release provenance records source commit and artifact manifest", SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest);
+Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNotesRequireSemVerAndChangeEntries);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -629,6 +630,19 @@ static void SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest()
     AssertEqual("release-default", provenance.WorkflowName, "release provenance workflow");
     Assert(provenance.HasRequiredReferences, provenance.Describe());
     Assert(provenance.Describe().Contains("manifest=artifacts/release-manifest.json", StringComparison.Ordinal), provenance.Describe());
+}
+
+static void SigtranReleaseNotesRequireSemVerAndChangeEntries()
+{
+    SigtranReleaseNotes notes = SigtranReleaseNotesFactory.CreateAlpha("1.0.0-alpha.1");
+
+    AssertEqual("1.0.0-alpha.1", notes.Version, "release notes version");
+    Assert(notes.IsPublishable, notes.Describe());
+    Assert(notes.Changes.Count > 0, "release notes should include changes");
+    AssertEqual(0, notes.BreakingChanges.Count, "alpha release notes breaking changes");
+
+    SigtranReleaseNotes invalid = new("alpha", "Invalid release", [], []);
+    Assert(!invalid.IsPublishable, invalid.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
