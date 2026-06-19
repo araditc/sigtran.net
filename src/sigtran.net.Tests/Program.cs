@@ -164,6 +164,7 @@ Run("SIGTRAN release workflow requires supply chain evidence and publish secrets
 Run("SIGTRAN release workflow readiness separates contract from workflow file", SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile);
 Run("SIGTRAN release workflow status summarizes contract foundation", SigtranReleaseWorkflowStatusSummarizesContractFoundation);
 Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
+Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2022,6 +2023,15 @@ static void SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile()
     Assert(contract.RequiredStageNames.Contains("Supply Chain"), "release workflow file should include supply-chain stage");
     Assert(contract.RequiredStageNames.Contains("Commercial Evidence"), "release workflow file should include commercial evidence stage");
     Assert(contract.IsValidationReady, "release workflow file contract should be validation ready");
+}
+
+static void SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml()
+{
+    string yaml = File.ReadAllText(Path.Combine(".github", "workflows", "release.yml"));
+    SigtranReleaseWorkflowValidationResult result = SigtranReleaseWorkflowValidation.ValidateYaml(yaml);
+
+    Assert(result.IsValid, result.Describe());
+    AssertEqual(0, result.MissingItems.Count, "release workflow validation missing item count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

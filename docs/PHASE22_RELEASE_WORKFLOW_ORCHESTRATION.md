@@ -46,3 +46,9 @@ Later Phase 22 parts should:
 Stage 23 Unit 1 adds `.github/workflows/release.yml` and `SigtranReleaseWorkflowFiles.CreateDefault()`.
 
 The workflow file follows the contract from Phase 22 and contains restore, build, test, pack, supply-chain, commercial-evidence, and publish stages. The publish stage is gated behind manual dispatch with `publish=true`.
+
+## Stage 23 Unit 2 - Workflow YAML Validation
+
+Stage 23 Unit 2 adds `SigtranReleaseWorkflowValidation.ValidateYaml()`.
+
+The validator checks that the concrete workflow YAML contains the release name, manual and tag triggers, .NET 10 setup, supply-chain and commercial evidence environment variables, signing secrets, NuGet secret, and publish gate.
