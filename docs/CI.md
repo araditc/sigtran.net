@@ -79,3 +79,9 @@ The profile is opt-in, Linux-only, and enabled by `SIGTRAN_NATIVE_SCTP_LAB`. Rea
 Phase 18 adds `SigtranOpenSs7InteropCi.CreateDefault()` as the metadata contract for OpenSS7/IPSS7 interoperability execution.
 
 The profile is opt-in and enabled by `SIGTRAN_OPENSS7_INTEROP`. Real runs require a prepared OpenSS7/IPSS7 runner and must retain artifacts under `SIGTRAN_OPENSS7_ARTIFACT_ROOT`.
+
+## Protocol Interop Vector CI
+
+Phase 19 adds `SigtranProtocolInteropCi.CreateDefault()` as the metadata contract for SCCP, TCAP, and MAP SMS protocol vector execution.
+
+The profile is opt-in and enabled by `SIGTRAN_PROTOCOL_INTEROP`. Real runs require retained external reference vectors and SDK-generated vectors under `SIGTRAN_PROTOCOL_VECTOR_ROOT`, plus comparison reports for every required vector.

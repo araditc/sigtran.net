@@ -130,6 +130,16 @@ Run("SIGTRAN OpenSS7 run report identifies passing evidence", SigtranOpenSs7RunR
 Run("SIGTRAN OpenSS7 evidence registry starts empty", SigtranOpenSs7EvidenceRegistryStartsEmpty);
 Run("SIGTRAN OpenSS7 readiness separates foundation from evidence", SigtranOpenSs7ReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN OpenSS7 status summarizes execution foundation", SigtranOpenSs7StatusSummarizesExecutionFoundation);
+Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
+Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
+Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
+Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
+Run("SIGTRAN protocol interop run plan is executable with external vectors", SigtranProtocolInteropRunPlanIsExecutableWithExternalVectors);
+Run("SIGTRAN protocol interop commands require vector root and reports", SigtranProtocolInteropCommandsRequireVectorRootAndReports);
+Run("SIGTRAN protocol interop run report identifies passing evidence", SigtranProtocolInteropRunReportIdentifiesPassingEvidence);
+Run("SIGTRAN protocol interop evidence registry starts empty", SigtranProtocolInteropEvidenceRegistryStartsEmpty);
+Run("SIGTRAN protocol interop readiness separates foundation from evidence", SigtranProtocolInteropReadinessSeparatesFoundationFromEvidence);
+Run("SIGTRAN protocol interop status summarizes vector foundation", SigtranProtocolInteropStatusSummarizesVectorFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1605,6 +1615,112 @@ static SigtranOpenSs7InteropArtifactManifest CreateCompleteOpenSs7Manifest()
     manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.PeerConfiguration, "artifacts/openss7/peer-config.txt"));
     manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.PeerLog, "artifacts/openss7/peer-log.txt"));
     manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.ComparisonReport, "artifacts/openss7/comparison-report.md"));
+    return manifest;
+}
+
+static void SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap()
+{
+    IReadOnlyList<SigtranProtocolInteropVector> vectors = SigtranProtocolInteropVectorCatalog.GetVectors();
+
+    AssertEqual(6, vectors.Count, "protocol interop vector count");
+    Assert(vectors.Any(vector => vector.Surface == SigtranProtocolInteropSurface.Sccp), "SCCP vector should exist");
+    Assert(vectors.Any(vector => vector.Surface == SigtranProtocolInteropSurface.Tcap), "TCAP vector should exist");
+    Assert(vectors.Any(vector => vector.Surface == SigtranProtocolInteropSurface.MapSms), "MAP SMS vector should exist");
+    Assert(vectors.All(vector => vector.RequiresExternalReference), "all protocol interop vectors should require external references");
+}
+
+static void SigtranProtocolInteropReferencesRequireTraceValidation()
+{
+    IReadOnlyList<SigtranProtocolInteropReference> references = SigtranProtocolInteropReferences.GetReferences();
+
+    AssertEqual(3, references.Count, "protocol interop reference count");
+    Assert(references.All(reference => reference.RequiresTraceValidation), "all protocol interop references should require trace validation");
+}
+
+static void SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison()
+{
+    SigtranProtocolInteropArtifactManifest manifest = CreateCompleteProtocolInteropManifest();
+
+    AssertEqual(3, manifest.Snapshot().Count, "protocol interop artifact count");
+    Assert(manifest.IsComplete, "protocol interop manifest should be complete");
+}
+
+static void SigtranProtocolInteropComparisonRulesAreCommercialValidationReady()
+{
+    SigtranProtocolInteropComparisonRuleSet rules = SigtranProtocolInteropComparisonRules.CreateDefault();
+
+    Assert(rules.RequiresByteExactEncoding, "protocol interop should require byte-exact encoding");
+    Assert(rules.RequiresDecodedFieldComparison, "protocol interop should require decoded field comparison");
+    Assert(rules.RequiresTraceOrderValidation, "protocol interop should require trace order validation");
+    Assert(rules.AllowsOperatorSpecificExtensions, "protocol interop should allow operator-specific extensions");
+    Assert(rules.IsCommercialValidationReady, "protocol interop rules should be commercial validation ready");
+}
+
+static void SigtranProtocolInteropRunPlanIsExecutableWithExternalVectors()
+{
+    SigtranProtocolInteropRunPlan plan = SigtranProtocolInteropRunPlans.CreateDefault();
+
+    Assert(plan.IsExecutable, "protocol interop run plan should be executable");
+    AssertEqual(6, plan.Vectors.Count, "protocol interop run plan vector count");
+    Assert(plan.RequiresExternalVectors, "protocol interop run plan should require external vectors");
+}
+
+static void SigtranProtocolInteropCommandsRequireVectorRootAndReports()
+{
+    SigtranProtocolInteropCommandSet commands = SigtranProtocolInteropCommands.CreateDefault();
+
+    Assert(commands.RequiresExternalVectorRoot, "protocol interop commands should require vector root");
+    Assert(commands.RequiresComparisonReports, "protocol interop commands should require comparison reports");
+    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_PROTOCOL_VECTOR_ROOT", StringComparison.Ordinal)), "protocol interop commands should mention vector root variable");
+}
+
+static void SigtranProtocolInteropRunReportIdentifiesPassingEvidence()
+{
+    SigtranProtocolInteropVector vector = SigtranProtocolInteropVectorCatalog.GetVectors()[0];
+    SigtranProtocolInteropRunReport report = new(
+        vector,
+        CreateCompleteProtocolInteropManifest(),
+        SigtranProtocolInteropRunStatus.Passed,
+        new DateTimeOffset(2026, 6, 19, 8, 0, 0, TimeSpan.Zero),
+        new DateTimeOffset(2026, 6, 19, 8, 30, 0, TimeSpan.Zero));
+
+    Assert(report.HasPassingEvidence, "protocol interop run report should have passing evidence");
+}
+
+static void SigtranProtocolInteropEvidenceRegistryStartsEmpty()
+{
+    SigtranProtocolInteropEvidenceRegistry registry = SigtranProtocolInteropEvidence.CreateCurrentRegistry();
+
+    AssertEqual(0, registry.Snapshot().Count, "protocol interop evidence count");
+    Assert(!registry.HasCompletePassingEvidence, "protocol interop current evidence should not be complete");
+}
+
+static void SigtranProtocolInteropReadinessSeparatesFoundationFromEvidence()
+{
+    SigtranProtocolInteropReadinessReport report = SigtranProtocolInteropReadiness.GetReport();
+
+    Assert(report.FoundationReady, "protocol interop foundation should be ready");
+    Assert(!report.HasCompletePassingEvidence, "protocol interop evidence should not be complete");
+    Assert(!report.Verified, "protocol interop should not be verified without complete evidence");
+}
+
+static void SigtranProtocolInteropStatusSummarizesVectorFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranProtocolInteropStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranProtocolInteropStatus.CompletedUnitCount, "protocol interop completed unit count");
+    AssertEqual(10, capabilities.Count, "protocol interop capability count");
+    Assert(capabilities.Contains("protocol-ci-profile"), "protocol interop status should include CI profile");
+    Assert(SigtranProtocolInteropStatus.FoundationReady, SigtranProtocolInteropStatus.Describe());
+    Assert(!SigtranProtocolInteropStatus.Verified, SigtranProtocolInteropStatus.Describe());
+}
+
+static SigtranProtocolInteropArtifactManifest CreateCompleteProtocolInteropManifest()
+{
+    SigtranProtocolInteropArtifactManifest manifest = new();
+    manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.ReferenceVector, "artifacts/protocol-vectors/reference.ber"));
+    manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.SdkVector, "artifacts/protocol-vectors/sdk.ber"));
+    manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.ComparisonReport, "artifacts/protocol-vectors/comparison.md"));
     return manifest;
 }
 

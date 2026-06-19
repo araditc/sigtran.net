@@ -171,6 +171,14 @@ Status: Phase 17 is foundation-ready for native SCTP lab scenario catalog, artif
 
 Status: Phase 18 is foundation-ready for OpenSS7/IPSS7 interoperability execution. Verification remains blocked until real OpenSS7/IPSS7 packet captures, SDK traces, peer configuration, peer logs, and comparison reports are captured and promoted.
 
+## Phase 19 - SCCP TCAP MAP Interop Vectors
+
+- Add SCCP, TCAP, and MAP SMS protocol vector catalog, external references, artifact manifest, comparison rules, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
+- Keep vector foundation readiness separate from verified higher-layer protocol evidence.
+- Make required reference vectors, SDK vectors, and comparison reports explicit before commercial SCCP, TCAP, or MAP SMS interoperability claims.
+
+Status: Phase 19 is foundation-ready for SCCP, TCAP, and MAP SMS protocol interoperability vectors. Verification remains blocked until real external reference vectors, SDK-generated vectors, and reviewed comparison reports are captured and promoted for every required vector.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
