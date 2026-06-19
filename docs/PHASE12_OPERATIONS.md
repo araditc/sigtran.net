@@ -21,3 +21,7 @@ Phase 12 adds production operations and support foundations for SIGTRAN.NET.
 `SigtranIncidentResponse.GetTargets()` defines operational severity targets.
 
 Critical incidents should be acknowledged within 15 minutes and updated within 30 minutes. Lower severities have longer response windows.
+
+## Health Checks
+
+`SigtranHealthChecks.GetDefinitions()` defines operational health checks for transport, M3UA session, routing, interoperability evidence, and release readiness.

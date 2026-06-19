@@ -63,6 +63,7 @@ Run("SIGTRAN phase 11 status summarizes developer experience foundation", Sigtra
 Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
 Run("SIGTRAN runbook catalog exposes operational recovery paths", SigtranRunbookCatalogExposesOperationalRecoveryPaths);
 Run("SIGTRAN incident response targets define severity timing", SigtranIncidentResponseTargetsDefineSeverityTiming);
+Run("SIGTRAN health check matrix covers transport protocol evidence and release", SigtranHealthCheckMatrixCoversTransportProtocolEvidenceAndRelease);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -858,6 +859,17 @@ static void SigtranIncidentResponseTargetsDefineSeverityTiming()
 
     AssertEqual(TimeSpan.FromMinutes(15), critical.AcknowledgeWithin, "critical incident acknowledgement");
     Assert(critical.UpdateWithin < low.UpdateWithin, "critical incidents should update faster than low incidents");
+}
+
+static void SigtranHealthCheckMatrixCoversTransportProtocolEvidenceAndRelease()
+{
+    IReadOnlyList<SigtranHealthCheckDefinition> checks = SigtranHealthChecks.GetDefinitions();
+
+    AssertEqual(5, checks.Count, "health check count");
+    Assert(checks.Any(static check => check.Area == SigtranHealthCheckArea.Transport), "health checks should include transport");
+    Assert(checks.Any(static check => check.Area == SigtranHealthCheckArea.M3uaSession), "health checks should include M3UA session");
+    Assert(checks.Any(static check => check.Area == SigtranHealthCheckArea.Evidence), "health checks should include evidence");
+    Assert(checks.Any(static check => check.Area == SigtranHealthCheckArea.Release), "health checks should include release");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
