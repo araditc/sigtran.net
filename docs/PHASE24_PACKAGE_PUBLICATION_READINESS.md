@@ -43,3 +43,13 @@ The layout contract gives release gates a deterministic way to find package arti
 - `Publish`, which contains the guarded `dotnet nuget push` command and requires a NuGet API key.
 
 This keeps release rehearsals safe while still documenting the exact publish command used after all gates pass.
+
+## Unit 5 - Publication Credential Policy
+
+`SigtranPublicationCredentialPolicy` makes publication secrets explicit:
+
+- `NUGET_API_KEY`
+- `SIGNING_CERTIFICATE`
+- `SIGNING_CERTIFICATE_PASSWORD`
+
+Publication remains blocked unless these secret names are present in the release environment and the upstream evidence gates pass.

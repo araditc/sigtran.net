@@ -177,6 +177,7 @@ Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionP
 Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadataContractMatchesProjectFile);
 Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExposesNupkgAndSymbols);
 Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPublishPlansSeparateDryRunAndPublish);
+Run("SIGTRAN publication credential policy requires commercial secrets", SigtranPublicationCredentialPolicyRequiresCommercialSecrets);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2188,6 +2189,18 @@ static void SigtranNuGetPublishPlansSeparateDryRunAndPublish()
     Assert(publish.IsPublishCapable, "publish plan should include NuGet push");
     Assert(publish.RequiresApiKey, "publish plan should require API key");
     AssertEqual(dryRun.Source, publish.Source, "NuGet source should match between dry-run and publish");
+}
+
+static void SigtranPublicationCredentialPolicyRequiresCommercialSecrets()
+{
+    SigtranPublicationCredentialPolicy policy = SigtranPublicationCredentials.CreateDefaultPolicy();
+    HashSet<string> available = ["NUGET_API_KEY"];
+    IReadOnlyList<string> missing = policy.GetMissingSecrets(available);
+
+    Assert(policy.RequiresCommercialSecrets, "publication credential policy should require commercial secrets");
+    AssertEqual(3, policy.Credentials.Count, "publication credential count");
+    Assert(missing.Contains("SIGNING_CERTIFICATE"), "credential policy should require signing certificate");
+    Assert(missing.Contains("SIGNING_CERTIFICATE_PASSWORD"), "credential policy should require signing certificate password");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
