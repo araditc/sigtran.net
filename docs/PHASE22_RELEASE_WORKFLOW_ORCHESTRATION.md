@@ -70,3 +70,9 @@ The guard blocks accidental publication unless publishing is explicitly requeste
 Stage 23 Unit 5 adds `SigtranReleaseWorkflowArtifacts`.
 
 The release workflow now has a contract for retaining NuGet packages, symbol packages, supply-chain artifacts, and commercial evidence artifacts with audit-friendly retention periods.
+
+## Stage 23 Unit 6 - Workflow Permissions
+
+Stage 23 Unit 6 adds `SigtranReleaseWorkflowPermissions`.
+
+The default permission set keeps repository contents read-only, allows OIDC token issuance for provenance workflows, and keeps package permissions disabled because NuGet publishing uses the explicit NuGet API key secret.

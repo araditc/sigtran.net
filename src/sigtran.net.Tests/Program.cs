@@ -168,6 +168,7 @@ Run("SIGTRAN release workflow validation accepts concrete workflow YAML", Sigtra
 Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleasePublishGuardBlocksAccidentalPublication);
 Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
+Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2073,6 +2074,16 @@ static void SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence()
     Assert(rules.Any(static rule => rule.Name == "supply-chain"), "release workflow should retain supply-chain artifacts");
     Assert(SigtranReleaseWorkflowArtifacts.RetainsCommercialEvidence(), "release workflow should retain commercial evidence");
     Assert(rules.All(static rule => rule.RetentionDays >= 90), "release workflow artifacts should have audit-friendly retention");
+}
+
+static void SigtranReleaseWorkflowPermissionsUseLeastPrivilege()
+{
+    SigtranReleaseWorkflowPermissionSet permissions = SigtranReleaseWorkflowPermissions.CreateDefault();
+    string yaml = File.ReadAllText(Path.Combine(".github", "workflows", "release.yml"));
+
+    Assert(permissions.IsLeastPrivilege, "release workflow permissions should be least privilege");
+    Assert(yaml.Contains("contents: read", StringComparison.Ordinal), "release workflow YAML should keep contents read-only");
+    Assert(yaml.Contains("id-token: write", StringComparison.Ordinal), "release workflow YAML should allow OIDC token");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
