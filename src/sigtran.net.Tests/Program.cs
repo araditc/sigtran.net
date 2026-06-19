@@ -12,6 +12,7 @@ using sigtran.net.Core.Utilities;
 
 Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
 Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
+Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVectorsIncludeM3uaAndMapPayloads);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -151,6 +152,17 @@ static void SigtranConformanceRegistryStoresVectorsDeterministically()
     Assert(vector.Describe().Contains("bytes=1", StringComparison.Ordinal), vector.Describe());
     AssertEqual("m3ua/aspup", registry.Snapshot()[0].Id, "conformance registry deterministic order");
     AssertThrows<InvalidOperationException>(() => registry.Add(vector));
+}
+
+static void SigtranBuiltInVectorsIncludeM3uaAndMapPayloads()
+{
+    SigtranConformanceRegistry registry = SigtranBuiltInVectors.CreateRegistry();
+    AssertEqual(2, registry.Snapshot().Count, "built-in vector count");
+    Assert(registry.TryGet("m3ua/aspsm/asp-up-basic", out SigtranConformanceVector? aspUp), "M3UA ASP Up vector should exist");
+    AssertEqual("M3UA", aspUp!.Protocol, "M3UA vector protocol");
+    Assert(aspUp.Payload.Length >= 8, "M3UA vector should contain a full message header");
+    Assert(registry.TryGet("map/sms/mo-forward-sm-basic", out SigtranConformanceVector? mo), "MAP MO vector should exist");
+    AssertEqual("MAP", mo!.Protocol, "MAP vector protocol");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

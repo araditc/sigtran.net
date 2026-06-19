@@ -35,3 +35,5 @@ registry.Add(new SigtranConformanceVector(
 ```
 
 Registries preserve deterministic snapshot ordering so vector inventories can be compared in CI and release reviews.
+
+`SigtranBuiltInVectors.CreateRegistry()` returns SDK-generated baseline vectors for current protocol foundations, including M3UA ASP Up and MAP MO-ForwardSM payloads.
