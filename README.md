@@ -45,6 +45,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Compliance and audit | Phase 13 foundation-ready: compliance capability catalog, audit event catalog, evidence retention policy, license compliance policy, data handling classification, export-control policy, readiness report, compliance CI profile, commercial compliance gate, and status report added; enterprise compliance claims still require commercial readiness and adopter-specific legal/regulatory review |
 | Performance and capacity | Phase 14 foundation-ready: performance capability catalog, benchmark scenario catalog, capacity profile, throughput targets, latency budgets, load-test plan, resource budget, readiness report, performance CI profile, and status report added; production performance claims still require representative benchmark evidence |
 | API lifecycle | Phase 15 foundation-ready: API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, readiness report, API lifecycle CI profile, and status report added; stable API lifecycle claims still require commercial readiness and validation evidence |
+| Configuration readiness | Phase 16 foundation-ready: configuration schema, validation helpers, environment matrix, secret policy, transport configuration, routing configuration, readiness report, configuration CI profile, commercial configuration gate, and status report added; production configuration still requires commercial readiness and deployment review |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -153,6 +154,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 14 Summary](docs/PHASE14_SUMMARY.md)
 - [Phase 15 API Lifecycle](docs/PHASE15_API_LIFECYCLE.md)
 - [Phase 15 Summary](docs/PHASE15_SUMMARY.md)
+- [Phase 16 Configuration](docs/PHASE16_CONFIGURATION.md)
+- [Phase 16 Summary](docs/PHASE16_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -181,6 +184,7 @@ The roadmap is intentionally conservative:
 13. Complete compliance and audit readiness foundations.
 14. Complete performance, capacity, and benchmark readiness foundations.
 15. Complete API stability, deprecation, and migration readiness foundations.
+16. Complete configuration, policy, and environment readiness foundations.
 
 ## License
 

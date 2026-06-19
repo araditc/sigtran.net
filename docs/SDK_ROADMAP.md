@@ -147,6 +147,14 @@ Status: Phase 14 is foundation-ready for performance capability catalog, benchma
 
 Status: Phase 15 is foundation-ready for API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, API lifecycle readiness, API lifecycle CI profile, and phase documentation. Stable API lifecycle claims remain blocked until wider commercial readiness is complete and protocol surfaces have the required validation evidence.
 
+## Phase 16 - Configuration Policy And Environment Readiness
+
+- Add configuration schema, validation, environment matrix, secret policy, transport configuration, routing configuration, readiness, and CI foundations.
+- Keep configuration foundation readiness separate from production configuration claims.
+- Make production secret, routing, transport, and evidence expectations visible to enterprise adopters.
+
+Status: Phase 16 is foundation-ready for configuration schema, validation helpers, environment matrix, secret policy, transport configuration, routing configuration, configuration readiness, configuration CI profile, commercial configuration gate, and phase documentation. Production configuration claims remain blocked until wider commercial readiness is complete and deployment-specific review is performed.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

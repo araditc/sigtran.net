@@ -100,6 +100,16 @@ Run("SIGTRAN public API baseline covers known surfaces", SigtranPublicApiBaselin
 Run("SIGTRAN API lifecycle readiness separates foundation from stable claims", SigtranApiLifecycleReadinessSeparatesFoundationFromStableClaims);
 Run("SIGTRAN API lifecycle CI profile requires public API diff review", SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview);
 Run("SIGTRAN phase 15 status summarizes API lifecycle foundation", SigtranPhase15StatusSummarizesApiLifecycleFoundation);
+Run("SIGTRAN configuration schema exposes required transport routing and security keys", SigtranConfigurationSchemaExposesRequiredTransportRoutingAndSecurityKeys);
+Run("SIGTRAN configuration validation reports missing required keys", SigtranConfigurationValidationReportsMissingRequiredKeys);
+Run("SIGTRAN environment matrix separates development lab and production requirements", SigtranEnvironmentMatrixSeparatesDevelopmentLabAndProductionRequirements);
+Run("SIGTRAN secret policy rejects production plaintext secrets", SigtranSecretPolicyRejectsProductionPlaintextSecrets);
+Run("SIGTRAN transport configuration requires PPID streams and reconnect policy", SigtranTransportConfigurationRequiresPpidStreamsAndReconnectPolicy);
+Run("SIGTRAN routing configuration requires route validation and ambiguity rejection", SigtranRoutingConfigurationRequiresRouteValidationAndAmbiguityRejection);
+Run("SIGTRAN configuration readiness separates foundation from commercial claims", SigtranConfigurationReadinessSeparatesFoundationFromCommercialClaims);
+Run("SIGTRAN configuration CI profile rejects production plaintext secrets", SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets);
+Run("SIGTRAN configuration commercial gate waits for commercial readiness", SigtranConfigurationCommercialGateWaitsForCommercialReadiness);
+Run("SIGTRAN phase 16 status summarizes configuration foundation", SigtranPhase16StatusSummarizesConfigurationFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1257,6 +1267,113 @@ static void SigtranPhase15StatusSummarizesApiLifecycleFoundation()
     Assert(capabilities.Contains("api-lifecycle-ci-profile"), "Phase 15 should include API lifecycle CI profile");
     Assert(SigtranPhase15Status.FoundationReady, SigtranPhase15Status.Describe());
     Assert(!SigtranPhase15Status.StableApiLifecycleReady, SigtranPhase15Status.Describe());
+}
+
+static void SigtranConfigurationSchemaExposesRequiredTransportRoutingAndSecurityKeys()
+{
+    IReadOnlyList<SigtranConfigurationSchemaField> fields = SigtranConfigurationSchema.GetFields();
+
+    AssertEqual(7, fields.Count, "configuration schema field count");
+    Assert(fields.Any(field => field.Area == SigtranConfigurationSchemaArea.Transport && field.Required), "transport required fields should be present");
+    Assert(fields.Any(field => field.Key == "sigtran.m3ua.routingContexts" && field.Required), "routing context key should be required");
+    Assert(fields.Any(field => field.Key == "sigtran.security.secretProvider" && field.Required), "secret provider key should be required");
+}
+
+static void SigtranConfigurationValidationReportsMissingRequiredKeys()
+{
+    SigtranConfigurationValidationResult invalid = SigtranConfigurationValidation.ValidateRequiredKeys("production", ["sigtran.transport.kind"]);
+    string[] requiredKeys = SigtranConfigurationSchema.GetFields()
+        .Where(field => field.Required)
+        .Select(field => field.Key)
+        .ToArray();
+    SigtranConfigurationValidationResult valid = SigtranConfigurationValidation.ValidateRequiredKeys("production", requiredKeys);
+
+    Assert(!invalid.IsValid, "partial configuration should be invalid");
+    Assert(invalid.MissingRequiredKeys.Contains("sigtran.security.secretProvider"), "missing secret provider should be reported");
+    Assert(valid.IsValid, "complete required configuration should be valid");
+}
+
+static void SigtranEnvironmentMatrixSeparatesDevelopmentLabAndProductionRequirements()
+{
+    IReadOnlyList<SigtranEnvironmentMatrixEntry> entries = SigtranEnvironmentMatrix.GetEntries();
+
+    AssertEqual(3, entries.Count, "environment matrix count");
+    Assert(entries.Any(entry => entry.Environment == SigtranRuntimeEnvironment.Development && !entry.RequiresNativeSctp), "development should not require native SCTP");
+    Assert(entries.Any(entry => entry.Environment == SigtranRuntimeEnvironment.InteropLab && entry.RequiresEvidenceRoot), "interop lab should require evidence root");
+    Assert(entries.Any(entry => entry.Environment == SigtranRuntimeEnvironment.Production && entry.RequiresExternalSecretProvider), "production should require external secret provider");
+}
+
+static void SigtranSecretPolicyRejectsProductionPlaintextSecrets()
+{
+    SigtranSecretPolicy policy = SigtranSecretPolicies.CreateDefault();
+
+    Assert(policy.AllowsPlainTextInDevelopment, "development plaintext should be allowed for local workflows");
+    Assert(!policy.AllowsPlainTextInProduction, "production plaintext secrets should be rejected");
+    Assert(policy.RequiresExternalProviderInProduction, "production should require external secret provider");
+    Assert(policy.RequiresRotationPlan, "secret policy should require rotation plan");
+    Assert(policy.IsProductionSafe, "secret policy should be production safe");
+}
+
+static void SigtranTransportConfigurationRequiresPpidStreamsAndReconnectPolicy()
+{
+    SigtranTransportConfiguration configuration = SigtranTransportConfigurations.CreateNativeSctpDefault();
+
+    AssertEqual("native-sctp", configuration.Kind, "transport configuration kind");
+    Assert(configuration.RequiresPpid, "transport configuration should require PPID");
+    Assert(configuration.RequiresStreamPolicy, "transport configuration should require stream policy");
+    Assert(configuration.RequiresReconnectPolicy, "transport configuration should require reconnect policy");
+    Assert(configuration.IsSigtranReady, "transport configuration should be SIGTRAN-ready");
+}
+
+static void SigtranRoutingConfigurationRequiresRouteValidationAndAmbiguityRejection()
+{
+    SigtranRoutingConfiguration configuration = SigtranRoutingConfigurations.CreateEnterpriseDefault();
+
+    Assert(configuration.RequiresRoutingContext, "routing configuration should require Routing Context");
+    Assert(configuration.RequiresNetworkAppearancePolicy, "routing configuration should require Network Appearance policy");
+    Assert(configuration.RequiresRouteTableValidation, "routing configuration should require route table validation");
+    Assert(configuration.RequiresAmbiguityRejection, "routing configuration should reject ambiguity");
+    Assert(configuration.IsEnterpriseReady, "routing configuration should be enterprise-ready");
+}
+
+static void SigtranConfigurationReadinessSeparatesFoundationFromCommercialClaims()
+{
+    SigtranConfigurationReadinessReport report = SigtranConfigurationReadiness.GetReport();
+
+    Assert(report.FoundationReady, "configuration foundation should be ready");
+    Assert(!report.CommercialReady, "configuration readiness should still depend on commercial gates");
+    Assert(!report.ProductionConfigurationReady, "production configuration should not be claimed before commercial readiness");
+}
+
+static void SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets()
+{
+    SigtranConfigurationCiProfile profile = SigtranConfigurationCi.CreateDefault();
+
+    AssertEqual("configuration", profile.Name, "configuration CI profile name");
+    Assert(profile.Commands.Count >= 3, "configuration CI should reuse official verification commands");
+    Assert(profile.RequiresConfigurationReadiness, "configuration CI should require configuration readiness");
+    Assert(profile.RejectsProductionPlainTextSecrets, "configuration CI should reject production plaintext secrets");
+}
+
+static void SigtranConfigurationCommercialGateWaitsForCommercialReadiness()
+{
+    SigtranConfigurationCommercialGateResult result = SigtranConfigurationCommercialGate.Evaluate();
+
+    Assert(result.ConfigurationFoundationReady, result.Describe());
+    Assert(result.ProductionSecretsSafe, result.Describe());
+    Assert(!result.CommercialReady, result.Describe());
+    Assert(!result.CanClaimProductionConfiguration, result.Describe());
+}
+
+static void SigtranPhase16StatusSummarizesConfigurationFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase16Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase16Status.CompletedUnitCount, "Phase 16 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 16 capability count");
+    Assert(capabilities.Contains("configuration-ci-profile"), "Phase 16 should include configuration CI profile");
+    Assert(SigtranPhase16Status.FoundationReady, SigtranPhase16Status.Describe());
+    Assert(!SigtranPhase16Status.ProductionConfigurationReady, SigtranPhase16Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
