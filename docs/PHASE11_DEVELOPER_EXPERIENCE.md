@@ -31,3 +31,13 @@ Phase 11 makes the SDK easier to adopt by documenting quickstarts, samples, conf
 | `local-tcp-m3ua` | Local development |
 | `m3ua-asp-to-sg` | Interoperability lab |
 | `sccp-map-sms` | Production-like validation |
+
+## Configuration Profiles
+
+`SigtranConfigurationProfiles.GetProfiles()` exposes three developer-facing profiles:
+
+| Profile | Transport | External evidence |
+| --- | --- | --- |
+| Development | TCP adapter | Not required |
+| Interop lab | Native SCTP | Required |
+| Production | Native SCTP | Required |

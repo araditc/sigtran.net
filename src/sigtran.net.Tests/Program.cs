@@ -53,6 +53,7 @@ Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranP
 Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDeveloperExperienceCatalogExposesAdoptionAreas);
 Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuickstartExposesOrderedAspToSgSteps);
 Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemplatesMapSampleIdsToEnvironments);
+Run("SIGTRAN configuration profiles separate development lab and production", SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -741,6 +742,20 @@ static void SigtranSampleTemplatesMapSampleIdsToEnvironments()
     {
         Assert(SigtranSampleCatalog.TryGet(template.SampleId, out _), $"sample template '{template.SampleId}' should reference catalog sample");
     }
+}
+
+static void SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction()
+{
+    IReadOnlyList<SigtranConfigurationProfile> profiles = SigtranConfigurationProfiles.GetProfiles();
+
+    AssertEqual(3, profiles.Count, "configuration profile count");
+    SigtranConfigurationProfile development = profiles.Single(static profile => profile.Kind == SigtranConfigurationProfileKind.Development);
+    SigtranConfigurationProfile production = profiles.Single(static profile => profile.Kind == SigtranConfigurationProfileKind.Production);
+
+    AssertEqual("tcp-adapter", development.Transport, "development profile transport");
+    Assert(!development.RequiresExternalEvidence, "development profile should not require external evidence");
+    AssertEqual("native-sctp", production.Transport, "production profile transport");
+    Assert(production.RequiresExternalEvidence, "production profile should require external evidence");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
