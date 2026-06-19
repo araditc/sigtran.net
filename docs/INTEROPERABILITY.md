@@ -105,3 +105,5 @@ bool productionReady = report.IsProductionReady;
 The foundation gate is complete when trace formatting, conformance vectors, built-in vectors, simulator scripts, MAP SMS flows, transport samples, sample catalog, and CI profile are all present.
 
 Production readiness remains false until external interoperability lab evidence is captured against real peer stacks and packet traces.
+
+Phase 7 adds `SigtranInteropEvidenceRegistry` so those lab artifacts can be tracked as stable release evidence instead of free-form notes.

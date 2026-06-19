@@ -22,6 +22,7 @@ Run("SIGTRAN interoperability readiness reports foundation status", SigtranInter
 Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSummarizesCompletedTooling);
 Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
 Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNativeSctpSupportMatrixReportsVerificationStatus);
+Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEvidenceRegistryTracksLabResults);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -291,6 +292,17 @@ static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
     AssertEqual(SigtranNativeSctpSupportStatus.VerificationRequired, matrix[0].Status, "native SCTP Linux status");
     AssertEqual(SigtranNativeSctpSupportStatus.ContractOnly, matrix[1].Status, "native SCTP Windows status");
     Assert(!SigtranNativeSctpSupport.IsProductionVerified(), "native SCTP should not be production verified yet");
+}
+
+static void SigtranInteropEvidenceRegistryTracksLabResults()
+{
+    SigtranInteropEvidenceRegistry registry = new();
+    registry.Add(new SigtranInteropEvidenceItem("lab/linux/m3ua-asp", "openss7", "M3UA ASP to SG", "traces/m3ua-asp.pcapng", SigtranInteropEvidenceResult.Passed));
+
+    AssertEqual(1, registry.Snapshot().Count, "interop evidence count");
+    Assert(registry.HasPassingEvidence(), "interop evidence should pass with one passing item");
+    AssertThrows<InvalidOperationException>(() => registry.Add(registry.Snapshot()[0]));
+    Assert(!SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(), "current interop evidence should be empty until real lab artifacts are added");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

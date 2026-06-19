@@ -27,3 +27,19 @@ Commercial readiness remains blocked until native SCTP verification, external in
 | macOS | Contract only |
 
 Linux is the target for native SCTP lab verification. Windows and macOS remain supported through transport contracts and development adapters until a production provider is selected and verified.
+
+## External Interoperability Evidence
+
+`SigtranInteropEvidenceRegistry` records evidence from real peer stacks and captured traces.
+
+```csharp
+SigtranInteropEvidenceRegistry registry = new();
+registry.Add(new SigtranInteropEvidenceItem(
+    "lab/linux/m3ua-asp",
+    "openss7",
+    "M3UA ASP to SG",
+    "traces/m3ua-asp.pcapng",
+    SigtranInteropEvidenceResult.Passed));
+```
+
+The current registry is intentionally empty until real lab artifacts are added. Commercial readiness requires at least one passing external evidence item, and later release policies should require multiple peer stacks and scenarios.
