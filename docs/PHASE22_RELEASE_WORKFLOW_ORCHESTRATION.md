@@ -58,3 +58,9 @@ The validator checks that the concrete workflow YAML contains the release name, 
 Stage 23 Unit 3 connects the concrete workflow file contract to `SigtranReleaseWorkflowReadiness`.
 
 With the workflow file contract and YAML validation in place, release workflow orchestration foundation readiness can now be reported as ready. This does not mean the release can be commercially promoted; commercial evidence and supply-chain promotion gates still control that claim.
+
+## Stage 23 Unit 4 - Publish Guard
+
+Stage 23 Unit 4 adds `SigtranReleasePublishGuard`.
+
+The guard blocks accidental publication unless publishing is explicitly requested through manual dispatch, a version tag is present, and the NuGet API key is available.

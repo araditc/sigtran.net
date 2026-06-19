@@ -165,6 +165,8 @@ Run("SIGTRAN release workflow readiness reports concrete workflow file", Sigtran
 Run("SIGTRAN release workflow status summarizes orchestration foundation", SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation);
 Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
 Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
+Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleasePublishGuardBlocksAccidentalPublication);
+Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2032,6 +2034,33 @@ static void SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml()
 
     Assert(result.IsValid, result.Describe());
     AssertEqual(0, result.MissingItems.Count, "release workflow validation missing item count");
+}
+
+static void SigtranReleasePublishGuardBlocksAccidentalPublication()
+{
+    SigtranReleasePublishGuardResult result = SigtranReleasePublishGuard.Evaluate(new(
+        isManualDispatch: false,
+        publishRequested: false,
+        isVersionTag: false,
+        hasNuGetApiKey: false));
+
+    Assert(!result.CanPublish, "publish guard should block accidental publication");
+    Assert(result.Reasons.Contains("publish-not-requested"), "publish guard should require explicit request");
+    Assert(result.Reasons.Contains("manual-dispatch-required"), "publish guard should require manual dispatch");
+    Assert(result.Reasons.Contains("version-tag-required"), "publish guard should require version tag");
+    Assert(result.Reasons.Contains("nuget-api-key-required"), "publish guard should require NuGet API key");
+}
+
+static void SigtranReleasePublishGuardAllowsIntentionalTaggedPublication()
+{
+    SigtranReleasePublishGuardResult result = SigtranReleasePublishGuard.Evaluate(new(
+        isManualDispatch: true,
+        publishRequested: true,
+        isVersionTag: true,
+        hasNuGetApiKey: true));
+
+    Assert(result.CanPublish, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "publish guard reason count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
