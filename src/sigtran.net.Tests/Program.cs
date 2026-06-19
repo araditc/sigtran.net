@@ -42,6 +42,7 @@ Run("SIGTRAN commercial readiness uses interoperability lab production gate", Si
 Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", SigtranPhase9StatusSummarizesInteropLabFoundation);
 Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
 Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
+Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -593,6 +594,17 @@ static void SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests()
     incomplete.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.NuGetPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.nupkg"));
     Assert(!incomplete.HasRequiredPackageArtifacts(), "release manifest should require symbol package");
     Assert(!incomplete.AllArtifactsHaveDigests(), "release manifest should require digests");
+}
+
+static void SigtranSbomPlanMarksCommercialReleaseRequirement()
+{
+    SigtranSbomPlan plan = SigtranSbom.CreateDefaultPlan();
+
+    AssertEqual(SigtranSbomFormat.SpdxJson, plan.Format, "SBOM format");
+    AssertEqual("Microsoft.Sbom.Tool", plan.ToolName, "SBOM tool");
+    Assert(plan.IsRequiredForCommercialRelease, "SBOM should be required for commercial release");
+    Assert(plan.OutputPath.EndsWith(".spdx.json", StringComparison.Ordinal), plan.OutputPath);
+    Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
