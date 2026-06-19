@@ -44,6 +44,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
 | Observability | Phase 7 profile added for commercial metrics, trace categories, and health signals |
 | Deployment profiles | Phase 7 profiles added for commercial Linux and local development use |
+| Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
 
 ## Requirements
 
@@ -127,6 +128,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Interoperability and Tooling](docs/INTEROPERABILITY.md)
 - [Phase 6 Summary](docs/PHASE6_SUMMARY.md)
 - [Phase 7 Commercialization](docs/PHASE7_COMMERCIALIZATION.md)
+- [Phase 7 Summary](docs/PHASE7_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)

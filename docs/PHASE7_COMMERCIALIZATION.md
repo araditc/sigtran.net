@@ -2,6 +2,8 @@
 
 Phase 7 is the final roadmap phase for turning the SDK foundation into a commercially usable release.
 
+See [Phase 7 Summary](PHASE7_SUMMARY.md) for the completed unit inventory and remaining external production gates.
+
 ## Commercial Readiness Gate
 
 `SigtranCommercialReadiness.GetReport()` separates internal release readiness from commercial production readiness.

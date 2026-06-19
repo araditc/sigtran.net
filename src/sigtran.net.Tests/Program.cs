@@ -29,6 +29,7 @@ Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyRep
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
 Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
+Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -375,6 +376,18 @@ static void SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates()
     Assert(commercial.RequiresExternalEvidence, "commercial deployment should require external evidence");
     Assert(!local.RequiresNativeSctp, "local development should not require native SCTP");
     Assert(local.Describe().Contains("security=True", StringComparison.Ordinal), local.Describe());
+}
+
+static void SigtranPhase7StatusSummarizesCommercializationFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase7Status.GetCompletedCapabilities();
+
+    AssertEqual("Phase 7 - Commercialization and Release Hardening", SigtranPhase7Status.PhaseLabel, "Phase 7 label");
+    AssertEqual(10, SigtranPhase7Status.CompletedUnitCount, "Phase 7 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 7 capability count");
+    Assert(capabilities.Contains("deployment-profiles"), "Phase 7 should include deployment profiles");
+    Assert(SigtranPhase7Status.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranPhase7Status.Describe());
+    Assert(SigtranPhase7Status.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranPhase7Status.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
