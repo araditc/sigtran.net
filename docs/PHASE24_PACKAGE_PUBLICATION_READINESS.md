@@ -84,3 +84,16 @@ The manifest is the handoff point from local packaging to signing, SBOM, provena
 - Commercial evidence readiness.
 
 The manifest remains incomplete unless integrity, supply-chain, and commercial evidence are all present.
+
+## Unit 9 - Publication Gate
+
+`SigtranPublicationGate` aggregates publication readiness:
+
+- Publish guard result.
+- Channel policy decision.
+- Required publication secrets.
+- Publication evidence manifest.
+- NuGet metadata readiness.
+- Package layout readiness.
+
+The gate blocks publication until every publication, evidence, credential, and package contract is satisfied.

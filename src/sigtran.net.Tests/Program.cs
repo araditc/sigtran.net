@@ -181,6 +181,8 @@ Run("SIGTRAN publication credential policy requires commercial secrets", Sigtran
 Run("SIGTRAN publication channel policy separates prerelease and stable", SigtranPublicationChannelPolicySeparatesPrereleaseAndStable);
 Run("SIGTRAN package integrity manifest requires package digests", SigtranPackageIntegrityManifestRequiresPackageDigests);
 Run("SIGTRAN publication evidence manifest requires integrity and release evidence", SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidence);
+Run("SIGTRAN publication gate blocks incomplete publish readiness", SigtranPublicationGateBlocksIncompletePublishReadiness);
+Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublicationGateAllowsCompletePublishReadiness);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2246,6 +2248,42 @@ static void SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidenc
     Assert(!incomplete.IsComplete, "publication evidence should require supply-chain evidence");
     Assert(complete.IsComplete, "publication evidence should be complete with integrity and release evidence");
     AssertEqual(SigtranPublishChannelKind.Stable, complete.Channel, "publication evidence channel");
+}
+
+static void SigtranPublicationGateBlocksIncompletePublishReadiness()
+{
+    SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
+    SigtranPublicationGateResult result = SigtranPublicationGate.Evaluate(
+        SigtranReleasePublishGuard.Evaluate(new(false, false, false, false)),
+        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", commercialReadiness: false),
+        SigtranPublicationCredentials.CreateDefaultPolicy(),
+        new HashSet<string>(),
+        new SigtranPublicationEvidenceManifest("1.0.0-alpha.1", SigtranPublishChannelKind.Stable, true, false, false),
+        metadataReady: false,
+        layoutReady: false);
+
+    Assert(!result.CanPublish, "publication gate should block incomplete readiness");
+    Assert(result.Reasons.Contains("publish-not-requested"), "publication gate should include publish guard reasons");
+    Assert(result.Reasons.Contains("publication-evidence-required"), "publication gate should require publication evidence");
+    Assert(result.Reasons.Contains("nuget-metadata-required"), "publication gate should require metadata");
+    Assert(result.Reasons.Any(static reason => reason.StartsWith("missing-secret:", StringComparison.Ordinal)), "publication gate should require secrets");
+}
+
+static void SigtranPublicationGateAllowsCompletePublishReadiness()
+{
+    SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
+    HashSet<string> secrets = ["NUGET_API_KEY", "SIGNING_CERTIFICATE", "SIGNING_CERTIFICATE_PASSWORD"];
+    SigtranPublicationGateResult result = SigtranPublicationGate.Evaluate(
+        SigtranReleasePublishGuard.Evaluate(new(true, true, true, true)),
+        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", commercialReadiness: true),
+        SigtranPublicationCredentials.CreateDefaultPolicy(),
+        secrets,
+        SigtranPublicationEvidenceManifest.CreateCompleteSample(),
+        metadataReady: true,
+        layoutReady: true);
+
+    Assert(result.CanPublish, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "publication gate reason count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
