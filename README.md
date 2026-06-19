@@ -46,6 +46,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Deployment profiles | Phase 7 profiles added for commercial Linux and local development use |
 | Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
 | Native SCTP implementation | Phase 8 foundation-ready: Linux SCTP probe, socket factory, endpoint planner, native adapter, connector, listener, lab profile, readiness report, and commercial gate integration; production readiness still requires Linux SCTP lab verification |
+| Interoperability lab | Phase 9 started: lab scenario catalog added for Linux native SCTP loopback, OpenSS7/IPSS7 M3UA ASP-to-SG, and MAP SMS trace comparison |
 
 ## Requirements
 
@@ -132,6 +133,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 7 Summary](docs/PHASE7_SUMMARY.md)
 - [Phase 8 Native SCTP](docs/PHASE8_NATIVE_SCTP.md)
 - [Phase 8 Summary](docs/PHASE8_SUMMARY.md)
+- [Phase 9 Interoperability Lab](docs/PHASE9_INTEROP_LAB.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -153,6 +155,7 @@ The roadmap is intentionally conservative:
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
 8. Complete Linux native SCTP transport and verification.
+9. Capture real interoperability lab evidence and promote passing artifacts into commercial readiness.
 
 ## License
 

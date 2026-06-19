@@ -89,6 +89,15 @@ Status: SDK foundation is complete for commercial readiness gates, native SCTP s
 
 Status: SDK foundation is complete for Linux native SCTP platform probing, socket creation, endpoint planning, socket adaptation, client connect, server listen/accept, lab profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until Linux SCTP lab verification passes with real kernel SCTP support and peer traffic.
 
+## Phase 9 - Real Interoperability Lab
+
+- Define required lab scenarios for Linux native SCTP, OpenSS7/IPSS7 M3UA ASP-to-SG, and MAP SMS trace comparison.
+- Capture PCAPs, SDK traces, peer configuration, peer logs, and comparison reports.
+- Convert passing lab runs into release evidence that can unlock commercial readiness gates.
+- Keep evidence pending until artifacts are real and reviewable.
+
+Status: Phase 9 has started with the official interoperability lab scenario catalog.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

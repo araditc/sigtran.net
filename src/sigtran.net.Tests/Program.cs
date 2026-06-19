@@ -30,6 +30,7 @@ Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPol
 Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
+Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -398,6 +399,18 @@ static void SigtranPhase7StatusSummarizesCommercializationFoundation()
     Assert(capabilities.Contains("deployment-profiles"), "Phase 7 should include deployment profiles");
     Assert(SigtranPhase7Status.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranPhase7Status.Describe());
     Assert(SigtranPhase7Status.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranPhase7Status.Describe());
+}
+
+static void SigtranInteropLabScenarioCatalogExposesRequiredScenarios()
+{
+    IReadOnlyList<SigtranInteropLabScenario> scenarios = SigtranInteropLabScenarios.GetScenarios();
+
+    AssertEqual(3, scenarios.Count, "interop lab scenario count");
+    AssertEqual("linux-native-sctp-loopback", scenarios[0].Id, "interop lab first scenario");
+    Assert(SigtranInteropLabScenarios.TryGet("OPENSS7-M3UA-ASP-TO-SG", out SigtranInteropLabScenario? openss7), "OpenSS7 lab scenario should exist");
+    AssertEqual(SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway, openss7!.Kind, "OpenSS7 lab scenario kind");
+    Assert(openss7.RequiredArtifacts.Contains("pcap"), "OpenSS7 lab scenario should require PCAP");
+    Assert(openss7.Describe().Contains("openss7-ipss7", StringComparison.Ordinal), openss7.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
