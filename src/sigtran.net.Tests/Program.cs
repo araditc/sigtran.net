@@ -80,6 +80,16 @@ Run("SIGTRAN compliance readiness separates foundation from commercial claims", 
 Run("SIGTRAN compliance CI profile requires compliance readiness", SigtranComplianceCiProfileRequiresComplianceReadiness);
 Run("SIGTRAN compliance commercial gate waits for commercial readiness", SigtranComplianceCommercialGateWaitsForCommercialReadiness);
 Run("SIGTRAN phase 13 status summarizes compliance foundation", SigtranPhase13StatusSummarizesComplianceFoundation);
+Run("SIGTRAN performance catalog exposes benchmark capacity and resource areas", SigtranPerformanceCatalogExposesBenchmarkCapacityAndResourceAreas);
+Run("SIGTRAN benchmark scenarios include local and peer benchmarks", SigtranBenchmarkScenariosIncludeLocalAndPeerBenchmarks);
+Run("SIGTRAN capacity profile describes enterprise load shape", SigtranCapacityProfileDescribesEnterpriseLoadShape);
+Run("SIGTRAN throughput targets require benchmark evidence", SigtranThroughputTargetsRequireBenchmarkEvidence);
+Run("SIGTRAN latency budgets define P95 and P99 bounds", SigtranLatencyBudgetsDefineP95AndP99Bounds);
+Run("SIGTRAN load test plan defines warmup sustained and peak stages", SigtranLoadTestPlanDefinesWarmupSustainedAndPeakStages);
+Run("SIGTRAN resource budget requires allocation tracking", SigtranResourceBudgetRequiresAllocationTracking);
+Run("SIGTRAN performance readiness separates foundation from benchmark evidence", SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence);
+Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformanceCiProfileKeepsBenchmarksOptIn);
+Run("SIGTRAN phase 14 status summarizes performance foundation", SigtranPhase14StatusSummarizesPerformanceFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1043,6 +1053,102 @@ static void SigtranPhase13StatusSummarizesComplianceFoundation()
     Assert(capabilities.Contains("compliance-ci-profile"), "Phase 13 should include compliance CI profile");
     Assert(SigtranPhase13Status.FoundationReady, SigtranPhase13Status.Describe());
     Assert(!SigtranPhase13Status.EnterpriseComplianceReady, SigtranPhase13Status.Describe());
+}
+
+static void SigtranPerformanceCatalogExposesBenchmarkCapacityAndResourceAreas()
+{
+    IReadOnlyList<SigtranPerformanceCapability> capabilities = SigtranPerformance.GetCapabilities();
+
+    AssertEqual(5, capabilities.Count, "performance capability count");
+    Assert(capabilities.Any(capability => capability.Area == SigtranPerformanceArea.Benchmarks), "performance catalog should include benchmarks");
+    Assert(capabilities.Any(capability => capability.Area == SigtranPerformanceArea.Resources), "performance catalog should include resources");
+}
+
+static void SigtranBenchmarkScenariosIncludeLocalAndPeerBenchmarks()
+{
+    IReadOnlyList<SigtranBenchmarkScenario> scenarios = SigtranBenchmarkScenarios.GetScenarios();
+
+    AssertEqual(5, scenarios.Count, "benchmark scenario count");
+    Assert(scenarios.Any(scenario => scenario.Id == "m3ua-data-decode" && !scenario.RequiresExternalPeer), "local decode benchmark should be available");
+    Assert(scenarios.Any(scenario => scenario.Id == "openss7-peer-throughput" && scenario.RequiresExternalPeer), "peer throughput benchmark should require external peer");
+}
+
+static void SigtranCapacityProfileDescribesEnterpriseLoadShape()
+{
+    SigtranCapacityProfile profile = SigtranCapacityProfiles.CreateEnterpriseDefault();
+
+    AssertEqual("enterprise-default", profile.Name, "capacity profile name");
+    Assert(profile.MaxAssociations >= 2, "enterprise capacity should include multiple associations");
+    Assert(profile.MaxOutboundStreams >= 8, "enterprise capacity should include multiple streams");
+    Assert(profile.IsEnterpriseSized, "capacity profile should be enterprise-sized");
+}
+
+static void SigtranThroughputTargetsRequireBenchmarkEvidence()
+{
+    IReadOnlyList<SigtranThroughputTarget> targets = SigtranThroughputTargets.GetTargets();
+
+    AssertEqual(5, targets.Count, "throughput target count");
+    Assert(targets.All(target => target.RequiresBenchmarkEvidence), "all throughput targets should require evidence");
+    Assert(targets.Any(target => target.Surface == SigtranThroughputSurface.M3uaData && target.MinimumMessagesPerSecond >= 50000), "M3UA DATA target should be high-throughput");
+}
+
+static void SigtranLatencyBudgetsDefineP95AndP99Bounds()
+{
+    IReadOnlyList<SigtranLatencyBudget> budgets = SigtranLatencyBudgets.GetBudgets();
+
+    AssertEqual(4, budgets.Count, "latency budget count");
+    Assert(budgets.All(budget => budget.P99Budget > budget.P95Budget), "P99 budgets should be larger than P95 budgets");
+    Assert(budgets.Any(budget => budget.Surface == SigtranLatencySurface.TransportLoopback), "transport loopback latency budget should be present");
+}
+
+static void SigtranLoadTestPlanDefinesWarmupSustainedAndPeakStages()
+{
+    SigtranLoadTestPlan plan = SigtranLoadTestPlans.CreateCommercialDefault();
+
+    AssertEqual("commercial-load-test", plan.Name, "load-test plan name");
+    AssertEqual(3, plan.Stages.Count, "load-test stage count");
+    Assert(plan.RequiresNativeSctp, "commercial load test should require native SCTP");
+    Assert(plan.RequiresExternalPeer, "commercial load test should require an external peer");
+    AssertEqual(50000, plan.GetPeakMessagesPerSecond(), "load-test peak rate");
+}
+
+static void SigtranResourceBudgetRequiresAllocationTracking()
+{
+    SigtranResourceBudget budget = SigtranResourceBudgets.CreateCommercialDefault();
+
+    AssertEqual(0L, budget.MaxAllocatedBytesPerMessage, "allocation budget");
+    Assert(budget.RequiresAllocationTracking, "resource budget should require allocation tracking");
+    Assert(budget.IsCommercialBenchmarkBudget, "resource budget should satisfy commercial benchmark controls");
+}
+
+static void SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence()
+{
+    SigtranPerformanceReadinessReport report = SigtranPerformanceReadiness.GetReport();
+
+    Assert(report.FoundationReady, "performance foundation should be ready");
+    Assert(!report.HasBenchmarkEvidence, "performance readiness should wait for real benchmark evidence");
+    Assert(!report.ProductionPerformanceReady, "production performance claims should wait for benchmark evidence and commercial readiness");
+}
+
+static void SigtranPerformanceCiProfileKeepsBenchmarksOptIn()
+{
+    SigtranPerformanceCiProfile profile = SigtranPerformanceCi.CreateDefault();
+
+    AssertEqual("performance", profile.Name, "performance CI profile name");
+    Assert(profile.Commands.Count >= 3, "performance CI should reuse official verification commands");
+    Assert(profile.RequiresPerformanceReadiness, "performance CI should require performance readiness");
+    Assert(profile.RequiresOptInBenchmarks, "long-running benchmarks should be opt-in");
+}
+
+static void SigtranPhase14StatusSummarizesPerformanceFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase14Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase14Status.CompletedUnitCount, "Phase 14 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 14 capability count");
+    Assert(capabilities.Contains("performance-ci-profile"), "Phase 14 should include performance CI profile");
+    Assert(SigtranPhase14Status.FoundationReady, SigtranPhase14Status.Describe());
+    Assert(!SigtranPhase14Status.ProductionPerformanceReady, SigtranPhase14Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

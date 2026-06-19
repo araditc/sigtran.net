@@ -49,3 +49,9 @@ The profile reuses build, test, and pack commands and requires operations readin
 Phase 13 adds `SigtranComplianceCi.CreateDefault()` as the metadata contract for validating compliance readiness.
 
 The profile reuses build, test, and pack commands and requires compliance readiness.
+
+## Performance CI
+
+Phase 14 adds `SigtranPerformanceCi.CreateDefault()` as the metadata contract for validating performance readiness.
+
+The profile reuses build, test, and pack commands, requires performance readiness, and keeps long-running benchmarks opt-in.
