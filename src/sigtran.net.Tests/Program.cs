@@ -67,6 +67,7 @@ Run("SIGTRAN health check matrix covers transport protocol evidence and release"
 Run("SIGTRAN rollback plan defines package recovery steps", SigtranRollbackPlanDefinesPackageRecoverySteps);
 Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMaintenancePolicyGatesProtocolAndTransportChanges);
 Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
+Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -904,6 +905,15 @@ static void SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels()
     Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.GitHubIssues), "support should include GitHub issues");
     Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.PrivateSecurity && rule.EscalatesIncidents), "support should include private security escalation");
     Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.Commercial && rule.EscalatesIncidents), "support should include commercial escalation");
+}
+
+static void SigtranOperationsReadinessSeparatesFoundationFromProduction()
+{
+    SigtranOperationsReadinessReport report = SigtranOperationsReadiness.GetReport();
+
+    Assert(report.FoundationReady, "operations foundation should be ready");
+    Assert(!report.CommercialReady, "commercial readiness should still require external gates");
+    Assert(!report.ProductionOperationsReady, "production operations should wait for commercial readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -39,3 +39,9 @@ The plan stops publication, communicates the affected version, preserves artifac
 ## Support Handbook
 
 `SigtranSupportHandbook.GetRules()` defines public GitHub issue support, private security disclosure, and commercial escalation channels.
+
+## Operations Readiness
+
+`SigtranOperationsReadiness.GetReport()` separates operations foundation readiness from production operations readiness.
+
+Production operations remain blocked until wider commercial readiness is complete.
