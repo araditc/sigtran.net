@@ -18,6 +18,7 @@ Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuild
 Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDescribesM3uaTransport);
 Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
 Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
+Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -244,6 +245,17 @@ static void SigtranCiVerificationProfileExposesOfficialCommands()
     Assert(commands[0].Contains("dotnet build", StringComparison.Ordinal), commands[0]);
     Assert(commands[1].Contains("sigtran.net.Tests", StringComparison.Ordinal), commands[1]);
     Assert(commands[2].Contains("dotnet pack", StringComparison.Ordinal), commands[2]);
+}
+
+static void SigtranInteroperabilityReadinessReportsFoundationStatus()
+{
+    SigtranInteroperabilityReadinessReport report = SigtranInteroperabilityReadiness.GetReport();
+
+    Assert(report.FoundationReady, "interoperability tooling foundation should be ready");
+    Assert(!report.IsProductionReady, "interoperability tooling should wait for external lab evidence");
+    AssertEqual(8, report.FoundationCapabilityCount, "interoperability foundation capability count");
+    AssertEqual(SigtranInteroperabilityReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "interoperability required capability count");
+    Assert(report.Describe().Contains("externalLab=False", StringComparison.Ordinal), report.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

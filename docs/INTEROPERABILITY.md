@@ -89,3 +89,17 @@ The scenario carries M3UA PPID metadata and endpoint names that can be reused by
 | `local-tcp-m3ua` | Development-only TCP adapter traffic |
 
 The catalog is intentionally metadata-only so documentation, tests, examples, and future CI jobs can share the same stable sample ids.
+
+## Readiness Report
+
+`SigtranInteroperabilityReadiness.GetReport()` summarizes the Phase 6 tooling foundation.
+
+```csharp
+SigtranInteroperabilityReadinessReport report = SigtranInteroperabilityReadiness.GetReport();
+bool foundationReady = report.FoundationReady;
+bool productionReady = report.IsProductionReady;
+```
+
+The foundation gate is complete when trace formatting, conformance vectors, built-in vectors, simulator scripts, MAP SMS flows, transport samples, sample catalog, and CI profile are all present.
+
+Production readiness remains false until external interoperability lab evidence is captured against real peer stacks and packet traces.
