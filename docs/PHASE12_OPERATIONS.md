@@ -35,3 +35,7 @@ The plan stops publication, communicates the affected version, preserves artifac
 ## Maintenance Policy
 
 `SigtranMaintenancePolicies.CreateDefault()` defines a 7-day minimum notice period, requires rollback plans, and requires lab validation for protocol and transport behavior changes.
+
+## Support Handbook
+
+`SigtranSupportHandbook.GetRules()` defines public GitHub issue support, private security disclosure, and commercial escalation channels.

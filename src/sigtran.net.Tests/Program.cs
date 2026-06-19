@@ -66,6 +66,7 @@ Run("SIGTRAN incident response targets define severity timing", SigtranIncidentR
 Run("SIGTRAN health check matrix covers transport protocol evidence and release", SigtranHealthCheckMatrixCoversTransportProtocolEvidenceAndRelease);
 Run("SIGTRAN rollback plan defines package recovery steps", SigtranRollbackPlanDefinesPackageRecoverySteps);
 Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMaintenancePolicyGatesProtocolAndTransportChanges);
+Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -893,6 +894,16 @@ static void SigtranMaintenancePolicyGatesProtocolAndTransportChanges()
     Assert(policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Protocol), "protocol changes should require lab validation");
     Assert(policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Transport), "transport changes should require lab validation");
     Assert(!policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Documentation), "documentation changes should not require lab validation");
+}
+
+static void SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels()
+{
+    IReadOnlyList<SigtranSupportRule> rules = SigtranSupportHandbook.GetRules();
+
+    AssertEqual(3, rules.Count, "support rule count");
+    Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.GitHubIssues), "support should include GitHub issues");
+    Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.PrivateSecurity && rule.EscalatesIncidents), "support should include private security escalation");
+    Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.Commercial && rule.EscalatesIncidents), "support should include commercial escalation");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
