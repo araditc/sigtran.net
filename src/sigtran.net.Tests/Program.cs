@@ -31,6 +31,7 @@ Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabi
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
+Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -411,6 +412,22 @@ static void SigtranInteropLabScenarioCatalogExposesRequiredScenarios()
     AssertEqual(SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway, openss7!.Kind, "OpenSS7 lab scenario kind");
     Assert(openss7.RequiredArtifacts.Contains("pcap"), "OpenSS7 lab scenario should require PCAP");
     Assert(openss7.Describe().Contains("openss7-ipss7", StringComparison.Ordinal), openss7.Describe());
+}
+
+static void SigtranInteropLabArtifactManifestValidatesRequiredFiles()
+{
+    Assert(SigtranInteropLabScenarios.TryGet("openss7-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "OpenSS7 scenario should exist");
+    SigtranInteropLabArtifactManifest manifest = new(scenario!.Id);
+
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PacketCapture, "artifacts/openss7/pcap/m3ua-asp.pcapng", "ABC123"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.SdkTrace, "artifacts/openss7/sdk-trace/m3ua-asp.log"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerConfiguration, "artifacts/openss7/peer-config/sg.conf"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerLog, "artifacts/openss7/peer-log/sg.log"));
+
+    Assert(manifest.Satisfies(scenario), "artifact manifest should satisfy OpenSS7 scenario");
+    AssertEqual(4, manifest.Snapshot().Count, "artifact manifest count");
+    AssertEqual("ABC123", manifest.Snapshot()[0].Sha256, "artifact digest");
+    Assert(!new SigtranInteropLabArtifactManifest("wrong").Satisfies(scenario), "wrong scenario manifest should not satisfy");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

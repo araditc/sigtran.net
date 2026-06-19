@@ -13,3 +13,16 @@ Phase 9 captures real interoperability evidence from native SCTP and peer-stack 
 | `map-sms-trace-comparison` | `operator-or-simulator-peer` | Validate MAP SMS traces against a real peer or approved simulator profile |
 
 Every scenario defines required artifacts such as PCAP captures, SDK traces, peer configuration, peer logs, and comparison reports.
+
+## Artifact Manifests
+
+`SigtranInteropLabArtifactManifest` records the artifacts captured for one lab scenario.
+
+```csharp
+SigtranInteropLabArtifactManifest manifest = new("openss7-m3ua-asp-to-sg");
+manifest.Add(new SigtranInteropLabArtifact(
+    SigtranInteropLabArtifactKind.PacketCapture,
+    "artifacts/openss7/pcap/m3ua-asp.pcapng"));
+```
+
+A manifest satisfies a scenario only when every required artifact name is present in the captured artifact paths.
