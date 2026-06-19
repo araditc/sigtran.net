@@ -31,6 +31,7 @@ Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabi
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
+Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -410,6 +411,24 @@ static void NativeSctpPlatformProbeReportsSocketCreationCapability()
     }
 
     Assert(capability.Describe().Contains("nativeSctp", StringComparison.Ordinal), capability.Describe());
+}
+
+static void NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform()
+{
+    NativeSctpSocketFactory factory = new();
+    NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
+
+    if (capability.CanCreateSocket)
+    {
+        using Socket socket = factory.CreateSocket();
+        AssertEqual(SocketType.Seqpacket, socket.SocketType, "native SCTP factory socket type");
+        AssertEqual(NativeSctpPlatform.SctpProtocolType, socket.ProtocolType, "native SCTP factory protocol type");
+    }
+    else
+    {
+        NativeSctpUnavailableException exception = AssertThrows<NativeSctpUnavailableException>(() => factory.CreateSocket());
+        AssertEqual(capability.Status, exception.Capability.Status, "native SCTP unavailable status");
+    }
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

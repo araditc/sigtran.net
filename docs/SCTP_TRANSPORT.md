@@ -124,3 +124,5 @@ The remaining production gate is explicit: native SCTP implementation and intero
 `NativeSctpPlatform.Probe()` checks whether the current runtime can create a Linux SCTP socket using `SocketType.Seqpacket` and IP protocol number `132`.
 
 The probe does not mark the transport production-ready by itself. It is the first native SCTP implementation gate.
+
+`NativeSctpSocketFactory` centralizes socket creation and throws `NativeSctpUnavailableException` when the current platform cannot create native SCTP sockets.
