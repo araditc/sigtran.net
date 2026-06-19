@@ -71,12 +71,14 @@ public static class SigtranCommercialReadiness
     /// <returns>The current commercial readiness report.</returns>
     public static SigtranCommercialReadinessReport GetReport()
     {
+        SigtranInteropLabReadinessReport labReadiness = SigtranInteropLabReadiness.GetReport();
+
         return new(
             hasSdkFoundation: true,
             hasInteroperabilityTooling: SigtranInteroperabilityReadiness.GetReport().FoundationReady,
             hasCiVerification: SigtranCiVerification.CreateDefaultProfile().Steps.Count > 0,
             hasNativeSctpVerification: NativeSctpReadiness.GetReport().IsProductionReady,
-            hasExternalInteroperabilityEvidence: SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(),
+            hasExternalInteroperabilityEvidence: labReadiness.ProductionReady,
             hasReleaseGovernance: SigtranPackageGovernance.CreateCommercialTargetPolicy().IsSatisfiedByCurrentPackage);
     }
 }

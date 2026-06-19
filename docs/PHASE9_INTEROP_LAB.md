@@ -70,3 +70,9 @@ Native SCTP lab runs can additionally use `SIGTRAN_NATIVE_SCTP_LAB`.
 Foundation readiness is true when the SDK has scenario catalog, manifests, run reports, peer profiles, trace comparison, evidence promotion, and CI profile support.
 
 Production readiness remains false until passing external evidence is captured and registered.
+
+## Commercial Gate
+
+`SigtranCommercialReadiness.GetReport()` uses the Phase 9 lab production gate for external interoperability evidence.
+
+This keeps commercial readiness blocked until the lab foundation is ready and at least one passing external evidence set is promoted.

@@ -38,6 +38,7 @@ Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceCompariso
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
 Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
+Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -538,6 +539,16 @@ static void SigtranInteropLabReadinessReportsFoundationAndEvidenceGates()
     Assert(!report.HasPassingExternalEvidence, "external lab evidence should stay false until real artifacts are added");
     Assert(!report.ProductionReady, report.Describe());
     Assert(report.Describe().Contains("foundationReady=True", StringComparison.Ordinal), report.Describe());
+}
+
+static void SigtranCommercialReadinessUsesInteropLabProductionGate()
+{
+    SigtranInteropLabReadinessReport labReadiness = SigtranInteropLabReadiness.GetReport();
+    SigtranCommercialReadinessReport commercial = SigtranCommercialReadiness.GetReport();
+
+    AssertEqual(labReadiness.ProductionReady, commercial.HasExternalInteroperabilityEvidence, "commercial external interop gate");
+    Assert(!commercial.HasExternalInteroperabilityEvidence, "commercial readiness should wait for real lab evidence");
+    Assert(!commercial.CommercialReady, commercial.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

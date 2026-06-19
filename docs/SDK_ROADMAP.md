@@ -96,7 +96,7 @@ Status: SDK foundation is complete for Linux native SCTP platform probing, socke
 - Convert passing lab runs into release evidence that can unlock commercial readiness gates.
 - Keep evidence pending until artifacts are real and reviewable.
 
-Status: Phase 9 has started with the official interoperability lab scenario catalog.
+Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
 
 ## Recommended First Deliverable
 
