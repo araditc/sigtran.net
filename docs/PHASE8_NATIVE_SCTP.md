@@ -2,6 +2,8 @@
 
 Phase 8 implements the native SCTP production transport path, starting with Linux.
 
+See [Phase 8 Summary](PHASE8_SUMMARY.md) for the completed unit inventory and remaining Linux verification gate.
+
 ## Platform Probe
 
 `NativeSctpPlatform.Probe()` checks whether the current runtime can create an SCTP socket.

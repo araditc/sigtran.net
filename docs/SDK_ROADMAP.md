@@ -87,7 +87,7 @@ Status: SDK foundation is complete for commercial readiness gates, native SCTP s
 - Add Linux-focused integration test hooks that can run when SCTP kernel support is available.
 - Keep Windows and macOS contract-only until a verified provider is selected.
 
-Status: Phase 8 has started with a native SCTP platform probe. Production readiness remains blocked until the full native transport path and Linux interoperability verification are complete.
+Status: SDK foundation is complete for Linux native SCTP platform probing, socket creation, endpoint planning, socket adaptation, client connect, server listen/accept, lab profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until Linux SCTP lab verification passes with real kernel SCTP support and peer traffic.
 
 ## Recommended First Deliverable
 

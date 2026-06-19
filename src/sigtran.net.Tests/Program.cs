@@ -38,6 +38,7 @@ Run("Native SCTP connector reports unsupported platform safely", NativeSctpConne
 Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
 Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
 Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessReportsFoundationAndVerificationGates);
+Run("SIGTRAN phase 8 status summarizes native SCTP foundation", SigtranPhase8StatusSummarizesNativeSctpFoundation);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -543,6 +544,18 @@ static void NativeSctpReadinessReportsFoundationAndVerificationGates()
     Assert(!report.IsProductionReady, "native SCTP production should wait for Linux verification");
     AssertEqual(NativeSctpReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "native SCTP foundation count");
     Assert(report.Describe().Contains("linuxVerified=False", StringComparison.Ordinal), report.Describe());
+}
+
+static void SigtranPhase8StatusSummarizesNativeSctpFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase8Status.GetCompletedCapabilities();
+
+    AssertEqual("Phase 8 - Native SCTP Production Transport", SigtranPhase8Status.PhaseLabel, "Phase 8 label");
+    AssertEqual(10, SigtranPhase8Status.CompletedUnitCount, "Phase 8 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 8 capability count");
+    Assert(capabilities.Contains("native-sctp-listener"), "Phase 8 should include listener");
+    Assert(SigtranPhase8Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase8Status.Describe());
+    Assert(SigtranPhase8Status.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranPhase8Status.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
