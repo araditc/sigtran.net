@@ -27,6 +27,7 @@ Run("SIGTRAN release candidate manifest reports promotion gates", SigtranRelease
 Run("SIGTRAN package governance reports commercial requirements", SigtranPackageGovernanceReportsCommercialRequirements);
 Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
+Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -349,6 +350,17 @@ static void SigtranCompatibilityPolicyReportsSemVerRules()
     Assert(policy.AllowsBreakingChangesBeforeStable, "pre-stable compatibility should allow breaking changes");
     Assert(policy.StableApiRequiresMajorVersion, "stable breaking changes should require major version");
     Assert(policy.Describe().Contains("semver=True", StringComparison.Ordinal), policy.Describe());
+}
+
+static void SigtranObservabilityProfileExposesCommercialSignals()
+{
+    SigtranObservabilityProfile profile = SigtranObservability.CreateDefaultProfile();
+
+    AssertEqual(4, profile.MetricNames.Count, "observability metric count");
+    Assert(profile.MetricNames.Contains("sigtran.m3ua.messages.sent"), "observability should include sent message metric");
+    Assert(profile.TraceCategories.Contains("sigtran.trace.packet"), "observability should include packet trace category");
+    Assert(profile.HealthSignals.Contains("asp-active"), "observability should include ASP health signal");
+    AssertEqual("metrics=4 traces=4 health=4", profile.Describe(), "observability summary");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

@@ -72,3 +72,7 @@ Critical vulnerabilities target a 2-day response. High severity vulnerabilities 
 ## Compatibility Policy
 
 `docs/COMPATIBILITY.md` defines the public versioning posture. The SDK targets `net10.0`, follows Semantic Versioning, allows necessary breaking changes before stable release, and requires a major version for breaking changes after stable release.
+
+## Observability Profile
+
+`docs/OBSERVABILITY.md` defines the metric names, trace categories, and health signals expected by commercial deployments. `SigtranObservability.CreateDefaultProfile()` exposes the same profile to applications and release tooling.

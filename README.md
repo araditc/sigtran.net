@@ -42,6 +42,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
+| Observability | Phase 7 profile added for commercial metrics, trace categories, and health signals |
 
 ## Requirements
 
@@ -128,6 +129,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
+- [Observability](docs/OBSERVABILITY.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
 - [Security policy](SECURITY.md)
