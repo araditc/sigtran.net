@@ -134,3 +134,5 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpConnector` performs the client-side bind/connect path and returns an established native adapter.
 
 `NativeSctpListener` provides the server-side bind/listen/accept path for Linux native SCTP lab scenarios.
+
+`NativeSctpLab.CreateFromEnvironment()` keeps native SCTP integration verification opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.

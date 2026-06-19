@@ -36,6 +36,7 @@ Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPla
 Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapterReportsLifecycleHealth);
 Run("Native SCTP connector reports unsupported platform safely", NativeSctpConnectorReportsUnsupportedPlatformSafely);
 Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
+Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -508,6 +509,27 @@ static void NativeSctpListenerValidatesOptionsAndUnsupportedPlatform()
         NativeSctpUnavailableException exception = AssertThrows<NativeSctpUnavailableException>(() =>
             listener.StartAsync(options).GetAwaiter().GetResult());
         AssertEqual(capability.Status, exception.Capability.Status, "native listener unsupported status");
+    }
+}
+
+static void NativeSctpLabProfileIsOptIn()
+{
+    string? previous = Environment.GetEnvironmentVariable(NativeSctpLabProfile.EnableEnvironmentVariable);
+    try
+    {
+        Environment.SetEnvironmentVariable(NativeSctpLabProfile.EnableEnvironmentVariable, null);
+        NativeSctpLabProfile disabled = NativeSctpLab.CreateFromEnvironment();
+        Assert(!disabled.Enabled, "native SCTP lab should be disabled by default");
+        AssertEqual("127.0.0.1", disabled.LoopbackEndpoint.Host, "native SCTP lab loopback host");
+
+        Environment.SetEnvironmentVariable(NativeSctpLabProfile.EnableEnvironmentVariable, "1");
+        NativeSctpLabProfile enabled = NativeSctpLab.CreateFromEnvironment();
+        Assert(enabled.Enabled, "native SCTP lab should enable from environment");
+        Assert(enabled.Describe().Contains("enabled=True", StringComparison.Ordinal), enabled.Describe());
+    }
+    finally
+    {
+        Environment.SetEnvironmentVariable(NativeSctpLabProfile.EnableEnvironmentVariable, previous);
     }
 }
 

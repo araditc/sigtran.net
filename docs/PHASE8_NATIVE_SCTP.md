@@ -71,3 +71,14 @@ NativeSctpSocketAdapter association = await listener.AcceptAsync(options);
 ```
 
 The listener shares the same socket factory and unsupported-platform behavior as the connector. Real accept/send/receive verification belongs in Linux SCTP lab runs.
+
+## Lab Profile
+
+Native SCTP lab tests are opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.
+
+```powershell
+$env:SIGTRAN_NATIVE_SCTP_LAB = "1"
+dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
+```
+
+`NativeSctpLab.CreateFromEnvironment()` exposes the current lab profile. The default loopback endpoint is `127.0.0.1:2905`.
