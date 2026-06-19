@@ -65,3 +65,14 @@ SigtranSimulatorScript script = new MapSmsSimulatorFlowBuilder()
 ```
 
 The builder covers current MAP SMS foundation operations: MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre.
+
+## Local Transport Samples
+
+`SigtranTransportSamples.CreateLocalM3uaAspToSg()` describes a development-only TCP scenario for exercising the M3UA stack through the `TcpSctpAdapter`.
+
+```csharp
+SigtranLocalTcpScenario scenario = SigtranTransportSamples.CreateLocalM3uaAspToSg();
+SctpConnectionOptions options = scenario.ToClientConnectionOptions();
+```
+
+The scenario carries M3UA PPID metadata and endpoint names that can be reused by examples, trace summaries, and simulator scripts. It does not make TCP production-ready; native SCTP remains the production transport gate.

@@ -21,6 +21,8 @@ The metadata contract is optional. Existing `ISctpSocket` implementations contin
 
 The development `TcpSctpAdapter` now implements `ISctpMetadataSocket` with default M3UA PPID metadata and exposes a health snapshot. It still uses TCP length-prefix framing and must not be treated as production SCTP.
 
+`SigtranTransportSamples.CreateLocalM3uaAspToSg()` provides a documented local TCP sample scenario that maps an ASP endpoint to an SG endpoint with M3UA PPID metadata. It is intended for demos and deterministic tooling only.
+
 ## Association Lifecycle
 
 `SctpAssociationState` and `SctpAssociationEvent` define the lifecycle vocabulary for production transports. Native implementations should report transitions such as connect start, established, reconnect start, shutdown, closed, and failed using these SDK types.

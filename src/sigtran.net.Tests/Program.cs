@@ -15,6 +15,7 @@ Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConf
 Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVectorsIncludeM3uaAndMapPayloads);
 Run("SIGTRAN simulator script emits trace summaries", SigtranSimulatorScriptEmitsTraceSummaries);
 Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuildsTcapBackedScript);
+Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDescribesM3uaTransport);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -203,6 +204,20 @@ static void MapSmsSimulatorFlowBuildsTcapBackedScript()
     Assert(summaries[1].Contains("smsc -> msc", StringComparison.Ordinal), summaries[1]);
     Assert(summaries[2].Contains("hlr -> smsc", StringComparison.Ordinal), summaries[2]);
     Assert(steps[0].Payload.Length > 20, "MAP SMS simulator payload should contain encoded TCAP");
+}
+
+static void SigtranLocalTcpSampleDescribesM3uaTransport()
+{
+    SigtranLocalTcpScenario scenario = SigtranTransportSamples.CreateLocalM3uaAspToSg(2905);
+    SctpConnectionOptions options = scenario.ToClientConnectionOptions();
+
+    AssertEqual("local-m3ua-asp-to-sg", scenario.Name, "local TCP scenario name");
+    AssertEqual("sg", scenario.Server.Name, "local TCP server name");
+    AssertEqual((uint)SctpPayloadProtocolIdentifiers.M3ua, scenario.Metadata.PayloadProtocolIdentifier, "local TCP scenario PPID");
+    AssertEqual("127.0.0.1", options.RemoteEndpoint.Host, "local TCP remote host");
+    AssertEqual(2905, options.RemoteEndpoint.Port, "local TCP remote port");
+    Assert(scenario.Describe().Contains("asp@127.0.0.1:2906 -> sg@127.0.0.1:2905", StringComparison.Ordinal), scenario.Describe());
+    AssertThrows<ArgumentOutOfRangeException>(() => SigtranTransportSamples.CreateLocalM3uaAspToSg(65535));
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
