@@ -25,3 +25,9 @@ Critical incidents should be acknowledged within 15 minutes and updated within 3
 ## Health Checks
 
 `SigtranHealthChecks.GetDefinitions()` defines operational health checks for transport, M3UA session, routing, interoperability evidence, and release readiness.
+
+## Rollback Plan
+
+`SigtranRollbackPlans.CreateDefaultPackageRollback()` defines package rollback actions for affected releases.
+
+The plan stops publication, communicates the affected version, preserves artifacts and provenance, and publishes a corrected release only after gates pass.

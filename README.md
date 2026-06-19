@@ -41,7 +41,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Release candidates | Phase 7 manifest added for package version, source commit, internal release gates, and commercial promotion gates |
 | Release automation | Phase 10 foundation-ready: deterministic release plan, artifact manifest with digest tracking, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluator, release CI profile, and status report added; stable commercial publication still requires real signing, SBOM generation, native SCTP evidence, and external interoperability evidence |
 | Developer experience | Phase 11 foundation-ready: capability catalog, M3UA ASP-to-SG quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness report, DX CI profile, and status report added; enterprise production adoption still requires commercial readiness |
-| Operations | Phase 12 started: production operations capability catalog, runbook catalog, incident response targets, and health check matrix added |
+| Operations | Phase 12 started: production operations capability catalog, runbook catalog, incident response targets, health check matrix, and rollback plan added |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
