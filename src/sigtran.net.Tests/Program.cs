@@ -41,6 +41,7 @@ Run("SIGTRAN interoperability lab readiness reports foundation and evidence gate
 Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
 Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", SigtranPhase9StatusSummarizesInteropLabFoundation);
 Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
+Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -575,6 +576,23 @@ static void SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps()
     AssertEqual(SigtranReleaseAutomationStepKind.Publish, plan.Steps[^1].Kind, "release automation final step");
     Assert(plan.GetCommands().Any(static command => command.Contains("dotnet pack", StringComparison.Ordinal)), "release automation should include pack command");
     Assert(plan.Describe().Contains("steps=6", StringComparison.Ordinal), plan.Describe());
+}
+
+static void SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests()
+{
+    SigtranReleaseArtifactManifest manifest = new("Sigtran.Net", "1.0.0-alpha.1");
+    manifest.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.NuGetPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.nupkg", "abc"));
+    manifest.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.SymbolPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.snupkg", "def"));
+    manifest.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.ReleaseNotes, "artifacts/release-notes.md", "ghi"));
+
+    AssertEqual(3, manifest.Snapshot().Count, "release artifact count");
+    Assert(manifest.HasRequiredPackageArtifacts(), "release manifest should include package artifacts");
+    Assert(manifest.AllArtifactsHaveDigests(), "release artifacts should have digests");
+
+    SigtranReleaseArtifactManifest incomplete = new("Sigtran.Net", "1.0.0-alpha.1");
+    incomplete.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.NuGetPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.nupkg"));
+    Assert(!incomplete.HasRequiredPackageArtifacts(), "release manifest should require symbol package");
+    Assert(!incomplete.AllArtifactsHaveDigests(), "release manifest should require digests");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
