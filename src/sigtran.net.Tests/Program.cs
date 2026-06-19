@@ -17,6 +17,7 @@ Run("SIGTRAN simulator script emits trace summaries", SigtranSimulatorScriptEmit
 Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuildsTcapBackedScript);
 Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDescribesM3uaTransport);
 Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
+Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -231,6 +232,18 @@ static void SigtranSampleCatalogExposesSupportedScenarios()
     AssertEqual(SigtranSampleKind.SccpMapSms, mapSample!.Kind, "SCCP/MAP sample kind");
     Assert(mapSample.Describe().Contains("SCCP, TCAP, MAP", StringComparison.Ordinal), mapSample.Describe());
     Assert(!SigtranSampleCatalog.TryGet("missing", out _), "missing sample should not be found");
+}
+
+static void SigtranCiVerificationProfileExposesOfficialCommands()
+{
+    SigtranCiVerificationProfile profile = SigtranCiVerification.CreateDefaultProfile();
+    IReadOnlyList<string> commands = profile.GetCommands();
+
+    AssertEqual("10.0.x", profile.DotNetVersion, "CI profile .NET version");
+    AssertEqual(3, profile.Steps.Count, "CI profile step count");
+    Assert(commands[0].Contains("dotnet build", StringComparison.Ordinal), commands[0]);
+    Assert(commands[1].Contains("sigtran.net.Tests", StringComparison.Ordinal), commands[1]);
+    Assert(commands[2].Contains("dotnet pack", StringComparison.Ordinal), commands[2]);
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
