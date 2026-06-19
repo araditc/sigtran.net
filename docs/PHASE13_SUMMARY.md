@@ -19,7 +19,7 @@ Phase 13 adds the compliance and audit-readiness foundation for SIGTRAN.NET.
 
 The Phase 13 compliance foundation is complete.
 
-`SigtranPhase13Status.FoundationReady` is expected to be true. `EnterpriseComplianceReady` remains false until wider commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, real SBOM generation, and release provenance.
+`SigtranComplianceStatus.FoundationReady` is expected to be true. `EnterpriseComplianceReady` remains false until wider commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, real SBOM generation, and release provenance.
 
 ## Production Claim Boundary
 

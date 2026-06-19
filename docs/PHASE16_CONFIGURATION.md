@@ -72,4 +72,4 @@ The current gate should report configuration foundation readiness and production
 
 ## Phase Status
 
-`SigtranPhase16Status.Describe()` summarizes the completed Phase 16 units and separates configuration foundation readiness from production configuration readiness.
+`SigtranConfigurationStatus.Describe()` summarizes the completed Phase 16 units and separates configuration foundation readiness from production configuration readiness.

@@ -3,7 +3,7 @@ namespace sigtran.net.Layers.MAP;
 /// <summary>
 /// Readiness report for the MAP SMS profile foundation phase.
 /// </summary>
-public readonly struct MapSmsPhase5ReadinessReport
+public readonly struct MapSmsReadinessReport
 {
     /// <summary>Creates a MAP SMS readiness report.</summary>
     /// <param name="hasOperationMetadata">Whether operation metadata is available.</param>
@@ -15,7 +15,7 @@ public readonly struct MapSmsPhase5ReadinessReport
     /// <param name="hasErrorsAndExtensions">Whether error mapping and extension containers are available.</param>
     /// <param name="hasTcapClientFacade">Whether the TCAP client facade is available.</param>
     /// <param name="hasInteropVectors">Whether external MAP SMS interoperability vectors are present.</param>
-    public MapSmsPhase5ReadinessReport(
+    public MapSmsReadinessReport(
         bool hasOperationMetadata,
         bool hasAddressPrimitives,
         bool hasForwardSmCodecs,
@@ -76,7 +76,7 @@ public readonly struct MapSmsPhase5ReadinessReport
         + Count(HasTcapClientFacade);
 
     /// <summary>Whether the MAP SMS foundation is ready.</summary>
-    public bool FoundationReady => FoundationCapabilityCount == MapSmsPhase5Readiness.RequiredFoundationCapabilityCount;
+    public bool FoundationReady => FoundationCapabilityCount == MapSmsReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether MAP SMS can claim production interoperability readiness.</summary>
     public bool IsProductionReady => FoundationReady && HasInteropVectors;
@@ -85,18 +85,18 @@ public readonly struct MapSmsPhase5ReadinessReport
     /// <returns>A compact readiness summary.</returns>
     public string Describe()
     {
-        return $"mapSmsFoundationReady={FoundationReady} mapSmsProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{MapSmsPhase5Readiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
+        return $"mapSmsFoundationReady={FoundationReady} mapSmsProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{MapSmsReadiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
     }
 
     private static int Count(bool value) => value ? 1 : 0;
 }
 
 /// <summary>
-/// Provides readiness information for Phase 5 MAP SMS work.
+/// Provides readiness information for MAP SMS work.
 /// </summary>
-public static class MapSmsPhase5Readiness
+public static class MapSmsReadiness
 {
-    /// <summary>The release label for Phase 5.</summary>
+    /// <summary>The release label for MAP SMS readiness.</summary>
     public const string ReleaseLabel = "MAP SMS profile foundation";
 
     /// <summary>The number of required foundation capabilities.</summary>
@@ -105,9 +105,9 @@ public static class MapSmsPhase5Readiness
     /// <summary>Explains the remaining production gate.</summary>
     public const string ProductionGateDescription = "External MAP SMS interoperability vectors and operator-profile validation are required before production claims.";
 
-    /// <summary>Builds the current Phase 5 readiness report.</summary>
-    /// <returns>The current Phase 5 readiness report.</returns>
-    public static MapSmsPhase5ReadinessReport GetReport()
+    /// <summary>Builds the current MAP SMS readiness report.</summary>
+    /// <returns>The current MAP SMS readiness report.</returns>
+    public static MapSmsReadinessReport GetReport()
     {
         return new(
             hasOperationMetadata: true,

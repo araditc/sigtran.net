@@ -19,4 +19,4 @@ Phase 11 adds the developer experience and adoption foundation for SIGTRAN.NET.
 
 The Phase 11 SDK foundation is complete.
 
-`SigtranPhase11Status.FoundationReady` is expected to be true. `EnterpriseProductionReady` remains false until commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, and real SBOM generation.
+`SigtranDeveloperExperienceStatus.FoundationReady` is expected to be true. `EnterpriseProductionReady` remains false until commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, and real SBOM generation.

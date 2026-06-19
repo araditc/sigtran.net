@@ -67,4 +67,4 @@ The current gate should report compliance foundation readiness as true, while en
 
 ## Phase Status
 
-`SigtranPhase13Status.Describe()` summarizes the completed Phase 13 units and separates compliance foundation readiness from enterprise compliance production claims.
+`SigtranComplianceStatus.Describe()` summarizes the completed Phase 13 units and separates compliance foundation readiness from enterprise compliance production claims.

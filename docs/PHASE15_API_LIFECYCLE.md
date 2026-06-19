@@ -67,4 +67,4 @@ The API lifecycle foundation is ready when surface catalog, stability contracts,
 
 ## Phase Status
 
-`SigtranPhase15Status.Describe()` summarizes the completed Phase 15 units and separates API lifecycle foundation readiness from stable API lifecycle claims.
+`SigtranApiLifecycleStatus.Describe()` summarizes the completed Phase 15 units and separates API lifecycle foundation readiness from stable API lifecycle claims.

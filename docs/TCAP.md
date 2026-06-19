@@ -152,8 +152,8 @@ byte[] end = builder.EndResult(
 
 ## Readiness
 
-`TcapPhase4Readiness.GetReport()` reports the current TCAP BER foundation status. The foundation is complete when BER primitives, transaction models, component codecs, transaction envelopes, dialogue portions, dialogue state controls, and the session builder are present.
+`TcapReadiness.GetReport()` reports the current TCAP BER foundation status. The foundation is complete when BER primitives, transaction models, component codecs, transaction envelopes, dialogue portions, dialogue state controls, and the session builder are present.
 
 Production readiness remains false until external TCAP interoperability vectors and MAP profile validation are added.
 
-`TcapPhase4Readiness.GetFoundationCapabilities()` returns the tracked capability names for release checklists and diagnostic surfaces.
+`TcapReadiness.GetFoundationCapabilities()` returns the tracked capability names for release checklists and diagnostic surfaces.

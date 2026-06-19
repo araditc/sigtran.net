@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 16 configuration and environment readiness status.
+/// Provides configuration and environment readiness status.
 /// </summary>
-public static class SigtranPhase16Status
+public static class SigtranConfigurationStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase16Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 16 - Configuration Policy And Environment Readiness";
+    public const string StatusLabel = "Configuration Policy And Environment Readiness";
 
-    /// <summary>The number of completed Phase 16 work units.</summary>
+    /// <summary>The number of completed configuration readiness work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 16 capability names.</summary>
+    /// <summary>Returns the completed configuration readiness capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 16 configuration foundation is ready.</summary>
+    /// <summary>Whether the configuration foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranConfigurationReadiness.GetReport().FoundationReady
         && SigtranConfigurationCi.CreateDefault().RequiresConfigurationReadiness;
@@ -41,10 +41,10 @@ public static class SigtranPhase16Status
     public static bool ProductionConfigurationReady => FoundationReady
         && SigtranConfigurationReadiness.GetReport().ProductionConfigurationReady;
 
-    /// <summary>Formats a compact Phase 16 status summary.</summary>
-    /// <returns>The Phase 16 status summary.</returns>
+    /// <summary>Formats a compact configuration readiness status summary.</summary>
+    /// <returns>The configuration readiness status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionConfigurationReady={ProductionConfigurationReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionConfigurationReady={ProductionConfigurationReady}";
     }
 }

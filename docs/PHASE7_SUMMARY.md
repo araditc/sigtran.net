@@ -1,6 +1,6 @@
 # Phase 7 Summary
 
-Phase 7 - Commercialization and Release Hardening is foundation-complete.
+Commercialization and Release Hardening is foundation-complete.
 
 ## Completed Units
 
@@ -37,4 +37,4 @@ Commercial production readiness is still blocked until these external gates are 
 - `SigtranCompatibility`
 - `SigtranObservability`
 - `SigtranDeploymentProfiles`
-- `SigtranPhase7Status`
+- `SigtranCommercializationStatus`

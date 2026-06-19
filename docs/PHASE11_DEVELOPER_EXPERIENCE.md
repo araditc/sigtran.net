@@ -72,4 +72,4 @@ Developer documentation is ready when roadmap, quickstart, API index, and troubl
 
 ## Phase Status
 
-`SigtranPhase11Status.Describe()` summarizes the completed Phase 11 units and separates developer adoption readiness from enterprise production readiness.
+`SigtranDeveloperExperienceStatus.Describe()` summarizes the completed Phase 11 units and separates developer adoption readiness from enterprise production readiness.

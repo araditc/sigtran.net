@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 7 commercialization status.
+/// Provides commercialization status.
 /// </summary>
-public static class SigtranPhase7Status
+public static class SigtranCommercializationStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,23 +20,23 @@ public static class SigtranPhase7Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 7 - Commercialization and Release Hardening";
+    public const string StatusLabel = "Commercialization and Release Hardening";
 
-    /// <summary>The number of completed Phase 7 work units.</summary>
+    /// <summary>The number of completed commercialization work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 7 capability names.</summary>
+    /// <summary>Returns the completed commercialization capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Formats a compact Phase 7 status summary.</summary>
-    /// <returns>The Phase 7 status summary.</returns>
+    /// <summary>Formats a compact commercialization status summary.</summary>
+    /// <returns>The commercialization status summary.</returns>
     public static string Describe()
     {
         SigtranCommercialReadinessReport readiness = SigtranCommercialReadiness.GetReport();
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} internalReleaseReady={readiness.InternalReleaseReady} commercialReady={readiness.CommercialReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} internalReleaseReady={readiness.InternalReleaseReady} commercialReady={readiness.CommercialReady}";
     }
 }

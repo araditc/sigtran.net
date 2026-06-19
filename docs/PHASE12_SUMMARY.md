@@ -19,4 +19,4 @@ Phase 12 adds the production operations and support foundation for SIGTRAN.NET.
 
 The Phase 12 operations foundation is complete.
 
-`SigtranPhase12Status.FoundationReady` is expected to be true. `ProductionOperationsReady` remains false until wider commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, and real SBOM generation.
+`SigtranOperationsStatus.FoundationReady` is expected to be true. `ProductionOperationsReady` remains false until wider commercial readiness is complete, including native SCTP evidence, external interoperability evidence, real signing, and real SBOM generation.

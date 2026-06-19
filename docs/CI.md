@@ -67,3 +67,9 @@ The profile reuses build, test, and pack commands and requires public API diff r
 Phase 16 adds `SigtranConfigurationCi.CreateDefault()` as the metadata contract for validating configuration readiness.
 
 The profile reuses build, test, and pack commands, requires configuration readiness, and rejects production plaintext secrets.
+
+## Native SCTP Lab CI
+
+Phase 17 adds `SigtranNativeSctpLabCi.CreateDefault()` as the metadata contract for native SCTP verification.
+
+The profile is opt-in, Linux-only, and enabled by `SIGTRAN_NATIVE_SCTP_LAB`. Real runs must retain artifacts under `SIGTRAN_NATIVE_SCTP_ARTIFACT_ROOT`.

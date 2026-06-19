@@ -19,7 +19,7 @@ Phase 15 adds the API stability, deprecation, and migration-readiness foundation
 
 The Phase 15 API lifecycle foundation is complete.
 
-`SigtranPhase15Status.FoundationReady` is expected to be true. `StableApiLifecycleReady` remains false until wider commercial readiness is complete.
+`SigtranApiLifecycleStatus.FoundationReady` is expected to be true. `StableApiLifecycleReady` remains false until wider commercial readiness is complete.
 
 ## Production Claim Boundary
 

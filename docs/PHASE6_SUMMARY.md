@@ -1,6 +1,6 @@
 # Phase 6 Summary
 
-Phase 6 - Interoperability and Tooling is foundation-complete.
+Interoperability and Tooling is foundation-complete.
 
 ## Completed Units
 
@@ -31,4 +31,4 @@ The SDK now has repeatable tooling for local validation, examples, and release r
 - `SigtranSampleCatalog`
 - `SigtranCiVerification`
 - `SigtranInteroperabilityReadiness`
-- `SigtranPhase6Status`
+- `SigtranInteroperabilityToolingStatus`

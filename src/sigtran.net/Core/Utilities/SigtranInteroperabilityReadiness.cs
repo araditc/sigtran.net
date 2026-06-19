@@ -1,7 +1,7 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes Phase 6 interoperability tooling readiness.
+/// Describes interoperability tooling readiness.
 /// </summary>
 public sealed class SigtranInteroperabilityReadinessReport
 {
@@ -64,7 +64,7 @@ public sealed class SigtranInteroperabilityReadinessReport
     /// <summary>Whether external interoperability lab evidence is available.</summary>
     public bool HasExternalInteroperabilityLab { get; }
 
-    /// <summary>Whether all Phase 6 foundation capabilities are available.</summary>
+    /// <summary>Whether all interoperability tooling foundation capabilities are available.</summary>
     public bool FoundationReady => FoundationCapabilityCount == SigtranInteroperabilityReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether the interoperability tooling can be treated as production-ready.</summary>
@@ -95,7 +95,7 @@ public sealed class SigtranInteroperabilityReadinessReport
 }
 
 /// <summary>
-/// Provides the Phase 6 interoperability tooling readiness report.
+/// Provides the interoperability tooling readiness report.
 /// </summary>
 public static class SigtranInteroperabilityReadiness
 {

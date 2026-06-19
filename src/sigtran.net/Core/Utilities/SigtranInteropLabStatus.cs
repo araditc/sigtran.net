@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 9 real interoperability lab status.
+/// Provides real interoperability lab status.
 /// </summary>
-public static class SigtranPhase9Status
+public static class SigtranInteropLabStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,23 +20,23 @@ public static class SigtranPhase9Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 9 - Real Interoperability Lab";
+    public const string StatusLabel = "Real Interoperability Lab";
 
-    /// <summary>The number of completed Phase 9 work units.</summary>
+    /// <summary>The number of completed interoperability lab work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 9 capability names.</summary>
+    /// <summary>Returns the completed interoperability lab capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Formats a compact Phase 9 status summary.</summary>
-    /// <returns>The Phase 9 status summary.</returns>
+    /// <summary>Formats a compact interoperability lab status summary.</summary>
+    /// <returns>The interoperability lab status summary.</returns>
     public static string Describe()
     {
         SigtranInteropLabReadinessReport readiness = SigtranInteropLabReadiness.GetReport();
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={readiness.FoundationReady} productionReady={readiness.ProductionReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={readiness.FoundationReady} productionReady={readiness.ProductionReady}";
     }
 }

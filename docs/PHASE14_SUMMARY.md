@@ -19,7 +19,7 @@ Phase 14 adds the performance, capacity, and benchmark-readiness foundation for 
 
 The Phase 14 performance foundation is complete.
 
-`SigtranPhase14Status.FoundationReady` is expected to be true. `ProductionPerformanceReady` remains false until real benchmark evidence is collected and wider commercial readiness is complete.
+`SigtranPerformanceStatus.FoundationReady` is expected to be true. `ProductionPerformanceReady` remains false until real benchmark evidence is collected and wider commercial readiness is complete.
 
 ## Production Claim Boundary
 

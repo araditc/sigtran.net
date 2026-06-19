@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 12 production operations and support status.
+/// Provides production operations and support status.
 /// </summary>
-public static class SigtranPhase12Status
+public static class SigtranOperationsStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase12Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 12 - Production Operations And Support";
+    public const string StatusLabel = "Production Operations And Support";
 
-    /// <summary>The number of completed Phase 12 work units.</summary>
+    /// <summary>The number of completed operations work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 12 capability names.</summary>
+    /// <summary>Returns the completed operations capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 12 operations foundation is ready.</summary>
+    /// <summary>Whether the operations foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranOperationsReadiness.GetReport().FoundationReady
         && SigtranOperationsCi.CreateDefault().RequiresOperationsReadiness;
@@ -41,10 +41,10 @@ public static class SigtranPhase12Status
     public static bool ProductionOperationsReady => FoundationReady
         && SigtranOperationsReadiness.GetReport().ProductionOperationsReady;
 
-    /// <summary>Formats a compact Phase 12 status summary.</summary>
-    /// <returns>The Phase 12 status summary.</returns>
+    /// <summary>Formats a compact operations status summary.</summary>
+    /// <returns>The operations status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionOperationsReady={ProductionOperationsReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionOperationsReady={ProductionOperationsReady}";
     }
 }

@@ -52,4 +52,4 @@ Production operations remain blocked until wider commercial readiness is complet
 
 ## Phase Status
 
-`SigtranPhase12Status.Describe()` summarizes the completed Phase 12 units and separates operations foundation readiness from production operations readiness.
+`SigtranOperationsStatus.Describe()` summarizes the completed Phase 12 units and separates operations foundation readiness from production operations readiness.

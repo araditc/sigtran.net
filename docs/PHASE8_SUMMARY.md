@@ -1,6 +1,6 @@
 # Phase 8 Summary
 
-Phase 8 - Native SCTP Production Transport is foundation-complete.
+Native SCTP Production Transport is foundation-complete.
 
 ## Completed Units
 
@@ -32,4 +32,4 @@ Production readiness is still blocked until Linux SCTP lab verification passes w
 - `NativeSctpLab`
 - `NativeSctpReadiness`
 - `SigtranNativeSctpSupport`
-- `SigtranPhase8Status`
+- `SigtranNativeSctpImplementationStatus`

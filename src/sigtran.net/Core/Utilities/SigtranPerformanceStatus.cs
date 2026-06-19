@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 14 performance and capacity readiness status.
+/// Provides performance and capacity readiness status.
 /// </summary>
-public static class SigtranPhase14Status
+public static class SigtranPerformanceStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase14Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 14 - Performance Capacity And Benchmark Readiness";
+    public const string StatusLabel = "Performance Capacity And Benchmark Readiness";
 
-    /// <summary>The number of completed Phase 14 work units.</summary>
+    /// <summary>The number of completed performance work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 14 capability names.</summary>
+    /// <summary>Returns the completed performance capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 14 performance foundation is ready.</summary>
+    /// <summary>Whether the performance foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranPerformanceReadiness.GetReport().FoundationReady
         && SigtranPerformanceCi.CreateDefault().RequiresPerformanceReadiness;
@@ -41,10 +41,10 @@ public static class SigtranPhase14Status
     public static bool ProductionPerformanceReady => FoundationReady
         && SigtranPerformanceReadiness.GetReport().ProductionPerformanceReady;
 
-    /// <summary>Formats a compact Phase 14 status summary.</summary>
-    /// <returns>The Phase 14 status summary.</returns>
+    /// <summary>Formats a compact performance status summary.</summary>
+    /// <returns>The performance status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionPerformanceReady={ProductionPerformanceReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionPerformanceReady={ProductionPerformanceReady}";
     }
 }

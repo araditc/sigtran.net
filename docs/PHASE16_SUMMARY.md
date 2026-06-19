@@ -19,7 +19,7 @@ Phase 16 adds the configuration, policy, and environment-readiness foundation fo
 
 The Phase 16 configuration foundation is complete.
 
-`SigtranPhase16Status.FoundationReady` is expected to be true. `ProductionConfigurationReady` remains false until wider commercial readiness is complete.
+`SigtranConfigurationStatus.FoundationReady` is expected to be true. `ProductionConfigurationReady` remains false until wider commercial readiness is complete.
 
 ## Production Claim Boundary
 

@@ -63,7 +63,7 @@ public sealed class SigtranCommercialReadinessReport
 }
 
 /// <summary>
-/// Provides the current Phase 7 commercial readiness report.
+/// Provides the current commercial readiness report.
 /// </summary>
 public static class SigtranCommercialReadiness
 {

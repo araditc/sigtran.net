@@ -19,7 +19,7 @@ Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDe
 Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
 Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
 Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
-Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSummarizesCompletedTooling);
+Run("SIGTRAN interoperability tooling status summarizes completed tooling", SigtranInteroperabilityToolingStatusSummarizesCompletedTooling);
 Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
 Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNativeSctpSupportMatrixReportsVerificationStatus);
 Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEvidenceRegistryTracksLabResults);
@@ -29,7 +29,7 @@ Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyRep
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
 Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
-Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
+Run("SIGTRAN commercialization status summarizes foundation", SigtranCommercializationStatusSummarizesCommercializationFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
@@ -39,7 +39,7 @@ Run("SIGTRAN interoperability evidence promotion requires passing lab run", Sigt
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
 Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
 Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
-Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", SigtranPhase9StatusSummarizesInteropLabFoundation);
+Run("SIGTRAN interoperability lab status summarizes foundation", SigtranInteropLabStatusSummarizesInteropLabFoundation);
 Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
 Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
 Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
@@ -49,7 +49,7 @@ Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNot
 Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
 Run("SIGTRAN release gate evaluates artifact notes provenance and channel readiness", SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness);
 Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan);
-Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranPhase10StatusSummarizesReleaseAutomationFoundation);
+Run("SIGTRAN release automation status summarizes foundation", SigtranReleaseAutomationStatusSummarizesReleaseAutomationFoundation);
 Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDeveloperExperienceCatalogExposesAdoptionAreas);
 Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuickstartExposesOrderedAspToSgSteps);
 Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemplatesMapSampleIdsToEnvironments);
@@ -59,7 +59,7 @@ Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIn
 Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
 Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
 Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
-Run("SIGTRAN phase 11 status summarizes developer experience foundation", SigtranPhase11StatusSummarizesDeveloperExperienceFoundation);
+Run("SIGTRAN developer experience status summarizes foundation", SigtranDeveloperExperienceStatusSummarizesDeveloperExperienceFoundation);
 Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
 Run("SIGTRAN runbook catalog exposes operational recovery paths", SigtranRunbookCatalogExposesOperationalRecoveryPaths);
 Run("SIGTRAN incident response targets define severity timing", SigtranIncidentResponseTargetsDefineSeverityTiming);
@@ -69,7 +69,7 @@ Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMa
 Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
 Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
 Run("SIGTRAN operations CI profile requires operations readiness", SigtranOperationsCiProfileRequiresOperationsReadiness);
-Run("SIGTRAN phase 12 status summarizes operations foundation", SigtranPhase12StatusSummarizesOperationsFoundation);
+Run("SIGTRAN operations status summarizes foundation", SigtranOperationsStatusSummarizesOperationsFoundation);
 Run("SIGTRAN compliance catalog exposes enterprise audit areas", SigtranComplianceCatalogExposesEnterpriseAuditAreas);
 Run("SIGTRAN audit event catalog marks evidence-bearing events", SigtranAuditEventCatalogMarksEvidenceBearingEvents);
 Run("SIGTRAN evidence retention policy requires immutable redacted provenance", SigtranEvidenceRetentionPolicyRequiresImmutableRedactedProvenance);
@@ -79,7 +79,7 @@ Run("SIGTRAN export control policy requires lawful operator authorization", Sigt
 Run("SIGTRAN compliance readiness separates foundation from commercial claims", SigtranComplianceReadinessSeparatesFoundationFromCommercialClaims);
 Run("SIGTRAN compliance CI profile requires compliance readiness", SigtranComplianceCiProfileRequiresComplianceReadiness);
 Run("SIGTRAN compliance commercial gate waits for commercial readiness", SigtranComplianceCommercialGateWaitsForCommercialReadiness);
-Run("SIGTRAN phase 13 status summarizes compliance foundation", SigtranPhase13StatusSummarizesComplianceFoundation);
+Run("SIGTRAN compliance status summarizes foundation", SigtranComplianceStatusSummarizesComplianceFoundation);
 Run("SIGTRAN performance catalog exposes benchmark capacity and resource areas", SigtranPerformanceCatalogExposesBenchmarkCapacityAndResourceAreas);
 Run("SIGTRAN benchmark scenarios include local and peer benchmarks", SigtranBenchmarkScenariosIncludeLocalAndPeerBenchmarks);
 Run("SIGTRAN capacity profile describes enterprise load shape", SigtranCapacityProfileDescribesEnterpriseLoadShape);
@@ -89,7 +89,7 @@ Run("SIGTRAN load test plan defines warmup sustained and peak stages", SigtranLo
 Run("SIGTRAN resource budget requires allocation tracking", SigtranResourceBudgetRequiresAllocationTracking);
 Run("SIGTRAN performance readiness separates foundation from benchmark evidence", SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence);
 Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformanceCiProfileKeepsBenchmarksOptIn);
-Run("SIGTRAN phase 14 status summarizes performance foundation", SigtranPhase14StatusSummarizesPerformanceFoundation);
+Run("SIGTRAN performance status summarizes foundation", SigtranPerformanceStatusSummarizesPerformanceFoundation);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -99,7 +99,7 @@ Run("SIGTRAN breaking change review requires baseline migration and approval", S
 Run("SIGTRAN public API baseline covers known surfaces", SigtranPublicApiBaselineCoversKnownSurfaces);
 Run("SIGTRAN API lifecycle readiness separates foundation from stable claims", SigtranApiLifecycleReadinessSeparatesFoundationFromStableClaims);
 Run("SIGTRAN API lifecycle CI profile requires public API diff review", SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview);
-Run("SIGTRAN phase 15 status summarizes API lifecycle foundation", SigtranPhase15StatusSummarizesApiLifecycleFoundation);
+Run("SIGTRAN API lifecycle status summarizes foundation", SigtranApiLifecycleStatusSummarizesApiLifecycleFoundation);
 Run("SIGTRAN configuration schema exposes required transport routing and security keys", SigtranConfigurationSchemaExposesRequiredTransportRoutingAndSecurityKeys);
 Run("SIGTRAN configuration validation reports missing required keys", SigtranConfigurationValidationReportsMissingRequiredKeys);
 Run("SIGTRAN environment matrix separates development lab and production requirements", SigtranEnvironmentMatrixSeparatesDevelopmentLabAndProductionRequirements);
@@ -109,7 +109,17 @@ Run("SIGTRAN routing configuration requires route validation and ambiguity rejec
 Run("SIGTRAN configuration readiness separates foundation from commercial claims", SigtranConfigurationReadinessSeparatesFoundationFromCommercialClaims);
 Run("SIGTRAN configuration CI profile rejects production plaintext secrets", SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets);
 Run("SIGTRAN configuration commercial gate waits for commercial readiness", SigtranConfigurationCommercialGateWaitsForCommercialReadiness);
-Run("SIGTRAN phase 16 status summarizes configuration foundation", SigtranPhase16StatusSummarizesConfigurationFoundation);
+Run("SIGTRAN configuration status summarizes foundation", SigtranConfigurationStatusSummarizesConfigurationFoundation);
+Run("SIGTRAN native SCTP lab scenarios require Linux verification", SigtranNativeSctpLabScenariosRequireLinuxVerification);
+Run("SIGTRAN native SCTP lab artifact manifest validates required artifacts", SigtranNativeSctpLabArtifactManifestValidatesRequiredArtifacts);
+Run("SIGTRAN native SCTP lab run plan includes external peer traffic", SigtranNativeSctpLabRunPlanIncludesExternalPeerTraffic);
+Run("SIGTRAN native SCTP lab commands require Linux and lksctp tools", SigtranNativeSctpLabCommandsRequireLinuxAndLksctpTools);
+Run("SIGTRAN native SCTP lab run report identifies passing evidence", SigtranNativeSctpLabRunReportIdentifiesPassingEvidence);
+Run("SIGTRAN native SCTP lab evidence registry requires all scenarios", SigtranNativeSctpLabEvidenceRegistryRequiresAllScenarios);
+Run("SIGTRAN native SCTP lab readiness separates foundation from evidence", SigtranNativeSctpLabReadinessSeparatesFoundationFromEvidence);
+Run("SIGTRAN native SCTP lab CI profile is opt-in and Linux-only", SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly);
+Run("SIGTRAN native SCTP lab commercial gate waits for complete evidence", SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence);
+Run("SIGTRAN native SCTP lab verification status summarizes foundation", SigtranNativeSctpLabVerificationStatusSummarizesFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -118,7 +128,7 @@ Run("Native SCTP connector reports unsupported platform safely", NativeSctpConne
 Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
 Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
 Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessReportsFoundationAndVerificationGates);
-Run("SIGTRAN phase 8 status summarizes native SCTP foundation", SigtranPhase8StatusSummarizesNativeSctpFoundation);
+Run("SIGTRAN native SCTP implementation status summarizes foundation", SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -128,7 +138,7 @@ Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarr
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
-Run("TCAP phase 4 readiness reports foundation status", TcapPhase4ReadinessReportsFoundationStatus);
+Run("TCAP readiness reports foundation status", TcapReadinessReportsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
 Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
@@ -138,7 +148,7 @@ Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeli
 Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
-Run("MAP SMS phase 5 readiness reports foundation status", MapSmsPhase5ReadinessReportsFoundationStatus);
+Run("MAP SMS readiness reports foundation status", MapSmsReadinessReportsFoundationStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -149,7 +159,7 @@ Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmenta
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
-Run("SCCP phase 3 readiness reports foundation status", SccpPhase3ReadinessReportsFoundationStatus);
+Run("SCCP readiness reports foundation status", SccpReadinessReportsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
@@ -358,15 +368,15 @@ static void SigtranInteroperabilityReadinessReportsFoundationStatus()
     Assert(report.Describe().Contains("externalLab=False", StringComparison.Ordinal), report.Describe());
 }
 
-static void SigtranPhase6StatusSummarizesCompletedTooling()
+static void SigtranInteroperabilityToolingStatusSummarizesCompletedTooling()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase6Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranInteroperabilityToolingStatus.GetCompletedCapabilities();
 
-    AssertEqual("Phase 6 - Interoperability and Tooling", SigtranPhase6Status.PhaseLabel, "Phase 6 label");
-    AssertEqual(10, SigtranPhase6Status.CompletedUnitCount, "Phase 6 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 6 capability count");
-    Assert(capabilities.Contains("interoperability-readiness-report"), "Phase 6 status should include readiness report");
-    Assert(SigtranPhase6Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase6Status.Describe());
+    AssertEqual("Interoperability and Tooling", SigtranInteroperabilityToolingStatus.StatusLabel, "interoperability tooling label");
+    AssertEqual(10, SigtranInteroperabilityToolingStatus.CompletedUnitCount, "interoperability tooling completed unit count");
+    AssertEqual(10, capabilities.Count, "interoperability tooling capability count");
+    Assert(capabilities.Contains("interoperability-readiness-report"), "interoperability tooling status should include readiness report");
+    Assert(SigtranInteroperabilityToolingStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranInteroperabilityToolingStatus.Describe());
 }
 
 static void SigtranCommercialReadinessReportsReleaseGates()
@@ -468,16 +478,16 @@ static void SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates()
     Assert(local.Describe().Contains("security=True", StringComparison.Ordinal), local.Describe());
 }
 
-static void SigtranPhase7StatusSummarizesCommercializationFoundation()
+static void SigtranCommercializationStatusSummarizesCommercializationFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase7Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranCommercializationStatus.GetCompletedCapabilities();
 
-    AssertEqual("Phase 7 - Commercialization and Release Hardening", SigtranPhase7Status.PhaseLabel, "Phase 7 label");
-    AssertEqual(10, SigtranPhase7Status.CompletedUnitCount, "Phase 7 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 7 capability count");
-    Assert(capabilities.Contains("deployment-profiles"), "Phase 7 should include deployment profiles");
-    Assert(SigtranPhase7Status.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranPhase7Status.Describe());
-    Assert(SigtranPhase7Status.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranPhase7Status.Describe());
+    AssertEqual("Commercialization and Release Hardening", SigtranCommercializationStatus.StatusLabel, "commercialization label");
+    AssertEqual(10, SigtranCommercializationStatus.CompletedUnitCount, "commercialization completed unit count");
+    AssertEqual(10, capabilities.Count, "commercialization capability count");
+    Assert(capabilities.Contains("deployment-profiles"), "commercialization status should include deployment profiles");
+    Assert(SigtranCommercializationStatus.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranCommercializationStatus.Describe());
+    Assert(SigtranCommercializationStatus.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranCommercializationStatus.Describe());
 }
 
 static void SigtranInteropLabScenarioCatalogExposesRequiredScenarios()
@@ -622,15 +632,15 @@ static void SigtranCommercialReadinessUsesInteropLabProductionGate()
     Assert(!commercial.CommercialReady, commercial.Describe());
 }
 
-static void SigtranPhase9StatusSummarizesInteropLabFoundation()
+static void SigtranInteropLabStatusSummarizesInteropLabFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase9Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranInteropLabStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase9Status.CompletedUnitCount, "Phase 9 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 9 capability count");
-    Assert(capabilities.Contains("commercial-readiness-gate-integration"), "Phase 9 should include commercial readiness integration");
-    Assert(SigtranPhase9Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase9Status.Describe());
-    Assert(SigtranPhase9Status.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranPhase9Status.Describe());
+    AssertEqual(10, SigtranInteropLabStatus.CompletedUnitCount, "interoperability lab completed unit count");
+    AssertEqual(10, capabilities.Count, "interoperability lab capability count");
+    Assert(capabilities.Contains("commercial-readiness-gate-integration"), "interoperability lab status should include commercial readiness integration");
+    Assert(SigtranInteropLabStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
+    Assert(SigtranInteropLabStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
 }
 
 static void SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps()
@@ -755,15 +765,15 @@ static void SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan()
     Assert(profile.IsRunnable, profile.Describe());
 }
 
-static void SigtranPhase10StatusSummarizesReleaseAutomationFoundation()
+static void SigtranReleaseAutomationStatusSummarizesReleaseAutomationFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase10Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranReleaseAutomationStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase10Status.CompletedUnitCount, "Phase 10 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 10 capability count");
-    Assert(capabilities.Contains("release-gate-evaluator"), "Phase 10 should include release gate evaluator");
-    Assert(SigtranPhase10Status.FoundationReady, SigtranPhase10Status.Describe());
-    Assert(!SigtranPhase10Status.CommercialStableReleaseReady, SigtranPhase10Status.Describe());
+    AssertEqual(10, SigtranReleaseAutomationStatus.CompletedUnitCount, "release automation completed unit count");
+    AssertEqual(10, capabilities.Count, "release automation capability count");
+    Assert(capabilities.Contains("release-gate-evaluator"), "release automation status should include release gate evaluator");
+    Assert(SigtranReleaseAutomationStatus.FoundationReady, SigtranReleaseAutomationStatus.Describe());
+    Assert(!SigtranReleaseAutomationStatus.CommercialStableReleaseReady, SigtranReleaseAutomationStatus.Describe());
 }
 
 static void SigtranDeveloperExperienceCatalogExposesAdoptionAreas()
@@ -864,15 +874,15 @@ static void SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates()
     Assert(profile.RequiresAdoptionReadiness, "DX CI profile should require adoption readiness");
 }
 
-static void SigtranPhase11StatusSummarizesDeveloperExperienceFoundation()
+static void SigtranDeveloperExperienceStatusSummarizesDeveloperExperienceFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase11Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranDeveloperExperienceStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase11Status.CompletedUnitCount, "Phase 11 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 11 capability count");
-    Assert(capabilities.Contains("developer-experience-ci-profile"), "Phase 11 should include DX CI profile");
-    Assert(SigtranPhase11Status.FoundationReady, SigtranPhase11Status.Describe());
-    Assert(!SigtranPhase11Status.EnterpriseProductionReady, SigtranPhase11Status.Describe());
+    AssertEqual(10, SigtranDeveloperExperienceStatus.CompletedUnitCount, "developer experience completed unit count");
+    AssertEqual(10, capabilities.Count, "developer experience capability count");
+    Assert(capabilities.Contains("developer-experience-ci-profile"), "developer experience status should include DX CI profile");
+    Assert(SigtranDeveloperExperienceStatus.FoundationReady, SigtranDeveloperExperienceStatus.Describe());
+    Assert(!SigtranDeveloperExperienceStatus.EnterpriseProductionReady, SigtranDeveloperExperienceStatus.Describe());
 }
 
 static void SigtranOperationsCatalogExposesProductionSupportAreas()
@@ -967,15 +977,15 @@ static void SigtranOperationsCiProfileRequiresOperationsReadiness()
     Assert(profile.RequiresOperationsReadiness, "operations CI should require operations readiness");
 }
 
-static void SigtranPhase12StatusSummarizesOperationsFoundation()
+static void SigtranOperationsStatusSummarizesOperationsFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase12Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranOperationsStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase12Status.CompletedUnitCount, "Phase 12 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 12 capability count");
-    Assert(capabilities.Contains("operations-ci-profile"), "Phase 12 should include operations CI profile");
-    Assert(SigtranPhase12Status.FoundationReady, SigtranPhase12Status.Describe());
-    Assert(!SigtranPhase12Status.ProductionOperationsReady, SigtranPhase12Status.Describe());
+    AssertEqual(10, SigtranOperationsStatus.CompletedUnitCount, "operations completed unit count");
+    AssertEqual(10, capabilities.Count, "operations capability count");
+    Assert(capabilities.Contains("operations-ci-profile"), "operations status should include operations CI profile");
+    Assert(SigtranOperationsStatus.FoundationReady, SigtranOperationsStatus.Describe());
+    Assert(!SigtranOperationsStatus.ProductionOperationsReady, SigtranOperationsStatus.Describe());
 }
 
 static void SigtranComplianceCatalogExposesEnterpriseAuditAreas()
@@ -1064,15 +1074,15 @@ static void SigtranComplianceCommercialGateWaitsForCommercialReadiness()
     Assert(!result.CanClaimEnterpriseCompliance, result.Describe());
 }
 
-static void SigtranPhase13StatusSummarizesComplianceFoundation()
+static void SigtranComplianceStatusSummarizesComplianceFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase13Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranComplianceStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase13Status.CompletedUnitCount, "Phase 13 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 13 capability count");
-    Assert(capabilities.Contains("compliance-ci-profile"), "Phase 13 should include compliance CI profile");
-    Assert(SigtranPhase13Status.FoundationReady, SigtranPhase13Status.Describe());
-    Assert(!SigtranPhase13Status.EnterpriseComplianceReady, SigtranPhase13Status.Describe());
+    AssertEqual(10, SigtranComplianceStatus.CompletedUnitCount, "compliance completed unit count");
+    AssertEqual(10, capabilities.Count, "compliance capability count");
+    Assert(capabilities.Contains("compliance-ci-profile"), "compliance status should include compliance CI profile");
+    Assert(SigtranComplianceStatus.FoundationReady, SigtranComplianceStatus.Describe());
+    Assert(!SigtranComplianceStatus.EnterpriseComplianceReady, SigtranComplianceStatus.Describe());
 }
 
 static void SigtranPerformanceCatalogExposesBenchmarkCapacityAndResourceAreas()
@@ -1160,15 +1170,15 @@ static void SigtranPerformanceCiProfileKeepsBenchmarksOptIn()
     Assert(profile.RequiresOptInBenchmarks, "long-running benchmarks should be opt-in");
 }
 
-static void SigtranPhase14StatusSummarizesPerformanceFoundation()
+static void SigtranPerformanceStatusSummarizesPerformanceFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase14Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranPerformanceStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase14Status.CompletedUnitCount, "Phase 14 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 14 capability count");
-    Assert(capabilities.Contains("performance-ci-profile"), "Phase 14 should include performance CI profile");
-    Assert(SigtranPhase14Status.FoundationReady, SigtranPhase14Status.Describe());
-    Assert(!SigtranPhase14Status.ProductionPerformanceReady, SigtranPhase14Status.Describe());
+    AssertEqual(10, SigtranPerformanceStatus.CompletedUnitCount, "performance completed unit count");
+    AssertEqual(10, capabilities.Count, "performance capability count");
+    Assert(capabilities.Contains("performance-ci-profile"), "performance status should include performance CI profile");
+    Assert(SigtranPerformanceStatus.FoundationReady, SigtranPerformanceStatus.Describe());
+    Assert(!SigtranPerformanceStatus.ProductionPerformanceReady, SigtranPerformanceStatus.Describe());
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()
@@ -1258,15 +1268,15 @@ static void SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview()
     Assert(profile.RequiresPublicApiDiffReview, "API lifecycle CI should require public API diff review");
 }
 
-static void SigtranPhase15StatusSummarizesApiLifecycleFoundation()
+static void SigtranApiLifecycleStatusSummarizesApiLifecycleFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase15Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranApiLifecycleStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase15Status.CompletedUnitCount, "Phase 15 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 15 capability count");
-    Assert(capabilities.Contains("api-lifecycle-ci-profile"), "Phase 15 should include API lifecycle CI profile");
-    Assert(SigtranPhase15Status.FoundationReady, SigtranPhase15Status.Describe());
-    Assert(!SigtranPhase15Status.StableApiLifecycleReady, SigtranPhase15Status.Describe());
+    AssertEqual(10, SigtranApiLifecycleStatus.CompletedUnitCount, "API lifecycle completed unit count");
+    AssertEqual(10, capabilities.Count, "API lifecycle capability count");
+    Assert(capabilities.Contains("api-lifecycle-ci-profile"), "API lifecycle status should include API lifecycle CI profile");
+    Assert(SigtranApiLifecycleStatus.FoundationReady, SigtranApiLifecycleStatus.Describe());
+    Assert(!SigtranApiLifecycleStatus.StableApiLifecycleReady, SigtranApiLifecycleStatus.Describe());
 }
 
 static void SigtranConfigurationSchemaExposesRequiredTransportRoutingAndSecurityKeys()
@@ -1365,15 +1375,117 @@ static void SigtranConfigurationCommercialGateWaitsForCommercialReadiness()
     Assert(!result.CanClaimProductionConfiguration, result.Describe());
 }
 
-static void SigtranPhase16StatusSummarizesConfigurationFoundation()
+static void SigtranConfigurationStatusSummarizesConfigurationFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase16Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranConfigurationStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranPhase16Status.CompletedUnitCount, "Phase 16 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 16 capability count");
-    Assert(capabilities.Contains("configuration-ci-profile"), "Phase 16 should include configuration CI profile");
-    Assert(SigtranPhase16Status.FoundationReady, SigtranPhase16Status.Describe());
-    Assert(!SigtranPhase16Status.ProductionConfigurationReady, SigtranPhase16Status.Describe());
+    AssertEqual(10, SigtranConfigurationStatus.CompletedUnitCount, "configuration completed unit count");
+    AssertEqual(10, capabilities.Count, "configuration capability count");
+    Assert(capabilities.Contains("configuration-ci-profile"), "configuration status should include configuration CI profile");
+    Assert(SigtranConfigurationStatus.FoundationReady, SigtranConfigurationStatus.Describe());
+    Assert(!SigtranConfigurationStatus.ProductionConfigurationReady, SigtranConfigurationStatus.Describe());
+}
+
+static void SigtranNativeSctpLabScenariosRequireLinuxVerification()
+{
+    IReadOnlyList<SigtranNativeSctpLabScenario> scenarios = SigtranNativeSctpLabScenarios.GetScenarios();
+
+    AssertEqual(4, scenarios.Count, "native SCTP lab scenario count");
+    Assert(scenarios.All(scenario => scenario.RequiresLinux), "all native SCTP lab scenarios should require Linux");
+    Assert(scenarios.Any(scenario => scenario.Kind == SigtranNativeSctpLabScenarioKind.ExternalPeerTraffic && scenario.RequiresExternalPeer), "external peer traffic scenario should require peer");
+}
+
+static void SigtranNativeSctpLabArtifactManifestValidatesRequiredArtifacts()
+{
+    SigtranNativeSctpLabScenario scenario = SigtranNativeSctpLabScenarios.GetScenarios()[1];
+    SigtranNativeSctpLabArtifactManifest manifest = new(scenario.Id);
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PacketCapture, "artifacts/loopback.pcapng"));
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.SdkTrace, "artifacts/sdk-trace.log"));
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PlatformReport, "artifacts/health.json"));
+
+    Assert(manifest.Satisfies(scenario), "manifest should satisfy loopback scenario");
+}
+
+static void SigtranNativeSctpLabRunPlanIncludesExternalPeerTraffic()
+{
+    SigtranNativeSctpLabRunPlan plan = SigtranNativeSctpLabRunPlans.CreateDefault();
+
+    AssertEqual("native-sctp-linux-verification", plan.Name, "native SCTP lab plan name");
+    AssertEqual(4, plan.Scenarios.Count, "native SCTP lab plan scenario count");
+    Assert(plan.RequiresRootOrCapabilities, "native SCTP lab should require root or capabilities");
+    Assert(plan.RequiresPacketCapture, "native SCTP lab should require packet capture");
+    Assert(plan.IncludesExternalPeer, "native SCTP lab should include external peer scenario");
+}
+
+static void SigtranNativeSctpLabCommandsRequireLinuxAndLksctpTools()
+{
+    SigtranNativeSctpLabCommandSet commands = SigtranNativeSctpLabCommands.CreateDefault();
+
+    Assert(commands.RequiresLinux, "native SCTP lab commands should require Linux");
+    Assert(commands.RequiresLksctpTools, "native SCTP lab commands should require lksctp-tools");
+    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_NATIVE_SCTP_LAB=1", StringComparison.Ordinal)), "native SCTP lab commands should enable lab variable");
+}
+
+static void SigtranNativeSctpLabRunReportIdentifiesPassingEvidence()
+{
+    SigtranNativeSctpLabScenario scenario = SigtranNativeSctpLabScenarios.GetScenarios()[0];
+    SigtranNativeSctpLabArtifactManifest manifest = new(scenario.Id);
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PlatformReport, "artifacts/platform-probe.json"));
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PlatformReport, "artifacts/kernel.txt"));
+    SigtranNativeSctpLabRunReport report = new(scenario, manifest, SigtranNativeSctpLabRunStatus.Passed, "Linux 6.x", DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch.AddMinutes(1));
+
+    Assert(report.HasPassingEvidence, report.Describe());
+}
+
+static void SigtranNativeSctpLabEvidenceRegistryRequiresAllScenarios()
+{
+    SigtranNativeSctpLabEvidenceRegistry registry = new();
+    SigtranNativeSctpLabScenario scenario = SigtranNativeSctpLabScenarios.GetScenarios()[0];
+    SigtranNativeSctpLabArtifactManifest manifest = new(scenario.Id);
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PlatformReport, "artifacts/platform-probe.json"));
+    manifest.Add(new SigtranNativeSctpLabArtifact(SigtranNativeSctpLabArtifactKind.PlatformReport, "artifacts/kernel.txt"));
+    registry.Add(new SigtranNativeSctpLabRunReport(scenario, manifest, SigtranNativeSctpLabRunStatus.Passed, "Linux 6.x", DateTimeOffset.UnixEpoch));
+
+    Assert(!registry.HasCompletePassingEvidence(), "partial native SCTP evidence should not unlock production verification");
+}
+
+static void SigtranNativeSctpLabReadinessSeparatesFoundationFromEvidence()
+{
+    SigtranNativeSctpLabReadinessReport report = SigtranNativeSctpLabReadiness.GetReport();
+
+    Assert(report.FoundationReady, "native SCTP lab foundation should be ready");
+    Assert(!report.HasCompletePassingEvidence, "native SCTP lab should wait for real evidence");
+    Assert(!report.ProductionReady, "native SCTP lab production readiness should wait for evidence");
+}
+
+static void SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly()
+{
+    SigtranNativeSctpLabCiProfile profile = SigtranNativeSctpLabCi.CreateDefault();
+
+    AssertEqual("SIGTRAN_NATIVE_SCTP_LAB", profile.EnableVariable, "native SCTP lab enable variable");
+    Assert(profile.RequiresLinuxRunner, "native SCTP lab CI should require Linux runner");
+    Assert(!profile.IsEnabled(new Dictionary<string, string>()), "native SCTP lab CI should be opt-in");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_NATIVE_SCTP_LAB"] = "true" }), "native SCTP lab CI should enable from variable");
+}
+
+static void SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence()
+{
+    SigtranNativeSctpLabCommercialGateResult result = SigtranNativeSctpLabCommercialGate.Evaluate();
+
+    Assert(result.LabFoundationReady, result.Describe());
+    Assert(!result.HasCompletePassingEvidence, result.Describe());
+    Assert(!result.CanClaimNativeSctpProduction, result.Describe());
+}
+
+static void SigtranNativeSctpLabVerificationStatusSummarizesFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranNativeSctpLabVerificationStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranNativeSctpLabVerificationStatus.CompletedUnitCount, "native SCTP lab verification completed unit count");
+    AssertEqual(10, capabilities.Count, "native SCTP lab verification capability count");
+    Assert(capabilities.Contains("native-sctp-lab-ci-profile"), "native SCTP lab verification status should include native SCTP lab CI profile");
+    Assert(SigtranNativeSctpLabVerificationStatus.FoundationReady, SigtranNativeSctpLabVerificationStatus.Describe());
+    Assert(!SigtranNativeSctpLabVerificationStatus.NativeSctpProductionVerified, SigtranNativeSctpLabVerificationStatus.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
@@ -1522,16 +1634,16 @@ static void NativeSctpReadinessReportsFoundationAndVerificationGates()
     Assert(report.Describe().Contains("linuxVerified=False", StringComparison.Ordinal), report.Describe());
 }
 
-static void SigtranPhase8StatusSummarizesNativeSctpFoundation()
+static void SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranPhase8Status.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranNativeSctpImplementationStatus.GetCompletedCapabilities();
 
-    AssertEqual("Phase 8 - Native SCTP Production Transport", SigtranPhase8Status.PhaseLabel, "Phase 8 label");
-    AssertEqual(10, SigtranPhase8Status.CompletedUnitCount, "Phase 8 completed unit count");
-    AssertEqual(10, capabilities.Count, "Phase 8 capability count");
-    Assert(capabilities.Contains("native-sctp-listener"), "Phase 8 should include listener");
-    Assert(SigtranPhase8Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase8Status.Describe());
-    Assert(SigtranPhase8Status.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranPhase8Status.Describe());
+    AssertEqual("Native SCTP Production Transport", SigtranNativeSctpImplementationStatus.StatusLabel, "native SCTP implementation label");
+    AssertEqual(10, SigtranNativeSctpImplementationStatus.CompletedUnitCount, "native SCTP implementation completed unit count");
+    AssertEqual(10, capabilities.Count, "native SCTP implementation capability count");
+    Assert(capabilities.Contains("native-sctp-listener"), "native SCTP implementation status should include listener");
+    Assert(SigtranNativeSctpImplementationStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranNativeSctpImplementationStatus.Describe());
+    Assert(SigtranNativeSctpImplementationStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranNativeSctpImplementationStatus.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
@@ -1708,16 +1820,16 @@ static void TcapSessionBuilderCreatesBeginAndEndMessages()
     AssertEqual("03", decodedEnd.DestinationTransactionId?.ToString(), "TCAP built End destination id");
 }
 
-static void TcapPhase4ReadinessReportsFoundationStatus()
+static void TcapReadinessReportsFoundationStatus()
 {
-    AssertEqual("TCAP BER foundation", TcapPhase4Readiness.ReleaseLabel, "TCAP readiness label");
-    AssertEqual(7, TcapPhase4Readiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
-    AssertEqual(7, TcapPhase4Readiness.GetFoundationCapabilities().Count, "TCAP readiness capability name count");
+    AssertEqual("TCAP BER foundation", TcapReadiness.ReleaseLabel, "TCAP readiness label");
+    AssertEqual(7, TcapReadiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
+    AssertEqual(7, TcapReadiness.GetFoundationCapabilities().Count, "TCAP readiness capability name count");
     Assert(
-        TcapPhase4Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
-        TcapPhase4Readiness.ProductionGateDescription);
+        TcapReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        TcapReadiness.ProductionGateDescription);
 
-    TcapPhase4ReadinessReport report = TcapPhase4Readiness.GetReport();
+    TcapReadinessReport report = TcapReadiness.GetReport();
     Assert(report.FoundationReady, "TCAP foundation should be ready");
     Assert(!report.IsProductionReady, "TCAP should not claim production readiness without interop vectors");
     AssertEqual(7, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
@@ -1862,15 +1974,15 @@ static void MapSmsTcapClientBuildsBeginInvokeTransactions()
     AssertEqual("989121234567", decodedMo!.SmRpOa.Digits, "MAP TCAP decoded MO originator");
 }
 
-static void MapSmsPhase5ReadinessReportsFoundationStatus()
+static void MapSmsReadinessReportsFoundationStatus()
 {
-    AssertEqual("MAP SMS profile foundation", MapSmsPhase5Readiness.ReleaseLabel, "MAP readiness label");
-    AssertEqual(8, MapSmsPhase5Readiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
+    AssertEqual("MAP SMS profile foundation", MapSmsReadiness.ReleaseLabel, "MAP readiness label");
+    AssertEqual(8, MapSmsReadiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
     Assert(
-        MapSmsPhase5Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
-        MapSmsPhase5Readiness.ProductionGateDescription);
+        MapSmsReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        MapSmsReadiness.ProductionGateDescription);
 
-    MapSmsPhase5ReadinessReport report = MapSmsPhase5Readiness.GetReport();
+    MapSmsReadinessReport report = MapSmsReadiness.GetReport();
     Assert(report.FoundationReady, "MAP SMS foundation should be ready");
     Assert(!report.IsProductionReady, "MAP SMS should not claim production readiness without interop vectors");
     AssertEqual(8, report.FoundationCapabilityCount, "MAP completed foundation capabilities");
@@ -2106,15 +2218,15 @@ static void SccpRouteTableResolvesSsnAndGlobalTitleRoutes()
     AssertEqual(3, table.Snapshot().Count, "SCCP route snapshot count");
 }
 
-static void SccpPhase3ReadinessReportsFoundationStatus()
+static void SccpReadinessReportsFoundationStatus()
 {
-    AssertEqual("MTP3 and SCCP foundation", SccpPhase3Readiness.ReleaseLabel, "SCCP readiness label");
-    AssertEqual(6, SccpPhase3Readiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
+    AssertEqual("MTP3 and SCCP foundation", SccpReadiness.ReleaseLabel, "SCCP readiness label");
+    AssertEqual(6, SccpReadiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
     Assert(
-        SccpPhase3Readiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
-        SccpPhase3Readiness.ProductionGateDescription);
+        SccpReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
+        SccpReadiness.ProductionGateDescription);
 
-    SccpPhase3ReadinessReport report = SccpPhase3Readiness.GetReport();
+    SccpReadinessReport report = SccpReadiness.GetReport();
     Assert(report.FoundationReady, "SCCP foundation should be ready");
     Assert(!report.IsProductionReady, "SCCP should not claim production readiness without interop vectors");
     AssertEqual(6, report.FoundationCapabilityCount, "SCCP completed foundation capabilities");

@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 15 API lifecycle readiness status.
+/// Provides API lifecycle readiness status.
 /// </summary>
-public static class SigtranPhase15Status
+public static class SigtranApiLifecycleStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase15Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 15 - API Stability Deprecation And Migration Readiness";
+    public const string StatusLabel = "API Stability Deprecation And Migration Readiness";
 
-    /// <summary>The number of completed Phase 15 work units.</summary>
+    /// <summary>The number of completed API lifecycle work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 15 capability names.</summary>
+    /// <summary>Returns the completed API lifecycle capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 15 API lifecycle foundation is ready.</summary>
+    /// <summary>Whether the API lifecycle foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranApiLifecycleReadiness.GetReport().FoundationReady
         && SigtranApiLifecycleCi.CreateDefault().RequiresApiLifecycleReadiness;
@@ -41,10 +41,10 @@ public static class SigtranPhase15Status
     public static bool StableApiLifecycleReady => FoundationReady
         && SigtranApiLifecycleReadiness.GetReport().StableApiLifecycleReady;
 
-    /// <summary>Formats a compact Phase 15 status summary.</summary>
-    /// <returns>The Phase 15 status summary.</returns>
+    /// <summary>Formats a compact API lifecycle status summary.</summary>
+    /// <returns>The API lifecycle status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} stableApiLifecycleReady={StableApiLifecycleReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} stableApiLifecycleReady={StableApiLifecycleReady}";
     }
 }

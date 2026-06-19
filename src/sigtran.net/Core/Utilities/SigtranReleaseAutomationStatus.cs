@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 10 release automation and supply-chain status.
+/// Provides release automation and supply-chain status.
 /// </summary>
-public static class SigtranPhase10Status
+public static class SigtranReleaseAutomationStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase10Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 10 - Release Automation And Supply Chain";
+    public const string StatusLabel = "Release Automation And Supply Chain";
 
-    /// <summary>The number of completed Phase 10 work units.</summary>
+    /// <summary>The number of completed release automation work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 10 capability names.</summary>
+    /// <summary>Returns the completed release automation capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 10 foundation is ready.</summary>
+    /// <summary>Whether the release automation foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranReleaseAutomation.CreateDefaultPlan().Steps.Count > 0
         && SigtranReleaseCiProfiles.CreateDefault().IsRunnable;
@@ -41,10 +41,10 @@ public static class SigtranPhase10Status
     public static bool CommercialStableReleaseReady => FoundationReady
         && SigtranCommercialReadiness.GetReport().CommercialReady;
 
-    /// <summary>Formats a compact Phase 10 status summary.</summary>
-    /// <returns>The Phase 10 status summary.</returns>
+    /// <summary>Formats a compact release automation status summary.</summary>
+    /// <returns>The release automation status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} commercialStableReady={CommercialStableReleaseReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} commercialStableReady={CommercialStableReleaseReady}";
     }
 }

@@ -1,7 +1,7 @@
 namespace sigtran.net.Layers.SCTP;
 
 /// <summary>
-/// Readiness report for Phase 8 native SCTP implementation.
+/// Readiness report for native SCTP implementation.
 /// </summary>
 public sealed class NativeSctpReadinessReport
 {
@@ -88,7 +88,7 @@ public sealed class NativeSctpReadinessReport
 }
 
 /// <summary>
-/// Provides Phase 8 native SCTP readiness information.
+/// Provides native SCTP readiness information.
 /// </summary>
 public static class NativeSctpReadiness
 {

@@ -1,9 +1,9 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Provides the Phase 13 compliance and audit readiness status.
+/// Provides compliance and audit readiness status.
 /// </summary>
-public static class SigtranPhase13Status
+public static class SigtranComplianceStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -20,19 +20,19 @@ public static class SigtranPhase13Status
     ];
 
     /// <summary>The phase label.</summary>
-    public const string PhaseLabel = "Phase 13 - Compliance And Audit Readiness";
+    public const string StatusLabel = "Compliance And Audit Readiness";
 
-    /// <summary>The number of completed Phase 13 work units.</summary>
+    /// <summary>The number of completed compliance work units.</summary>
     public const int CompletedUnitCount = 10;
 
-    /// <summary>Returns the completed Phase 13 capability names.</summary>
+    /// <summary>Returns the completed compliance capability names.</summary>
     /// <returns>The completed capability names.</returns>
     public static IReadOnlyList<string> GetCompletedCapabilities()
     {
         return Capabilities.ToArray();
     }
 
-    /// <summary>Whether the Phase 13 compliance foundation is ready.</summary>
+    /// <summary>Whether the compliance foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
         && SigtranComplianceReadiness.GetReport().FoundationReady
         && SigtranComplianceCi.CreateDefault().RequiresComplianceReadiness;
@@ -41,10 +41,10 @@ public static class SigtranPhase13Status
     public static bool EnterpriseComplianceReady => FoundationReady
         && SigtranComplianceReadiness.GetReport().EnterpriseComplianceReady;
 
-    /// <summary>Formats a compact Phase 13 status summary.</summary>
-    /// <returns>The Phase 13 status summary.</returns>
+    /// <summary>Formats a compact compliance status summary.</summary>
+    /// <returns>The compliance status summary.</returns>
     public static string Describe()
     {
-        return $"{PhaseLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} enterpriseComplianceReady={EnterpriseComplianceReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} enterpriseComplianceReady={EnterpriseComplianceReady}";
     }
 }

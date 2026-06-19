@@ -3,9 +3,9 @@ namespace sigtran.net.Layers.TCAP;
 /// <summary>
 /// Readiness report for the TCAP BER foundation phase.
 /// </summary>
-public readonly struct TcapPhase4ReadinessReport
+public readonly struct TcapReadinessReport
 {
-    /// <summary>Creates a TCAP Phase 4 readiness report.</summary>
+    /// <summary>Creates a TCAP readiness report.</summary>
     /// <param name="hasBerPrimitives">Whether BER TLV primitives are available.</param>
     /// <param name="hasTransactionModels">Whether transaction ids and package tags are available.</param>
     /// <param name="hasComponentCodecs">Whether Invoke, result, error, and reject component codecs are available.</param>
@@ -14,7 +14,7 @@ public readonly struct TcapPhase4ReadinessReport
     /// <param name="hasDialogueState">Whether dialogue state and timeout controls are available.</param>
     /// <param name="hasSessionBuilder">Whether high-level transaction builders are available.</param>
     /// <param name="hasInteropVectors">Whether external TCAP interoperability vectors are present.</param>
-    public TcapPhase4ReadinessReport(
+    public TcapReadinessReport(
         bool hasBerPrimitives,
         bool hasTransactionModels,
         bool hasComponentCodecs,
@@ -69,7 +69,7 @@ public readonly struct TcapPhase4ReadinessReport
         + Count(HasSessionBuilder);
 
     /// <summary>Whether the TCAP foundation is ready.</summary>
-    public bool FoundationReady => FoundationCapabilityCount == TcapPhase4Readiness.RequiredFoundationCapabilityCount;
+    public bool FoundationReady => FoundationCapabilityCount == TcapReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether TCAP can claim production interoperability readiness.</summary>
     public bool IsProductionReady => FoundationReady && HasInteropVectors;
@@ -78,18 +78,18 @@ public readonly struct TcapPhase4ReadinessReport
     /// <returns>A compact readiness summary.</returns>
     public string Describe()
     {
-        return $"tcapFoundationReady={FoundationReady} tcapProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{TcapPhase4Readiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
+        return $"tcapFoundationReady={FoundationReady} tcapProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{TcapReadiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
     }
 
     private static int Count(bool value) => value ? 1 : 0;
 }
 
 /// <summary>
-/// Provides readiness information for Phase 4 TCAP work.
+/// Provides readiness information for TCAP work.
 /// </summary>
-public static class TcapPhase4Readiness
+public static class TcapReadiness
 {
-    /// <summary>The release label for Phase 4.</summary>
+    /// <summary>The release label for TCAP readiness.</summary>
     public const string ReleaseLabel = "TCAP BER foundation";
 
     /// <summary>The number of required foundation capabilities.</summary>
@@ -114,9 +114,9 @@ public static class TcapPhase4Readiness
         ];
     }
 
-    /// <summary>Builds the current Phase 4 readiness report.</summary>
-    /// <returns>The current Phase 4 readiness report.</returns>
-    public static TcapPhase4ReadinessReport GetReport()
+    /// <summary>Builds the current TCAP readiness report.</summary>
+    /// <returns>The current TCAP readiness report.</returns>
+    public static TcapReadinessReport GetReport()
     {
         return new(
             hasBerPrimitives: true,

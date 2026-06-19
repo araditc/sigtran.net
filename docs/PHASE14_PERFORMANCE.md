@@ -73,4 +73,4 @@ Long-running benchmarks remain opt-in so normal pull-request validation stays fa
 
 ## Phase Status
 
-`SigtranPhase14Status.Describe()` summarizes the completed Phase 14 units and separates performance foundation readiness from production performance readiness.
+`SigtranPerformanceStatus.Describe()` summarizes the completed Phase 14 units and separates performance foundation readiness from production performance readiness.

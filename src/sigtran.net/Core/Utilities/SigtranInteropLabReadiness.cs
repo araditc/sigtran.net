@@ -1,7 +1,7 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes the Phase 9 interoperability lab readiness state.
+/// Describes the interoperability lab readiness state.
 /// </summary>
 public sealed class SigtranInteropLabReadinessReport
 {
@@ -79,12 +79,12 @@ public sealed class SigtranInteropLabReadinessReport
 }
 
 /// <summary>
-/// Provides the current Phase 9 interoperability lab readiness report.
+/// Provides the current interoperability lab readiness report.
 /// </summary>
 public static class SigtranInteropLabReadiness
 {
-    /// <summary>Returns the current Phase 9 interoperability lab readiness report.</summary>
-    /// <returns>The current Phase 9 interoperability lab readiness report.</returns>
+    /// <summary>Returns the current interoperability lab readiness report.</summary>
+    /// <returns>The current interoperability lab readiness report.</returns>
     public static SigtranInteropLabReadinessReport GetReport()
     {
         return new(

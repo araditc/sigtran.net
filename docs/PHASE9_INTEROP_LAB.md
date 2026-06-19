@@ -79,4 +79,4 @@ This keeps commercial readiness blocked until the lab foundation is ready and at
 
 ## Phase Status
 
-`SigtranPhase9Status.Describe()` summarizes the completed Phase 9 units and exposes the same foundation-ready versus production-ready split.
+`SigtranInteropLabStatus.Describe()` summarizes the completed Phase 9 units and exposes the same foundation-ready versus production-ready split.

@@ -3,9 +3,9 @@ namespace sigtran.net.Layers.SCCP;
 /// <summary>
 /// Readiness report for the MTP3 and SCCP phase.
 /// </summary>
-public readonly struct SccpPhase3ReadinessReport
+public readonly struct SccpReadinessReport
 {
-    /// <summary>Creates a Phase 3 readiness report.</summary>
+    /// <summary>Creates a SCCP readiness report.</summary>
     /// <param name="hasMtp3Routing">Whether MTP3 SIO and routing labels are available.</param>
     /// <param name="hasPartyAddressing">Whether SCCP party addressing is available.</param>
     /// <param name="hasConnectionlessCodecs">Whether UDT, XUDT, and LUDT codecs are available.</param>
@@ -13,7 +13,7 @@ public readonly struct SccpPhase3ReadinessReport
     /// <param name="hasServiceMessages">Whether UDTS return-cause messages are available.</param>
     /// <param name="hasRoutingApis">Whether route-on-SSN and route-on-GT APIs are available.</param>
     /// <param name="hasInteropVectors">Whether external interoperability vectors are present.</param>
-    public SccpPhase3ReadinessReport(
+    public SccpReadinessReport(
         bool hasMtp3Routing,
         bool hasPartyAddressing,
         bool hasConnectionlessCodecs,
@@ -61,8 +61,8 @@ public readonly struct SccpPhase3ReadinessReport
         + Count(HasServiceMessages)
         + Count(HasRoutingApis);
 
-    /// <summary>Whether the SDK foundation for Phase 3 is complete.</summary>
-    public bool FoundationReady => FoundationCapabilityCount == SccpPhase3Readiness.RequiredFoundationCapabilityCount;
+    /// <summary>Whether the SDK foundation for MTP3 and SCCP is complete.</summary>
+    public bool FoundationReady => FoundationCapabilityCount == SccpReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether SCCP is ready for production interoperability claims.</summary>
     public bool IsProductionReady => FoundationReady && HasInteropVectors;
@@ -71,18 +71,18 @@ public readonly struct SccpPhase3ReadinessReport
     /// <returns>A compact readiness summary.</returns>
     public string Describe()
     {
-        return $"sccpFoundationReady={FoundationReady} sccpProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{SccpPhase3Readiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
+        return $"sccpFoundationReady={FoundationReady} sccpProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{SccpReadiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
     }
 
     private static int Count(bool value) => value ? 1 : 0;
 }
 
 /// <summary>
-/// Provides readiness information for Phase 3 MTP3 and SCCP work.
+/// Provides readiness information for MTP3 and SCCP work.
 /// </summary>
-public static class SccpPhase3Readiness
+public static class SccpReadiness
 {
-    /// <summary>The release label for Phase 3.</summary>
+    /// <summary>The release label for MTP3 and SCCP readiness.</summary>
     public const string ReleaseLabel = "MTP3 and SCCP foundation";
 
     /// <summary>The number of required SDK foundation capabilities.</summary>
@@ -91,9 +91,9 @@ public static class SccpPhase3Readiness
     /// <summary>Explains the remaining production gate.</summary>
     public const string ProductionGateDescription = "External SCCP interoperability vectors and network trace validation are required before production claims.";
 
-    /// <summary>Builds the current Phase 3 readiness report.</summary>
-    /// <returns>The current Phase 3 readiness report.</returns>
-    public static SccpPhase3ReadinessReport GetReport()
+    /// <summary>Builds the current SCCP readiness report.</summary>
+    /// <returns>The current SCCP readiness report.</returns>
+    public static SccpReadinessReport GetReport()
     {
         return new(
             hasMtp3Routing: true,
