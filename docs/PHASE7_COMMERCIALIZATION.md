@@ -68,3 +68,7 @@ Commercial release governance remains incomplete until signing and SBOM automati
 `SECURITY.md` defines the public disclosure process and response targets. `SigtranSecurityPolicy.CreateCurrentPolicy()` exposes the same values to SDK governance tooling.
 
 Critical vulnerabilities target a 2-day response. High severity vulnerabilities target a 7-day response. Other severities target a 14-day response.
+
+## Compatibility Policy
+
+`docs/COMPATIBILITY.md` defines the public versioning posture. The SDK targets `net10.0`, follows Semantic Versioning, allows necessary breaking changes before stable release, and requires a major version for breaking changes after stable release.

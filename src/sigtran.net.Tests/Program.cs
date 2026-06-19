@@ -26,6 +26,7 @@ Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEviden
 Run("SIGTRAN release candidate manifest reports promotion gates", SigtranReleaseCandidateManifestReportsPromotionGates);
 Run("SIGTRAN package governance reports commercial requirements", SigtranPackageGovernanceReportsCommercialRequirements);
 Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
+Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -337,6 +338,17 @@ static void SigtranSecurityPolicyReportsResponseTargets()
     AssertEqual(TimeSpan.FromDays(2), policy.GetResponseTime(SigtranSecuritySeverity.Critical), "critical security response time");
     AssertEqual(TimeSpan.FromDays(7), policy.GetResponseTime(SigtranSecuritySeverity.High), "high security response time");
     AssertEqual(TimeSpan.FromDays(14), policy.GetResponseTime(SigtranSecuritySeverity.Low), "low security response time");
+}
+
+static void SigtranCompatibilityPolicyReportsSemVerRules()
+{
+    SigtranCompatibilityPolicy policy = SigtranCompatibility.CreateCurrentPolicy();
+
+    AssertEqual("net10.0", policy.TargetFramework, "compatibility target framework");
+    Assert(policy.UsesSemanticVersioning, "compatibility policy should use SemVer");
+    Assert(policy.AllowsBreakingChangesBeforeStable, "pre-stable compatibility should allow breaking changes");
+    Assert(policy.StableApiRequiresMajorVersion, "stable breaking changes should require major version");
+    Assert(policy.Describe().Contains("semver=True", StringComparison.Ordinal), policy.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
