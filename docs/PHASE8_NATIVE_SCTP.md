@@ -47,3 +47,14 @@ using NativeSctpSocketAdapter adapter = new(socket, options);
 ```
 
 The adapter exposes lifecycle state and `SctpTransportHealth` snapshots. It currently sends and receives complete socket messages through the native socket API; SCTP ancillary metadata handling is tracked separately before production readiness can be claimed.
+
+## Connector
+
+`NativeSctpConnector` builds a connection plan, optionally binds the local endpoint, applies `SctpConnectionOptions.ConnectTimeout`, and returns an established `NativeSctpSocketAdapter`.
+
+```csharp
+NativeSctpConnector connector = new();
+NativeSctpSocketAdapter socket = await connector.ConnectAsync(options);
+```
+
+The connector is Linux-native only through `NativeSctpSocketFactory`; unsupported platforms fail before attempting network I/O.

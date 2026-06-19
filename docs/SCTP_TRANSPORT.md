@@ -130,3 +130,5 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpConnectionPlanner` resolves configured SCTP endpoints to `IPEndPoint` values before native bind/connect attempts.
 
 `NativeSctpSocketAdapter` wraps an SCTP socket as `ISctpSocket` and reports `SctpTransportHealth` snapshots for native associations.
+
+`NativeSctpConnector` performs the client-side bind/connect path and returns an established native adapter.

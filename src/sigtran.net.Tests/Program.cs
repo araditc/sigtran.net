@@ -34,6 +34,7 @@ Run("Native SCTP platform probe reports socket creation capability", NativeSctpP
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
 Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapterReportsLifecycleHealth);
+Run("Native SCTP connector reports unsupported platform safely", NativeSctpConnectorReportsUnsupportedPlatformSafely);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -469,6 +470,26 @@ static void NativeSctpSocketAdapterReportsLifecycleHealth()
     AssertEqual((ushort)2, health.OutboundStreams, "native adapter outbound streams");
     AssertEqual((ushort)3, health.InboundStreams, "native adapter inbound streams");
     AssertEqual((uint)SctpPayloadProtocolIdentifiers.M3ua, health.DefaultPayloadProtocolIdentifier, "native adapter PPID");
+}
+
+static void NativeSctpConnectorReportsUnsupportedPlatformSafely()
+{
+    NativeSctpConnector connector = new();
+    NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
+    SctpConnectionOptions options = new(
+        new SctpEndpoint("127.0.0.1", 2905),
+        connectTimeout: TimeSpan.FromMilliseconds(10));
+
+    if (!capability.CanCreateSocket)
+    {
+        NativeSctpUnavailableException exception = AssertThrows<NativeSctpUnavailableException>(() =>
+            connector.ConnectAsync(options).GetAwaiter().GetResult());
+        AssertEqual(capability.Status, exception.Capability.Status, "native SCTP connector unsupported status");
+    }
+    else
+    {
+        Assert(capability.CanCreateSocket, capability.Describe());
+    }
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
