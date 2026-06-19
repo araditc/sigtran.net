@@ -30,6 +30,7 @@ Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPol
 Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
 Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
+Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -388,6 +389,27 @@ static void SigtranPhase7StatusSummarizesCommercializationFoundation()
     Assert(capabilities.Contains("deployment-profiles"), "Phase 7 should include deployment profiles");
     Assert(SigtranPhase7Status.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranPhase7Status.Describe());
     Assert(SigtranPhase7Status.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranPhase7Status.Describe());
+}
+
+static void NativeSctpPlatformProbeReportsSocketCreationCapability()
+{
+    AssertEqual(132, NativeSctpPlatform.IpProtocolSctp, "native SCTP protocol number");
+    AssertEqual(SocketType.Seqpacket, NativeSctpPlatform.SctpSocketType, "native SCTP socket type");
+
+    NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
+
+    if (OperatingSystem.IsLinux())
+    {
+        Assert(
+            capability.Status is NativeSctpPlatformStatus.SocketCreationSupported or NativeSctpPlatformStatus.SocketCreationUnavailable,
+            capability.Describe());
+    }
+    else
+    {
+        AssertEqual(NativeSctpPlatformStatus.UnsupportedOperatingSystem, capability.Status, "native SCTP unsupported OS status");
+    }
+
+    Assert(capability.Describe().Contains("nativeSctp", StringComparison.Ordinal), capability.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

@@ -118,3 +118,9 @@ The remaining production gate is explicit: native SCTP implementation and intero
 ## Phase 7 Native SCTP Matrix
 
 `SigtranNativeSctpSupport.GetSupportMatrix()` records native SCTP support claims for commercial release planning. Linux is marked as verification required, while Windows and macOS are contract-only until a production provider is selected and verified.
+
+## Phase 8 Native SCTP Probe
+
+`NativeSctpPlatform.Probe()` checks whether the current runtime can create a Linux SCTP socket using `SocketType.Seqpacket` and IP protocol number `132`.
+
+The probe does not mark the transport production-ready by itself. It is the first native SCTP implementation gate.

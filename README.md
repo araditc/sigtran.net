@@ -45,6 +45,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Observability | Phase 7 profile added for commercial metrics, trace categories, and health signals |
 | Deployment profiles | Phase 7 profiles added for commercial Linux and local development use |
 | Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
+| Native SCTP implementation | Phase 8 started: Linux SCTP socket probe added using `SocketType.Seqpacket` and IP protocol number `132`; full production readiness still requires native transport completion and lab verification |
 
 ## Requirements
 
@@ -129,6 +130,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 6 Summary](docs/PHASE6_SUMMARY.md)
 - [Phase 7 Commercialization](docs/PHASE7_COMMERCIALIZATION.md)
 - [Phase 7 Summary](docs/PHASE7_SUMMARY.md)
+- [Phase 8 Native SCTP](docs/PHASE8_NATIVE_SCTP.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -149,6 +151,7 @@ The roadmap is intentionally conservative:
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
+8. Complete Linux native SCTP transport and verification.
 
 ## License
 

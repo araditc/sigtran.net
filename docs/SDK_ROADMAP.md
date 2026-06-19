@@ -80,6 +80,15 @@ Status: SDK foundation is complete for trace formatting, conformance vector inve
 
 Status: SDK foundation is complete for commercial readiness gates, native SCTP support matrix, external interoperability evidence tracking, release candidate manifests, package governance, security policy, compatibility policy, observability profile, deployment profiles, and Phase 7 status reporting. Internal release readiness is available; commercial production readiness remains blocked until native SCTP verification, external interoperability evidence, package signing, and SBOM automation are complete.
 
+## Phase 8 - Native SCTP Production Transport
+
+- Probe Linux native SCTP socket creation using `SocketType.Seqpacket` and IP protocol number `132`.
+- Add native SCTP socket factory, connector, listener, send/receive path, lifecycle events, health snapshots, and reconnect integration.
+- Add Linux-focused integration test hooks that can run when SCTP kernel support is available.
+- Keep Windows and macOS contract-only until a verified provider is selected.
+
+Status: Phase 8 has started with a native SCTP platform probe. Production readiness remains blocked until the full native transport path and Linux interoperability verification are complete.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
