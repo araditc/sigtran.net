@@ -19,3 +19,9 @@ The workflow at `.github/workflows/dotnet.yml` runs on pushes and pull requests 
 It restores the solution, builds in Release mode, runs the test harness, and packs the SDK. This keeps package validation, XML documentation enforcement, and byte-level protocol tests on the same path used before each manual commit.
 
 Phase 7 package governance keeps package signing and SBOM generation as commercial release gates. They are not yet part of the default CI workflow.
+
+## External Interoperability Lab
+
+Phase 9 adds `SigtranInteropLabCiProfiles.CreateDefault()` for opt-in external lab runs.
+
+The lab profile is disabled unless `SIGTRAN_INTEROP_LAB` is set to `1` or `true`. A real lab run also needs `SIGTRAN_INTEROP_LAB_ARTIFACT_ROOT` and `SIGTRAN_INTEROP_PEER`; native SCTP runs can use `SIGTRAN_NATIVE_SCTP_LAB`.

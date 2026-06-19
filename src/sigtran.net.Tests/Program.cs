@@ -36,6 +36,7 @@ Run("SIGTRAN interoperability lab run report identifies passing evidence", Sigtr
 Run("SIGTRAN OpenSS7 interop profile exposes M3UA ASP-to-SG template", SigtranOpenSs7InteropProfileExposesM3uaAspToSgTemplate);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
+Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -513,6 +514,19 @@ static void SigtranInteropEvidencePromotionRequiresPassingLabRun()
 
     SigtranInteropLabRunReport failed = new(template.Scenario, manifest, SigtranInteropLabRunStatus.Failed, startedAt);
     AssertThrows<InvalidOperationException>(() => SigtranInteropEvidencePromotion.Promote(failed));
+}
+
+static void SigtranInteropLabCiProfileIsOptIn()
+{
+    SigtranInteropLabCiProfile profile = SigtranInteropLabCiProfiles.CreateDefault();
+    AssertEqual("SIGTRAN_INTEROP_LAB", profile.EnableVariable, "interop lab enable variable");
+    AssertEqual("SIGTRAN_INTEROP_LAB_ARTIFACT_ROOT", profile.ArtifactRootVariable, "interop lab artifact root variable");
+    Assert(profile.RequiredVariables.Contains("SIGTRAN_INTEROP_PEER"), "interop lab peer variable should be required");
+    Assert(profile.Commands.Any(static command => command.Contains("dotnet build", StringComparison.Ordinal)), "interop lab profile should include build command");
+
+    Assert(!profile.IsEnabled(new Dictionary<string, string>()), "interop lab profile should be disabled by default");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_INTEROP_LAB"] = "true" }), "interop lab profile should accept true");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_INTEROP_LAB"] = "1" }), "interop lab profile should accept 1");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -50,3 +50,15 @@ Use this report to attach a machine-readable pass/fail summary beside PCAP, SDK 
 `SigtranInteropEvidencePromotion.Promote()` converts a passing lab run with a complete artifact manifest into a `SigtranInteropEvidenceItem`.
 
 Failed runs, pending runs, or runs with incomplete manifests are rejected and must not unlock commercial readiness.
+
+## Opt-In CI Profile
+
+`SigtranInteropLabCiProfiles.CreateDefault()` defines the external lab variables and verification commands.
+
+Required variables:
+
+- `SIGTRAN_INTEROP_LAB`
+- `SIGTRAN_INTEROP_LAB_ARTIFACT_ROOT`
+- `SIGTRAN_INTEROP_PEER`
+
+Native SCTP lab runs can additionally use `SIGTRAN_NATIVE_SCTP_LAB`.

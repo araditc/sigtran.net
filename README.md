@@ -46,7 +46,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Deployment profiles | Phase 7 profiles added for commercial Linux and local development use |
 | Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
 | Native SCTP implementation | Phase 8 foundation-ready: Linux SCTP probe, socket factory, endpoint planner, native adapter, connector, listener, lab profile, readiness report, and commercial gate integration; production readiness still requires Linux SCTP lab verification |
-| Interoperability lab | Phase 9 started: lab scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 M3UA ASP-to-SG template, trace comparison, and evidence promotion added |
+| Interoperability lab | Phase 9 started: lab scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 M3UA ASP-to-SG template, trace comparison, evidence promotion, and opt-in CI profile added |
 
 ## Requirements
 
