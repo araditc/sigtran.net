@@ -173,6 +173,7 @@ Run("SIGTRAN release workflow concurrency prevents overlapping releases", Sigtra
 Run("SIGTRAN release workflow environment exposes supply chain and evidence variables", SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables);
 Run("SIGTRAN release promotion gate blocks incomplete release evidence", SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence);
 Run("SIGTRAN release promotion gate allows complete release evidence", SigtranReleasePromotionGateAllowsCompleteReleaseEvidence);
+Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionPolicyAcceptsSemVerTags);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2136,6 +2137,19 @@ static void SigtranReleasePromotionGateAllowsCompleteReleaseEvidence()
 
     Assert(result.CanPromote, result.Describe());
     AssertEqual(0, result.Reasons.Count, "release promotion reason count");
+}
+
+static void SigtranReleaseVersionPolicyAcceptsSemVerTags()
+{
+    SigtranReleaseVersionPolicy policy = SigtranReleaseVersionPolicies.CreateDefault();
+
+    Assert(policy.CoversPublicationLanes, "release version policy should cover prerelease and stable lanes");
+    Assert(policy.IsValidTag("v1.0.0-alpha.1"), "release version policy should accept prerelease tag");
+    Assert(policy.IsValidTag("v1.0.0"), "release version policy should accept stable tag");
+    Assert(!policy.IsValidTag("release-1.0.0"), "release version policy should reject unexpected tag prefix");
+    Assert(!policy.IsValidPackageVersion("1.0"), "release version policy should reject incomplete version");
+    AssertEqual(SigtranReleaseVersionLane.Prerelease, policy.GetLane("1.0.0-alpha.1"), "prerelease lane");
+    AssertEqual(SigtranReleaseVersionLane.Stable, policy.GetLane("1.0.0"), "stable lane");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

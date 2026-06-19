@@ -52,6 +52,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Commercial evidence dossier | Phase 20 foundation-ready: commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI profile, status report, and source status naming normalization added; commercial evidence readiness still requires real retained artifacts and verification gates |
 | Supply chain automation | Phase 21 foundation-ready: supply-chain automation plan, SBOM generation contract, package signing contract, signature verification contract, provenance attestation contract, artifact manifest, gate, readiness report, CI profile, and status report added; promotion still requires real signed artifacts and commercial evidence |
 | Release workflow orchestration | Phase 23 foundation-ready: release workflow triggers, stages, required secrets, supply-chain integration, commercial evidence verification, publish contract, concrete workflow file, YAML validation, publish guard, artifact retention, least-privilege permissions, concurrency policy, environment contract, promotion gate, readiness report, and status report added; promotion still requires real release evidence |
+| Package publication readiness | Phase 24 started: release version and tag policy added; package publication remains blocked until all publication contracts, credentials, evidence, signing, SBOM, and provenance gates are complete |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -176,6 +177,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 22 Summary](docs/PHASE22_SUMMARY.md)
 - [Phase 23 Release Workflow Completion](docs/PHASE23_RELEASE_WORKFLOW_COMPLETION.md)
 - [Phase 23 Summary](docs/PHASE23_SUMMARY.md)
+- [Phase 24 Package Publication Readiness](docs/PHASE24_PACKAGE_PUBLICATION_READINESS.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -212,6 +214,7 @@ The roadmap is intentionally conservative:
 21. Complete supply-chain automation framework and retain signed release-security artifacts.
 22. Complete release workflow orchestration in smaller committed parts and validate publish workflow behavior.
 23. Complete release workflow foundation and keep promotion blocked on real evidence.
+24. Complete package publication readiness and keep NuGet publication blocked until all commercial gates pass.
 
 ## License
 
