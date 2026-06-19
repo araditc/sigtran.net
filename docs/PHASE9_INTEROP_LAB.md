@@ -76,3 +76,7 @@ Production readiness remains false until passing external evidence is captured a
 `SigtranCommercialReadiness.GetReport()` uses the Phase 9 lab production gate for external interoperability evidence.
 
 This keeps commercial readiness blocked until the lab foundation is ready and at least one passing external evidence set is promoted.
+
+## Phase Status
+
+`SigtranPhase9Status.Describe()` summarizes the completed Phase 9 units and exposes the same foundation-ready versus production-ready split.

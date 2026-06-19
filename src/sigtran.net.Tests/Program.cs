@@ -39,6 +39,7 @@ Run("SIGTRAN interoperability evidence promotion requires passing lab run", Sigt
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
 Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
 Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
+Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", SigtranPhase9StatusSummarizesInteropLabFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -549,6 +550,17 @@ static void SigtranCommercialReadinessUsesInteropLabProductionGate()
     AssertEqual(labReadiness.ProductionReady, commercial.HasExternalInteroperabilityEvidence, "commercial external interop gate");
     Assert(!commercial.HasExternalInteroperabilityEvidence, "commercial readiness should wait for real lab evidence");
     Assert(!commercial.CommercialReady, commercial.Describe());
+}
+
+static void SigtranPhase9StatusSummarizesInteropLabFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase9Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase9Status.CompletedUnitCount, "Phase 9 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 9 capability count");
+    Assert(capabilities.Contains("commercial-readiness-gate-integration"), "Phase 9 should include commercial readiness integration");
+    Assert(SigtranPhase9Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase9Status.Describe());
+    Assert(SigtranPhase9Status.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranPhase9Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

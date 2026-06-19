@@ -134,6 +134,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 8 Native SCTP](docs/PHASE8_NATIVE_SCTP.md)
 - [Phase 8 Summary](docs/PHASE8_SUMMARY.md)
 - [Phase 9 Interoperability Lab](docs/PHASE9_INTEROP_LAB.md)
+- [Phase 9 Summary](docs/PHASE9_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
