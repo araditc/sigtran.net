@@ -171,6 +171,8 @@ Run("SIGTRAN release workflow artifact rules retain packages and evidence", Sigt
 Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
 Run("SIGTRAN release workflow concurrency prevents overlapping releases", SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases);
 Run("SIGTRAN release workflow environment exposes supply chain and evidence variables", SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables);
+Run("SIGTRAN release promotion gate blocks incomplete release evidence", SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence);
+Run("SIGTRAN release promotion gate allows complete release evidence", SigtranReleasePromotionGateAllowsCompleteReleaseEvidence);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2107,6 +2109,32 @@ static void SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariab
     Assert(variables.Any(static variable => variable.Name == "SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT"), "release workflow should include supply-chain artifact root");
     Assert(variables.Any(static variable => variable.Name == "SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"), "release workflow should include commercial evidence root");
     Assert(SigtranReleaseWorkflowEnvironment.ArePresentInYaml(yaml), "release workflow YAML should contain required environment variables");
+}
+
+static void SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence()
+{
+    SigtranReleasePromotionGateResult result = SigtranReleasePromotionGate.Evaluate(
+        SigtranReleasePublishGuard.Evaluate(new(false, false, false, false)),
+        workflowOrchestrationReady: SigtranReleaseWorkflowStatus.OrchestrationReady,
+        supplyChainPromotionReady: false,
+        commercialEvidenceReady: false);
+
+    Assert(!result.CanPromote, "release promotion should be blocked without evidence");
+    Assert(result.Reasons.Contains("publish-not-requested"), "release promotion should include publish guard reasons");
+    Assert(result.Reasons.Contains("supply-chain-promotion-required"), "release promotion should require supply-chain promotion");
+    Assert(result.Reasons.Contains("commercial-evidence-required"), "release promotion should require commercial evidence");
+}
+
+static void SigtranReleasePromotionGateAllowsCompleteReleaseEvidence()
+{
+    SigtranReleasePromotionGateResult result = SigtranReleasePromotionGate.Evaluate(
+        SigtranReleasePublishGuard.Evaluate(new(true, true, true, true)),
+        workflowOrchestrationReady: true,
+        supplyChainPromotionReady: true,
+        commercialEvidenceReady: true);
+
+    Assert(result.CanPromote, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "release promotion reason count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

@@ -88,3 +88,9 @@ The concrete workflow now uses a release concurrency group based on `github.ref`
 Stage 23 Unit 8 adds `SigtranReleaseWorkflowEnvironment`.
 
 The workflow environment contract names the .NET, supply-chain, and commercial-evidence variables that the concrete GitHub Actions workflow must expose.
+
+## Stage 23 Unit 9 - Promotion Gate
+
+Stage 23 Unit 9 adds `SigtranReleasePromotionGate`.
+
+The gate combines publish guard decisions, workflow orchestration readiness, supply-chain promotion readiness, and commercial evidence readiness into one release promotion decision.
