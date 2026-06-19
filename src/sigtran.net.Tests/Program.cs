@@ -60,6 +60,7 @@ Run("SIGTRAN adoption gates separate developer readiness from enterprise product
 Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
 Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
 Run("SIGTRAN phase 11 status summarizes developer experience foundation", SigtranPhase11StatusSummarizesDeveloperExperienceFoundation);
+Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -823,6 +824,16 @@ static void SigtranPhase11StatusSummarizesDeveloperExperienceFoundation()
     Assert(capabilities.Contains("developer-experience-ci-profile"), "Phase 11 should include DX CI profile");
     Assert(SigtranPhase11Status.FoundationReady, SigtranPhase11Status.Describe());
     Assert(!SigtranPhase11Status.EnterpriseProductionReady, SigtranPhase11Status.Describe());
+}
+
+static void SigtranOperationsCatalogExposesProductionSupportAreas()
+{
+    IReadOnlyList<SigtranOperationsCapability> capabilities = SigtranOperations.GetCapabilities();
+
+    AssertEqual(5, capabilities.Count, "operations capability count");
+    Assert(capabilities.Any(static capability => capability.Area == SigtranOperationsArea.Runbooks), "operations should include runbooks");
+    Assert(capabilities.Any(static capability => capability.Area == SigtranOperationsArea.Health), "operations should include health checks");
+    Assert(capabilities.Any(static capability => capability.Id == "support-handbook"), "operations should include support handbook");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

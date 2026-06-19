@@ -115,6 +115,14 @@ Status: Phase 10 is foundation-ready for release automation plan, artifact manif
 
 Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness, developer experience CI profile, and phase documentation. Enterprise production adoption remains blocked until commercial readiness is complete.
 
+## Phase 12 - Production Operations And Support
+
+- Add operational runbook, incident, health, recovery, and support foundations.
+- Keep operations readiness separate from commercial production readiness.
+- Make production support expectations visible to enterprise adopters.
+
+Status: Phase 12 has started with the production operations capability catalog.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
