@@ -105,7 +105,7 @@ Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, ru
 - Add release channel rules, version/release-note requirements, and publish gates.
 - Keep commercial release blocked until signing, SBOM, provenance, native SCTP verification, and external interoperability evidence are complete.
 
-Status: Phase 10 has started with the official release automation plan.
+Status: Phase 10 is foundation-ready for release automation plan, artifact manifest, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluation, release CI profile, and phase documentation. Stable commercial publication remains blocked until real signing, SBOM generation, native SCTP verification, and external interoperability evidence are complete.
 
 ## Recommended First Deliverable
 

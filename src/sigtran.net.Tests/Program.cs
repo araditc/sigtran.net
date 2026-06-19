@@ -49,6 +49,7 @@ Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNot
 Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
 Run("SIGTRAN release gate evaluates artifact notes provenance and channel readiness", SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness);
 Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan);
+Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranPhase10StatusSummarizesReleaseAutomationFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -692,6 +693,17 @@ static void SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan()
     Assert(profile.RequiredSecrets.Contains("NUGET_API_KEY"), "release CI profile should require NuGet API key");
     Assert(profile.RequiredSecrets.Contains("SIGNING_CERTIFICATE"), "release CI profile should require signing certificate");
     Assert(profile.IsRunnable, profile.Describe());
+}
+
+static void SigtranPhase10StatusSummarizesReleaseAutomationFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase10Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase10Status.CompletedUnitCount, "Phase 10 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 10 capability count");
+    Assert(capabilities.Contains("release-gate-evaluator"), "Phase 10 should include release gate evaluator");
+    Assert(SigtranPhase10Status.FoundationReady, SigtranPhase10Status.Describe());
+    Assert(!SigtranPhase10Status.CommercialStableReleaseReady, SigtranPhase10Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -67,3 +67,9 @@ Alpha and beta releases can publish before commercial readiness. Stable releases
 `SigtranReleaseCiProfiles.CreateDefault()` declares a release workflow profile with manual dispatch and version-tag triggers.
 
 Required secret names are recorded as metadata only: `NUGET_API_KEY` and `SIGNING_CERTIFICATE`. Secret values must never be committed.
+
+## Phase Status
+
+`SigtranPhase10Status.Describe()` summarizes the completed Phase 10 units.
+
+The phase foundation can be ready while stable commercial publication remains blocked by wider commercial gates such as real signing, SBOM generation, native SCTP lab evidence, and external interoperability evidence.
