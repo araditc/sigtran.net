@@ -59,6 +59,7 @@ Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIn
 Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
 Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
 Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
+Run("SIGTRAN phase 11 status summarizes developer experience foundation", SigtranPhase11StatusSummarizesDeveloperExperienceFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -811,6 +812,17 @@ static void SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates()
     Assert(profile.Commands.Any(static command => command.Contains("dotnet build", StringComparison.Ordinal)), "DX CI profile should include build");
     Assert(profile.RequiresDocumentationReadiness, "DX CI profile should require documentation readiness");
     Assert(profile.RequiresAdoptionReadiness, "DX CI profile should require adoption readiness");
+}
+
+static void SigtranPhase11StatusSummarizesDeveloperExperienceFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase11Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase11Status.CompletedUnitCount, "Phase 11 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 11 capability count");
+    Assert(capabilities.Contains("developer-experience-ci-profile"), "Phase 11 should include DX CI profile");
+    Assert(SigtranPhase11Status.FoundationReady, SigtranPhase11Status.Describe());
+    Assert(!SigtranPhase11Status.EnterpriseProductionReady, SigtranPhase11Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

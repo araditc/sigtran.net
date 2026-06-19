@@ -113,7 +113,7 @@ Status: Phase 10 is foundation-ready for release automation plan, artifact manif
 - Make the shortest M3UA ASP-to-SG path clear for new users.
 - Keep production claims tied to readiness and interoperability evidence.
 
-Status: Phase 11 has started with the developer experience capability catalog.
+Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness, developer experience CI profile, and phase documentation. Enterprise production adoption remains blocked until commercial readiness is complete.
 
 ## Recommended First Deliverable
 
