@@ -183,6 +183,7 @@ Run("SIGTRAN package integrity manifest requires package digests", SigtranPackag
 Run("SIGTRAN publication evidence manifest requires integrity and release evidence", SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidence);
 Run("SIGTRAN publication gate blocks incomplete publish readiness", SigtranPublicationGateBlocksIncompletePublishReadiness);
 Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublicationGateAllowsCompletePublishReadiness);
+Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2286,6 +2287,20 @@ static void SigtranPublicationGateAllowsCompletePublishReadiness()
     AssertEqual(0, result.Reasons.Count, "publication gate reason count");
 }
 
+static void SigtranPackagePublicationStatusSummarizesReadinessFoundation()
+{
+    SigtranPackagePublicationReadinessReport readiness = SigtranPackagePublicationStatus.GetReadiness();
+    IReadOnlyList<string> capabilities = SigtranPackagePublicationStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPackagePublicationStatus.CompletedUnitCount, "package publication completed unit count");
+    AssertEqual(10, capabilities.Count, "package publication capability count");
+    Assert(capabilities.Contains("publication-gate"), "package publication status should include publication gate");
+    Assert(readiness.FoundationReady, "package publication foundation should be ready");
+    Assert(!readiness.PublicationReady, "real package publication should remain blocked without live evidence and credentials");
+    Assert(SigtranPackagePublicationStatus.FoundationReady, SigtranPackagePublicationStatus.Describe());
+    Assert(!SigtranPackagePublicationStatus.PublicationReady, SigtranPackagePublicationStatus.Describe());
+}
+
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
 {
     IReadOnlyList<string>[] statusCapabilities =
@@ -2305,7 +2320,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranProtocolInteropStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceStatus.GetCompletedCapabilities(),
         SigtranSupplyChainStatus.GetCompletedCapabilities(),
-        SigtranReleaseWorkflowStatus.GetCompletedCapabilities()
+        SigtranReleaseWorkflowStatus.GetCompletedCapabilities(),
+        SigtranPackagePublicationStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

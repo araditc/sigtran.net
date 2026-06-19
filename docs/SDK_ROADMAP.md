@@ -211,6 +211,14 @@ Status: Phase 22 Part 1 is contract-ready for release workflow orchestration. Fu
 
 Status: Phase 23 is foundation-ready for release workflow orchestration. Release promotion remains blocked until real evidence, signing, SBOM, provenance, and publish credentials are available.
 
+## Phase 24 - Package Publication Readiness
+
+- Add release version and tag policy, NuGet metadata contract, package layout, dry-run publish plan, credential policy, channel policy, package integrity manifest, publication evidence manifest, publication gate, readiness status, and documentation.
+- Keep NuGet publication separate from publication foundation readiness.
+- Require live commercial evidence, supply-chain artifacts, signing material, provenance, and NuGet credentials before any real package upload.
+
+Status: Phase 24 is foundation-ready for package publication readiness. Real NuGet publication remains blocked until retained commercial evidence, signed supply-chain artifacts, provenance, and live publish credentials are available.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

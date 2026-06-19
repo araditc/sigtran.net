@@ -97,3 +97,9 @@ The manifest remains incomplete unless integrity, supply-chain, and commercial e
 - Package layout readiness.
 
 The gate blocks publication until every publication, evidence, credential, and package contract is satisfied.
+
+## Unit 10 - Status And Documentation
+
+`SigtranPackagePublicationStatus` summarizes the completed publication readiness foundation.
+
+The foundation is ready when all ten package-publication capabilities are present. Real publication remains blocked until live release evidence, supply-chain artifacts, signing material, provenance, and NuGet credentials are available in the release workflow.
