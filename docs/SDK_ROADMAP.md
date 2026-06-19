@@ -107,6 +107,14 @@ Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, ru
 
 Status: Phase 10 is foundation-ready for release automation plan, artifact manifest, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluation, release CI profile, and phase documentation. Stable commercial publication remains blocked until real signing, SBOM generation, native SCTP verification, and external interoperability evidence are complete.
 
+## Phase 11 - Developer Experience And Adoption
+
+- Add quickstarts, sample inventories, configuration profiles, troubleshooting guidance, and adoption gates.
+- Make the shortest M3UA ASP-to-SG path clear for new users.
+- Keep production claims tied to readiness and interoperability evidence.
+
+Status: Phase 11 has started with the developer experience capability catalog.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

@@ -50,6 +50,7 @@ Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPubl
 Run("SIGTRAN release gate evaluates artifact notes provenance and channel readiness", SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness);
 Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan);
 Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranPhase10StatusSummarizesReleaseAutomationFoundation);
+Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDeveloperExperienceCatalogExposesAdoptionAreas);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -704,6 +705,16 @@ static void SigtranPhase10StatusSummarizesReleaseAutomationFoundation()
     Assert(capabilities.Contains("release-gate-evaluator"), "Phase 10 should include release gate evaluator");
     Assert(SigtranPhase10Status.FoundationReady, SigtranPhase10Status.Describe());
     Assert(!SigtranPhase10Status.CommercialStableReleaseReady, SigtranPhase10Status.Describe());
+}
+
+static void SigtranDeveloperExperienceCatalogExposesAdoptionAreas()
+{
+    IReadOnlyList<SigtranDeveloperExperienceCapability> capabilities = SigtranDeveloperExperience.GetCapabilities();
+
+    AssertEqual(5, capabilities.Count, "developer experience capability count");
+    Assert(capabilities.Any(static capability => capability.Area == SigtranDeveloperExperienceArea.Quickstart), "developer experience should include quickstart");
+    Assert(capabilities.Any(static capability => capability.Area == SigtranDeveloperExperienceArea.Troubleshooting), "developer experience should include troubleshooting");
+    Assert(capabilities.Any(static capability => capability.Id == "adoption-gates"), "developer experience should include adoption gates");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
