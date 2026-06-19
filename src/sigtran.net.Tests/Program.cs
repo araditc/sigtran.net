@@ -43,6 +43,7 @@ Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", Sigtran
 Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
 Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
 Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
+Run("SIGTRAN package signing plan marks commercial release requirement", SigtranPackageSigningPlanMarksCommercialReleaseRequirement);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -604,6 +605,17 @@ static void SigtranSbomPlanMarksCommercialReleaseRequirement()
     AssertEqual("Microsoft.Sbom.Tool", plan.ToolName, "SBOM tool");
     Assert(plan.IsRequiredForCommercialRelease, "SBOM should be required for commercial release");
     Assert(plan.OutputPath.EndsWith(".spdx.json", StringComparison.Ordinal), plan.OutputPath);
+    Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
+}
+
+static void SigtranPackageSigningPlanMarksCommercialReleaseRequirement()
+{
+    SigtranPackageSigningPlan plan = SigtranPackageSigning.CreateDefaultPlan();
+
+    AssertEqual(SigtranPackageSigningMode.Author, plan.Mode, "package signing mode");
+    Assert(plan.IsRequiredForCommercialRelease, "package signing should be required for commercial release");
+    Assert(plan.HasSigningMaterialReferences, plan.Describe());
+    Assert(plan.TimestampAuthorityUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
     Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
 }
 

@@ -31,3 +31,9 @@ All release artifacts should carry SHA-256 digests before a governed publish.
 `SigtranSbom.CreateDefaultPlan()` defines the commercial SBOM requirement.
 
 The default plan targets SPDX JSON output at `artifacts/sbom/sigtran.net.spdx.json` and records `Microsoft.Sbom.Tool` as the intended generation tool.
+
+## Package Signing Plan
+
+`SigtranPackageSigning.CreateDefaultPlan()` defines commercial package signing requirements.
+
+The default plan requires author signing and a timestamp authority. Signing material is referenced by certificate subject; private keys and secrets must stay outside the repository.
