@@ -14,6 +14,7 @@ Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatt
 Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
 Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVectorsIncludeM3uaAndMapPayloads);
 Run("SIGTRAN simulator script emits trace summaries", SigtranSimulatorScriptEmitsTraceSummaries);
+Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuildsTcapBackedScript);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -179,6 +180,29 @@ static void SigtranSimulatorScriptEmitsTraceSummaries()
     AssertEqual(1, script.Snapshot().Count, "simulator step count");
     Assert(summaries[0].Contains("M3UA asp -> sg bytes=4", StringComparison.Ordinal), summaries[0]);
     AssertEqual(SigtranSimulatorRole.Asp, asp.Role, "simulator ASP role");
+}
+
+static void MapSmsSimulatorFlowBuildsTcapBackedScript()
+{
+    MapSmsAddress subscriber = new(MapSmsAddressKind.Msisdn, "989121234567");
+    MapSmsAddress imsi = new(MapSmsAddressKind.Imsi, "432101234567890");
+    MapSmsAddress serviceCentre = new(MapSmsAddressKind.ServiceCentre, "989120000000");
+
+    SigtranSimulatorScript script = new MapSmsSimulatorFlowBuilder()
+        .AddSendRoutingInfoForShortMessage(subscriber, serviceCentre, gprsSupportIndicator: true)
+        .AddMobileTerminatedForwardShortMessage(imsi, serviceCentre, [0x11, 0x22])
+        .AddReportShortMessageDeliveryStatus(subscriber, serviceCentre, MapSmsDeliveryStatus.Delivered)
+        .Build();
+
+    IReadOnlyList<SigtranSimulatorStep> steps = script.Snapshot();
+    IReadOnlyList<string> summaries = script.FormatTraceSummaries(DateTimeOffset.UnixEpoch);
+
+    AssertEqual(3, steps.Count, "MAP SMS simulator step count");
+    AssertEqual("TCAP/MAP", steps[0].Protocol, "MAP SMS simulator protocol");
+    Assert(summaries[0].Contains("smsc -> hlr", StringComparison.Ordinal), summaries[0]);
+    Assert(summaries[1].Contains("smsc -> msc", StringComparison.Ordinal), summaries[1]);
+    Assert(summaries[2].Contains("hlr -> smsc", StringComparison.Ordinal), summaries[2]);
+    Assert(steps[0].Payload.Length > 20, "MAP SMS simulator payload should contain encoded TCAP");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

@@ -51,3 +51,17 @@ script.Add(new SigtranSimulatorStep(asp, sg, "M3UA", payload, "ASP Up"));
 ```
 
 Script steps can be rendered as trace summaries, making simulator output comparable with captured traffic and golden-vector files.
+
+## MAP SMS Flows
+
+`MapSmsSimulatorFlowBuilder` creates deterministic simulator scripts using the SDK MAP SMS and TCAP encoders.
+
+```csharp
+SigtranSimulatorScript script = new MapSmsSimulatorFlowBuilder()
+    .AddSendRoutingInfoForShortMessage(msisdn, serviceCentre)
+    .AddMobileTerminatedForwardShortMessage(imsi, serviceCentre, tpdu)
+    .AddReportShortMessageDeliveryStatus(msisdn, serviceCentre, MapSmsDeliveryStatus.Delivered)
+    .Build();
+```
+
+The builder covers current MAP SMS foundation operations: MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre.
