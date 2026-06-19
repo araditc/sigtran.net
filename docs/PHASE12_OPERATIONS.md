@@ -31,3 +31,7 @@ Critical incidents should be acknowledged within 15 minutes and updated within 3
 `SigtranRollbackPlans.CreateDefaultPackageRollback()` defines package rollback actions for affected releases.
 
 The plan stops publication, communicates the affected version, preserves artifacts and provenance, and publishes a corrected release only after gates pass.
+
+## Maintenance Policy
+
+`SigtranMaintenancePolicies.CreateDefault()` defines a 7-day minimum notice period, requires rollback plans, and requires lab validation for protocol and transport behavior changes.

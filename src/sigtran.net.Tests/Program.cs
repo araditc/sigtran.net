@@ -65,6 +65,7 @@ Run("SIGTRAN runbook catalog exposes operational recovery paths", SigtranRunbook
 Run("SIGTRAN incident response targets define severity timing", SigtranIncidentResponseTargetsDefineSeverityTiming);
 Run("SIGTRAN health check matrix covers transport protocol evidence and release", SigtranHealthCheckMatrixCoversTransportProtocolEvidenceAndRelease);
 Run("SIGTRAN rollback plan defines package recovery steps", SigtranRollbackPlanDefinesPackageRecoverySteps);
+Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMaintenancePolicyGatesProtocolAndTransportChanges);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -881,6 +882,17 @@ static void SigtranRollbackPlanDefinesPackageRecoverySteps()
     AssertEqual(4, plan.Steps.Count, "rollback step count");
     AssertEqual(1, plan.Steps[0].Order, "first rollback step order");
     Assert(plan.Steps.Any(static step => step.Action.Contains("provenance", StringComparison.OrdinalIgnoreCase)), "rollback plan should preserve provenance");
+}
+
+static void SigtranMaintenancePolicyGatesProtocolAndTransportChanges()
+{
+    SigtranMaintenancePolicy policy = SigtranMaintenancePolicies.CreateDefault();
+
+    AssertEqual(TimeSpan.FromDays(7), policy.MinimumNotice, "maintenance minimum notice");
+    Assert(policy.RequiresRollbackPlan, "maintenance policy should require rollback plan");
+    Assert(policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Protocol), "protocol changes should require lab validation");
+    Assert(policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Transport), "transport changes should require lab validation");
+    Assert(!policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Documentation), "documentation changes should not require lab validation");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
