@@ -120,6 +120,16 @@ Run("SIGTRAN native SCTP lab readiness separates foundation from evidence", Sigt
 Run("SIGTRAN native SCTP lab CI profile is opt-in and Linux-only", SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly);
 Run("SIGTRAN native SCTP lab commercial gate waits for complete evidence", SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence);
 Run("SIGTRAN native SCTP lab verification status summarizes foundation", SigtranNativeSctpLabVerificationStatusSummarizesFoundation);
+Run("SIGTRAN OpenSS7 interop environment requires Linux SCTP peer and packet capture", SigtranOpenSs7InteropEnvironmentRequiresLinuxSctpPeerAndPacketCapture);
+Run("SIGTRAN OpenSS7 interop configuration exposes ASP-to-SG defaults", SigtranOpenSs7InteropConfigurationExposesAspToSgDefaults);
+Run("SIGTRAN OpenSS7 trace expectations cover ASP lifecycle and DATA", SigtranOpenSs7TraceExpectationsCoverAspLifecycleAndData);
+Run("SIGTRAN OpenSS7 artifact manifest requires trace peer config logs and comparison", SigtranOpenSs7ArtifactManifestRequiresTracePeerConfigLogsAndComparison);
+Run("SIGTRAN OpenSS7 run plan is executable with default contracts", SigtranOpenSs7RunPlanIsExecutableWithDefaultContracts);
+Run("SIGTRAN OpenSS7 commands require peer and packet capture", SigtranOpenSs7CommandsRequirePeerAndPacketCapture);
+Run("SIGTRAN OpenSS7 run report identifies passing evidence", SigtranOpenSs7RunReportIdentifiesPassingEvidence);
+Run("SIGTRAN OpenSS7 evidence registry starts empty", SigtranOpenSs7EvidenceRegistryStartsEmpty);
+Run("SIGTRAN OpenSS7 readiness separates foundation from evidence", SigtranOpenSs7ReadinessSeparatesFoundationFromEvidence);
+Run("SIGTRAN OpenSS7 status summarizes execution foundation", SigtranOpenSs7StatusSummarizesExecutionFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1486,6 +1496,116 @@ static void SigtranNativeSctpLabVerificationStatusSummarizesFoundation()
     Assert(capabilities.Contains("native-sctp-lab-ci-profile"), "native SCTP lab verification status should include native SCTP lab CI profile");
     Assert(SigtranNativeSctpLabVerificationStatus.FoundationReady, SigtranNativeSctpLabVerificationStatus.Describe());
     Assert(!SigtranNativeSctpLabVerificationStatus.NativeSctpProductionVerified, SigtranNativeSctpLabVerificationStatus.Describe());
+}
+
+static void SigtranOpenSs7InteropEnvironmentRequiresLinuxSctpPeerAndPacketCapture()
+{
+    SigtranOpenSs7InteropEnvironment environment = SigtranOpenSs7InteropEnvironments.CreateDefault();
+
+    AssertEqual("openss7-ipss7-linux-lab", environment.Name, "OpenSS7 environment name");
+    Assert(environment.RequiresLinux, "OpenSS7 interop should require Linux");
+    Assert(environment.RequiresNativeSctp, "OpenSS7 interop should require native SCTP");
+    Assert(environment.RequiresOpenSs7Peer, "OpenSS7 interop should require peer");
+    Assert(environment.RequiresPacketCapture, "OpenSS7 interop should require packet capture");
+    Assert(environment.HasMinimumLabPrerequisites, "OpenSS7 environment should have minimum prerequisites");
+}
+
+static void SigtranOpenSs7InteropConfigurationExposesAspToSgDefaults()
+{
+    SigtranOpenSs7InteropConfiguration configuration = SigtranOpenSs7InteropConfigurations.CreateDefaultAspToSg();
+
+    AssertEqual("sigtran-net-asp", configuration.AssociationName, "OpenSS7 association name");
+    AssertEqual("sigtran-net-as", configuration.ApplicationServerName, "OpenSS7 AS name");
+    AssertEqual(1u, configuration.RoutingContext, "OpenSS7 routing context");
+    AssertEqual("override", configuration.TrafficMode, "OpenSS7 traffic mode");
+    Assert(configuration.IsAspToSgReady, "OpenSS7 ASP-to-SG configuration should be ready");
+}
+
+static void SigtranOpenSs7TraceExpectationsCoverAspLifecycleAndData()
+{
+    SigtranOpenSs7InteropTraceExpectations expectations = SigtranOpenSs7InteropTraceExpectationsCatalog.CreateAspToSg();
+
+    AssertEqual("openss7-m3ua-asp-to-sg", expectations.ScenarioId, "OpenSS7 trace scenario");
+    Assert(expectations.CoversAspLifecycle, "OpenSS7 trace expectations should cover ASP lifecycle");
+    Assert(expectations.RequiresDataTransfer, "OpenSS7 trace expectations should require DATA transfer");
+    Assert(expectations.ExpectedMessages.Contains("DATA"), "OpenSS7 trace expectations should include DATA");
+}
+
+static void SigtranOpenSs7ArtifactManifestRequiresTracePeerConfigLogsAndComparison()
+{
+    SigtranOpenSs7InteropArtifactManifest manifest = CreateCompleteOpenSs7Manifest();
+
+    AssertEqual(5, manifest.Snapshot().Count, "OpenSS7 artifact count");
+    Assert(manifest.IsComplete, "OpenSS7 artifact manifest should be complete");
+}
+
+static void SigtranOpenSs7RunPlanIsExecutableWithDefaultContracts()
+{
+    SigtranOpenSs7InteropRunPlan plan = SigtranOpenSs7InteropRunPlans.CreateDefaultAspToSg();
+
+    AssertEqual("openss7-m3ua-asp-to-sg", plan.Template.Scenario.Id, "OpenSS7 scenario id");
+    AssertEqual("openss7-ipss7-sg", plan.Template.PeerProfile.Id, "OpenSS7 peer profile id");
+    Assert(plan.IsExecutable, "OpenSS7 run plan should be executable");
+}
+
+static void SigtranOpenSs7CommandsRequirePeerAndPacketCapture()
+{
+    SigtranOpenSs7InteropCommandSet commands = SigtranOpenSs7InteropCommands.CreateDefault();
+
+    Assert(commands.RequiresOpenSs7, "OpenSS7 commands should require OpenSS7");
+    Assert(commands.RequiresPacketCapture, "OpenSS7 commands should require packet capture");
+    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_INTEROP_PEER=openss7-ipss7", StringComparison.Ordinal)), "OpenSS7 commands should select peer");
+}
+
+static void SigtranOpenSs7RunReportIdentifiesPassingEvidence()
+{
+    SigtranOpenSs7InteropRunReport report = new(
+        SigtranOpenSs7InteropRunPlans.CreateDefaultAspToSg(),
+        CreateCompleteOpenSs7Manifest(),
+        SigtranOpenSs7InteropRunStatus.Passed,
+        DateTimeOffset.UnixEpoch,
+        DateTimeOffset.UnixEpoch.AddMinutes(3));
+
+    Assert(report.HasPassingEvidence, "OpenSS7 run report should identify passing evidence");
+}
+
+static void SigtranOpenSs7EvidenceRegistryStartsEmpty()
+{
+    SigtranOpenSs7InteropEvidenceRegistry registry = SigtranOpenSs7InteropEvidence.CreateCurrentRegistry();
+
+    AssertEqual(0, registry.Snapshot().Count, "current OpenSS7 evidence count");
+    Assert(!registry.HasPassingAspToSgEvidence, "current OpenSS7 evidence should be empty until real artifacts are promoted");
+}
+
+static void SigtranOpenSs7ReadinessSeparatesFoundationFromEvidence()
+{
+    SigtranOpenSs7InteropReadinessReport report = SigtranOpenSs7InteropReadiness.GetReport();
+
+    Assert(report.FoundationReady, "OpenSS7 interop foundation should be ready");
+    Assert(!report.HasPassingEvidence, "OpenSS7 interop should wait for real evidence");
+    Assert(!report.Verified, "OpenSS7 interop should not be verified without evidence");
+}
+
+static void SigtranOpenSs7StatusSummarizesExecutionFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranOpenSs7InteropStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranOpenSs7InteropStatus.CompletedUnitCount, "OpenSS7 completed unit count");
+    AssertEqual(10, capabilities.Count, "OpenSS7 capability count");
+    Assert(capabilities.Contains("openss7-ci-profile"), "OpenSS7 status should include CI profile");
+    Assert(SigtranOpenSs7InteropStatus.FoundationReady, SigtranOpenSs7InteropStatus.Describe());
+    Assert(!SigtranOpenSs7InteropStatus.Verified, SigtranOpenSs7InteropStatus.Describe());
+}
+
+static SigtranOpenSs7InteropArtifactManifest CreateCompleteOpenSs7Manifest()
+{
+    SigtranOpenSs7InteropArtifactManifest manifest = new();
+    manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.PacketCapture, "artifacts/openss7/openss7.pcapng"));
+    manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.SdkTrace, "artifacts/openss7/sdk-trace.log"));
+    manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.PeerConfiguration, "artifacts/openss7/peer-config.txt"));
+    manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.PeerLog, "artifacts/openss7/peer-log.txt"));
+    manifest.Add(new SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind.ComparisonReport, "artifacts/openss7/comparison-report.md"));
+    return manifest;
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

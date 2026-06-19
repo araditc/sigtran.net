@@ -163,6 +163,14 @@ Status: Phase 16 is foundation-ready for configuration schema, validation helper
 
 Status: Phase 17 is foundation-ready for native SCTP lab scenario catalog, artifact manifest, run plan, command set, run report, evidence registry, lab readiness, lab CI profile, commercial gate, and phase documentation. Native SCTP production verification remains blocked until complete passing Linux SCTP lab evidence is captured.
 
+## Phase 18 - OpenSS7/IPSS7 Interop Execution
+
+- Add OpenSS7/IPSS7 environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
+- Keep execution foundation readiness separate from verified OpenSS7/IPSS7 evidence.
+- Make required OpenSS7/IPSS7 artifacts explicit before commercial interoperability claims.
+
+Status: Phase 18 is foundation-ready for OpenSS7/IPSS7 interoperability execution. Verification remains blocked until real OpenSS7/IPSS7 packet captures, SDK traces, peer configuration, peer logs, and comparison reports are captured and promoted.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

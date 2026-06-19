@@ -73,3 +73,9 @@ The profile reuses build, test, and pack commands, requires configuration readin
 Phase 17 adds `SigtranNativeSctpLabCi.CreateDefault()` as the metadata contract for native SCTP verification.
 
 The profile is opt-in, Linux-only, and enabled by `SIGTRAN_NATIVE_SCTP_LAB`. Real runs must retain artifacts under `SIGTRAN_NATIVE_SCTP_ARTIFACT_ROOT`.
+
+## OpenSS7/IPSS7 Interop CI
+
+Phase 18 adds `SigtranOpenSs7InteropCi.CreateDefault()` as the metadata contract for OpenSS7/IPSS7 interoperability execution.
+
+The profile is opt-in and enabled by `SIGTRAN_OPENSS7_INTEROP`. Real runs require a prepared OpenSS7/IPSS7 runner and must retain artifacts under `SIGTRAN_OPENSS7_ARTIFACT_ROOT`.
