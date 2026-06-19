@@ -128,3 +128,5 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpSocketFactory` centralizes socket creation and throws `NativeSctpUnavailableException` when the current platform cannot create native SCTP sockets.
 
 `NativeSctpConnectionPlanner` resolves configured SCTP endpoints to `IPEndPoint` values before native bind/connect attempts.
+
+`NativeSctpSocketAdapter` wraps an SCTP socket as `ISctpSocket` and reports `SctpTransportHealth` snapshots for native associations.

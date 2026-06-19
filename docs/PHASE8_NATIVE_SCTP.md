@@ -36,3 +36,14 @@ NativeSctpConnectionPlan plan = await new NativeSctpConnectionPlanner()
 ```
 
 The planner resolves the remote endpoint and optional local endpoint before a socket attempts bind/connect. Phase 8 currently resolves IPv4 endpoints because the Linux native SCTP path starts with IPv4 verification.
+
+## Socket Adapter
+
+`NativeSctpSocketAdapter` wraps a native SCTP socket behind the SDK `ISctpSocket` contract.
+
+```csharp
+using Socket socket = factory.CreateSocket();
+using NativeSctpSocketAdapter adapter = new(socket, options);
+```
+
+The adapter exposes lifecycle state and `SctpTransportHealth` snapshots. It currently sends and receives complete socket messages through the native socket API; SCTP ancillary metadata handling is tracked separately before production readiness can be claimed.

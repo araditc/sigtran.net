@@ -33,6 +33,7 @@ Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPha
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
+Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapterReportsLifecycleHealth);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -445,6 +446,29 @@ static void NativeSctpConnectionPlannerResolvesEndpoints()
     AssertEqual(2905, plan.RemoteEndpoint.Port, "native SCTP remote port");
     AssertEqual(2906, plan.LocalEndpoint!.Port, "native SCTP local port");
     Assert(plan.Describe().Contains("remote=127.0.0.1:2905", StringComparison.Ordinal), plan.Describe());
+}
+
+static void NativeSctpSocketAdapterReportsLifecycleHealth()
+{
+    NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
+    if (!capability.CanCreateSocket)
+    {
+        Assert(!capability.CanCreateSocket, capability.Describe());
+        return;
+    }
+
+    using Socket socket = new NativeSctpSocketFactory().CreateSocket();
+    SctpConnectionOptions options = new(new SctpEndpoint("127.0.0.1", 2905), outboundStreams: 2, inboundStreams: 3);
+    using NativeSctpSocketAdapter adapter = new(socket, options);
+
+    AssertEqual(SctpAssociationState.Closed, adapter.AssociationState, "native adapter initial state");
+    adapter.MarkEstablished();
+    SctpTransportHealth health = adapter.GetHealthSnapshot();
+
+    Assert(health.IsEstablished, "native adapter health should be established");
+    AssertEqual((ushort)2, health.OutboundStreams, "native adapter outbound streams");
+    AssertEqual((ushort)3, health.InboundStreams, "native adapter inbound streams");
+    AssertEqual((uint)SctpPayloadProtocolIdentifiers.M3ua, health.DefaultPayloadProtocolIdentifier, "native adapter PPID");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
