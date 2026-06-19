@@ -32,6 +32,7 @@ Run("SIGTRAN deployment profiles expose commercial and development gates", Sigtr
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
+Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -429,6 +430,21 @@ static void NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform()
         NativeSctpUnavailableException exception = AssertThrows<NativeSctpUnavailableException>(() => factory.CreateSocket());
         AssertEqual(capability.Status, exception.Capability.Status, "native SCTP unavailable status");
     }
+}
+
+static void NativeSctpConnectionPlannerResolvesEndpoints()
+{
+    SctpConnectionOptions options = new(
+        new SctpEndpoint("127.0.0.1", 2905),
+        new SctpEndpoint("127.0.0.1", 2906));
+    NativeSctpConnectionPlanner planner = new();
+
+    NativeSctpConnectionPlan plan = planner.BuildAsync(options).GetAwaiter().GetResult();
+
+    AssertEqual("127.0.0.1", plan.RemoteEndpoint.Address.ToString(), "native SCTP remote address");
+    AssertEqual(2905, plan.RemoteEndpoint.Port, "native SCTP remote port");
+    AssertEqual(2906, plan.LocalEndpoint!.Port, "native SCTP local port");
+    Assert(plan.Describe().Contains("remote=127.0.0.1:2905", StringComparison.Ordinal), plan.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

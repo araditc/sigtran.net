@@ -25,3 +25,14 @@ using Socket socket = factory.CreateSocket();
 ```
 
 When native SCTP is unavailable, the factory throws `NativeSctpUnavailableException` with the platform capability result attached. This keeps unsupported Windows and macOS environments explicit.
+
+## Connection Planning
+
+`NativeSctpConnectionPlanner` resolves `SctpConnectionOptions` into a native connection plan.
+
+```csharp
+NativeSctpConnectionPlan plan = await new NativeSctpConnectionPlanner()
+    .BuildAsync(options);
+```
+
+The planner resolves the remote endpoint and optional local endpoint before a socket attempts bind/connect. Phase 8 currently resolves IPv4 endpoints because the Linux native SCTP path starts with IPv4 verification.

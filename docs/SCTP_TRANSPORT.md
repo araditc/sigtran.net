@@ -126,3 +126,5 @@ The remaining production gate is explicit: native SCTP implementation and intero
 The probe does not mark the transport production-ready by itself. It is the first native SCTP implementation gate.
 
 `NativeSctpSocketFactory` centralizes socket creation and throws `NativeSctpUnavailableException` when the current platform cannot create native SCTP sockets.
+
+`NativeSctpConnectionPlanner` resolves configured SCTP endpoints to `IPEndPoint` values before native bind/connect attempts.
