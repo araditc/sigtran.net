@@ -175,6 +175,7 @@ Run("SIGTRAN release promotion gate blocks incomplete release evidence", Sigtran
 Run("SIGTRAN release promotion gate allows complete release evidence", SigtranReleasePromotionGateAllowsCompleteReleaseEvidence);
 Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionPolicyAcceptsSemVerTags);
 Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadataContractMatchesProjectFile);
+Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExposesNupkgAndSymbols);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2163,6 +2164,17 @@ static void SigtranNuGetMetadataContractMatchesProjectFile()
     AssertEqual(0, missing.Count, "missing NuGet metadata count");
     Assert(contract.Requirements.Any(static requirement => requirement.PropertyName == "PackageLicenseExpression"), "metadata contract should require license");
     Assert(contract.Requirements.Any(static requirement => requirement.PropertyName == "SymbolPackageFormat"), "metadata contract should require symbol package format");
+}
+
+static void SigtranPackageLayoutExposesNupkgAndSymbols()
+{
+    SigtranPackageLayout layout = SigtranPackageLayouts.CreateDefault();
+    IReadOnlyList<SigtranPackageArtifactPath> artifacts = layout.GetArtifactPaths();
+
+    Assert(layout.IncludesRequiredArtifacts, "package layout should include package and symbol artifacts");
+    AssertEqual(2, artifacts.Count, "package layout artifact count");
+    Assert(artifacts.Any(static artifact => artifact.Path.EndsWith("Sigtran.Net.1.0.0.nupkg", StringComparison.Ordinal)), "package layout should include nupkg");
+    Assert(artifacts.Any(static artifact => artifact.Path.EndsWith("Sigtran.Net.1.0.0.snupkg", StringComparison.Ordinal)), "package layout should include snupkg");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

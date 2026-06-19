@@ -25,3 +25,12 @@ The policy is intentionally local and deterministic so CI, release workflow inpu
 - XML documentation and symbol package generation.
 
 The contract validates the project file text so packaging metadata remains testable without contacting NuGet.
+
+## Unit 3 - Package Layout
+
+`SigtranPackageLayout` defines the expected Release pack outputs:
+
+- `Sigtran.Net.1.0.0.nupkg`
+- `Sigtran.Net.1.0.0.snupkg`
+
+The layout contract gives release gates a deterministic way to find package artifacts before integrity, signing, provenance, and publish checks run.
