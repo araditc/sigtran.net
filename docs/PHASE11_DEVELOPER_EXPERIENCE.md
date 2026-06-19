@@ -47,3 +47,9 @@ Phase 11 makes the SDK easier to adopt by documenting quickstarts, samples, conf
 `SigtranTroubleshooting.GetEntries()` maps common symptoms to the next action.
 
 Initial entries cover native SCTP availability, ASP acknowledgement timeouts, unrouted DATA, and incomplete interoperability lab artifacts.
+
+## API Reference Index
+
+`SigtranApiReferenceIndex.GetEntries()` lists the curated onboarding APIs for M3UA, SCTP, and diagnostics.
+
+The index complements XML documentation by naming the first APIs a new user should inspect.

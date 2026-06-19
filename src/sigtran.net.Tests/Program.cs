@@ -55,6 +55,7 @@ Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuicks
 Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemplatesMapSampleIdsToEnvironments);
 Run("SIGTRAN configuration profiles separate development lab and production", SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction);
 Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubleshootingIndexMapsSymptomsToNextActions);
+Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIndexExposesOnboardingApis);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -767,6 +768,16 @@ static void SigtranTroubleshootingIndexMapsSymptomsToNextActions()
     Assert(entries.Any(static entry => entry.Id == "native-sctp-unavailable" && entry.Category == SigtranTroubleshootingCategory.Transport), "transport troubleshooting entry should exist");
     Assert(entries.Any(static entry => entry.Id == "data-unrouted" && entry.NextAction.Contains("route table", StringComparison.OrdinalIgnoreCase)), "routing troubleshooting entry should exist");
     Assert(entries.Any(static entry => entry.Category == SigtranTroubleshootingCategory.Interoperability), "interop troubleshooting entry should exist");
+}
+
+static void SigtranApiReferenceIndexExposesOnboardingApis()
+{
+    IReadOnlyList<SigtranApiReferenceEntry> entries = SigtranApiReferenceIndex.GetEntries();
+
+    AssertEqual(5, entries.Count, "API reference entry count");
+    Assert(entries.Any(static entry => entry.Name == "M3uaAspClient" && entry.Area == "M3UA"), "API reference should include ASP client");
+    Assert(entries.Any(static entry => entry.Name == "SctpConnectionOptions" && entry.Area == "SCTP"), "API reference should include SCTP options");
+    Assert(entries.Any(static entry => entry.Area == "Diagnostics"), "API reference should include diagnostics");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
