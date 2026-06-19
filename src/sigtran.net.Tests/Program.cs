@@ -51,6 +51,7 @@ Run("SIGTRAN release gate evaluates artifact notes provenance and channel readin
 Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan);
 Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranPhase10StatusSummarizesReleaseAutomationFoundation);
 Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDeveloperExperienceCatalogExposesAdoptionAreas);
+Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuickstartExposesOrderedAspToSgSteps);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -715,6 +716,17 @@ static void SigtranDeveloperExperienceCatalogExposesAdoptionAreas()
     Assert(capabilities.Any(static capability => capability.Area == SigtranDeveloperExperienceArea.Quickstart), "developer experience should include quickstart");
     Assert(capabilities.Any(static capability => capability.Area == SigtranDeveloperExperienceArea.Troubleshooting), "developer experience should include troubleshooting");
     Assert(capabilities.Any(static capability => capability.Id == "adoption-gates"), "developer experience should include adoption gates");
+}
+
+static void SigtranM3uaQuickstartExposesOrderedAspToSgSteps()
+{
+    SigtranQuickstartGuide guide = SigtranQuickstarts.CreateM3uaAspToSg();
+
+    AssertEqual("quickstart-m3ua-asp-to-sg", guide.Id, "M3UA quickstart id");
+    AssertEqual(5, guide.Steps.Count, "M3UA quickstart step count");
+    AssertEqual("SctpConnectionOptions", guide.Steps[0].Api, "M3UA quickstart first API");
+    Assert(guide.Steps.Any(static step => step.Api == "M3uaAspClient"), "M3UA quickstart should include ASP client");
+    Assert(guide.Describe().Contains("steps=5", StringComparison.Ordinal), guide.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

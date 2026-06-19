@@ -11,3 +11,13 @@ Phase 11 makes the SDK easier to adopt by documenting quickstarts, samples, conf
 - Configuration
 - Troubleshooting
 - Adoption
+
+## M3UA Quickstart
+
+`SigtranQuickstarts.CreateM3uaAspToSg()` exposes the official M3UA ASP-to-SG quickstart sequence:
+
+1. Create transport options.
+2. Create an M3UA transport session.
+3. Start the ASP lifecycle.
+4. Send or receive DATA.
+5. Inspect diagnostics.
