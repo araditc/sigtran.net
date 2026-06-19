@@ -31,3 +31,9 @@ The lab profile is disabled unless `SIGTRAN_INTEROP_LAB` is set to `1` or `true`
 Phase 10 adds `SigtranReleaseCiProfiles.CreateDefault()` as the metadata contract for release workflows.
 
 Release CI is intended for manual dispatch and version tags. It requires `NUGET_API_KEY` and `SIGNING_CERTIFICATE` secret names, but the repository must never contain secret values or private signing material.
+
+## Developer Experience CI
+
+Phase 11 adds `SigtranDeveloperExperienceCi.CreateDefault()` as the metadata contract for validating developer experience gates.
+
+The profile reuses build, test, and pack commands and requires documentation readiness plus adoption readiness.

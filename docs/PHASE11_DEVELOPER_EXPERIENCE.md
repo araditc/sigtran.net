@@ -65,3 +65,7 @@ Developer adoption is ready when quickstart, samples, configuration profiles, tr
 `SigtranDocumentationReadiness.GetReport()` exposes the developer documentation gate.
 
 Developer documentation is ready when roadmap, quickstart, API index, and troubleshooting material are available.
+
+## Developer Experience CI
+
+`SigtranDeveloperExperienceCi.CreateDefault()` reuses the official build, test, and pack commands while requiring documentation readiness and adoption readiness.

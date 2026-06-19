@@ -58,6 +58,7 @@ Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubl
 Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIndexExposesOnboardingApis);
 Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
 Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
+Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -800,6 +801,16 @@ static void SigtranDocumentationReadinessReportsDeveloperDocsGate()
     Assert(report.HasApiIndex, "documentation readiness should include API index");
     Assert(report.HasTroubleshooting, "documentation readiness should include troubleshooting");
     Assert(report.DeveloperDocsReady, "developer docs should be ready");
+}
+
+static void SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates()
+{
+    SigtranDeveloperExperienceCiProfile profile = SigtranDeveloperExperienceCi.CreateDefault();
+
+    AssertEqual("developer-experience", profile.Name, "DX CI profile name");
+    Assert(profile.Commands.Any(static command => command.Contains("dotnet build", StringComparison.Ordinal)), "DX CI profile should include build");
+    Assert(profile.RequiresDocumentationReadiness, "DX CI profile should require documentation readiness");
+    Assert(profile.RequiresAdoptionReadiness, "DX CI profile should require adoption readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
