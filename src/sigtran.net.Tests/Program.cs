@@ -61,6 +61,7 @@ Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocume
 Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
 Run("SIGTRAN phase 11 status summarizes developer experience foundation", SigtranPhase11StatusSummarizesDeveloperExperienceFoundation);
 Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
+Run("SIGTRAN runbook catalog exposes operational recovery paths", SigtranRunbookCatalogExposesOperationalRecoveryPaths);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -834,6 +835,16 @@ static void SigtranOperationsCatalogExposesProductionSupportAreas()
     Assert(capabilities.Any(static capability => capability.Area == SigtranOperationsArea.Runbooks), "operations should include runbooks");
     Assert(capabilities.Any(static capability => capability.Area == SigtranOperationsArea.Health), "operations should include health checks");
     Assert(capabilities.Any(static capability => capability.Id == "support-handbook"), "operations should include support handbook");
+}
+
+static void SigtranRunbookCatalogExposesOperationalRecoveryPaths()
+{
+    IReadOnlyList<SigtranRunbook> runbooks = SigtranRunbooks.GetRunbooks();
+
+    AssertEqual(4, runbooks.Count, "runbook count");
+    Assert(runbooks.Any(static runbook => runbook.Kind == SigtranRunbookKind.TransportOutage), "runbooks should include transport outage");
+    Assert(runbooks.Any(static runbook => runbook.Kind == SigtranRunbookKind.ReleaseRollback), "runbooks should include release rollback");
+    Assert(runbooks.All(static runbook => runbook.FirstAction.Length > 0), "runbooks should define first actions");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
