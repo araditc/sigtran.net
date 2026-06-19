@@ -103,3 +103,34 @@ public static class SigtranInteropEvidence
         return new SigtranInteropEvidenceRegistry();
     }
 }
+
+/// <summary>
+/// Promotes passing interoperability lab runs into evidence items.
+/// </summary>
+public static class SigtranInteropEvidencePromotion
+{
+    /// <summary>Creates a passing evidence item from a lab run report.</summary>
+    /// <param name="report">The lab run report.</param>
+    /// <param name="id">The optional evidence id.</param>
+    /// <returns>The promoted evidence item.</returns>
+    public static SigtranInteropEvidenceItem Promote(SigtranInteropLabRunReport report, string? id = null)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        if (!report.HasPassingEvidence)
+        {
+            throw new InvalidOperationException("Only passed lab runs with complete artifact manifests can be promoted.");
+        }
+
+        string evidenceId = string.IsNullOrWhiteSpace(id)
+            ? $"lab-{report.Scenario.Id}-{report.StartedAt:yyyyMMddHHmmss}"
+            : id;
+        string traceReference = string.Join(";", report.Manifest.Snapshot().Select(static artifact => artifact.Path));
+
+        return new SigtranInteropEvidenceItem(
+            evidenceId,
+            report.Scenario.PeerStack,
+            report.Scenario.Id,
+            traceReference,
+            SigtranInteropEvidenceResult.Passed);
+    }
+}

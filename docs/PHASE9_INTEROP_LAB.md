@@ -44,3 +44,9 @@ The template references `http://www.openss7.org/ipss7_man.html`, expects SCTP/M3
 `SigtranTraceComparison.Compare()` compares ordered expected message names with actual trace message names and returns a deterministic `SigtranTraceComparisonReport`.
 
 Use this report to attach a machine-readable pass/fail summary beside PCAP, SDK trace, and peer-log artifacts.
+
+## Evidence Promotion
+
+`SigtranInteropEvidencePromotion.Promote()` converts a passing lab run with a complete artifact manifest into a `SigtranInteropEvidenceItem`.
+
+Failed runs, pending runs, or runs with incomplete manifests are rejected and must not unlock commercial readiness.
