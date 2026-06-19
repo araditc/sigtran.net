@@ -37,6 +37,7 @@ Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapt
 Run("Native SCTP connector reports unsupported platform safely", NativeSctpConnectorReportsUnsupportedPlatformSafely);
 Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
 Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
+Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessReportsFoundationAndVerificationGates);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -531,6 +532,16 @@ static void NativeSctpLabProfileIsOptIn()
     {
         Environment.SetEnvironmentVariable(NativeSctpLabProfile.EnableEnvironmentVariable, previous);
     }
+}
+
+static void NativeSctpReadinessReportsFoundationAndVerificationGates()
+{
+    NativeSctpReadinessReport report = NativeSctpReadiness.GetReport();
+
+    Assert(report.FoundationReady, "native SCTP foundation should be ready");
+    Assert(!report.IsProductionReady, "native SCTP production should wait for Linux verification");
+    AssertEqual(NativeSctpReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "native SCTP foundation count");
+    Assert(report.Describe().Contains("linuxVerified=False", StringComparison.Ordinal), report.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

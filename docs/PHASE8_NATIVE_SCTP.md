@@ -82,3 +82,15 @@ dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
 ```
 
 `NativeSctpLab.CreateFromEnvironment()` exposes the current lab profile. The default loopback endpoint is `127.0.0.1:2905`.
+
+## Readiness
+
+`NativeSctpReadiness.GetReport()` summarizes Phase 8 native SCTP status.
+
+```csharp
+NativeSctpReadinessReport report = NativeSctpReadiness.GetReport();
+bool foundationReady = report.FoundationReady;
+bool productionReady = report.IsProductionReady;
+```
+
+The native SCTP foundation is ready when platform probe, socket factory, connection planner, socket adapter, connector, listener, and lab profile are present. Production readiness remains false until Linux SCTP verification passes.

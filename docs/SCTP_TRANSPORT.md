@@ -136,3 +136,5 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpListener` provides the server-side bind/listen/accept path for Linux native SCTP lab scenarios.
 
 `NativeSctpLab.CreateFromEnvironment()` keeps native SCTP integration verification opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.
+
+`NativeSctpReadiness.GetReport()` marks the Phase 8 native SCTP foundation complete while keeping production readiness blocked until Linux verification passes.
