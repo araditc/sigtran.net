@@ -46,6 +46,7 @@ Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMar
 Run("SIGTRAN package signing plan marks commercial release requirement", SigtranPackageSigningPlanMarksCommercialReleaseRequirement);
 Run("SIGTRAN release provenance records source commit and artifact manifest", SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest);
 Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNotesRequireSemVerAndChangeEntries);
+Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -643,6 +644,21 @@ static void SigtranReleaseNotesRequireSemVerAndChangeEntries()
 
     SigtranReleaseNotes invalid = new("alpha", "Invalid release", [], []);
     Assert(!invalid.IsPublishable, invalid.Describe());
+}
+
+static void SigtranPublishChannelsSeparatePrereleaseAndStableRules()
+{
+    IReadOnlyList<SigtranPublishChannel> channels = SigtranPublishChannels.GetChannels();
+
+    AssertEqual(4, channels.Count, "publish channel count");
+    SigtranPublishChannel alpha = channels.Single(static channel => channel.Kind == SigtranPublishChannelKind.Alpha);
+    SigtranPublishChannel stable = channels.Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
+
+    Assert(alpha.AcceptsVersion("1.0.0-alpha.1"), "alpha channel should accept prerelease");
+    Assert(!alpha.RequiresCommercialReadiness, "alpha channel should not require commercial readiness");
+    Assert(!stable.AcceptsVersion("1.0.0-alpha.1"), "stable channel should reject prerelease");
+    Assert(stable.AcceptsVersion("1.0.0"), "stable channel should accept stable SemVer");
+    Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -49,3 +49,9 @@ Every governed release should preserve this provenance beside package artifacts 
 `SigtranReleaseNotesFactory.CreateAlpha()` creates structured alpha release notes with SemVer validation and required change entries.
 
 Release notes are publishable only when the version is SemVer-compatible and at least one notable change is recorded.
+
+## Publish Channels
+
+`SigtranPublishChannels.GetChannels()` defines internal, alpha, beta, and stable publication rules.
+
+Prerelease versions are allowed on internal, alpha, and beta channels. Stable publication rejects prerelease versions and requires commercial readiness.
