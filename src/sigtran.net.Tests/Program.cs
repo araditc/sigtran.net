@@ -47,6 +47,7 @@ Run("SIGTRAN package signing plan marks commercial release requirement", Sigtran
 Run("SIGTRAN release provenance records source commit and artifact manifest", SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest);
 Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNotesRequireSemVerAndChangeEntries);
 Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
+Run("SIGTRAN release gate evaluates artifact notes provenance and channel readiness", SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -659,6 +660,25 @@ static void SigtranPublishChannelsSeparatePrereleaseAndStableRules()
     Assert(!stable.AcceptsVersion("1.0.0-alpha.1"), "stable channel should reject prerelease");
     Assert(stable.AcceptsVersion("1.0.0"), "stable channel should accept stable SemVer");
     Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
+}
+
+static void SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness()
+{
+    SigtranReleaseArtifactManifest manifest = new("Sigtran.Net", "1.0.0-alpha.1");
+    manifest.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.NuGetPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.nupkg", "abc"));
+    manifest.Add(new SigtranReleaseArtifact(SigtranReleaseArtifactKind.SymbolPackage, "artifacts/Sigtran.Net.1.0.0-alpha.1.snupkg", "def"));
+    SigtranReleaseNotes notes = SigtranReleaseNotesFactory.CreateAlpha("1.0.0-alpha.1");
+    SigtranReleaseProvenance provenance = SigtranReleaseProvenanceFactory.Create("abcdef123456", "artifacts/release-manifest.json");
+    SigtranPublishChannel alpha = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Alpha);
+    SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
+
+    SigtranReleaseGateResult alphaResult = SigtranReleaseGate.Evaluate(alpha, manifest, notes, provenance, SigtranCommercialReadiness.GetReport());
+    Assert(alphaResult.CanPublish, alphaResult.Describe());
+
+    SigtranReleaseGateResult stableResult = SigtranReleaseGate.Evaluate(stable, manifest, notes, provenance, SigtranCommercialReadiness.GetReport());
+    Assert(!stableResult.CanPublish, stableResult.Describe());
+    Assert(stableResult.Reasons.Contains("channel-version-rejected"), "stable gate should reject prerelease version");
+    Assert(stableResult.Reasons.Contains("commercial-readiness-required"), "stable gate should require commercial readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

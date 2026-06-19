@@ -55,3 +55,9 @@ Release notes are publishable only when the version is SemVer-compatible and at 
 `SigtranPublishChannels.GetChannels()` defines internal, alpha, beta, and stable publication rules.
 
 Prerelease versions are allowed on internal, alpha, and beta channels. Stable publication rejects prerelease versions and requires commercial readiness.
+
+## Release Gate
+
+`SigtranReleaseGate.Evaluate()` checks channel version rules, package artifacts, artifact digests, release notes, provenance, and commercial readiness.
+
+Alpha and beta releases can publish before commercial readiness. Stable releases require commercial readiness and a stable version.
