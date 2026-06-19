@@ -161,8 +161,8 @@ Run("SIGTRAN supply chain references align with SBOM and signing plans", Sigtran
 Run("SIGTRAN supply chain artifact digests are mandatory for promotion", SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion);
 Run("SIGTRAN release workflow plan includes release triggers and stages", SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages);
 Run("SIGTRAN release workflow requires supply chain evidence and publish secrets", SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets);
-Run("SIGTRAN release workflow readiness separates contract from workflow file", SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile);
-Run("SIGTRAN release workflow status summarizes contract foundation", SigtranReleaseWorkflowStatusSummarizesContractFoundation);
+Run("SIGTRAN release workflow readiness reports concrete workflow file", SigtranReleaseWorkflowReadinessReportsConcreteWorkflowFile);
+Run("SIGTRAN release workflow status summarizes orchestration foundation", SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation);
 Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
 Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
@@ -1993,16 +1993,16 @@ static void SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets()
     Assert(secrets.Contains("SIGNING_CERTIFICATE"), "release workflow should require signing certificate");
 }
 
-static void SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile()
+static void SigtranReleaseWorkflowReadinessReportsConcreteWorkflowFile()
 {
     SigtranReleaseWorkflowReadinessReport report = SigtranReleaseWorkflowReadiness.GetReport();
 
     Assert(report.ContractReady, "release workflow contract should be ready");
-    Assert(!report.HasWorkflowFile, "release workflow file should not be marked ready in contract step");
-    Assert(!report.OrchestrationReady, "release workflow orchestration should wait for workflow file");
+    Assert(report.HasWorkflowFile, "release workflow file should be marked ready");
+    Assert(report.OrchestrationReady, "release workflow orchestration foundation should be ready");
 }
 
-static void SigtranReleaseWorkflowStatusSummarizesContractFoundation()
+static void SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation()
 {
     IReadOnlyList<string> capabilities = SigtranReleaseWorkflowStatus.GetCompletedCapabilities();
 
@@ -2010,7 +2010,7 @@ static void SigtranReleaseWorkflowStatusSummarizesContractFoundation()
     AssertEqual(10, capabilities.Count, "release workflow capability count");
     Assert(capabilities.Contains("release-workflow-secret-contract"), "release workflow status should include secret contract");
     Assert(SigtranReleaseWorkflowStatus.ContractReady, SigtranReleaseWorkflowStatus.Describe());
-    Assert(!SigtranReleaseWorkflowStatus.OrchestrationReady, SigtranReleaseWorkflowStatus.Describe());
+    Assert(SigtranReleaseWorkflowStatus.OrchestrationReady, SigtranReleaseWorkflowStatus.Describe());
 }
 
 static void SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile()

@@ -52,3 +52,9 @@ The workflow file follows the contract from Phase 22 and contains restore, build
 Stage 23 Unit 2 adds `SigtranReleaseWorkflowValidation.ValidateYaml()`.
 
 The validator checks that the concrete workflow YAML contains the release name, manual and tag triggers, .NET 10 setup, supply-chain and commercial evidence environment variables, signing secrets, NuGet secret, and publish gate.
+
+## Stage 23 Unit 3 - Workflow Readiness Alignment
+
+Stage 23 Unit 3 connects the concrete workflow file contract to `SigtranReleaseWorkflowReadiness`.
+
+With the workflow file contract and YAML validation in place, release workflow orchestration foundation readiness can now be reported as ready. This does not mean the release can be commercially promoted; commercial evidence and supply-chain promotion gates still control that claim.

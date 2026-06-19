@@ -65,6 +65,6 @@ public static class SigtranReleaseWorkflowReadiness
             hasSupplyChainIntegration: plan.RequiresSupplyChain && SigtranSupplyChainStatus.FoundationReady,
             hasCommercialEvidenceIntegration: plan.RequiresCommercialEvidence && SigtranCommercialEvidenceStatus.FoundationReady,
             hasPublishContract: plan.HasPublishStage,
-            hasWorkflowFile: false);
+            hasWorkflowFile: SigtranReleaseWorkflowFiles.CreateDefault().IsValidationReady);
     }
 }
