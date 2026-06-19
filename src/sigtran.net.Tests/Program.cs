@@ -149,6 +149,16 @@ Run("SIGTRAN commercial evidence gate allows complete verified dossier", Sigtran
 Run("SIGTRAN commercial evidence readiness separates foundation from claims", SigtranCommercialEvidenceReadinessSeparatesFoundationFromClaims);
 Run("SIGTRAN commercial evidence CI profile requires retained bundle", SigtranCommercialEvidenceCiProfileRequiresRetainedBundle);
 Run("SIGTRAN commercial evidence status summarizes dossier foundation", SigtranCommercialEvidenceStatusSummarizesDossierFoundation);
+Run("SIGTRAN supply chain automation plan wires SBOM signing provenance and evidence", SigtranSupplyChainAutomationPlanWiresSbomSigningProvenanceAndEvidence);
+Run("SIGTRAN supply chain commands expose ordered release security steps", SigtranSupplyChainCommandsExposeOrderedReleaseSecuritySteps);
+Run("SIGTRAN supply chain artifact manifest validates required artifacts", SigtranSupplyChainArtifactManifestValidatesRequiredArtifacts);
+Run("SIGTRAN supply chain gate blocks incomplete promotion evidence", SigtranSupplyChainGateBlocksIncompletePromotionEvidence);
+Run("SIGTRAN supply chain gate allows complete verified promotion", SigtranSupplyChainGateAllowsCompleteVerifiedPromotion);
+Run("SIGTRAN supply chain readiness separates foundation from promotion", SigtranSupplyChainReadinessSeparatesFoundationFromPromotion);
+Run("SIGTRAN supply chain CI profile requires signing secrets", SigtranSupplyChainCiProfileRequiresSigningSecrets);
+Run("SIGTRAN supply chain status summarizes automation foundation", SigtranSupplyChainStatusSummarizesAutomationFoundation);
+Run("SIGTRAN supply chain references align with SBOM and signing plans", SigtranSupplyChainReferencesAlignWithSbomAndSigningPlans);
+Run("SIGTRAN supply chain artifact digests are mandatory for promotion", SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -1843,6 +1853,116 @@ static void SigtranCommercialEvidenceStatusSummarizesDossierFoundation()
     Assert(!SigtranCommercialEvidenceStatus.CommercialEvidenceReady, SigtranCommercialEvidenceStatus.Describe());
 }
 
+static void SigtranSupplyChainAutomationPlanWiresSbomSigningProvenanceAndEvidence()
+{
+    SigtranSupplyChainAutomationPlan plan = SigtranSupplyChainAutomation.CreateDefaultPlan();
+
+    AssertEqual("supply-chain-default", plan.Id, "supply-chain plan id");
+    AssertEqual("artifacts/supply-chain", plan.ArtifactRoot, "supply-chain artifact root");
+    Assert(plan.IsExecutable, "supply-chain automation plan should be executable");
+    Assert(plan.SbomPlan.IsRequiredForCommercialRelease, "supply-chain plan should require SBOM");
+    Assert(plan.SigningPlan.HasSigningMaterialReferences, "supply-chain plan should have signing references");
+}
+
+static void SigtranSupplyChainCommandsExposeOrderedReleaseSecuritySteps()
+{
+    IReadOnlyList<string> commands = SigtranSupplyChainAutomation.CreateDefaultPlan().GetCommands();
+
+    AssertEqual(6, commands.Count, "supply-chain command count");
+    Assert(commands[1].Contains("sbom", StringComparison.OrdinalIgnoreCase), "second supply-chain command should generate SBOM");
+    Assert(commands[2].Contains("nuget sign", StringComparison.OrdinalIgnoreCase), "third supply-chain command should sign package");
+    Assert(commands[4].Contains("provenance", StringComparison.OrdinalIgnoreCase), "fifth supply-chain command should create provenance");
+    Assert(commands[5].Contains("evidence", StringComparison.OrdinalIgnoreCase), "sixth supply-chain command should verify evidence");
+}
+
+static void SigtranSupplyChainArtifactManifestValidatesRequiredArtifacts()
+{
+    SigtranSupplyChainArtifactManifest manifest = CreateCompleteSupplyChainManifest();
+
+    AssertEqual(5, manifest.Snapshot().Count, "supply-chain artifact count");
+    Assert(manifest.HasRequiredArtifacts, "supply-chain manifest should have required artifacts");
+    Assert(manifest.AllArtifactsHaveDigests, "supply-chain manifest should have artifact digests");
+}
+
+static void SigtranSupplyChainGateBlocksIncompletePromotionEvidence()
+{
+    SigtranSupplyChainGateResult result = SigtranSupplyChainGate.Evaluate(
+        SigtranSupplyChainAutomation.CreateDefaultPlan(),
+        new SigtranSupplyChainArtifactManifest(),
+        SigtranReleaseProvenanceFactory.Create("abcdef0", "artifacts/release-manifest.json"),
+        commercialEvidenceReady: false);
+
+    Assert(!result.CanPromote, "empty supply-chain evidence should not promote");
+    Assert(result.Reasons.Contains("supply-chain-artifacts-incomplete"), "supply-chain gate should report incomplete artifacts");
+    Assert(result.Reasons.Contains("supply-chain-digests-incomplete"), "supply-chain gate should report incomplete digests");
+    Assert(result.Reasons.Contains("commercial-evidence-required"), "supply-chain gate should require commercial evidence");
+}
+
+static void SigtranSupplyChainGateAllowsCompleteVerifiedPromotion()
+{
+    SigtranSupplyChainGateResult result = SigtranSupplyChainGate.Evaluate(
+        SigtranSupplyChainAutomation.CreateDefaultPlan(),
+        CreateCompleteSupplyChainManifest(),
+        SigtranReleaseProvenanceFactory.Create("abcdef0", "artifacts/release-manifest.json"),
+        commercialEvidenceReady: true);
+
+    Assert(result.CanPromote, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "complete supply-chain gate reasons");
+}
+
+static void SigtranSupplyChainReadinessSeparatesFoundationFromPromotion()
+{
+    SigtranSupplyChainReadinessReport report = SigtranSupplyChainReadiness.GetReport();
+
+    Assert(report.FoundationReady, "supply-chain foundation should be ready");
+    Assert(!report.HasCurrentPromotionEvidence, "current supply-chain promotion evidence should be absent");
+    Assert(!report.PromotionReady, "supply-chain promotion should not be ready without evidence");
+}
+
+static void SigtranSupplyChainCiProfileRequiresSigningSecrets()
+{
+    SigtranSupplyChainCiProfile profile = SigtranSupplyChainCi.CreateDefault();
+
+    AssertEqual("SIGTRAN_SUPPLY_CHAIN", profile.EnableVariable, "supply-chain CI enable variable");
+    AssertEqual("SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT", profile.ArtifactRootVariable, "supply-chain CI artifact root variable");
+    Assert(profile.RequiresSigningSecrets, "supply-chain CI should require signing secrets");
+    Assert(profile.RequiredSecrets.Contains("SIGNING_CERTIFICATE"), "supply-chain CI should require signing certificate");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_SUPPLY_CHAIN"] = "1" }), "supply-chain CI should be enabled by 1");
+}
+
+static void SigtranSupplyChainStatusSummarizesAutomationFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranSupplyChainStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranSupplyChainStatus.CompletedUnitCount, "supply-chain completed unit count");
+    AssertEqual(10, capabilities.Count, "supply-chain capability count");
+    Assert(capabilities.Contains("supply-chain-ci-profile"), "supply-chain status should include CI profile");
+    Assert(SigtranSupplyChainStatus.FoundationReady, SigtranSupplyChainStatus.Describe());
+    Assert(!SigtranSupplyChainStatus.PromotionReady, SigtranSupplyChainStatus.Describe());
+}
+
+static void SigtranSupplyChainReferencesAlignWithSbomAndSigningPlans()
+{
+    SigtranSupplyChainAutomationPlan plan = SigtranSupplyChainAutomation.CreateDefaultPlan();
+
+    AssertEqual(SigtranSbom.CreateDefaultPlan().OutputPath, plan.SbomPlan.OutputPath, "supply-chain SBOM output path");
+    AssertEqual(SigtranPackageSigning.CreateDefaultPlan().TimestampAuthorityUrl, plan.SigningPlan.TimestampAuthorityUrl, "supply-chain timestamp URL");
+    Assert(plan.Steps.Any(static step => step.RequiresSecret), "supply-chain plan should include secret-backed step");
+}
+
+static void SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion()
+{
+    SigtranSupplyChainArtifactManifest manifest = new();
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.Sbom, "artifacts/supply-chain/sbom.spdx.json"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.Signature, "artifacts/supply-chain/package.sig", "SHA256-001"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.TimestampReceipt, "artifacts/supply-chain/timestamp.tsr", "SHA256-002"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.ProvenanceAttestation, "artifacts/supply-chain/provenance.json", "SHA256-003"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.VerificationReport, "artifacts/supply-chain/verification.md", "SHA256-004"));
+
+    Assert(manifest.HasRequiredArtifacts, "supply-chain manifest should have required artifacts");
+    Assert(!manifest.AllArtifactsHaveDigests, "supply-chain manifest without all digests should not promote");
+}
+
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
 {
     IReadOnlyList<string>[] statusCapabilities =
@@ -1860,7 +1980,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranNativeSctpLabVerificationStatus.GetCompletedCapabilities(),
         SigtranOpenSs7InteropStatus.GetCompletedCapabilities(),
         SigtranProtocolInteropStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceStatus.GetCompletedCapabilities(),
+        SigtranSupplyChainStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)
@@ -1891,6 +2012,17 @@ static SigtranCommercialEvidenceManifest CreateCompleteCommercialEvidenceManifes
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.SymbolPackage, "artifacts/commercial/Sigtran.Net.1.0.0.snupkg", "SHA256-016"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Sbom, "artifacts/commercial/sbom.spdx.json", "SHA256-017"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Signature, "artifacts/commercial/package.sig", "SHA256-018"));
+    return manifest;
+}
+
+static SigtranSupplyChainArtifactManifest CreateCompleteSupplyChainManifest()
+{
+    SigtranSupplyChainArtifactManifest manifest = new();
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.Sbom, "artifacts/supply-chain/sigtran.net.spdx.json", "SHA256-101"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.Signature, "artifacts/supply-chain/Sigtran.Net.1.0.0.nupkg.sig", "SHA256-102"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.TimestampReceipt, "artifacts/supply-chain/timestamp.tsr", "SHA256-103"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.ProvenanceAttestation, "artifacts/supply-chain/provenance.json", "SHA256-104"));
+    manifest.Add(new SigtranSupplyChainArtifact(SigtranSupplyChainArtifactKind.VerificationReport, "artifacts/supply-chain/verification.md", "SHA256-105"));
     return manifest;
 }
 

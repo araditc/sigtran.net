@@ -91,3 +91,9 @@ The profile is opt-in and enabled by `SIGTRAN_PROTOCOL_INTEROP`. Real runs requi
 Phase 20 adds `SigtranCommercialEvidenceCi.CreateDefault()` as the metadata contract for commercial evidence dossier verification.
 
 The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, OpenSS7/IPSS7 evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.
+
+## Supply Chain CI
+
+Phase 21 adds `SigtranSupplyChainCi.CreateDefault()` as the metadata contract for supply-chain automation.
+
+The profile is opt-in and enabled by `SIGTRAN_SUPPLY_CHAIN`. Real runs require retained artifacts under `SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT`, signing secrets, SBOM output, package signatures, timestamp receipts, provenance attestations, verification reports, and commercial evidence readiness.

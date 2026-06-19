@@ -187,6 +187,14 @@ Status: Phase 19 is foundation-ready for SCCP, TCAP, and MAP SMS protocol intero
 
 Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. Commercial evidence readiness remains blocked until real retained artifacts, digest coverage, native SCTP verification, OpenSS7/IPSS7 verification, protocol vector verification, and release governance are complete.
 
+## Phase 21 - Supply Chain Automation
+
+- Add supply-chain automation plan, SBOM generation contract, package signing contract, signature verification contract, provenance attestation contract, artifact manifest, gate, readiness report, CI profile, and status reporting.
+- Connect SBOM and package-signing policies to ordered release-security commands.
+- Keep supply-chain foundation readiness separate from release promotion readiness.
+
+Status: Phase 21 is foundation-ready for supply-chain automation. Promotion readiness remains blocked until real SBOMs, package signatures, timestamp receipts, provenance attestations, verification reports, signing secrets, and commercial evidence are retained.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
