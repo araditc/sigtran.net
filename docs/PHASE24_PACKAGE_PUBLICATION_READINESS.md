@@ -13,3 +13,15 @@ The phase is split into ten small units. Source type names stay domain-based; th
 - Pre-release and stable publication lanes are both represented.
 
 The policy is intentionally local and deterministic so CI, release workflow inputs, and package governance can reject ambiguous versions before a publish command is allowed.
+
+## Unit 2 - NuGet Metadata Contract
+
+`SigtranNuGetMetadataContract` defines the package metadata required for publication:
+
+- Package identity and title.
+- Apache-2.0 license expression.
+- Repository and project URLs.
+- README inclusion.
+- XML documentation and symbol package generation.
+
+The contract validates the project file text so packaging metadata remains testable without contacting NuGet.

@@ -174,6 +174,7 @@ Run("SIGTRAN release workflow environment exposes supply chain and evidence vari
 Run("SIGTRAN release promotion gate blocks incomplete release evidence", SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence);
 Run("SIGTRAN release promotion gate allows complete release evidence", SigtranReleasePromotionGateAllowsCompleteReleaseEvidence);
 Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionPolicyAcceptsSemVerTags);
+Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadataContractMatchesProjectFile);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2150,6 +2151,18 @@ static void SigtranReleaseVersionPolicyAcceptsSemVerTags()
     Assert(!policy.IsValidPackageVersion("1.0"), "release version policy should reject incomplete version");
     AssertEqual(SigtranReleaseVersionLane.Prerelease, policy.GetLane("1.0.0-alpha.1"), "prerelease lane");
     AssertEqual(SigtranReleaseVersionLane.Stable, policy.GetLane("1.0.0"), "stable lane");
+}
+
+static void SigtranNuGetMetadataContractMatchesProjectFile()
+{
+    SigtranNuGetMetadataContract contract = SigtranNuGetMetadata.CreateDefaultContract();
+    string projectXml = File.ReadAllText(Path.Combine("src", "sigtran.net", "sigtran.net.csproj"));
+    IReadOnlyList<string> missing = contract.GetMissingProperties(projectXml);
+
+    Assert(contract.IsPublicationReady, "NuGet metadata contract should cover publication-critical metadata");
+    AssertEqual(0, missing.Count, "missing NuGet metadata count");
+    Assert(contract.Requirements.Any(static requirement => requirement.PropertyName == "PackageLicenseExpression"), "metadata contract should require license");
+    Assert(contract.Requirements.Any(static requirement => requirement.PropertyName == "SymbolPackageFormat"), "metadata contract should require symbol package format");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
