@@ -97,3 +97,9 @@ The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs re
 Phase 21 adds `SigtranSupplyChainCi.CreateDefault()` as the metadata contract for supply-chain automation.
 
 The profile is opt-in and enabled by `SIGTRAN_SUPPLY_CHAIN`. Real runs require retained artifacts under `SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT`, signing secrets, SBOM output, package signatures, timestamp receipts, provenance attestations, verification reports, and commercial evidence readiness.
+
+## Release Workflow Orchestration
+
+Phase 22 Part 1 adds `SigtranReleaseWorkflows.CreateCommercialReleasePlan()` as the metadata contract for the commercial release workflow.
+
+The contract requires manual dispatch and version tag triggers, restore/build/test/pack stages, supply-chain automation, commercial evidence verification, and package publishing with required signing and NuGet secrets. The concrete release workflow file is intentionally left for a later part.

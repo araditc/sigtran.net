@@ -159,6 +159,10 @@ Run("SIGTRAN supply chain CI profile requires signing secrets", SigtranSupplyCha
 Run("SIGTRAN supply chain status summarizes automation foundation", SigtranSupplyChainStatusSummarizesAutomationFoundation);
 Run("SIGTRAN supply chain references align with SBOM and signing plans", SigtranSupplyChainReferencesAlignWithSbomAndSigningPlans);
 Run("SIGTRAN supply chain artifact digests are mandatory for promotion", SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion);
+Run("SIGTRAN release workflow plan includes release triggers and stages", SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages);
+Run("SIGTRAN release workflow requires supply chain evidence and publish secrets", SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets);
+Run("SIGTRAN release workflow readiness separates contract from workflow file", SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile);
+Run("SIGTRAN release workflow status summarizes contract foundation", SigtranReleaseWorkflowStatusSummarizesContractFoundation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -1963,6 +1967,50 @@ static void SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion()
     Assert(!manifest.AllArtifactsHaveDigests, "supply-chain manifest without all digests should not promote");
 }
 
+static void SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages()
+{
+    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateCommercialReleasePlan();
+
+    AssertEqual("release", plan.WorkflowName, "release workflow name");
+    AssertEqual("10.0.x", plan.DotNetVersion, "release workflow .NET version");
+    Assert(plan.Triggers.Contains(SigtranReleaseWorkflowTrigger.ManualDispatch), "release workflow should support manual dispatch");
+    Assert(plan.Triggers.Contains(SigtranReleaseWorkflowTrigger.VersionTag), "release workflow should support version tags");
+    AssertEqual(9, plan.Stages.Count, "release workflow stage count");
+    Assert(plan.IsRenderable, "release workflow should be renderable");
+}
+
+static void SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets()
+{
+    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateCommercialReleasePlan();
+    IReadOnlyList<string> secrets = plan.GetRequiredSecrets();
+
+    Assert(plan.RequiresSupplyChain, "release workflow should require supply-chain automation");
+    Assert(plan.RequiresCommercialEvidence, "release workflow should require commercial evidence");
+    Assert(plan.HasPublishStage, "release workflow should include publish stage");
+    Assert(secrets.Contains("NUGET_API_KEY"), "release workflow should require NuGet API key");
+    Assert(secrets.Contains("SIGNING_CERTIFICATE"), "release workflow should require signing certificate");
+}
+
+static void SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile()
+{
+    SigtranReleaseWorkflowReadinessReport report = SigtranReleaseWorkflowReadiness.GetReport();
+
+    Assert(report.ContractReady, "release workflow contract should be ready");
+    Assert(!report.HasWorkflowFile, "release workflow file should not be marked ready in contract step");
+    Assert(!report.OrchestrationReady, "release workflow orchestration should wait for workflow file");
+}
+
+static void SigtranReleaseWorkflowStatusSummarizesContractFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranReleaseWorkflowStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranReleaseWorkflowStatus.CompletedUnitCount, "release workflow completed unit count");
+    AssertEqual(10, capabilities.Count, "release workflow capability count");
+    Assert(capabilities.Contains("release-workflow-secret-contract"), "release workflow status should include secret contract");
+    Assert(SigtranReleaseWorkflowStatus.ContractReady, SigtranReleaseWorkflowStatus.Describe());
+    Assert(!SigtranReleaseWorkflowStatus.OrchestrationReady, SigtranReleaseWorkflowStatus.Describe());
+}
+
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
 {
     IReadOnlyList<string>[] statusCapabilities =
@@ -1981,7 +2029,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranOpenSs7InteropStatus.GetCompletedCapabilities(),
         SigtranProtocolInteropStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceStatus.GetCompletedCapabilities(),
-        SigtranSupplyChainStatus.GetCompletedCapabilities()
+        SigtranSupplyChainStatus.GetCompletedCapabilities(),
+        SigtranReleaseWorkflowStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

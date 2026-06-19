@@ -1,0 +1,42 @@
+# Phase 22 Release Workflow Orchestration
+
+Phase 22 turns release workflow work into smaller, commit-sized parts.
+
+Part 1 adds the release workflow contract foundation. It defines what the commercial release workflow must contain before a concrete workflow file is generated or promoted.
+
+The public APIs use domain names such as `SigtranReleaseWorkflowStatus`; phase numbers are intentionally kept out of source type names.
+
+## Part 1 - Workflow Contract
+
+`SigtranReleaseWorkflows.CreateCommercialReleasePlan()` defines the commercial release workflow contract.
+
+The contract includes:
+
+- Manual dispatch and version tag triggers.
+- Checkout and .NET setup stages.
+- Restore, build, test, and pack stages.
+- Supply-chain automation stage.
+- Commercial evidence verification stage.
+- Package publish stage.
+- Required secret names for signing and publishing.
+
+## Readiness Boundary
+
+`SigtranReleaseWorkflowReadiness.GetReport()` separates the workflow contract from the concrete workflow file.
+
+The contract is ready after Part 1. Full orchestration remains false until a real workflow file is added and validated in a later part.
+
+## Status
+
+`SigtranReleaseWorkflowStatus.Describe()` summarizes the contract foundation.
+
+`ContractReady` is expected to be true. `OrchestrationReady` remains false until the workflow file exists and is wired to the contract.
+
+## Next Parts
+
+Later Phase 22 parts should:
+
+- Add the concrete GitHub Actions release workflow.
+- Align the workflow file with the SDK contract.
+- Add release promotion gates for publish/tag/provenance behavior.
+- Keep each part separately documented, tested, packed, committed, and pushed.

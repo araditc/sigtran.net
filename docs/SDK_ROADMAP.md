@@ -195,6 +195,14 @@ Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. C
 
 Status: Phase 21 is foundation-ready for supply-chain automation. Promotion readiness remains blocked until real SBOMs, package signatures, timestamp receipts, provenance attestations, verification reports, signing secrets, and commercial evidence are retained.
 
+## Phase 22 - Release Workflow Orchestration
+
+- Add release workflow trigger, stage, secret, supply-chain, commercial-evidence, and publish contracts.
+- Keep workflow contract readiness separate from a concrete workflow file.
+- Split the workflow work into smaller committed parts so each part can be tested, documented, packed, committed, and pushed independently.
+
+Status: Phase 22 Part 1 is contract-ready for release workflow orchestration. Full orchestration remains blocked until a concrete release workflow file is added and validated.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

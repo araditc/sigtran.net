@@ -51,6 +51,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Protocol interop vectors | Phase 19 foundation-ready: SCCP, TCAP, and MAP SMS vector catalog, external references, artifact manifest, comparison rules, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real reference vectors, SDK vectors, and comparison reports |
 | Commercial evidence dossier | Phase 20 foundation-ready: commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI profile, status report, and source status naming normalization added; commercial evidence readiness still requires real retained artifacts and verification gates |
 | Supply chain automation | Phase 21 foundation-ready: supply-chain automation plan, SBOM generation contract, package signing contract, signature verification contract, provenance attestation contract, artifact manifest, gate, readiness report, CI profile, and status report added; promotion still requires real signed artifacts and commercial evidence |
+| Release workflow orchestration | Phase 22 Part 1 contract-ready: release workflow triggers, stages, required secrets, supply-chain integration, commercial evidence verification, publish contract, readiness report, and status report added; full orchestration still requires a concrete workflow file |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -171,6 +172,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 20 Summary](docs/PHASE20_SUMMARY.md)
 - [Phase 21 Supply Chain Automation](docs/PHASE21_SUPPLY_CHAIN_AUTOMATION.md)
 - [Phase 21 Summary](docs/PHASE21_SUMMARY.md)
+- [Phase 22 Release Workflow Orchestration](docs/PHASE22_RELEASE_WORKFLOW_ORCHESTRATION.md)
+- [Phase 22 Summary](docs/PHASE22_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -205,6 +208,7 @@ The roadmap is intentionally conservative:
 19. Complete SCCP, TCAP, and MAP SMS protocol vector framework and capture external vector evidence.
 20. Complete commercial evidence dossier framework and retain release-ready evidence artifacts.
 21. Complete supply-chain automation framework and retain signed release-security artifacts.
+22. Complete release workflow orchestration in smaller committed parts and validate publish workflow behavior.
 
 ## License
 
