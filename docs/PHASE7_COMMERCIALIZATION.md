@@ -76,3 +76,7 @@ Critical vulnerabilities target a 2-day response. High severity vulnerabilities 
 ## Observability Profile
 
 `docs/OBSERVABILITY.md` defines the metric names, trace categories, and health signals expected by commercial deployments. `SigtranObservability.CreateDefaultProfile()` exposes the same profile to applications and release tooling.
+
+## Deployment Profiles
+
+`docs/DEPLOYMENT.md` defines commercial Linux and local development deployment profiles. The commercial profile requires native SCTP, external evidence, observability, and security policy support. The local profile remains development-only.

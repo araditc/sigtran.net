@@ -28,6 +28,7 @@ Run("SIGTRAN package governance reports commercial requirements", SigtranPackage
 Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
 Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
+Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -361,6 +362,19 @@ static void SigtranObservabilityProfileExposesCommercialSignals()
     Assert(profile.TraceCategories.Contains("sigtran.trace.packet"), "observability should include packet trace category");
     Assert(profile.HealthSignals.Contains("asp-active"), "observability should include ASP health signal");
     AssertEqual("metrics=4 traces=4 health=4", profile.Describe(), "observability summary");
+}
+
+static void SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates()
+{
+    SigtranDeploymentProfile commercial = SigtranDeploymentProfiles.CreateCommercialLinuxProfile();
+    SigtranDeploymentProfile local = SigtranDeploymentProfiles.CreateLocalDevelopmentProfile();
+
+    AssertEqual("commercial-linux", commercial.Name, "commercial deployment profile name");
+    AssertEqual(SigtranOperatingSystemFamily.Linux, commercial.OperatingSystem, "commercial deployment OS");
+    Assert(commercial.RequiresNativeSctp, "commercial deployment should require native SCTP");
+    Assert(commercial.RequiresExternalEvidence, "commercial deployment should require external evidence");
+    Assert(!local.RequiresNativeSctp, "local development should not require native SCTP");
+    Assert(local.Describe().Contains("security=True", StringComparison.Ordinal), local.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
