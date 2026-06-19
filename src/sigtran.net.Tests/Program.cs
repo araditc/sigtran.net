@@ -16,6 +16,7 @@ Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVect
 Run("SIGTRAN simulator script emits trace summaries", SigtranSimulatorScriptEmitsTraceSummaries);
 Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuildsTcapBackedScript);
 Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDescribesM3uaTransport);
+Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -218,6 +219,18 @@ static void SigtranLocalTcpSampleDescribesM3uaTransport()
     AssertEqual(2905, options.RemoteEndpoint.Port, "local TCP remote port");
     Assert(scenario.Describe().Contains("asp@127.0.0.1:2906 -> sg@127.0.0.1:2905", StringComparison.Ordinal), scenario.Describe());
     AssertThrows<ArgumentOutOfRangeException>(() => SigtranTransportSamples.CreateLocalM3uaAspToSg(65535));
+}
+
+static void SigtranSampleCatalogExposesSupportedScenarios()
+{
+    IReadOnlyList<SigtranSampleDescriptor> samples = SigtranSampleCatalog.GetSamples();
+
+    AssertEqual(4, samples.Count, "sample catalog count");
+    AssertEqual("m3ua-asp-to-sg", samples[0].Id, "sample catalog deterministic first id");
+    Assert(SigtranSampleCatalog.TryGet("SCCP-MAP-SMS", out SigtranSampleDescriptor? mapSample), "SCCP/MAP sample should be discoverable");
+    AssertEqual(SigtranSampleKind.SccpMapSms, mapSample!.Kind, "SCCP/MAP sample kind");
+    Assert(mapSample.Describe().Contains("SCCP, TCAP, MAP", StringComparison.Ordinal), mapSample.Describe());
+    Assert(!SigtranSampleCatalog.TryGet("missing", out _), "missing sample should not be found");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

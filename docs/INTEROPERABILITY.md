@@ -76,3 +76,16 @@ SctpConnectionOptions options = scenario.ToClientConnectionOptions();
 ```
 
 The scenario carries M3UA PPID metadata and endpoint names that can be reused by examples, trace summaries, and simulator scripts. It does not make TCP production-ready; native SCTP remains the production transport gate.
+
+## Sample Catalog
+
+`SigtranSampleCatalog.GetSamples()` exposes the supported sample inventory in deterministic order.
+
+| Id | Focus |
+| --- | --- |
+| `m3ua-asp-to-sg` | ASP startup, traffic activation, DATA, heartbeat, and shutdown |
+| `m3ua-ipsp-peer` | Peer-to-peer M3UA lifecycle |
+| `sccp-map-sms` | MAP SMS payloads through TCAP and SCCP |
+| `local-tcp-m3ua` | Development-only TCP adapter traffic |
+
+The catalog is intentionally metadata-only so documentation, tests, examples, and future CI jobs can share the same stable sample ids.
