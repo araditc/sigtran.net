@@ -37,6 +37,7 @@ Run("SIGTRAN OpenSS7 interop profile exposes M3UA ASP-to-SG template", SigtranOp
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
+Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -527,6 +528,16 @@ static void SigtranInteropLabCiProfileIsOptIn()
     Assert(!profile.IsEnabled(new Dictionary<string, string>()), "interop lab profile should be disabled by default");
     Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_INTEROP_LAB"] = "true" }), "interop lab profile should accept true");
     Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_INTEROP_LAB"] = "1" }), "interop lab profile should accept 1");
+}
+
+static void SigtranInteropLabReadinessReportsFoundationAndEvidenceGates()
+{
+    SigtranInteropLabReadinessReport report = SigtranInteropLabReadiness.GetReport();
+
+    Assert(report.FoundationReady, report.Describe());
+    Assert(!report.HasPassingExternalEvidence, "external lab evidence should stay false until real artifacts are added");
+    Assert(!report.ProductionReady, report.Describe());
+    Assert(report.Describe().Contains("foundationReady=True", StringComparison.Ordinal), report.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

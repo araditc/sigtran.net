@@ -62,3 +62,11 @@ Required variables:
 - `SIGTRAN_INTEROP_PEER`
 
 Native SCTP lab runs can additionally use `SIGTRAN_NATIVE_SCTP_LAB`.
+
+## Readiness Report
+
+`SigtranInteropLabReadiness.GetReport()` separates lab foundation readiness from production readiness.
+
+Foundation readiness is true when the SDK has scenario catalog, manifests, run reports, peer profiles, trace comparison, evidence promotion, and CI profile support.
+
+Production readiness remains false until passing external evidence is captured and registered.
