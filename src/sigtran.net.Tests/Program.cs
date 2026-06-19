@@ -44,6 +44,7 @@ Run("SIGTRAN release automation plan exposes deterministic release steps", Sigtr
 Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
 Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
 Run("SIGTRAN package signing plan marks commercial release requirement", SigtranPackageSigningPlanMarksCommercialReleaseRequirement);
+Run("SIGTRAN release provenance records source commit and artifact manifest", SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -617,6 +618,17 @@ static void SigtranPackageSigningPlanMarksCommercialReleaseRequirement()
     Assert(plan.HasSigningMaterialReferences, plan.Describe());
     Assert(plan.TimestampAuthorityUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
     Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
+}
+
+static void SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest()
+{
+    SigtranReleaseProvenance provenance = SigtranReleaseProvenanceFactory.Create("abcdef123456", "artifacts/release-manifest.json");
+
+    AssertEqual("https://github.com/araditc/sigtran.net", provenance.SourceRepository, "release provenance repository");
+    AssertEqual("abcdef123456", provenance.CommitSha, "release provenance commit");
+    AssertEqual("release-default", provenance.WorkflowName, "release provenance workflow");
+    Assert(provenance.HasRequiredReferences, provenance.Describe());
+    Assert(provenance.Describe().Contains("manifest=artifacts/release-manifest.json", StringComparison.Ordinal), provenance.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

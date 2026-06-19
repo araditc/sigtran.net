@@ -37,3 +37,9 @@ The default plan targets SPDX JSON output at `artifacts/sbom/sigtran.net.spdx.js
 `SigtranPackageSigning.CreateDefaultPlan()` defines commercial package signing requirements.
 
 The default plan requires author signing and a timestamp authority. Signing material is referenced by certificate subject; private keys and secrets must stay outside the repository.
+
+## Provenance
+
+`SigtranReleaseProvenanceFactory.Create()` records the source repository, commit SHA, release workflow, and artifact manifest path for a release.
+
+Every governed release should preserve this provenance beside package artifacts and checksums.
