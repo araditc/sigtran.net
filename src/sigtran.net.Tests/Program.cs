@@ -179,6 +179,7 @@ Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExpo
 Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPublishPlansSeparateDryRunAndPublish);
 Run("SIGTRAN publication credential policy requires commercial secrets", SigtranPublicationCredentialPolicyRequiresCommercialSecrets);
 Run("SIGTRAN publication channel policy separates prerelease and stable", SigtranPublicationChannelPolicySeparatesPrereleaseAndStable);
+Run("SIGTRAN package integrity manifest requires package digests", SigtranPackageIntegrityManifestRequiresPackageDigests);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2218,6 +2219,17 @@ static void SigtranPublicationChannelPolicySeparatesPrereleaseAndStable()
     Assert(stableBlocked.Reasons.Contains("channel-version-mismatch"), "stable channel should reject prerelease version");
     Assert(stableBlocked.Reasons.Contains("commercial-readiness-required"), "stable channel should require commercial readiness");
     Assert(stableAllowed.Allowed, "stable channel should allow stable version after commercial readiness");
+}
+
+static void SigtranPackageIntegrityManifestRequiresPackageDigests()
+{
+    SigtranPackageIntegrityManifest incomplete = new();
+    incomplete.Add(new SigtranPackageIntegrityEntry(SigtranPackageArtifactKind.Package, "src/sigtran.net/bin/Release/Sigtran.Net.1.0.0.nupkg", "SHA256-NUPKG"));
+    SigtranPackageIntegrityManifest complete = SigtranPackageIntegrityManifest.CreateCompleteSample();
+
+    Assert(!incomplete.IsComplete, "package integrity manifest should require symbol package digest");
+    Assert(complete.IsComplete, "package integrity manifest should be complete with package and symbol digests");
+    AssertEqual(2, complete.Entries.Count, "package integrity entry count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

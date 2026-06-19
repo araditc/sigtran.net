@@ -63,3 +63,12 @@ Publication remains blocked unless these secret names are present in the release
 - Stable publication also requires commercial readiness.
 
 This prevents an alpha package from being promoted to the public stable channel by tag or workflow-input accident.
+
+## Unit 7 - Package Integrity Manifest
+
+`SigtranPackageIntegrityManifest` requires digest coverage for:
+
+- The `.nupkg` package.
+- The `.snupkg` symbol package.
+
+The manifest is the handoff point from local packaging to signing, SBOM, provenance, and commercial evidence retention.
