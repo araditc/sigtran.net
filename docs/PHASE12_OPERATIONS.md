@@ -15,3 +15,9 @@ Phase 12 adds production operations and support foundations for SIGTRAN.NET.
 ## Runbook Catalog
 
 `SigtranRunbooks.GetRunbooks()` exposes operational runbooks for transport outage, ASP recovery, interoperability evidence, and release rollback paths.
+
+## Incident Response
+
+`SigtranIncidentResponse.GetTargets()` defines operational severity targets.
+
+Critical incidents should be acknowledged within 15 minutes and updated within 30 minutes. Lower severities have longer response windows.

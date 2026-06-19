@@ -62,6 +62,7 @@ Run("SIGTRAN developer experience CI profile requires docs and adoption gates", 
 Run("SIGTRAN phase 11 status summarizes developer experience foundation", SigtranPhase11StatusSummarizesDeveloperExperienceFoundation);
 Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
 Run("SIGTRAN runbook catalog exposes operational recovery paths", SigtranRunbookCatalogExposesOperationalRecoveryPaths);
+Run("SIGTRAN incident response targets define severity timing", SigtranIncidentResponseTargetsDefineSeverityTiming);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -845,6 +846,18 @@ static void SigtranRunbookCatalogExposesOperationalRecoveryPaths()
     Assert(runbooks.Any(static runbook => runbook.Kind == SigtranRunbookKind.TransportOutage), "runbooks should include transport outage");
     Assert(runbooks.Any(static runbook => runbook.Kind == SigtranRunbookKind.ReleaseRollback), "runbooks should include release rollback");
     Assert(runbooks.All(static runbook => runbook.FirstAction.Length > 0), "runbooks should define first actions");
+}
+
+static void SigtranIncidentResponseTargetsDefineSeverityTiming()
+{
+    IReadOnlyList<SigtranIncidentResponseTarget> targets = SigtranIncidentResponse.GetTargets();
+
+    AssertEqual(4, targets.Count, "incident response target count");
+    SigtranIncidentResponseTarget critical = targets.Single(static target => target.Severity == SigtranIncidentSeverity.Critical);
+    SigtranIncidentResponseTarget low = targets.Single(static target => target.Severity == SigtranIncidentSeverity.Low);
+
+    AssertEqual(TimeSpan.FromMinutes(15), critical.AcknowledgeWithin, "critical incident acknowledgement");
+    Assert(critical.UpdateWithin < low.UpdateWithin, "critical incidents should update faster than low incidents");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
