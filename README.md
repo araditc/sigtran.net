@@ -42,6 +42,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Release automation | Phase 10 foundation-ready: deterministic release plan, artifact manifest with digest tracking, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluator, release CI profile, and status report added; stable commercial publication still requires real signing, SBOM generation, native SCTP evidence, and external interoperability evidence |
 | Developer experience | Phase 11 foundation-ready: capability catalog, M3UA ASP-to-SG quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness report, DX CI profile, and status report added; enterprise production adoption still requires commercial readiness |
 | Operations | Phase 12 foundation-ready: production operations capability catalog, runbook catalog, incident response targets, health check matrix, rollback plan, maintenance policy, support handbook, readiness report, operations CI profile, and status report added; production operations still require commercial readiness |
+| Compliance and audit | Phase 13 foundation-ready: compliance capability catalog, audit event catalog, evidence retention policy, license compliance policy, data handling classification, export-control policy, readiness report, compliance CI profile, commercial compliance gate, and status report added; enterprise compliance claims still require commercial readiness and adopter-specific legal/regulatory review |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -144,6 +145,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 11 Summary](docs/PHASE11_SUMMARY.md)
 - [Phase 12 Operations](docs/PHASE12_OPERATIONS.md)
 - [Phase 12 Summary](docs/PHASE12_SUMMARY.md)
+- [Phase 13 Compliance](docs/PHASE13_COMPLIANCE.md)
+- [Phase 13 Summary](docs/PHASE13_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -169,6 +172,7 @@ The roadmap is intentionally conservative:
 10. Complete release automation and supply-chain hardening for governed package publication.
 11. Complete developer experience and enterprise adoption guidance.
 12. Complete production operations and support readiness.
+13. Complete compliance and audit readiness foundations.
 
 ## License
 

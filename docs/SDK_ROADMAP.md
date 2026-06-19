@@ -123,6 +123,14 @@ Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sa
 
 Status: Phase 12 is foundation-ready for operations capability catalog, runbook catalog, incident response targets, health check matrix, rollback plan, maintenance policy, support handbook, operations readiness, operations CI profile, and phase documentation. Production operations remain blocked until commercial readiness is complete.
 
+## Phase 13 - Compliance And Audit Readiness
+
+- Add compliance capability, audit-event, evidence-retention, license, data-handling, and lawful-use foundations.
+- Keep compliance foundation readiness separate from enterprise production compliance claims.
+- Make audit and governance expectations visible to open-source and commercial adopters.
+
+Status: Phase 13 is foundation-ready for compliance capability catalog, audit event catalog, evidence retention policy, license compliance policy, data handling classification, export-control policy, compliance readiness, compliance CI profile, commercial compliance gate, and phase documentation. Enterprise compliance claims remain blocked until commercial readiness is complete and adopters complete their own legal, regulatory, export-control, privacy, and operator-authorization reviews.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

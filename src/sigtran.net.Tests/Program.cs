@@ -70,6 +70,16 @@ Run("SIGTRAN support handbook defines public private and commercial channels", S
 Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
 Run("SIGTRAN operations CI profile requires operations readiness", SigtranOperationsCiProfileRequiresOperationsReadiness);
 Run("SIGTRAN phase 12 status summarizes operations foundation", SigtranPhase12StatusSummarizesOperationsFoundation);
+Run("SIGTRAN compliance catalog exposes enterprise audit areas", SigtranComplianceCatalogExposesEnterpriseAuditAreas);
+Run("SIGTRAN audit event catalog marks evidence-bearing events", SigtranAuditEventCatalogMarksEvidenceBearingEvents);
+Run("SIGTRAN evidence retention policy requires immutable redacted provenance", SigtranEvidenceRetentionPolicyRequiresImmutableRedactedProvenance);
+Run("SIGTRAN license compliance policy tracks Apache and third-party obligations", SigtranLicenseCompliancePolicyTracksApacheAndThirdPartyObligations);
+Run("SIGTRAN data handling rules classify confidential traces", SigtranDataHandlingRulesClassifyConfidentialTraces);
+Run("SIGTRAN export control policy requires lawful operator authorization", SigtranExportControlPolicyRequiresLawfulOperatorAuthorization);
+Run("SIGTRAN compliance readiness separates foundation from commercial claims", SigtranComplianceReadinessSeparatesFoundationFromCommercialClaims);
+Run("SIGTRAN compliance CI profile requires compliance readiness", SigtranComplianceCiProfileRequiresComplianceReadiness);
+Run("SIGTRAN compliance commercial gate waits for commercial readiness", SigtranComplianceCommercialGateWaitsForCommercialReadiness);
+Run("SIGTRAN phase 13 status summarizes compliance foundation", SigtranPhase13StatusSummarizesComplianceFoundation);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -936,6 +946,103 @@ static void SigtranPhase12StatusSummarizesOperationsFoundation()
     Assert(capabilities.Contains("operations-ci-profile"), "Phase 12 should include operations CI profile");
     Assert(SigtranPhase12Status.FoundationReady, SigtranPhase12Status.Describe());
     Assert(!SigtranPhase12Status.ProductionOperationsReady, SigtranPhase12Status.Describe());
+}
+
+static void SigtranComplianceCatalogExposesEnterpriseAuditAreas()
+{
+    IReadOnlyList<SigtranComplianceCapability> capabilities = SigtranCompliance.GetCapabilities();
+
+    AssertEqual(5, capabilities.Count, "compliance capability count");
+    Assert(capabilities.Any(capability => capability.Area == SigtranComplianceArea.Audit), "compliance catalog should include audit area");
+    Assert(capabilities.Any(capability => capability.Id == "lawful-use-policy"), "compliance catalog should include lawful use policy");
+}
+
+static void SigtranAuditEventCatalogMarksEvidenceBearingEvents()
+{
+    IReadOnlyList<SigtranAuditEventDefinition> events = SigtranAuditEvents.GetDefinitions();
+
+    AssertEqual(5, events.Count, "audit event count");
+    Assert(events.Any(item => item.Id == "interop-evidence-promoted" && item.RequiresEvidence), "interop evidence promotion should require evidence");
+    Assert(events.Any(item => item.Category == SigtranAuditEventCategory.Compliance), "audit catalog should include compliance review events");
+}
+
+static void SigtranEvidenceRetentionPolicyRequiresImmutableRedactedProvenance()
+{
+    SigtranEvidenceRetentionPolicy policy = SigtranEvidenceRetentionPolicies.CreateCommercialDefault();
+
+    Assert(policy.RetentionPeriod >= TimeSpan.FromDays(365), "retention should be at least one year");
+    Assert(policy.RequiresImmutableStorage, "evidence retention should require immutable storage");
+    Assert(policy.RequiresTraceRedaction, "evidence retention should require trace redaction");
+    Assert(policy.RequiresProvenanceLink, "evidence retention should require provenance links");
+    Assert(policy.IsCommercialEvidencePolicy, "evidence retention policy should satisfy commercial evidence controls");
+}
+
+static void SigtranLicenseCompliancePolicyTracksApacheAndThirdPartyObligations()
+{
+    SigtranLicenseCompliancePolicy policy = SigtranLicenseCompliance.CreateCurrentPolicy();
+
+    AssertEqual("Apache-2.0", policy.ProjectLicense, "license compliance project license");
+    Assert(policy.RequiresThirdPartyNotices, "license compliance should require third-party notices");
+    Assert(policy.RequiresDependencyReview, "license compliance should require dependency review");
+    Assert(policy.AllowsCommercialUse, "Apache-2.0 should allow commercial use");
+    Assert(policy.IsCommercialReady, "license compliance should be commercial-ready");
+}
+
+static void SigtranDataHandlingRulesClassifyConfidentialTraces()
+{
+    IReadOnlyList<SigtranDataHandlingRule> rules = SigtranDataHandling.GetRules();
+
+    AssertEqual(4, rules.Count, "data handling rule count");
+    Assert(rules.Any(rule => rule.Id == "pcap-payload" && rule.Sensitivity == SigtranDataSensitivity.Confidential && rule.RequiresRedaction), "PCAP payloads should be confidential and redacted");
+    Assert(rules.Any(rule => rule.Id == "package-metadata" && rule.Sensitivity == SigtranDataSensitivity.Public && !rule.RequiresRedaction), "package metadata should be public");
+}
+
+static void SigtranExportControlPolicyRequiresLawfulOperatorAuthorization()
+{
+    SigtranExportControlPolicy policy = SigtranExportControlPolicies.CreateDefault();
+
+    Assert(policy.RequiresLawfulUseAttestation, "lawful use attestation should be required");
+    Assert(policy.RequiresSanctionsScreening, "sanctions screening should be required");
+    Assert(policy.RequiresOperatorAuthorization, "operator authorization should be required");
+    Assert(policy.HasCommercialControls, "export-control policy should include commercial controls");
+}
+
+static void SigtranComplianceReadinessSeparatesFoundationFromCommercialClaims()
+{
+    SigtranComplianceReadinessReport report = SigtranComplianceReadiness.GetReport();
+
+    Assert(report.FoundationReady, "compliance foundation should be ready");
+    Assert(!report.CommercialReady, "compliance readiness should still depend on commercial gates");
+    Assert(!report.EnterpriseComplianceReady, "enterprise compliance should not be claimed before commercial readiness");
+}
+
+static void SigtranComplianceCiProfileRequiresComplianceReadiness()
+{
+    SigtranComplianceCiProfile profile = SigtranComplianceCi.CreateDefault();
+
+    AssertEqual("compliance", profile.Name, "compliance CI profile name");
+    Assert(profile.Commands.Count >= 3, "compliance CI should reuse official verification commands");
+    Assert(profile.RequiresComplianceReadiness, "compliance CI should require compliance readiness");
+}
+
+static void SigtranComplianceCommercialGateWaitsForCommercialReadiness()
+{
+    SigtranComplianceCommercialGateResult result = SigtranComplianceCommercialGate.Evaluate();
+
+    Assert(result.ComplianceFoundationReady, result.Describe());
+    Assert(!result.CommercialReady, result.Describe());
+    Assert(!result.CanClaimEnterpriseCompliance, result.Describe());
+}
+
+static void SigtranPhase13StatusSummarizesComplianceFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase13Status.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranPhase13Status.CompletedUnitCount, "Phase 13 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 13 capability count");
+    Assert(capabilities.Contains("compliance-ci-profile"), "Phase 13 should include compliance CI profile");
+    Assert(SigtranPhase13Status.FoundationReady, SigtranPhase13Status.Describe());
+    Assert(!SigtranPhase13Status.EnterpriseComplianceReady, SigtranPhase13Status.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
