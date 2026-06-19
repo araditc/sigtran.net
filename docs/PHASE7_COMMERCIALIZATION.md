@@ -30,6 +30,8 @@ Commercial readiness remains blocked until native SCTP verification, external in
 
 Linux is the target for native SCTP lab verification. Windows and macOS remain supported through transport contracts and development adapters until a production provider is selected and verified.
 
+Phase 8 adds the native SCTP implementation foundation and exposes it through `SigtranNativeSctpSupport.IsImplementationFoundationReady()`. Commercial readiness still requires Linux verification through `NativeSctpReadinessReport.IsProductionReady`.
+
 ## External Interoperability Evidence
 
 `SigtranInteropEvidenceRegistry` records evidence from real peer stacks and captured traces.

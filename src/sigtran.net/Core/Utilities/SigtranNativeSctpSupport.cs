@@ -1,3 +1,5 @@
+using sigtran.net.Layers.SCTP;
+
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
@@ -83,5 +85,12 @@ public static class SigtranNativeSctpSupport
     public static bool IsProductionVerified()
     {
         return Entries.All(static entry => entry.Status == SigtranNativeSctpSupportStatus.ProductionVerified);
+    }
+
+    /// <summary>Returns whether the native SCTP implementation foundation is available.</summary>
+    /// <returns>True when the native SCTP implementation foundation is available; otherwise false.</returns>
+    public static bool IsImplementationFoundationReady()
+    {
+        return NativeSctpReadiness.GetReport().FoundationReady;
     }
 }

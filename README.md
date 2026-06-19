@@ -36,7 +36,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | MAP readiness | Foundation readiness report with capability count; external MAP SMS interoperability vectors and operator-profile validation remain the production gate |
 | Interoperability tooling | Phase 6 foundation-ready: trace frames, Wireshark-friendly hex dumps, conformance vectors, built-in M3UA/MAP vectors, simulator scripts, MAP SMS flow builders, local TCP samples, sample catalog, CI profile, and readiness report; production gate is external interoperability lab evidence |
 | Commercial readiness | Phase 7 started: internal release readiness is available; commercial production readiness requires native SCTP verification, external interoperability evidence, and release governance |
-| Native SCTP support | Phase 7 matrix added: Linux requires lab verification; Windows and macOS are contract-only until a production provider is verified |
+| Native SCTP support | Phase 8 foundation is available for Linux native SCTP; Linux still requires lab verification before production support, while Windows and macOS remain contract-only |
 | External interoperability evidence | Phase 7 registry added for peer-stack lab results and packet trace references; current evidence inventory is empty until real lab artifacts are captured |
 | Release candidates | Phase 7 manifest added for package version, source commit, internal release gates, and commercial promotion gates |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |

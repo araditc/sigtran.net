@@ -1,3 +1,5 @@
+using sigtran.net.Layers.SCTP;
+
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
@@ -73,7 +75,7 @@ public static class SigtranCommercialReadiness
             hasSdkFoundation: true,
             hasInteroperabilityTooling: SigtranInteroperabilityReadiness.GetReport().FoundationReady,
             hasCiVerification: SigtranCiVerification.CreateDefaultProfile().Steps.Count > 0,
-            hasNativeSctpVerification: SigtranNativeSctpSupport.IsProductionVerified(),
+            hasNativeSctpVerification: NativeSctpReadiness.GetReport().IsProductionReady,
             hasExternalInteroperabilityEvidence: SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(),
             hasReleaseGovernance: SigtranPackageGovernance.CreateCommercialTargetPolicy().IsSatisfiedByCurrentPackage);
     }

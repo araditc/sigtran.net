@@ -306,6 +306,7 @@ static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
     AssertEqual(SigtranOperatingSystemFamily.Linux, matrix[0].OperatingSystem, "native SCTP Linux row");
     AssertEqual(SigtranNativeSctpSupportStatus.VerificationRequired, matrix[0].Status, "native SCTP Linux status");
     AssertEqual(SigtranNativeSctpSupportStatus.ContractOnly, matrix[1].Status, "native SCTP Windows status");
+    Assert(SigtranNativeSctpSupport.IsImplementationFoundationReady(), "native SCTP implementation foundation should be ready");
     Assert(!SigtranNativeSctpSupport.IsProductionVerified(), "native SCTP should not be production verified yet");
 }
 
