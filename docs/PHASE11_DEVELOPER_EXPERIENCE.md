@@ -21,3 +21,13 @@ Phase 11 makes the SDK easier to adopt by documenting quickstarts, samples, conf
 3. Start the ASP lifecycle.
 4. Send or receive DATA.
 5. Inspect diagnostics.
+
+## Sample Templates
+
+`SigtranSampleTemplates.GetTemplates()` maps official sample ids to their intended environments.
+
+| Sample | Environment |
+| --- | --- |
+| `local-tcp-m3ua` | Local development |
+| `m3ua-asp-to-sg` | Interoperability lab |
+| `sccp-map-sms` | Production-like validation |

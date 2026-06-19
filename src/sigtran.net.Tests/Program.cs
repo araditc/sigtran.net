@@ -52,6 +52,7 @@ Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranRele
 Run("SIGTRAN phase 10 status summarizes release automation foundation", SigtranPhase10StatusSummarizesReleaseAutomationFoundation);
 Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDeveloperExperienceCatalogExposesAdoptionAreas);
 Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuickstartExposesOrderedAspToSgSteps);
+Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemplatesMapSampleIdsToEnvironments);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -727,6 +728,19 @@ static void SigtranM3uaQuickstartExposesOrderedAspToSgSteps()
     AssertEqual("SctpConnectionOptions", guide.Steps[0].Api, "M3UA quickstart first API");
     Assert(guide.Steps.Any(static step => step.Api == "M3uaAspClient"), "M3UA quickstart should include ASP client");
     Assert(guide.Describe().Contains("steps=5", StringComparison.Ordinal), guide.Describe());
+}
+
+static void SigtranSampleTemplatesMapSampleIdsToEnvironments()
+{
+    IReadOnlyList<SigtranSampleTemplate> templates = SigtranSampleTemplates.GetTemplates();
+
+    AssertEqual(3, templates.Count, "sample template count");
+    Assert(templates.Any(static template => template.SampleId == "local-tcp-m3ua" && template.Environment == SigtranSampleTemplateEnvironment.LocalDevelopment), "local sample template should exist");
+    Assert(templates.Any(static template => template.SampleId == "m3ua-asp-to-sg" && template.Environment == SigtranSampleTemplateEnvironment.InteropLab), "interop lab sample template should exist");
+    foreach (SigtranSampleTemplate template in templates)
+    {
+        Assert(SigtranSampleCatalog.TryGet(template.SampleId, out _), $"sample template '{template.SampleId}' should reference catalog sample");
+    }
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
