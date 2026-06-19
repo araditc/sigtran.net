@@ -19,6 +19,7 @@ Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDe
 Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
 Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
 Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
+Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSummarizesCompletedTooling);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -256,6 +257,17 @@ static void SigtranInteroperabilityReadinessReportsFoundationStatus()
     AssertEqual(8, report.FoundationCapabilityCount, "interoperability foundation capability count");
     AssertEqual(SigtranInteroperabilityReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "interoperability required capability count");
     Assert(report.Describe().Contains("externalLab=False", StringComparison.Ordinal), report.Describe());
+}
+
+static void SigtranPhase6StatusSummarizesCompletedTooling()
+{
+    IReadOnlyList<string> capabilities = SigtranPhase6Status.GetCompletedCapabilities();
+
+    AssertEqual("Phase 6 - Interoperability and Tooling", SigtranPhase6Status.PhaseLabel, "Phase 6 label");
+    AssertEqual(10, SigtranPhase6Status.CompletedUnitCount, "Phase 6 completed unit count");
+    AssertEqual(10, capabilities.Count, "Phase 6 capability count");
+    Assert(capabilities.Contains("interoperability-readiness-report"), "Phase 6 status should include readiness report");
+    Assert(SigtranPhase6Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase6Status.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

@@ -2,6 +2,8 @@
 
 Phase 6 adds tooling for trace comparison, conformance vectors, simulators, samples, CI, and release readiness checks.
 
+See [Phase 6 Summary](PHASE6_SUMMARY.md) for the completed unit inventory and current commercialization gate.
+
 ## Trace Frames
 
 `SigtranTraceFrame` and `SigtranTraceFormatter` provide logger-neutral trace output for packet-capture comparison.

@@ -116,6 +116,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [TCAP](docs/TCAP.md)
 - [MAP SMS Profile](docs/MAP.md)
 - [Interoperability and Tooling](docs/INTEROPERABILITY.md)
+- [Phase 6 Summary](docs/PHASE6_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [References](docs/REFERENCES.md)
@@ -130,7 +131,7 @@ The roadmap is intentionally conservative:
 3. Harden SCCP with external interoperability vectors and trace validation.
 4. Harden TCAP with external interoperability vectors and MAP profile validation.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
-6. Add interoperability tooling, simulators, CI, and release automation.
+6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 
 ## License
 

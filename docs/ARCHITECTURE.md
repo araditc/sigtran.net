@@ -11,6 +11,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 | SCCP | Global title and subsystem routing, UDT/XUDT/LUDT | Experimental proof of concept |
 | TCAP | Dialogues, components, transaction IDs, BER encoding | Foundation complete; interop vectors pending |
 | MAP | SMS operation profiles over TCAP | Foundation complete; interop vectors pending |
+| Tooling | Trace formatting, vectors, simulators, samples, CI profile, readiness reports | Foundation complete; external lab evidence pending |
 
 ## Design Principles
 
@@ -34,10 +35,11 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 10. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
 11. `M3uaAspSession` applies acknowledgement messages to the local ASP state machine.
 12. Higher layers consume Protocol Data only after M3UA state and routing context checks are satisfied.
+13. Tooling helpers can render traces, compare vectors, build deterministic scripts, and report release readiness without binding the protocol stack to a specific logger or test runner.
 
 ## Production Boundaries
 
-The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, and MAP APIs are not stable yet. Any commercial integration should isolate those experimental APIs behind application-owned adapters until their encodings are replaced.
+The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, MAP, and interoperability tooling foundations are present, but commercial integrations must still isolate experimental APIs and collect external interoperability evidence before production claims.
 
 ## Planned Stabilization Order
 
@@ -46,3 +48,4 @@ The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, and MAP
 3. Standards-based SCCP encode/decode.
 4. TCAP external interoperability vectors and MAP profile validation.
 5. MAP SMS external interoperability vectors and operator-profile validation.
+6. External interoperability lab runs, native SCTP verification, and release automation hardening.

@@ -68,6 +68,8 @@ Status: SDK foundation is complete for MAP SMS operation metadata, typed SMS par
 - Provide samples for ASP-to-SG, IPSP, SCCP/MAP SMS, and local TCP test transport.
 - Add CI for build, formatting, package validation, and protocol golden tests.
 
+Status: SDK foundation is complete for trace formatting, conformance vector inventory, built-in M3UA/MAP vectors, simulator scripts, MAP SMS flows, local TCP sample scenarios, sample catalog, CI verification profile, and interoperability readiness reporting. Production claims still require external interoperability lab evidence and native SCTP verification.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
