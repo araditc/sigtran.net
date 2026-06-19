@@ -64,3 +64,9 @@ With the workflow file contract and YAML validation in place, release workflow o
 Stage 23 Unit 4 adds `SigtranReleasePublishGuard`.
 
 The guard blocks accidental publication unless publishing is explicitly requested through manual dispatch, a version tag is present, and the NuGet API key is available.
+
+## Stage 23 Unit 5 - Artifact Retention
+
+Stage 23 Unit 5 adds `SigtranReleaseWorkflowArtifacts`.
+
+The release workflow now has a contract for retaining NuGet packages, symbol packages, supply-chain artifacts, and commercial evidence artifacts with audit-friendly retention periods.

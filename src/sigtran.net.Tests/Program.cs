@@ -167,6 +167,7 @@ Run("SIGTRAN release workflow file contract tracks concrete workflow file", Sigt
 Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
 Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleasePublishGuardBlocksAccidentalPublication);
 Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
+Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2061,6 +2062,17 @@ static void SigtranReleasePublishGuardAllowsIntentionalTaggedPublication()
 
     Assert(result.CanPublish, result.Describe());
     AssertEqual(0, result.Reasons.Count, "publish guard reason count");
+}
+
+static void SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence()
+{
+    IReadOnlyList<SigtranReleaseWorkflowArtifactRule> rules = SigtranReleaseWorkflowArtifacts.GetDefaultRules();
+
+    AssertEqual(4, rules.Count, "release workflow artifact rule count");
+    Assert(rules.Any(static rule => rule.Name == "nuget-packages"), "release workflow should retain NuGet packages");
+    Assert(rules.Any(static rule => rule.Name == "supply-chain"), "release workflow should retain supply-chain artifacts");
+    Assert(SigtranReleaseWorkflowArtifacts.RetainsCommercialEvidence(), "release workflow should retain commercial evidence");
+    Assert(rules.All(static rule => rule.RetentionDays >= 90), "release workflow artifacts should have audit-friendly retention");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
