@@ -19,3 +19,19 @@ string dump = SigtranTraceFormatter.FormatHexDump(frame);
 ```
 
 The formatter emits a compact summary plus offset-based hex rows that can be compared with Wireshark exports, SG logs, or golden-vector files.
+
+## Conformance Vectors
+
+`SigtranConformanceVector` and `SigtranConformanceRegistry` store stable golden vectors by id.
+
+```csharp
+SigtranConformanceRegistry registry = new();
+registry.Add(new SigtranConformanceVector(
+    "m3ua/asp-up",
+    "M3UA",
+    "ASP Up message",
+    payload,
+    "RFC 4666"));
+```
+
+Registries preserve deterministic snapshot ordering so vector inventories can be compared in CI and release reviews.

@@ -11,6 +11,7 @@ using sigtran.net.Core.Interfaces;
 using sigtran.net.Core.Utilities;
 
 Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
+Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -137,6 +138,19 @@ static void SigtranTraceFormatterEmitsSummariesAndHexDumps()
 
     string dump = SigtranTraceFormatter.FormatHexDump(frame);
     Assert(dump.Contains("0000: 01 00 01 01 00 00 00 08", StringComparison.Ordinal), dump);
+}
+
+static void SigtranConformanceRegistryStoresVectorsDeterministically()
+{
+    SigtranConformanceRegistry registry = new();
+    registry.Add(new SigtranConformanceVector("m3ua/aspup", "M3UA", "ASP Up", new byte[] { 0x01 }, "internal"));
+    registry.Add(new SigtranConformanceVector("map/mo", "MAP", "MO ForwardSM", new byte[] { 0x02 }, "internal"));
+
+    Assert(registry.TryGet("m3ua/aspup", out SigtranConformanceVector? vector), "conformance vector should be found");
+    AssertEqual("M3UA", vector!.Protocol, "conformance vector protocol");
+    Assert(vector.Describe().Contains("bytes=1", StringComparison.Ordinal), vector.Describe());
+    AssertEqual("m3ua/aspup", registry.Snapshot()[0].Id, "conformance registry deterministic order");
+    AssertThrows<InvalidOperationException>(() => registry.Add(vector));
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

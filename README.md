@@ -34,7 +34,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | TCAP readiness | Foundation readiness report with capability count; external TCAP interoperability vectors and MAP profile validation remain the production gate |
 | MAP | Phase 5 foundation complete: SMS operation metadata, BER context-specific parameter containers, TBCD address primitives, MO/MT-ForwardSM codecs, SendRoutingInfoForSM, ReportSM-DeliveryStatus, AlertServiceCentre, error mapping, extension containers, and TCAP client facade |
 | MAP readiness | Foundation readiness report with capability count; external MAP SMS interoperability vectors and operator-profile validation remain the production gate |
-| Interoperability tooling | Phase 6 started with logger-neutral trace frames and Wireshark-friendly hex dump formatting |
+| Interoperability tooling | Phase 6 started with logger-neutral trace frames, Wireshark-friendly hex dump formatting, and conformance vector registry |
 
 ## Requirements
 
