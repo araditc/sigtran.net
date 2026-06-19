@@ -54,6 +54,7 @@ Run("SIGTRAN developer experience catalog exposes adoption areas", SigtranDevelo
 Run("SIGTRAN M3UA quickstart exposes ordered ASP-to-SG steps", SigtranM3uaQuickstartExposesOrderedAspToSgSteps);
 Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemplatesMapSampleIdsToEnvironments);
 Run("SIGTRAN configuration profiles separate development lab and production", SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction);
+Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubleshootingIndexMapsSymptomsToNextActions);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -756,6 +757,16 @@ static void SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction()
     Assert(!development.RequiresExternalEvidence, "development profile should not require external evidence");
     AssertEqual("native-sctp", production.Transport, "production profile transport");
     Assert(production.RequiresExternalEvidence, "production profile should require external evidence");
+}
+
+static void SigtranTroubleshootingIndexMapsSymptomsToNextActions()
+{
+    IReadOnlyList<SigtranTroubleshootingEntry> entries = SigtranTroubleshooting.GetEntries();
+
+    AssertEqual(4, entries.Count, "troubleshooting entry count");
+    Assert(entries.Any(static entry => entry.Id == "native-sctp-unavailable" && entry.Category == SigtranTroubleshootingCategory.Transport), "transport troubleshooting entry should exist");
+    Assert(entries.Any(static entry => entry.Id == "data-unrouted" && entry.NextAction.Contains("route table", StringComparison.OrdinalIgnoreCase)), "routing troubleshooting entry should exist");
+    Assert(entries.Any(static entry => entry.Category == SigtranTroubleshootingCategory.Interoperability), "interop troubleshooting entry should exist");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
