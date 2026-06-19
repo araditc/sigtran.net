@@ -8,7 +8,9 @@ using sigtran.net.Layers.SCCP;
 using sigtran.net.Layers.SCTP;
 using sigtran.net.Layers.TCAP;
 using sigtran.net.Core.Interfaces;
+using sigtran.net.Core.Utilities;
 
+Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -119,6 +121,23 @@ Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConve
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
+
+static void SigtranTraceFormatterEmitsSummariesAndHexDumps()
+{
+    SigtranTraceFrame frame = new(
+        new DateTimeOffset(2026, 6, 19, 10, 15, 0, TimeSpan.Zero),
+        "M3UA",
+        SigtranTraceDirection.Outbound,
+        "asp:2905",
+        "sg:2905",
+        new byte[] { 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x08 });
+
+    string summary = SigtranTraceFormatter.FormatSummary(frame);
+    Assert(summary.Contains("M3UA asp:2905 -> sg:2905 bytes=8", StringComparison.Ordinal), summary);
+
+    string dump = SigtranTraceFormatter.FormatHexDump(frame);
+    Assert(dump.Contains("0000: 01 00 01 01 00 00 00 08", StringComparison.Ordinal), dump);
+}
 
 static void TcapBerElementEncodesShortAndLongLengths()
 {
