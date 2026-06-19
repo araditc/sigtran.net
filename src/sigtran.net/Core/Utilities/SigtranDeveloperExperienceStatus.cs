@@ -16,10 +16,10 @@ public static class SigtranDeveloperExperienceStatus
         "adoption-gates",
         "documentation-readiness-report",
         "developer-experience-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Developer Experience And Adoption";
 
     /// <summary>The number of completed developer experience work units.</summary>

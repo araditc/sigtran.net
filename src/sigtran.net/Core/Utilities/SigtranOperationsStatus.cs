@@ -16,10 +16,10 @@ public static class SigtranOperationsStatus
         "support-handbook",
         "operations-readiness-report",
         "operations-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Production Operations And Support";
 
     /// <summary>The number of completed operations work units.</summary>

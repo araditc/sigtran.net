@@ -16,10 +16,10 @@ public static class SigtranApiLifecycleStatus
         "public-api-baseline",
         "api-lifecycle-readiness-report",
         "api-lifecycle-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "API Stability Deprecation And Migration Readiness";
 
     /// <summary>The number of completed API lifecycle work units.</summary>

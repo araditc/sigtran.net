@@ -18,10 +18,10 @@ public static class SigtranNativeSctpImplementationStatus
         "native-sctp-lab-profile",
         "native-sctp-readiness-report",
         "commercial-readiness-integration",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Native SCTP Production Transport";
 
     /// <summary>The number of completed native SCTP implementation work units.</summary>

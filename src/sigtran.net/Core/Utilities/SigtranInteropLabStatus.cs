@@ -16,10 +16,10 @@ public static class SigtranInteropLabStatus
         "interop-lab-ci-profile",
         "interop-lab-readiness-report",
         "commercial-readiness-gate-integration",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Real Interoperability Lab";
 
     /// <summary>The number of completed interoperability lab work units.</summary>

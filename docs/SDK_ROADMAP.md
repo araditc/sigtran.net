@@ -179,6 +179,14 @@ Status: Phase 18 is foundation-ready for OpenSS7/IPSS7 interoperability executio
 
 Status: Phase 19 is foundation-ready for SCCP, TCAP, and MAP SMS protocol interoperability vectors. Verification remains blocked until real external reference vectors, SDK-generated vectors, and reviewed comparison reports are captured and promoted for every required vector.
 
+## Phase 20 - Commercial Evidence Dossier
+
+- Add commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI metadata, and status reporting.
+- Consolidate native SCTP, OpenSS7/IPSS7, protocol-vector, release provenance, package, SBOM, and signing evidence into one release dossier contract.
+- Normalize source status capability labels so source-level metadata uses domain names instead of roadmap phase labels.
+
+Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. Commercial evidence readiness remains blocked until real retained artifacts, digest coverage, native SCTP verification, OpenSS7/IPSS7 verification, protocol vector verification, and release governance are complete.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

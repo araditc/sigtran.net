@@ -140,6 +140,16 @@ Run("SIGTRAN protocol interop run report identifies passing evidence", SigtranPr
 Run("SIGTRAN protocol interop evidence registry starts empty", SigtranProtocolInteropEvidenceRegistryStartsEmpty);
 Run("SIGTRAN protocol interop readiness separates foundation from evidence", SigtranProtocolInteropReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN protocol interop status summarizes vector foundation", SigtranProtocolInteropStatusSummarizesVectorFoundation);
+Run("SIGTRAN commercial evidence requirements cover production claim areas", SigtranCommercialEvidenceRequirementsCoverProductionClaimAreas);
+Run("SIGTRAN commercial evidence manifest satisfies requirements with digests", SigtranCommercialEvidenceManifestSatisfiesRequirementsWithDigests);
+Run("SIGTRAN commercial evidence bundle keeps empty dossier incomplete", SigtranCommercialEvidenceBundleKeepsEmptyDossierIncomplete);
+Run("SIGTRAN commercial evidence bundle completes with retained artifacts", SigtranCommercialEvidenceBundleCompletesWithRetainedArtifacts);
+Run("SIGTRAN commercial evidence gate reports missing current evidence", SigtranCommercialEvidenceGateReportsMissingCurrentEvidence);
+Run("SIGTRAN commercial evidence gate allows complete verified dossier", SigtranCommercialEvidenceGateAllowsCompleteVerifiedDossier);
+Run("SIGTRAN commercial evidence readiness separates foundation from claims", SigtranCommercialEvidenceReadinessSeparatesFoundationFromClaims);
+Run("SIGTRAN commercial evidence CI profile requires retained bundle", SigtranCommercialEvidenceCiProfileRequiresRetainedBundle);
+Run("SIGTRAN commercial evidence status summarizes dossier foundation", SigtranCommercialEvidenceStatusSummarizesDossierFoundation);
+Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -1721,6 +1731,166 @@ static SigtranProtocolInteropArtifactManifest CreateCompleteProtocolInteropManif
     manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.ReferenceVector, "artifacts/protocol-vectors/reference.ber"));
     manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.SdkVector, "artifacts/protocol-vectors/sdk.ber"));
     manifest.Add(new SigtranProtocolInteropArtifact(SigtranProtocolInteropArtifactKind.ComparisonReport, "artifacts/protocol-vectors/comparison.md"));
+    return manifest;
+}
+
+static void SigtranCommercialEvidenceRequirementsCoverProductionClaimAreas()
+{
+    IReadOnlyList<SigtranCommercialEvidenceRequirement> requirements = SigtranCommercialEvidenceRequirements.GetRequirements();
+
+    AssertEqual(5, requirements.Count, "commercial evidence requirement count");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.NativeSctp), "native SCTP evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.OpenSs7Interop), "OpenSS7 evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ProtocolInterop), "protocol evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ReleaseProvenance), "release provenance evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.PackageArtifacts), "package artifact evidence requirement should exist");
+    Assert(requirements.All(requirement => requirement.RequiredArtifactKinds.Count > 0), "all commercial evidence requirements should have artifacts");
+}
+
+static void SigtranCommercialEvidenceManifestSatisfiesRequirementsWithDigests()
+{
+    SigtranCommercialEvidenceManifest manifest = CreateCompleteCommercialEvidenceManifest();
+    IReadOnlyList<SigtranCommercialEvidenceRequirement> requirements = SigtranCommercialEvidenceRequirements.GetRequirements();
+
+    Assert(manifest.SatisfiesAll(requirements), "complete commercial evidence manifest should satisfy all requirements");
+    Assert(manifest.AllArtifactsHaveDigests(), "complete commercial evidence manifest should have digests");
+}
+
+static void SigtranCommercialEvidenceBundleKeepsEmptyDossierIncomplete()
+{
+    SigtranCommercialEvidenceBundle bundle = SigtranCommercialEvidenceBundles.CreateEmpty("1.0.0");
+
+    AssertEqual("1.0.0", bundle.ReleaseVersion, "commercial evidence bundle version");
+    Assert(!bundle.HasCompleteArtifacts, "empty commercial evidence bundle should not have complete artifacts");
+    Assert(!bundle.HasDigestCoverage, "empty commercial evidence bundle should not have digest coverage");
+    Assert(!bundle.IsComplete, bundle.Describe());
+}
+
+static void SigtranCommercialEvidenceBundleCompletesWithRetainedArtifacts()
+{
+    SigtranCommercialEvidenceBundle bundle = new(
+        "1.0.0",
+        SigtranCommercialEvidenceRequirements.GetRequirements(),
+        CreateCompleteCommercialEvidenceManifest());
+
+    Assert(bundle.HasCompleteArtifacts, "commercial evidence bundle should have complete artifacts");
+    Assert(bundle.HasDigestCoverage, "commercial evidence bundle should have digest coverage");
+    Assert(bundle.IsComplete, bundle.Describe());
+}
+
+static void SigtranCommercialEvidenceGateReportsMissingCurrentEvidence()
+{
+    SigtranCommercialEvidenceBundle bundle = SigtranCommercialEvidenceBundles.CreateEmpty("1.0.0");
+    SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
+        bundle,
+        nativeSctpVerified: false,
+        openSs7Verified: false,
+        protocolInteropVerified: false,
+        releaseGovernanceReady: false);
+
+    Assert(!result.CanClaimCommercialEvidence, "empty commercial evidence should not support claims");
+    Assert(result.Reasons.Contains("commercial-evidence-artifacts-incomplete"), "commercial evidence gate should report incomplete artifacts");
+    Assert(result.Reasons.Contains("native-sctp-evidence-required"), "commercial evidence gate should report native SCTP evidence");
+    Assert(result.Reasons.Contains("openss7-evidence-required"), "commercial evidence gate should report OpenSS7 evidence");
+    Assert(result.Reasons.Contains("protocol-vector-evidence-required"), "commercial evidence gate should report protocol vector evidence");
+}
+
+static void SigtranCommercialEvidenceGateAllowsCompleteVerifiedDossier()
+{
+    SigtranCommercialEvidenceBundle bundle = new(
+        "1.0.0",
+        SigtranCommercialEvidenceRequirements.GetRequirements(),
+        CreateCompleteCommercialEvidenceManifest());
+    SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
+        bundle,
+        nativeSctpVerified: true,
+        openSs7Verified: true,
+        protocolInteropVerified: true,
+        releaseGovernanceReady: true);
+
+    Assert(result.CanClaimCommercialEvidence, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "complete commercial evidence gate reason count");
+}
+
+static void SigtranCommercialEvidenceReadinessSeparatesFoundationFromClaims()
+{
+    SigtranCommercialEvidenceReadinessReport report = SigtranCommercialEvidenceReadiness.GetReport();
+
+    Assert(report.FoundationReady, "commercial evidence foundation should be ready");
+    Assert(!report.CurrentEvidenceReady, "current commercial evidence should not be ready");
+    Assert(!report.CommercialEvidenceReady, "commercial evidence should not support current production claims");
+}
+
+static void SigtranCommercialEvidenceCiProfileRequiresRetainedBundle()
+{
+    SigtranCommercialEvidenceCiProfile profile = SigtranCommercialEvidenceCi.CreateDefault();
+
+    AssertEqual("SIGTRAN_COMMERCIAL_EVIDENCE", profile.EnableVariable, "commercial evidence CI enable variable");
+    AssertEqual("SIGTRAN_COMMERCIAL_EVIDENCE_ROOT", profile.BundleRootVariable, "commercial evidence CI root variable");
+    Assert(profile.RequiresEvidenceBundle, "commercial evidence CI should require retained bundle");
+    Assert(profile.Commands.Any(command => command.Contains("sigtran-evidence-verify", StringComparison.Ordinal)), "commercial evidence CI should include evidence verification command");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_COMMERCIAL_EVIDENCE"] = "true" }), "commercial evidence CI should be enabled by true");
+}
+
+static void SigtranCommercialEvidenceStatusSummarizesDossierFoundation()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceStatus.GetCompletedCapabilities();
+
+    AssertEqual(10, SigtranCommercialEvidenceStatus.CompletedUnitCount, "commercial evidence completed unit count");
+    AssertEqual(10, capabilities.Count, "commercial evidence capability count");
+    Assert(capabilities.Contains("commercial-evidence-gate"), "commercial evidence status should include gate");
+    Assert(SigtranCommercialEvidenceStatus.FoundationReady, SigtranCommercialEvidenceStatus.Describe());
+    Assert(!SigtranCommercialEvidenceStatus.CommercialEvidenceReady, SigtranCommercialEvidenceStatus.Describe());
+}
+
+static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
+{
+    IReadOnlyList<string>[] statusCapabilities =
+    [
+        SigtranInteroperabilityToolingStatus.GetCompletedCapabilities(),
+        SigtranCommercializationStatus.GetCompletedCapabilities(),
+        SigtranReleaseAutomationStatus.GetCompletedCapabilities(),
+        SigtranDeveloperExperienceStatus.GetCompletedCapabilities(),
+        SigtranOperationsStatus.GetCompletedCapabilities(),
+        SigtranComplianceStatus.GetCompletedCapabilities(),
+        SigtranPerformanceStatus.GetCompletedCapabilities(),
+        SigtranApiLifecycleStatus.GetCompletedCapabilities(),
+        SigtranConfigurationStatus.GetCompletedCapabilities(),
+        SigtranNativeSctpImplementationStatus.GetCompletedCapabilities(),
+        SigtranNativeSctpLabVerificationStatus.GetCompletedCapabilities(),
+        SigtranOpenSs7InteropStatus.GetCompletedCapabilities(),
+        SigtranProtocolInteropStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceStatus.GetCompletedCapabilities()
+    ];
+
+    foreach (IReadOnlyList<string> capabilities in statusCapabilities)
+    {
+        Assert(capabilities.Contains("documentation"), "status capabilities should include documentation");
+        Assert(!capabilities.Any(capability => capability.Contains("phase", StringComparison.OrdinalIgnoreCase)), "status capabilities should not include phase labels");
+    }
+}
+
+static SigtranCommercialEvidenceManifest CreateCompleteCommercialEvidenceManifest()
+{
+    SigtranCommercialEvidenceManifest manifest = new();
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/native-sctp.pcapng", "SHA256-001"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/native-sctp-sdk.log", "SHA256-002"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/native-sctp-peer.log", "SHA256-003"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/native-sctp-comparison.md", "SHA256-004"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.OpenSs7Interop, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/openss7.pcapng", "SHA256-005"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.OpenSs7Interop, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/openss7-sdk.log", "SHA256-006"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.OpenSs7Interop, SigtranCommercialEvidenceArtifactKind.PeerConfiguration, "artifacts/commercial/openss7-peer.conf", "SHA256-007"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.OpenSs7Interop, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/openss7-peer.log", "SHA256-008"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.OpenSs7Interop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/openss7-comparison.md", "SHA256-009"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ReferenceVector, "artifacts/commercial/protocol-reference.ber", "SHA256-010"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.SdkVector, "artifacts/commercial/protocol-sdk.ber", "SHA256-011"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/protocol-comparison.md", "SHA256-012"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ReleaseProvenance, SigtranCommercialEvidenceArtifactKind.ReleaseProvenance, "artifacts/commercial/provenance.json", "SHA256-013"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ReleaseProvenance, SigtranCommercialEvidenceArtifactKind.PackageManifest, "artifacts/commercial/package-manifest.json", "SHA256-014"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Package, "artifacts/commercial/Sigtran.Net.1.0.0.nupkg", "SHA256-015"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.SymbolPackage, "artifacts/commercial/Sigtran.Net.1.0.0.snupkg", "SHA256-016"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Sbom, "artifacts/commercial/sbom.spdx.json", "SHA256-017"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Signature, "artifacts/commercial/package.sig", "SHA256-018"));
     return manifest;
 }
 

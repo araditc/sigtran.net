@@ -16,10 +16,10 @@ public static class SigtranInteroperabilityToolingStatus
         "sample-catalog",
         "ci-verification-profile",
         "interoperability-readiness-report",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Interoperability and Tooling";
 
     /// <summary>The number of completed interoperability and tooling work units.</summary>

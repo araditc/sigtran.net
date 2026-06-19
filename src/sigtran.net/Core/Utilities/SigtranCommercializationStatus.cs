@@ -16,10 +16,10 @@ public static class SigtranCommercializationStatus
         "compatibility-policy",
         "observability-profile",
         "deployment-profiles",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercialization and Release Hardening";
 
     /// <summary>The number of completed commercialization work units.</summary>

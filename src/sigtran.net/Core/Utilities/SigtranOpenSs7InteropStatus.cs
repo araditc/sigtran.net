@@ -16,7 +16,7 @@ public static class SigtranOpenSs7InteropStatus
         "openss7-run-report",
         "openss7-evidence-registry",
         "openss7-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
     /// <summary>The status label.</summary>

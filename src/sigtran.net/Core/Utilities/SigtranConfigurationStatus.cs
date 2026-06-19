@@ -16,10 +16,10 @@ public static class SigtranConfigurationStatus
         "configuration-readiness-report",
         "configuration-ci-profile",
         "commercial-configuration-gate",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Configuration Policy And Environment Readiness";
 
     /// <summary>The number of completed configuration readiness work units.</summary>

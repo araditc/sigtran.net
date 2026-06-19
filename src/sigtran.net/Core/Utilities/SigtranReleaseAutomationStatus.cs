@@ -16,10 +16,10 @@ public static class SigtranReleaseAutomationStatus
         "publish-channels",
         "release-gate-evaluator",
         "release-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Release Automation And Supply Chain";
 
     /// <summary>The number of completed release automation work units.</summary>

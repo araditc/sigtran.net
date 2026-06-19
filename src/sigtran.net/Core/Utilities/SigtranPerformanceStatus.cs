@@ -16,10 +16,10 @@ public static class SigtranPerformanceStatus
         "resource-budget",
         "performance-readiness-report",
         "performance-ci-profile",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Performance Capacity And Benchmark Readiness";
 
     /// <summary>The number of completed performance work units.</summary>

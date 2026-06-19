@@ -85,3 +85,9 @@ The profile is opt-in and enabled by `SIGTRAN_OPENSS7_INTEROP`. Real runs requir
 Phase 19 adds `SigtranProtocolInteropCi.CreateDefault()` as the metadata contract for SCCP, TCAP, and MAP SMS protocol vector execution.
 
 The profile is opt-in and enabled by `SIGTRAN_PROTOCOL_INTEROP`. Real runs require retained external reference vectors and SDK-generated vectors under `SIGTRAN_PROTOCOL_VECTOR_ROOT`, plus comparison reports for every required vector.
+
+## Commercial Evidence CI
+
+Phase 20 adds `SigtranCommercialEvidenceCi.CreateDefault()` as the metadata contract for commercial evidence dossier verification.
+
+The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, OpenSS7/IPSS7 evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.

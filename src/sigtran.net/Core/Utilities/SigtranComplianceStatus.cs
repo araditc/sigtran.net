@@ -16,10 +16,10 @@ public static class SigtranComplianceStatus
         "compliance-readiness-report",
         "compliance-ci-profile",
         "commercial-compliance-gate",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Compliance And Audit Readiness";
 
     /// <summary>The number of completed compliance work units.</summary>

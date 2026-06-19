@@ -16,10 +16,10 @@ public static class SigtranNativeSctpLabVerificationStatus
         "native-sctp-lab-readiness",
         "native-sctp-lab-ci-profile",
         "native-sctp-commercial-gate",
-        "phase-documentation"
+        "documentation"
     ];
 
-    /// <summary>The phase label.</summary>
+    /// <summary>The status label.</summary>
     public const string StatusLabel = "Native SCTP Lab Verification";
 
     /// <summary>The number of completed native SCTP lab verification work units.</summary>

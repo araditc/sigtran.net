@@ -49,6 +49,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Native SCTP lab verification | Phase 17 foundation-ready: Linux SCTP lab scenario catalog, artifact manifest, run plan, command set, run reports, evidence registry, readiness report, lab CI profile, commercial gate, and status report added; production verification still requires complete passing Linux SCTP evidence |
 | OpenSS7/IPSS7 interop execution | Phase 18 foundation-ready: OpenSS7/IPSS7 environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real retained lab evidence |
 | Protocol interop vectors | Phase 19 foundation-ready: SCCP, TCAP, and MAP SMS vector catalog, external references, artifact manifest, comparison rules, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real reference vectors, SDK vectors, and comparison reports |
+| Commercial evidence dossier | Phase 20 foundation-ready: commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI profile, status report, and source status naming normalization added; commercial evidence readiness still requires real retained artifacts and verification gates |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -165,6 +166,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 18 Summary](docs/PHASE18_SUMMARY.md)
 - [Phase 19 Protocol Interop Vectors](docs/PHASE19_PROTOCOL_INTEROP_VECTORS.md)
 - [Phase 19 Summary](docs/PHASE19_SUMMARY.md)
+- [Phase 20 Commercial Evidence Dossier](docs/PHASE20_COMMERCIAL_EVIDENCE_DOSSIER.md)
+- [Phase 20 Summary](docs/PHASE20_SUMMARY.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -197,6 +200,7 @@ The roadmap is intentionally conservative:
 17. Complete native SCTP lab verification framework and capture Linux SCTP evidence.
 18. Complete OpenSS7/IPSS7 interop execution framework and capture peer evidence.
 19. Complete SCCP, TCAP, and MAP SMS protocol vector framework and capture external vector evidence.
+20. Complete commercial evidence dossier framework and retain release-ready evidence artifacts.
 
 ## License
 
