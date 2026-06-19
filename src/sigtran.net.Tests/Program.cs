@@ -34,6 +34,7 @@ Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", 
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN OpenSS7 interop profile exposes M3UA ASP-to-SG template", SigtranOpenSs7InteropProfileExposesM3uaAspToSgTemplate);
+Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -470,6 +471,25 @@ static void SigtranOpenSs7InteropProfileExposesM3uaAspToSgTemplate()
     Assert(template.ExpectedMessages.Contains("ASPUP"), "OpenSS7 template should include ASPUP");
     Assert(template.ExpectedMessages.Contains("DATA"), "OpenSS7 template should include DATA");
     Assert(template.Describe().Contains("messages=11", StringComparison.Ordinal), template.Describe());
+}
+
+static void SigtranTraceComparisonReportsOrderedMismatches()
+{
+    SigtranInteropLabTemplate template = SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate();
+    SigtranTraceComparisonReport passed = SigtranTraceComparison.Compare(template.ExpectedMessages, template.ExpectedMessages);
+
+    Assert(passed.Passed, passed.Describe());
+    AssertEqual(0, passed.Mismatches.Count, "passing comparison mismatch count");
+
+    SigtranTraceComparisonReport failed = SigtranTraceComparison.Compare(
+        ["ASPUP", "ASPUP_ACK", "ASPAC", "ASPAC_ACK"],
+        ["ASPUP", "ASPUP_ACK", "ASPAC", "DATA"]);
+
+    Assert(!failed.Passed, failed.Describe());
+    AssertEqual(1, failed.Mismatches.Count, "failed comparison mismatch count");
+    AssertEqual(3, failed.Mismatches[0].Index, "failed comparison mismatch index");
+    AssertEqual("ASPAC_ACK", failed.Mismatches[0].Expected, "failed comparison expected message");
+    AssertEqual("DATA", failed.Mismatches[0].Actual, "failed comparison actual message");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

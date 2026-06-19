@@ -38,3 +38,9 @@ A manifest satisfies a scenario only when every required artifact name is presen
 `SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for the OpenSS7/IPSS7 peer.
 
 The template references `http://www.openss7.org/ipss7_man.html`, expects SCTP/M3UA transport, and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`.
+
+## Trace Comparison
+
+`SigtranTraceComparison.Compare()` compares ordered expected message names with actual trace message names and returns a deterministic `SigtranTraceComparisonReport`.
+
+Use this report to attach a machine-readable pass/fail summary beside PCAP, SDK trace, and peer-log artifacts.
