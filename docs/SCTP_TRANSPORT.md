@@ -114,3 +114,7 @@ The report exposes `FoundationCapabilityCount` and `RequiredFoundationCapability
 Phase 2 completes the SDK-level SCTP foundation: metadata contracts, association lifecycle vocabulary, connection options, reconnect policy, stream selection, PPID helpers, health snapshots, readiness reporting, and a metadata-aware TCP development adapter.
 
 The remaining production gate is explicit: native SCTP implementation and interoperability verification are required before this SDK can be used as a production SCTP stack.
+
+## Phase 7 Native SCTP Matrix
+
+`SigtranNativeSctpSupport.GetSupportMatrix()` records native SCTP support claims for commercial release planning. Linux is marked as verification required, while Windows and macOS are contract-only until a production provider is selected and verified.

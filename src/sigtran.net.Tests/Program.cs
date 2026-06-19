@@ -21,6 +21,7 @@ Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerifi
 Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
 Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSummarizesCompletedTooling);
 Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
+Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNativeSctpSupportMatrixReportsVerificationStatus);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -279,6 +280,17 @@ static void SigtranCommercialReadinessReportsReleaseGates()
     Assert(!report.CommercialReady, "commercial readiness should wait for external gates");
     Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
     Assert(report.Describe().Contains("externalInterop=False", StringComparison.Ordinal), report.Describe());
+}
+
+static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
+{
+    IReadOnlyList<SigtranNativeSctpSupportEntry> matrix = SigtranNativeSctpSupport.GetSupportMatrix();
+
+    AssertEqual(3, matrix.Count, "native SCTP support matrix count");
+    AssertEqual(SigtranOperatingSystemFamily.Linux, matrix[0].OperatingSystem, "native SCTP Linux row");
+    AssertEqual(SigtranNativeSctpSupportStatus.VerificationRequired, matrix[0].Status, "native SCTP Linux status");
+    AssertEqual(SigtranNativeSctpSupportStatus.ContractOnly, matrix[1].Status, "native SCTP Windows status");
+    Assert(!SigtranNativeSctpSupport.IsProductionVerified(), "native SCTP should not be production verified yet");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
