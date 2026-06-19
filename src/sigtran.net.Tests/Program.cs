@@ -25,6 +25,7 @@ Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNat
 Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEvidenceRegistryTracksLabResults);
 Run("SIGTRAN release candidate manifest reports promotion gates", SigtranReleaseCandidateManifestReportsPromotionGates);
 Run("SIGTRAN package governance reports commercial requirements", SigtranPackageGovernanceReportsCommercialRequirements);
+Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -326,6 +327,16 @@ static void SigtranPackageGovernanceReportsCommercialRequirements()
     Assert(!commercial.IsSatisfiedByCurrentPackage, "commercial governance should wait for signing and SBOM");
     Assert(commercial.Describe().Contains("signing=True", StringComparison.Ordinal), commercial.Describe());
     Assert(commercial.Describe().Contains("sbom=True", StringComparison.Ordinal), commercial.Describe());
+}
+
+static void SigtranSecurityPolicyReportsResponseTargets()
+{
+    SigtranSecurityResponsePolicy policy = SigtranSecurityPolicy.CreateCurrentPolicy();
+
+    Assert(policy.UsesPrivateDisclosure, "security policy should use private disclosure");
+    AssertEqual(TimeSpan.FromDays(2), policy.GetResponseTime(SigtranSecuritySeverity.Critical), "critical security response time");
+    AssertEqual(TimeSpan.FromDays(7), policy.GetResponseTime(SigtranSecuritySeverity.High), "high security response time");
+    AssertEqual(TimeSpan.FromDays(14), policy.GetResponseTime(SigtranSecuritySeverity.Low), "low security response time");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

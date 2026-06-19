@@ -40,6 +40,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | External interoperability evidence | Phase 7 registry added for peer-stack lab results and packet trace references; current evidence inventory is empty until real lab artifacts are captured |
 | Release candidates | Phase 7 manifest added for package version, source commit, internal release gates, and commercial promotion gates |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
+| Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 
 ## Requirements
 
@@ -127,6 +128,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [References](docs/REFERENCES.md)
 - [Quality and contribution rules](docs/QUALITY.md)
+- [Security policy](SECURITY.md)
 
 ## Project Direction
 

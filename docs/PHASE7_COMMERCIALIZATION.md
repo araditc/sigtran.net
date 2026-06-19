@@ -62,3 +62,9 @@ Release candidates can be published after internal gates pass. Promotion to comm
 `SigtranPackageGovernance.CreateCommercialTargetPolicy()` adds the commercial governance target: package signing and SBOM publication.
 
 Commercial release governance remains incomplete until signing and SBOM automation are added to the release pipeline.
+
+## Security Policy
+
+`SECURITY.md` defines the public disclosure process and response targets. `SigtranSecurityPolicy.CreateCurrentPolicy()` exposes the same values to SDK governance tooling.
+
+Critical vulnerabilities target a 2-day response. High severity vulnerabilities target a 7-day response. Other severities target a 14-day response.
