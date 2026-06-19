@@ -13,6 +13,7 @@ using sigtran.net.Core.Utilities;
 Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
 Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
 Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVectorsIncludeM3uaAndMapPayloads);
+Run("SIGTRAN simulator script emits trace summaries", SigtranSimulatorScriptEmitsTraceSummaries);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -163,6 +164,21 @@ static void SigtranBuiltInVectorsIncludeM3uaAndMapPayloads()
     Assert(aspUp.Payload.Length >= 8, "M3UA vector should contain a full message header");
     Assert(registry.TryGet("map/sms/mo-forward-sm-basic", out SigtranConformanceVector? mo), "MAP MO vector should exist");
     AssertEqual("MAP", mo!.Protocol, "MAP vector protocol");
+}
+
+static void SigtranSimulatorScriptEmitsTraceSummaries()
+{
+    SigtranSimulatorEndpoint asp = new("asp", SigtranSimulatorRole.Asp);
+    SigtranSimulatorEndpoint sg = new("sg", SigtranSimulatorRole.SignallingGateway);
+    SigtranSimulatorScript script = new();
+
+    script.Add(new SigtranSimulatorStep(asp, sg, "M3UA", new byte[] { 0x01, 0x00, 0x03, 0x01 }, "ASP Up"));
+
+    IReadOnlyList<string> summaries = script.FormatTraceSummaries(new DateTimeOffset(2026, 6, 19, 10, 0, 0, TimeSpan.Zero));
+
+    AssertEqual(1, script.Snapshot().Count, "simulator step count");
+    Assert(summaries[0].Contains("M3UA asp -> sg bytes=4", StringComparison.Ordinal), summaries[0]);
+    AssertEqual(SigtranSimulatorRole.Asp, asp.Role, "simulator ASP role");
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()

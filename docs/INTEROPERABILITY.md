@@ -37,3 +37,17 @@ registry.Add(new SigtranConformanceVector(
 Registries preserve deterministic snapshot ordering so vector inventories can be compared in CI and release reviews.
 
 `SigtranBuiltInVectors.CreateRegistry()` returns SDK-generated baseline vectors for current protocol foundations, including M3UA ASP Up and MAP MO-ForwardSM payloads.
+
+## Simulator Scripts
+
+`SigtranSimulatorEndpoint`, `SigtranSimulatorStep`, and `SigtranSimulatorScript` describe deterministic protocol flows without opening sockets.
+
+```csharp
+SigtranSimulatorEndpoint asp = new("asp", SigtranSimulatorRole.Asp);
+SigtranSimulatorEndpoint sg = new("sg", SigtranSimulatorRole.SignallingGateway);
+
+SigtranSimulatorScript script = new();
+script.Add(new SigtranSimulatorStep(asp, sg, "M3UA", payload, "ASP Up"));
+```
+
+Script steps can be rendered as trace summaries, making simulator output comparable with captured traffic and golden-vector files.
