@@ -32,3 +32,9 @@ A manifest satisfies a scenario only when every required artifact name is presen
 `SigtranInteropLabRunReport` records the scenario, artifact manifest, status, start time, completion time, and operator notes for one lab run.
 
 `HasPassingEvidence` is true only when the run status is `Passed` and the manifest satisfies the scenario artifact requirements.
+
+## OpenSS7/IPSS7 Template
+
+`SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for the OpenSS7/IPSS7 peer.
+
+The template references `http://www.openss7.org/ipss7_man.html`, expects SCTP/M3UA transport, and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`.

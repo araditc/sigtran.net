@@ -33,6 +33,7 @@ Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPha
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
+Run("SIGTRAN OpenSS7 interop profile exposes M3UA ASP-to-SG template", SigtranOpenSs7InteropProfileExposesM3uaAspToSgTemplate);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -454,6 +455,21 @@ static void SigtranInteropLabRunReportIdentifiesPassingEvidence()
 
     SigtranInteropLabRunReport failed = new(scenario, manifest, SigtranInteropLabRunStatus.Failed, startedAt);
     Assert(!failed.HasPassingEvidence, failed.Describe());
+}
+
+static void SigtranOpenSs7InteropProfileExposesM3uaAspToSgTemplate()
+{
+    SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateOpenSs7SignallingGateway();
+    AssertEqual("openss7-ipss7-sg", profile.Id, "OpenSS7 peer id");
+    AssertEqual(SigtranInteropPeerRole.SignallingGateway, profile.Role, "OpenSS7 peer role");
+    AssertEqual(SigtranInteropPeerProfiles.OpenSs7IpSs7ManualUrl, profile.ReferenceUrl, "OpenSS7 reference URL");
+
+    SigtranInteropLabTemplate template = SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate();
+    AssertEqual("openss7-m3ua-asp-to-sg", template.Scenario.Id, "OpenSS7 lab scenario");
+    AssertEqual("openss7-ipss7-sg", template.PeerProfile.Id, "OpenSS7 template peer");
+    Assert(template.ExpectedMessages.Contains("ASPUP"), "OpenSS7 template should include ASPUP");
+    Assert(template.ExpectedMessages.Contains("DATA"), "OpenSS7 template should include DATA");
+    Assert(template.Describe().Contains("messages=11", StringComparison.Ordinal), template.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
