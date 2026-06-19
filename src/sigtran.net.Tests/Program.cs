@@ -170,6 +170,7 @@ Run("SIGTRAN release publish guard allows intentional tagged publication", Sigtr
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
 Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
 Run("SIGTRAN release workflow concurrency prevents overlapping releases", SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases);
+Run("SIGTRAN release workflow environment exposes supply chain and evidence variables", SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2095,6 +2096,17 @@ static void SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases()
     Assert(policy.PreventsOverlappingReleaseRuns, "release workflow concurrency should prevent overlapping runs");
     Assert(yaml.Contains("group: release-${{ github.ref }}", StringComparison.Ordinal), "release workflow YAML should include concurrency group");
     Assert(yaml.Contains("cancel-in-progress: false", StringComparison.Ordinal), "release workflow YAML should avoid cancelling active release");
+}
+
+static void SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables()
+{
+    IReadOnlyList<SigtranReleaseWorkflowEnvironmentVariable> variables = SigtranReleaseWorkflowEnvironment.GetRequiredVariables();
+    string yaml = File.ReadAllText(Path.Combine(".github", "workflows", "release.yml"));
+
+    AssertEqual(5, variables.Count, "release workflow environment variable count");
+    Assert(variables.Any(static variable => variable.Name == "SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT"), "release workflow should include supply-chain artifact root");
+    Assert(variables.Any(static variable => variable.Name == "SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"), "release workflow should include commercial evidence root");
+    Assert(SigtranReleaseWorkflowEnvironment.ArePresentInYaml(yaml), "release workflow YAML should contain required environment variables");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

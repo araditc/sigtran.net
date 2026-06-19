@@ -82,3 +82,9 @@ The default permission set keeps repository contents read-only, allows OIDC toke
 Stage 23 Unit 7 adds `SigtranReleaseWorkflowConcurrency`.
 
 The concrete workflow now uses a release concurrency group based on `github.ref` and does not cancel an already-running release for the same ref.
+
+## Stage 23 Unit 8 - Workflow Environment
+
+Stage 23 Unit 8 adds `SigtranReleaseWorkflowEnvironment`.
+
+The workflow environment contract names the .NET, supply-chain, and commercial-evidence variables that the concrete GitHub Actions workflow must expose.
