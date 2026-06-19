@@ -43,3 +43,14 @@ registry.Add(new SigtranInteropEvidenceItem(
 ```
 
 The current registry is intentionally empty until real lab artifacts are added. Commercial readiness requires at least one passing external evidence item, and later release policies should require multiple peer stacks and scenarios.
+
+## Release Candidate Manifest
+
+`SigtranReleaseCandidate.Create(version, commitSha)` creates an auditable release snapshot.
+
+```csharp
+SigtranReleaseCandidateManifest manifest =
+    SigtranReleaseCandidate.Create("1.0.0-alpha.1", "abcdef0");
+```
+
+Release candidates can be published after internal gates pass. Promotion to commercial production remains blocked until the commercial readiness report is fully green.

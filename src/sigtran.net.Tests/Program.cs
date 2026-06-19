@@ -23,6 +23,7 @@ Run("SIGTRAN phase 6 status summarizes completed tooling", SigtranPhase6StatusSu
 Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
 Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNativeSctpSupportMatrixReportsVerificationStatus);
 Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEvidenceRegistryTracksLabResults);
+Run("SIGTRAN release candidate manifest reports promotion gates", SigtranReleaseCandidateManifestReportsPromotionGates);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -303,6 +304,16 @@ static void SigtranInteropEvidenceRegistryTracksLabResults()
     Assert(registry.HasPassingEvidence(), "interop evidence should pass with one passing item");
     AssertThrows<InvalidOperationException>(() => registry.Add(registry.Snapshot()[0]));
     Assert(!SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(), "current interop evidence should be empty until real lab artifacts are added");
+}
+
+static void SigtranReleaseCandidateManifestReportsPromotionGates()
+{
+    SigtranReleaseCandidateManifest manifest = SigtranReleaseCandidate.Create("1.0.0-alpha.1", "abcdef0");
+
+    AssertEqual("Sigtran.Net", manifest.PackageId, "release candidate package id");
+    Assert(manifest.CanPublishReleaseCandidate, "release candidate should be publishable after internal gates");
+    Assert(!manifest.CanPromoteToCommercialProduction, "release candidate should not promote without commercial gates");
+    Assert(manifest.Describe().Contains("commercialProduction=False", StringComparison.Ordinal), manifest.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
