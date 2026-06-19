@@ -58,3 +58,16 @@ NativeSctpSocketAdapter socket = await connector.ConnectAsync(options);
 ```
 
 The connector is Linux-native only through `NativeSctpSocketFactory`; unsupported platforms fail before attempting network I/O.
+
+## Listener
+
+`NativeSctpListener` provides the server-side bind/listen/accept path for native SCTP.
+
+```csharp
+NativeSctpListenerOptions options = new(new SctpEndpoint("0.0.0.0", 2905));
+using NativeSctpListener listener = new();
+await listener.StartAsync(options);
+NativeSctpSocketAdapter association = await listener.AcceptAsync(options);
+```
+
+The listener shares the same socket factory and unsupported-platform behavior as the connector. Real accept/send/receive verification belongs in Linux SCTP lab runs.

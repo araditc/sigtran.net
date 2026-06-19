@@ -35,6 +35,7 @@ Run("Native SCTP socket factory creates or reports unsupported platform", Native
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
 Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapterReportsLifecycleHealth);
 Run("Native SCTP connector reports unsupported platform safely", NativeSctpConnectorReportsUnsupportedPlatformSafely);
+Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -489,6 +490,24 @@ static void NativeSctpConnectorReportsUnsupportedPlatformSafely()
     else
     {
         Assert(capability.CanCreateSocket, capability.Describe());
+    }
+}
+
+static void NativeSctpListenerValidatesOptionsAndUnsupportedPlatform()
+{
+    AssertThrows<ArgumentOutOfRangeException>(() => new NativeSctpListenerOptions(new SctpEndpoint("127.0.0.1", 2905), backlog: 0));
+    AssertThrows<ArgumentOutOfRangeException>(() => new NativeSctpListenerOptions(new SctpEndpoint("127.0.0.1", 2905), outboundStreams: 0));
+
+    NativeSctpListenerOptions options = new(new SctpEndpoint("127.0.0.1", 2905), backlog: 1);
+    AssertEqual((uint)SctpPayloadProtocolIdentifiers.M3ua, options.DefaultPayloadProtocolIdentifier, "native listener default PPID");
+
+    NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
+    if (!capability.CanCreateSocket)
+    {
+        using NativeSctpListener listener = new();
+        NativeSctpUnavailableException exception = AssertThrows<NativeSctpUnavailableException>(() =>
+            listener.StartAsync(options).GetAwaiter().GetResult());
+        AssertEqual(capability.Status, exception.Capability.Status, "native listener unsupported status");
     }
 }
 

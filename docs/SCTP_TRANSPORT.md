@@ -132,3 +132,5 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpSocketAdapter` wraps an SCTP socket as `ISctpSocket` and reports `SctpTransportHealth` snapshots for native associations.
 
 `NativeSctpConnector` performs the client-side bind/connect path and returns an established native adapter.
+
+`NativeSctpListener` provides the server-side bind/listen/accept path for Linux native SCTP lab scenarios.
