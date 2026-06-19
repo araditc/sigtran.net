@@ -40,6 +40,7 @@ Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProf
 Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
 Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
 Run("SIGTRAN phase 9 status summarizes interoperability lab foundation", SigtranPhase9StatusSummarizesInteropLabFoundation);
+Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -561,6 +562,19 @@ static void SigtranPhase9StatusSummarizesInteropLabFoundation()
     Assert(capabilities.Contains("commercial-readiness-gate-integration"), "Phase 9 should include commercial readiness integration");
     Assert(SigtranPhase9Status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranPhase9Status.Describe());
     Assert(SigtranPhase9Status.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranPhase9Status.Describe());
+}
+
+static void SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps()
+{
+    SigtranReleaseAutomationPlan plan = SigtranReleaseAutomation.CreateDefaultPlan();
+
+    AssertEqual("release-default", plan.Id, "release automation plan id");
+    AssertEqual("10.0.x", plan.DotNetVersion, "release automation .NET version");
+    AssertEqual(6, plan.Steps.Count, "release automation step count");
+    AssertEqual(SigtranReleaseAutomationStepKind.Restore, plan.Steps[0].Kind, "release automation first step");
+    AssertEqual(SigtranReleaseAutomationStepKind.Publish, plan.Steps[^1].Kind, "release automation final step");
+    Assert(plan.GetCommands().Any(static command => command.Contains("dotnet pack", StringComparison.Ordinal)), "release automation should include pack command");
+    Assert(plan.Describe().Contains("steps=6", StringComparison.Ordinal), plan.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

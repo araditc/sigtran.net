@@ -98,6 +98,15 @@ Status: SDK foundation is complete for Linux native SCTP platform probing, socke
 
 Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
 
+## Phase 10 - Release Automation And Supply Chain
+
+- Define deterministic release automation steps for restore, build, test, pack, validation, and publish.
+- Track package artifacts, checksums, SBOM requirements, signing requirements, and provenance.
+- Add release channel rules, version/release-note requirements, and publish gates.
+- Keep commercial release blocked until signing, SBOM, provenance, native SCTP verification, and external interoperability evidence are complete.
+
+Status: Phase 10 has started with the official release automation plan.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
