@@ -169,6 +169,7 @@ Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleas
 Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
 Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
+Run("SIGTRAN release workflow concurrency prevents overlapping releases", SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2084,6 +2085,16 @@ static void SigtranReleaseWorkflowPermissionsUseLeastPrivilege()
     Assert(permissions.IsLeastPrivilege, "release workflow permissions should be least privilege");
     Assert(yaml.Contains("contents: read", StringComparison.Ordinal), "release workflow YAML should keep contents read-only");
     Assert(yaml.Contains("id-token: write", StringComparison.Ordinal), "release workflow YAML should allow OIDC token");
+}
+
+static void SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases()
+{
+    SigtranReleaseWorkflowConcurrencyPolicy policy = SigtranReleaseWorkflowConcurrency.CreateDefault();
+    string yaml = File.ReadAllText(Path.Combine(".github", "workflows", "release.yml"));
+
+    Assert(policy.PreventsOverlappingReleaseRuns, "release workflow concurrency should prevent overlapping runs");
+    Assert(yaml.Contains("group: release-${{ github.ref }}", StringComparison.Ordinal), "release workflow YAML should include concurrency group");
+    Assert(yaml.Contains("cancel-in-progress: false", StringComparison.Ordinal), "release workflow YAML should avoid cancelling active release");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

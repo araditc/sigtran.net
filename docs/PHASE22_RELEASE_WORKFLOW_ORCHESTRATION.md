@@ -76,3 +76,9 @@ The release workflow now has a contract for retaining NuGet packages, symbol pac
 Stage 23 Unit 6 adds `SigtranReleaseWorkflowPermissions`.
 
 The default permission set keeps repository contents read-only, allows OIDC token issuance for provenance workflows, and keeps package permissions disabled because NuGet publishing uses the explicit NuGet API key secret.
+
+## Stage 23 Unit 7 - Workflow Concurrency
+
+Stage 23 Unit 7 adds `SigtranReleaseWorkflowConcurrency`.
+
+The concrete workflow now uses a release concurrency group based on `github.ref` and does not cancel an already-running release for the same ref.
