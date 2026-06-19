@@ -53,3 +53,9 @@ Initial entries cover native SCTP availability, ASP acknowledgement timeouts, un
 `SigtranApiReferenceIndex.GetEntries()` lists the curated onboarding APIs for M3UA, SCTP, and diagnostics.
 
 The index complements XML documentation by naming the first APIs a new user should inspect.
+
+## Adoption Gates
+
+`SigtranAdoptionGates.GetReport()` separates developer adoption readiness from enterprise production readiness.
+
+Developer adoption is ready when quickstart, samples, configuration profiles, troubleshooting, and API index are present. Enterprise production adoption still requires commercial readiness.

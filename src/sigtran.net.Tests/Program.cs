@@ -56,6 +56,7 @@ Run("SIGTRAN sample templates map sample ids to environments", SigtranSampleTemp
 Run("SIGTRAN configuration profiles separate development lab and production", SigtranConfigurationProfilesSeparateDevelopmentLabAndProduction);
 Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubleshootingIndexMapsSymptomsToNextActions);
 Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIndexExposesOnboardingApis);
+Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -778,6 +779,15 @@ static void SigtranApiReferenceIndexExposesOnboardingApis()
     Assert(entries.Any(static entry => entry.Name == "M3uaAspClient" && entry.Area == "M3UA"), "API reference should include ASP client");
     Assert(entries.Any(static entry => entry.Name == "SctpConnectionOptions" && entry.Area == "SCTP"), "API reference should include SCTP options");
     Assert(entries.Any(static entry => entry.Area == "Diagnostics"), "API reference should include diagnostics");
+}
+
+static void SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction()
+{
+    SigtranAdoptionGateReport report = SigtranAdoptionGates.GetReport();
+
+    Assert(report.DeveloperAdoptionReady, "developer adoption foundation should be ready");
+    Assert(!report.CommercialReady, "commercial readiness should still require external gates");
+    Assert(!report.EnterpriseProductionReady, "enterprise production adoption should wait for commercial readiness");
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
