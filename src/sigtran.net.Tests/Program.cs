@@ -48,6 +48,7 @@ Run("SIGTRAN release provenance records source commit and artifact manifest", Si
 Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNotesRequireSemVerAndChangeEntries);
 Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
 Run("SIGTRAN release gate evaluates artifact notes provenance and channel readiness", SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness);
+Run("SIGTRAN release CI profile declares triggers secrets and plan", SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -679,6 +680,18 @@ static void SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadines
     Assert(!stableResult.CanPublish, stableResult.Describe());
     Assert(stableResult.Reasons.Contains("channel-version-rejected"), "stable gate should reject prerelease version");
     Assert(stableResult.Reasons.Contains("commercial-readiness-required"), "stable gate should require commercial readiness");
+}
+
+static void SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan()
+{
+    SigtranReleaseCiProfile profile = SigtranReleaseCiProfiles.CreateDefault();
+
+    AssertEqual("release", profile.WorkflowName, "release CI workflow name");
+    Assert(profile.Triggers.Contains("workflow_dispatch"), "release CI profile should support manual dispatch");
+    Assert(profile.Triggers.Contains("tag:v*"), "release CI profile should support version tags");
+    Assert(profile.RequiredSecrets.Contains("NUGET_API_KEY"), "release CI profile should require NuGet API key");
+    Assert(profile.RequiredSecrets.Contains("SIGNING_CERTIFICATE"), "release CI profile should require signing certificate");
+    Assert(profile.IsRunnable, profile.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()

@@ -61,3 +61,9 @@ Prerelease versions are allowed on internal, alpha, and beta channels. Stable pu
 `SigtranReleaseGate.Evaluate()` checks channel version rules, package artifacts, artifact digests, release notes, provenance, and commercial readiness.
 
 Alpha and beta releases can publish before commercial readiness. Stable releases require commercial readiness and a stable version.
+
+## Release CI Profile
+
+`SigtranReleaseCiProfiles.CreateDefault()` declares a release workflow profile with manual dispatch and version-tag triggers.
+
+Required secret names are recorded as metadata only: `NUGET_API_KEY` and `SIGNING_CERTIFICATE`. Secret values must never be committed.

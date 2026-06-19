@@ -25,3 +25,9 @@ Phase 7 package governance keeps package signing and SBOM generation as commerci
 Phase 9 adds `SigtranInteropLabCiProfiles.CreateDefault()` for opt-in external lab runs.
 
 The lab profile is disabled unless `SIGTRAN_INTEROP_LAB` is set to `1` or `true`. A real lab run also needs `SIGTRAN_INTEROP_LAB_ARTIFACT_ROOT` and `SIGTRAN_INTEROP_PEER`; native SCTP runs can use `SIGTRAN_NATIVE_SCTP_LAB`.
+
+## Release CI
+
+Phase 10 adds `SigtranReleaseCiProfiles.CreateDefault()` as the metadata contract for release workflows.
+
+Release CI is intended for manual dispatch and version tags. It requires `NUGET_API_KEY` and `SIGNING_CERTIFICATE` secret names, but the repository must never contain secret values or private signing material.
