@@ -1,0 +1,67 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version to publish
+        required: true
+        type: string
+      publish:
+        description: Publish to NuGet when all gates pass
+        required: true
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+      SIGTRAN_SUPPLY_CHAIN: true
+      SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT: artifacts/supply-chain
+      SIGTRAN_COMMERCIAL_EVIDENCE: true
+      SIGTRAN_COMMERCIAL_EVIDENCE_ROOT: artifacts/commercial-evidence
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/sigtran.net.sln
+
+      - name: Build
+        run: dotnet build src/sigtran.net.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet run --project src/sigtran.net.Tests/sigtran.net.Tests.csproj --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/sigtran.net/sigtran.net.csproj --configuration Release --no-build
+
+      - name: Supply Chain
+        run: |
+          echo "Supply-chain automation requires retained SBOM, signing, timestamp, provenance, and verification artifacts."
+          test -n "${{ secrets.SIGNING_CERTIFICATE }}"
+          test -n "${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}"
+
+      - name: Commercial Evidence
+        run: |
+          echo "Commercial evidence verification requires retained native SCTP, OpenSS7, protocol vector, provenance, and package artifacts."
+          test -d "$SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"
+
+      - name: Publish
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
+        run: dotnet nuget push src/sigtran.net/bin/Release/Sigtran.Net.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"

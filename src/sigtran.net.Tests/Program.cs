@@ -163,6 +163,7 @@ Run("SIGTRAN release workflow plan includes release triggers and stages", Sigtra
 Run("SIGTRAN release workflow requires supply chain evidence and publish secrets", SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets);
 Run("SIGTRAN release workflow readiness separates contract from workflow file", SigtranReleaseWorkflowReadinessSeparatesContractFromWorkflowFile);
 Run("SIGTRAN release workflow status summarizes contract foundation", SigtranReleaseWorkflowStatusSummarizesContractFoundation);
+Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2009,6 +2010,18 @@ static void SigtranReleaseWorkflowStatusSummarizesContractFoundation()
     Assert(capabilities.Contains("release-workflow-secret-contract"), "release workflow status should include secret contract");
     Assert(SigtranReleaseWorkflowStatus.ContractReady, SigtranReleaseWorkflowStatus.Describe());
     Assert(!SigtranReleaseWorkflowStatus.OrchestrationReady, SigtranReleaseWorkflowStatus.Describe());
+}
+
+static void SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile()
+{
+    SigtranReleaseWorkflowFileContract contract = SigtranReleaseWorkflowFiles.CreateDefault();
+
+    AssertEqual(".github/workflows/release.yml", contract.Path, "release workflow file path");
+    AssertEqual("release", contract.WorkflowName, "release workflow file name");
+    AssertEqual("release", contract.RequiredJobName, "release workflow job name");
+    Assert(contract.RequiredStageNames.Contains("Supply Chain"), "release workflow file should include supply-chain stage");
+    Assert(contract.RequiredStageNames.Contains("Commercial Evidence"), "release workflow file should include commercial evidence stage");
+    Assert(contract.IsValidationReady, "release workflow file contract should be validation ready");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

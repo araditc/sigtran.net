@@ -21,6 +21,8 @@ The release workflow contract foundation is complete.
 
 `SigtranReleaseWorkflowStatus.ContractReady` is expected to be true. `OrchestrationReady` remains false until a concrete workflow file is added and validated.
 
+Stage 23 Unit 1 adds the concrete release workflow file and workflow file contract. Later units continue hardening validation, gates, artifacts, and promotion behavior.
+
 ## Production Claim Boundary
 
 Part 1 does not publish packages, create tags, create SBOMs, sign packages, or generate provenance. It defines the workflow contract that later parts must render into a real release workflow.

@@ -40,3 +40,9 @@ Later Phase 22 parts should:
 - Align the workflow file with the SDK contract.
 - Add release promotion gates for publish/tag/provenance behavior.
 - Keep each part separately documented, tested, packed, committed, and pushed.
+
+## Stage 23 Unit 1 - Concrete Workflow File
+
+Stage 23 Unit 1 adds `.github/workflows/release.yml` and `SigtranReleaseWorkflowFiles.CreateDefault()`.
+
+The workflow file follows the contract from Phase 22 and contains restore, build, test, pack, supply-chain, commercial-evidence, and publish stages. The publish stage is gated behind manual dispatch with `publish=true`.
