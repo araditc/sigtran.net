@@ -2016,7 +2016,8 @@ static void SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation()
 
     AssertEqual(10, SigtranReleaseWorkflowStatus.CompletedUnitCount, "release workflow completed unit count");
     AssertEqual(10, capabilities.Count, "release workflow capability count");
-    Assert(capabilities.Contains("release-workflow-secret-contract"), "release workflow status should include secret contract");
+    Assert(capabilities.Contains("promotion-gate"), "release workflow status should include promotion gate");
+    Assert(capabilities.Contains("workflow-yaml-validation"), "release workflow status should include YAML validation");
     Assert(SigtranReleaseWorkflowStatus.ContractReady, SigtranReleaseWorkflowStatus.Describe());
     Assert(SigtranReleaseWorkflowStatus.OrchestrationReady, SigtranReleaseWorkflowStatus.Describe());
 }

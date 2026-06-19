@@ -94,3 +94,9 @@ The workflow environment contract names the .NET, supply-chain, and commercial-e
 Stage 23 Unit 9 adds `SigtranReleasePromotionGate`.
 
 The gate combines publish guard decisions, workflow orchestration readiness, supply-chain promotion readiness, and commercial evidence readiness into one release promotion decision.
+
+## Stage 23 Unit 10 - Final Status
+
+Stage 23 Unit 10 aligns `SigtranReleaseWorkflowStatus` with the ten concrete release workflow capabilities delivered in Stage 23.
+
+Release workflow orchestration foundation is ready. Release promotion remains blocked by real evidence and supply-chain gates.

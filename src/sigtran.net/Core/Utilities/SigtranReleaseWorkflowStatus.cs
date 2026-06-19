@@ -8,14 +8,14 @@ public static class SigtranReleaseWorkflowStatus
     private static readonly string[] Capabilities =
     [
         "release-workflow-contract",
-        "release-workflow-triggers",
-        "release-workflow-stage-order",
-        "release-workflow-secret-contract",
-        "supply-chain-workflow-integration",
-        "commercial-evidence-workflow-integration",
-        "publish-workflow-contract",
-        "release-workflow-readiness",
-        "readme-alignment",
+        "concrete-workflow-file",
+        "workflow-yaml-validation",
+        "publish-guard",
+        "artifact-retention",
+        "least-privilege-permissions",
+        "concurrency-policy",
+        "environment-contract",
+        "promotion-gate",
         "documentation"
     ];
 

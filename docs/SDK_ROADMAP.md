@@ -203,6 +203,14 @@ Status: Phase 21 is foundation-ready for supply-chain automation. Promotion read
 
 Status: Phase 22 Part 1 is contract-ready for release workflow orchestration. Full orchestration remains blocked until a concrete release workflow file is added and validated.
 
+## Phase 23 - Release Workflow Completion
+
+- Add the concrete release workflow file, YAML validation, publish guard, artifact retention, permission policy, concurrency policy, environment contract, promotion gate, and final status alignment.
+- Keep release workflow orchestration readiness separate from commercial release promotion.
+- Require real commercial evidence and supply-chain promotion evidence before a package can be promoted.
+
+Status: Phase 23 is foundation-ready for release workflow orchestration. Release promotion remains blocked until real evidence, signing, SBOM, provenance, and publish credentials are available.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
