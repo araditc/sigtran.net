@@ -178,6 +178,7 @@ Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadata
 Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExposesNupkgAndSymbols);
 Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPublishPlansSeparateDryRunAndPublish);
 Run("SIGTRAN publication credential policy requires commercial secrets", SigtranPublicationCredentialPolicyRequiresCommercialSecrets);
+Run("SIGTRAN publication channel policy separates prerelease and stable", SigtranPublicationChannelPolicySeparatesPrereleaseAndStable);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2201,6 +2202,22 @@ static void SigtranPublicationCredentialPolicyRequiresCommercialSecrets()
     AssertEqual(3, policy.Credentials.Count, "publication credential count");
     Assert(missing.Contains("SIGNING_CERTIFICATE"), "credential policy should require signing certificate");
     Assert(missing.Contains("SIGNING_CERTIFICATE_PASSWORD"), "credential policy should require signing certificate password");
+}
+
+static void SigtranPublicationChannelPolicySeparatesPrereleaseAndStable()
+{
+    SigtranPublishChannel alpha = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Alpha);
+    SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
+
+    SigtranPublicationChannelDecision alphaDecision = SigtranPublicationChannelPolicy.Evaluate(alpha, "1.0.0-alpha.1", commercialReadiness: false);
+    SigtranPublicationChannelDecision stableBlocked = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", commercialReadiness: false);
+    SigtranPublicationChannelDecision stableAllowed = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", commercialReadiness: true);
+
+    Assert(alphaDecision.Allowed, "alpha channel should accept prerelease versions without commercial readiness");
+    Assert(!stableBlocked.Allowed, "stable channel should block prerelease and missing commercial readiness");
+    Assert(stableBlocked.Reasons.Contains("channel-version-mismatch"), "stable channel should reject prerelease version");
+    Assert(stableBlocked.Reasons.Contains("commercial-readiness-required"), "stable channel should require commercial readiness");
+    Assert(stableAllowed.Allowed, "stable channel should allow stable version after commercial readiness");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

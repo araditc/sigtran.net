@@ -53,3 +53,13 @@ This keeps release rehearsals safe while still documenting the exact publish com
 - `SIGNING_CERTIFICATE_PASSWORD`
 
 Publication remains blocked unless these secret names are present in the release environment and the upstream evidence gates pass.
+
+## Unit 6 - Publication Channel Policy
+
+`SigtranPublicationChannelPolicy` evaluates channel and version compatibility:
+
+- Alpha and beta channels can accept pre-release versions.
+- Stable publication requires a stable version.
+- Stable publication also requires commercial readiness.
+
+This prevents an alpha package from being promoted to the public stable channel by tag or workflow-input accident.
