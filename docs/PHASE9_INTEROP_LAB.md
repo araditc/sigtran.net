@@ -26,3 +26,9 @@ manifest.Add(new SigtranInteropLabArtifact(
 ```
 
 A manifest satisfies a scenario only when every required artifact name is present in the captured artifact paths.
+
+## Run Reports
+
+`SigtranInteropLabRunReport` records the scenario, artifact manifest, status, start time, completion time, and operator notes for one lab run.
+
+`HasPassingEvidence` is true only when the run status is `Passed` and the manifest satisfies the scenario artifact requirements.

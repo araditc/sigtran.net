@@ -32,6 +32,7 @@ Run("SIGTRAN deployment profiles expose commercial and development gates", Sigtr
 Run("SIGTRAN phase 7 status summarizes commercialization foundation", SigtranPhase7StatusSummarizesCommercializationFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
+Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -428,6 +429,31 @@ static void SigtranInteropLabArtifactManifestValidatesRequiredFiles()
     AssertEqual(4, manifest.Snapshot().Count, "artifact manifest count");
     AssertEqual("ABC123", manifest.Snapshot()[0].Sha256, "artifact digest");
     Assert(!new SigtranInteropLabArtifactManifest("wrong").Satisfies(scenario), "wrong scenario manifest should not satisfy");
+}
+
+static void SigtranInteropLabRunReportIdentifiesPassingEvidence()
+{
+    Assert(SigtranInteropLabScenarios.TryGet("openss7-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "OpenSS7 scenario should exist");
+    SigtranInteropLabArtifactManifest manifest = new(scenario!.Id);
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PacketCapture, "artifacts/openss7/pcap/m3ua-asp.pcapng"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.SdkTrace, "artifacts/openss7/sdk-trace/m3ua-asp.log"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerConfiguration, "artifacts/openss7/peer-config/sg.conf"));
+    manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerLog, "artifacts/openss7/peer-log/sg.log"));
+
+    DateTimeOffset startedAt = new(2026, 6, 19, 8, 0, 0, TimeSpan.Zero);
+    SigtranInteropLabRunReport report = new(
+        scenario,
+        manifest,
+        SigtranInteropLabRunStatus.Passed,
+        startedAt,
+        startedAt.AddMinutes(5),
+        "ASP lifecycle completed.");
+
+    Assert(report.HasPassingEvidence, report.Describe());
+    Assert(report.Describe().Contains("passingEvidence=True", StringComparison.Ordinal), report.Describe());
+
+    SigtranInteropLabRunReport failed = new(scenario, manifest, SigtranInteropLabRunStatus.Failed, startedAt);
+    Assert(!failed.HasPassingEvidence, failed.Describe());
 }
 
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
