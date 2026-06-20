@@ -187,6 +187,7 @@ Run("SIGTRAN package publication status summarizes readiness foundation", Sigtra
 Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
 Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
 Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context", SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext);
+Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2337,6 +2338,19 @@ static void SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext()
     Assert(blocker.LogPath.EndsWith("openss7-configure.log", StringComparison.Ordinal), "OpenSS7/IPSS7 blocker should retain configure log path");
     Assert(blocker.ObservedFailure.Contains("kernel major version 6", StringComparison.OrdinalIgnoreCase), blocker.Describe());
     Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should describe the next action");
+}
+
+static void SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts()
+{
+    SigtranCommercialReleaseArtifactDossier dossier = SigtranCommercialReleaseArtifactDossiers.CreateCurrent();
+    IReadOnlyList<SigtranCommercialReleaseArtifactRecord> artifacts = dossier.Snapshot();
+
+    AssertEqual(5, artifacts.Count, "commercial release artifact dossier artifact count");
+    Assert(dossier.HasInteropArtifactSet == false, "commercial release artifact dossier should not count missing trace and comparison as retained");
+    Assert(dossier.HasDigestCoverage, "retained commercial release artifacts should include digest placeholders until real digests are materialized");
+    Assert(dossier.IsReviewReady == false, "commercial release artifact dossier should not be review-ready while trace and comparison are missing");
+    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.Trace && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing SDK trace");
+    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.ComparisonReport && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing comparison report");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

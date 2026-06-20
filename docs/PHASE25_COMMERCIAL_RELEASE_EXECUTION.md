@@ -40,3 +40,20 @@ Current blocker:
 - Required action: retest on a compatible Linux kernel or patch the OpenSS7 kernel-version check with retained build evidence.
 
 The blocker intentionally prevents interoperability promotion until a passing OpenSS7/IPSS7 run produces PCAP, peer logs, SDK traces, and comparison evidence.
+
+## Unit 4 - Artifact Dossier
+
+`SigtranCommercialReleaseArtifactDossier` tracks the concrete artifact set required for commercial release review.
+
+Current retained items:
+
+- Linux SCTP PCAP: retained.
+- OpenSS7 configure log: retained.
+- Peer configuration: retained.
+
+Current missing items:
+
+- SDK trace from a passing OpenSS7/IPSS7 run.
+- OpenSS7/IPSS7 comparison report.
+
+The dossier is intentionally not review-ready while trace and comparison evidence are missing. Retained artifacts are represented with digest placeholders until real SHA-256 values are materialized in the release evidence bundle.
