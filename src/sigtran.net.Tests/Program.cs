@@ -193,6 +193,7 @@ Run("SIGTRAN package signing execution evidence records verification blocker", S
 Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
 Run("SIGTRAN benchmark execution evidence records smoke workload limits", SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits);
 Run("SIGTRAN public API baseline evidence records generated member baseline", SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline);
+Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2419,6 +2420,18 @@ static void SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline()
     Assert(evidence.IsReviewReady, "public API baseline evidence should be review-ready");
     AssertEqual(300, evidence.MemberCount, "public API baseline member count");
     Assert(evidence.BaselinePath.EndsWith("-public-api.txt", StringComparison.OrdinalIgnoreCase), "public API baseline should use a text artifact");
+}
+
+static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
+{
+    SigtranCommercialReleaseExecutionReadinessReport report = SigtranCommercialReleaseExecutionReadiness.CreateCurrent();
+
+    Assert(report.CommercialReleaseReady == false, report.Describe());
+    Assert(report.PassedCount > 0, "commercial release execution readiness should include passed evidence items");
+    Assert(report.BlockedCount > 0, "commercial release execution readiness should include blocked evidence items");
+    Assert(report.Items.Any(static item => item.Name == "open-interop" && !item.Passed), "commercial release execution readiness should block OpenSS7/IPSS7 interop");
+    Assert(report.Items.Any(static item => item.Name == "package-signing" && !item.Passed), "commercial release execution readiness should block incomplete signing verification");
+    Assert(report.Items.Any(static item => item.Name == "performance" && !item.Passed), "commercial release execution readiness should block smoke-only performance evidence");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

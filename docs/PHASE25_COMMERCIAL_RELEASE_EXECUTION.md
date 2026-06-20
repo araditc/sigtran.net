@@ -153,3 +153,23 @@ Baseline evidence fields:
 - Documented public member count.
 
 This artifact is the input for public API diff review. Commercial release still requires storing the baseline with release evidence and comparing it against future release candidates.
+
+## Unit 10 - Commercial Release Execution Readiness
+
+`SigtranCommercialReleaseExecutionReadiness` aggregates the execution evidence into one final readiness report.
+
+Current passed execution items:
+
+- Linux SCTP smoke evidence.
+- SBOM generation evidence.
+- Provenance generation evidence.
+- Public API baseline generation evidence.
+
+Current blockers:
+
+- OpenSS7/IPSS7 interoperability remains blocked by WSL2 kernel compatibility.
+- Artifact dossier is missing SDK trace and comparison report from a passing external peer run.
+- Package signing produced a signed package, but verification still requires a trusted timestamped production signature.
+- Performance evidence is smoke-only and does not prove commercial peer/load targets.
+
+Conclusion: the SDK has strong commercial-release execution foundations, but it is not yet commercially releasable until the blockers above are closed with retained artifacts.
