@@ -192,6 +192,7 @@ Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbom
 Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
 Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
 Run("SIGTRAN benchmark execution evidence records smoke workload limits", SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits);
+Run("SIGTRAN public API baseline evidence records generated member baseline", SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2407,6 +2408,17 @@ static void SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits()
     Assert(evidence.SupportsCommercialPerformancePromotion == false, "smoke benchmark should not support commercial performance promotion");
     AssertEqual(200, evidence.PassedChecks, "benchmark passed check count");
     AssertEqual(64, evidence.ReportSha256.Length, "benchmark report digest length");
+}
+
+static void SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline()
+{
+    SigtranPublicApiBaselineEvidence evidence = SigtranPublicApiBaselineEvidenceFactory.CreateFromRetainedBaseline(
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        memberCount: 300);
+
+    Assert(evidence.IsReviewReady, "public API baseline evidence should be review-ready");
+    AssertEqual(300, evidence.MemberCount, "public API baseline member count");
+    Assert(evidence.BaselinePath.EndsWith("-public-api.txt", StringComparison.OrdinalIgnoreCase), "public API baseline should use a text artifact");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

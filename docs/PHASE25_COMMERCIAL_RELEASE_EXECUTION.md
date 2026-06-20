@@ -135,3 +135,21 @@ Benchmark evidence fields:
 - Passed workload checks.
 
 This is smoke-level benchmark evidence only. Commercial performance promotion still requires peer traffic, sustained load, latency percentiles, resource profile, and comparison against the targets documented in the performance phase.
+
+## Unit 9 - Public API Baseline Evidence
+
+`eng/generate-public-api-baseline.ps1` generates a sorted public API baseline from the Release XML documentation file.
+
+Validation command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File eng\generate-public-api-baseline.ps1
+```
+
+Baseline evidence fields:
+
+- Output: `artifacts/api/sigtran.net-public-api.txt`.
+- Baseline SHA-256.
+- Documented public member count.
+
+This artifact is the input for public API diff review. Commercial release still requires storing the baseline with release evidence and comparing it against future release candidates.
