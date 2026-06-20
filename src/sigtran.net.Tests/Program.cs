@@ -189,6 +189,7 @@ Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSct
 Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context", SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext);
 Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
 Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
+Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2365,6 +2366,18 @@ static void SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput()
     AssertEqual("artifacts/sbom/sigtran.net.spdx.json", evidence.OutputPath, "generated SBOM evidence output path");
     AssertEqual(64, evidence.Sha256.Length, "generated SBOM evidence SHA-256 length");
     AssertEqual(2, evidence.PackageFileCount, "generated SBOM package count");
+}
+
+static void SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker()
+{
+    SigtranPackageSigningExecutionEvidence evidence = SigtranPackageSigningExecution.CreateFromSignedPackageDigest(
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
+
+    Assert(evidence.SigningSucceeded, "package signing should have produced a signed package");
+    Assert(evidence.VerificationPassed == false, "package signing evidence should record verification failure");
+    Assert(evidence.Timestamped == false, "package signing evidence should require timestamping before promotion");
+    Assert(evidence.TrustedCertificate == false, "package signing evidence should require trusted certificate chain before promotion");
+    Assert(evidence.SupportsCommercialPromotion == false, "package signing evidence should block commercial promotion until verification passes");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
