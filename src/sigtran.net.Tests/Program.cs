@@ -188,6 +188,7 @@ Run("SIGTRAN commercial release execution evidence tracks passed and blocked art
 Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
 Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context", SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext);
 Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
+Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2351,6 +2352,19 @@ static void SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtif
     Assert(dossier.IsReviewReady == false, "commercial release artifact dossier should not be review-ready while trace and comparison are missing");
     Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.Trace && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing SDK trace");
     Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.ComparisonReport && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing comparison report");
+}
+
+static void SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput()
+{
+    SigtranSbomExecutionEvidence evidence = SigtranSbomExecution.CreateFromGeneratedDigest(
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        packageFileCount: 2);
+
+    Assert(evidence.IsReviewReady, "generated SBOM evidence should be review-ready");
+    AssertEqual(SigtranSbomFormat.SpdxJson, evidence.Format, "generated SBOM evidence format");
+    AssertEqual("artifacts/sbom/sigtran.net.spdx.json", evidence.OutputPath, "generated SBOM evidence output path");
+    AssertEqual(64, evidence.Sha256.Length, "generated SBOM evidence SHA-256 length");
+    AssertEqual(2, evidence.PackageFileCount, "generated SBOM package count");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
