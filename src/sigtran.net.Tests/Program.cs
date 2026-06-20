@@ -185,6 +185,7 @@ Run("SIGTRAN publication gate blocks incomplete publish readiness", SigtranPubli
 Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublicationGateAllowsCompletePublishReadiness);
 Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
 Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
+Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2311,6 +2312,19 @@ static void SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtif
     Assert(manifest.HasDigestCoverage, "commercial release evidence should require digest coverage for passed artifacts");
     Assert(!manifest.SupportsCommercialPromotion, "commercial release evidence should not promote while OpenSS7 is blocked");
     Assert(manifest.Artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.BlockerReport), "commercial release evidence should include blocker report artifact");
+}
+
+static void SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture()
+{
+    SigtranLinuxSctpCaptureSummary summary = SigtranLinuxSctpEvidence.CreateCurrentSmokeSummary();
+
+    Assert(summary.IsPassingSmokeEvidence, summary.Describe());
+    AssertEqual(14, summary.PacketCount, "Linux SCTP packet count");
+    AssertEqual(14, summary.SctpPacketCount, "Linux SCTP SCTP-packet count");
+    Assert(summary.FileSizeBytes > 24, "Linux SCTP PCAP should be larger than a header-only capture");
+    Assert(summary.HasAssociationHandshake, "Linux SCTP capture should include association handshake");
+    Assert(summary.HasDataExchange, "Linux SCTP capture should include DATA chunks");
+    Assert(summary.HasCleanShutdown, "Linux SCTP capture should include clean shutdown");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

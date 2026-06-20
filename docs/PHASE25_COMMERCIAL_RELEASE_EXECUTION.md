@@ -14,3 +14,16 @@ Current retained evidence includes:
 - Blocked OpenSS7/IPSS7 configure log showing the WSL2 kernel-major compatibility blocker.
 
 The manifest does not support commercial promotion while any blocker is present.
+
+## Unit 2 - Linux SCTP Smoke Evidence
+
+`SigtranLinuxSctpEvidence` records the retained WSL2 Linux SCTP smoke capture summary.
+
+The current capture has:
+
+- `PACKET_COUNT=14`
+- `SCTP_COUNT=14`
+- `PCAP_SIZE=1556`
+- SCTP association handshake, DATA exchange, and clean shutdown.
+
+This is valid Linux SCTP smoke evidence, but it is not yet full external peer interoperability evidence.
