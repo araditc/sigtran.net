@@ -186,6 +186,7 @@ Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublica
 Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
 Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
 Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
+Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context", SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2325,6 +2326,17 @@ static void SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture()
     Assert(summary.HasAssociationHandshake, "Linux SCTP capture should include association handshake");
     Assert(summary.HasDataExchange, "Linux SCTP capture should include DATA chunks");
     Assert(summary.HasCleanShutdown, "Linux SCTP capture should include clean shutdown");
+}
+
+static void SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext()
+{
+    SigtranOpenSs7InteropBlocker blocker = SigtranOpenSs7InteropBlockerEvidence.CreateCurrentBlocker();
+
+    Assert(blocker.BlocksInteropPromotion, "OpenSS7/IPSS7 blocker should prevent interop promotion");
+    Assert(blocker.EnvironmentName.Contains("WSL2", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should record the environment");
+    Assert(blocker.LogPath.EndsWith("openss7-configure.log", StringComparison.Ordinal), "OpenSS7/IPSS7 blocker should retain configure log path");
+    Assert(blocker.ObservedFailure.Contains("kernel major version 6", StringComparison.OrdinalIgnoreCase), blocker.Describe());
+    Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should describe the next action");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
