@@ -96,3 +96,23 @@ Current signing evidence:
 - Verify log: `artifacts/signing/verify-package.log`.
 
 Signing succeeded, but package verification is not commercial-ready yet. The retained verification log reports an untrusted signing certificate and missing timestamp. Commercial release requires a trusted production certificate chain and timestamped package signature.
+
+## Unit 7 - Provenance Attestation Evidence
+
+`eng/generate-provenance.ps1` generates a provenance JSON artifact for the signed package and SBOM.
+
+Validation command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File eng\generate-provenance.ps1
+```
+
+Provenance evidence fields:
+
+- Output: `artifacts/provenance/sigtran.net.provenance.json`.
+- Provenance SHA-256.
+- Source commit.
+- Signed package SHA-256.
+- SBOM SHA-256.
+
+The final release workflow must regenerate provenance after the final release commit, final package build, signing, and SBOM generation.

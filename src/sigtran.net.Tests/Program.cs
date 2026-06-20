@@ -190,6 +190,7 @@ Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context",
 Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
 Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
 Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
+Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2378,6 +2379,20 @@ static void SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker()
     Assert(evidence.Timestamped == false, "package signing evidence should require timestamping before promotion");
     Assert(evidence.TrustedCertificate == false, "package signing evidence should require trusted certificate chain before promotion");
     Assert(evidence.SupportsCommercialPromotion == false, "package signing evidence should block commercial promotion until verification passes");
+}
+
+static void SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests()
+{
+    SigtranProvenanceExecutionEvidence evidence = SigtranProvenanceExecution.CreateFromRetainedDigests(
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "0123456789abcdef0123456789abcdef01234567",
+        "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+        "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210");
+
+    Assert(evidence.IsReviewReady, "provenance evidence should be review-ready with retained package and SBOM digests");
+    Assert(evidence.OutputPath.EndsWith(".provenance.json", StringComparison.OrdinalIgnoreCase), "provenance evidence should point to JSON attestation");
+    AssertEqual(64, evidence.PackageSha256.Length, "provenance package digest length");
+    AssertEqual(64, evidence.SbomSha256.Length, "provenance SBOM digest length");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
