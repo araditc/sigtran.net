@@ -219,6 +219,14 @@ Status: Phase 23 is foundation-ready for release workflow orchestration. Release
 
 Status: Phase 24 is foundation-ready for package publication readiness. Real NuGet publication remains blocked until retained commercial evidence, signed supply-chain artifacts, provenance, and live publish credentials are available.
 
+## Phase 25 - Commercial Release Execution And Evidence
+
+- Retain real Linux SCTP, OpenSS7/IPSS7, packet capture, trace, comparison, SBOM, signing, provenance, benchmark, public API baseline, workflow, dry-run, and publication gate evidence.
+- Keep blocker evidence explicit instead of manufacturing passing artifacts.
+- Promote only when all retained evidence areas are passing and digest-covered.
+
+Status: Phase 25 has started with an execution evidence manifest. Linux SCTP loopback evidence is retained; OpenSS7/IPSS7 remains blocked on WSL2 kernel-major compatibility until patched or moved to a compatible Linux peer environment.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

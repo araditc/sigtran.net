@@ -184,6 +184,7 @@ Run("SIGTRAN publication evidence manifest requires integrity and release eviden
 Run("SIGTRAN publication gate blocks incomplete publish readiness", SigtranPublicationGateBlocksIncompletePublishReadiness);
 Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublicationGateAllowsCompletePublishReadiness);
 Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
+Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2299,6 +2300,17 @@ static void SigtranPackagePublicationStatusSummarizesReadinessFoundation()
     Assert(!readiness.PublicationReady, "real package publication should remain blocked without live evidence and credentials");
     Assert(SigtranPackagePublicationStatus.FoundationReady, SigtranPackagePublicationStatus.Describe());
     Assert(!SigtranPackagePublicationStatus.PublicationReady, SigtranPackagePublicationStatus.Describe());
+}
+
+static void SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts()
+{
+    SigtranCommercialReleaseEvidenceManifest manifest = SigtranCommercialReleaseEvidenceManifest.CreateCurrentSample();
+
+    Assert(manifest.HasPassedArea(SigtranCommercialReleaseEvidenceArea.LinuxSctp), "commercial release evidence should include Linux SCTP evidence");
+    Assert(manifest.HasBlockers, "commercial release evidence should record the OpenSS7 blocker");
+    Assert(manifest.HasDigestCoverage, "commercial release evidence should require digest coverage for passed artifacts");
+    Assert(!manifest.SupportsCommercialPromotion, "commercial release evidence should not promote while OpenSS7 is blocked");
+    Assert(manifest.Artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.BlockerReport), "commercial release evidence should include blocker report artifact");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
