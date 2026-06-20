@@ -116,3 +116,22 @@ Provenance evidence fields:
 - SBOM SHA-256.
 
 The final release workflow must regenerate provenance after the final release commit, final package build, signing, and SBOM generation.
+
+## Unit 8 - Benchmark Execution Evidence
+
+`eng/run-benchmark.ps1` generates a smoke benchmark report from the Release test workload.
+
+Validation command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File eng\run-benchmark.ps1
+```
+
+Benchmark evidence fields:
+
+- Output: `artifacts/benchmarks/sigtran.net-smoke-benchmark.json`.
+- Report SHA-256.
+- Duration in milliseconds.
+- Passed workload checks.
+
+This is smoke-level benchmark evidence only. Commercial performance promotion still requires peer traffic, sustained load, latency percentiles, resource profile, and comparison against the targets documented in the performance phase.

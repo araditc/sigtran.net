@@ -191,6 +191,7 @@ Run("SIGTRAN commercial release artifact dossier tracks retained and missing art
 Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
 Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
 Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
+Run("SIGTRAN benchmark execution evidence records smoke workload limits", SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -2393,6 +2394,19 @@ static void SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests()
     Assert(evidence.OutputPath.EndsWith(".provenance.json", StringComparison.OrdinalIgnoreCase), "provenance evidence should point to JSON attestation");
     AssertEqual(64, evidence.PackageSha256.Length, "provenance package digest length");
     AssertEqual(64, evidence.SbomSha256.Length, "provenance SBOM digest length");
+}
+
+static void SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits()
+{
+    SigtranBenchmarkExecutionEvidence evidence = SigtranBenchmarkExecution.CreateSmokeBenchmark(
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        durationMilliseconds: 500,
+        passedChecks: 200);
+
+    Assert(evidence.SmokeOnly, "benchmark evidence should record smoke-only status");
+    Assert(evidence.SupportsCommercialPerformancePromotion == false, "smoke benchmark should not support commercial performance promotion");
+    AssertEqual(200, evidence.PassedChecks, "benchmark passed check count");
+    AssertEqual(64, evidence.ReportSha256.Length, "benchmark report digest length");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
