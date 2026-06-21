@@ -65,6 +65,16 @@ The policy evaluates a `SigtranInteropPeerProfile` plus explicitly satisfied cri
 
 `CanProduceCommercialArtifacts` is true only when the environment can produce the artifact classes needed by commercial review. This keeps a simple transport smoke test separate from a commercial interoperability lab.
 
+## Unit 5 - Digest Covered External Peer Artifacts
+
+`SigtranExternalPeerInteropArtifactManifest` now separates three states:
+
+- `IsComplete`: every required artifact kind is present.
+- `AllArtifactsHaveDigests`: every retained artifact has a SHA-256 digest.
+- `IsReviewReady`: the manifest is complete and digest-covered.
+
+The required artifact kinds are packet capture, SDK trace, peer configuration, peer log, and comparison report. `SigtranExternalPeerInteropRunReport` and `SigtranExternalPeerInteropEvidenceRegistry` now expose commercial-review-ready evidence in addition to passing evidence.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

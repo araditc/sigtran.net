@@ -1,7 +1,7 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Identifies OpenSS7/IPSS7 interoperability execution status.
+/// Identifies external peer interoperability execution status.
 /// </summary>
 public enum SigtranExternalPeerInteropRunStatus
 {
@@ -16,11 +16,11 @@ public enum SigtranExternalPeerInteropRunStatus
 }
 
 /// <summary>
-/// Describes an OpenSS7/IPSS7 interoperability execution report.
+/// Describes an external peer interoperability execution report.
 /// </summary>
 public sealed class SigtranExternalPeerInteropRunReport
 {
-    /// <summary>Creates an OpenSS7/IPSS7 interoperability execution report.</summary>
+    /// <summary>Creates an external peer interoperability execution report.</summary>
     /// <param name="plan">The execution plan.</param>
     /// <param name="manifest">The artifact manifest.</param>
     /// <param name="status">The execution status.</param>
@@ -60,8 +60,11 @@ public sealed class SigtranExternalPeerInteropRunReport
     /// <summary>The optional completion time.</summary>
     public DateTimeOffset? CompletedAt { get; }
 
-    /// <summary>Whether the run can be used as OpenSS7/IPSS7 passing evidence.</summary>
+    /// <summary>Whether the run can be used as external peer passing evidence.</summary>
     public bool HasPassingEvidence => Status == SigtranExternalPeerInteropRunStatus.Passed
         && Plan.IsExecutable
         && Manifest.IsComplete;
+
+    /// <summary>Whether the run has passing, digest-covered commercial review evidence.</summary>
+    public bool HasCommercialReviewReadyEvidence => HasPassingEvidence && Manifest.IsReviewReady;
 }

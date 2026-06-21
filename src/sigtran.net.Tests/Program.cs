@@ -1646,8 +1646,16 @@ static void SigtranExternalPeerArtifactManifestRequiresTracePeerConfigLogsAndCom
 {
     SigtranExternalPeerInteropArtifactManifest manifest = CreateCompleteExternalPeerManifest();
 
-    AssertEqual(5, manifest.Snapshot().Count, "OpenSS7 artifact count");
-    Assert(manifest.IsComplete, "OpenSS7 artifact manifest should be complete");
+    AssertEqual(5, manifest.Snapshot().Count, "external peer artifact count");
+    Assert(manifest.IsComplete, "external peer artifact manifest should be complete");
+    Assert(manifest.AllArtifactsHaveDigests, "external peer artifact manifest should require digests");
+    Assert(manifest.IsReviewReady, "external peer artifact manifest should be review ready");
+
+    SigtranExternalPeerInteropArtifactManifest incomplete = new();
+    incomplete.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PacketCapture, "artifacts/external-peer/peer.pcapng"));
+    Assert(!incomplete.IsComplete, "incomplete external peer manifest should not be complete");
+    Assert(!incomplete.IsReviewReady, "incomplete external peer manifest should not be review ready");
+    Assert(incomplete.GetMissingRequiredKinds().Contains(SigtranExternalPeerInteropArtifactKind.ComparisonReport), "missing required kinds should include comparison report");
 }
 
 static void SigtranExternalPeerRunPlanIsExecutableWithDefaultContracts()
@@ -1677,7 +1685,13 @@ static void SigtranExternalPeerRunReportIdentifiesPassingEvidence()
         DateTimeOffset.UnixEpoch,
         DateTimeOffset.UnixEpoch.AddMinutes(3));
 
-    Assert(report.HasPassingEvidence, "OpenSS7 run report should identify passing evidence");
+    Assert(report.HasPassingEvidence, "external peer run report should identify passing evidence");
+    Assert(report.HasCommercialReviewReadyEvidence, "external peer run report should identify review-ready evidence");
+
+    SigtranExternalPeerInteropEvidenceRegistry registry = new();
+    registry.Add(report);
+    Assert(registry.HasPassingAspToSgEvidence, "external peer registry should identify passing evidence");
+    Assert(registry.HasCommercialReviewReadyEvidence, "external peer registry should identify review-ready evidence");
 }
 
 static void SigtranExternalPeerEvidenceRegistryStartsEmpty()
@@ -1711,11 +1725,11 @@ static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
 static SigtranExternalPeerInteropArtifactManifest CreateCompleteExternalPeerManifest()
 {
     SigtranExternalPeerInteropArtifactManifest manifest = new();
-    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PacketCapture, "artifacts/external-peer/openss7.pcapng"));
-    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.SdkTrace, "artifacts/external-peer/sdk-trace.log"));
-    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PeerConfiguration, "artifacts/external-peer/peer-config.txt"));
-    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PeerLog, "artifacts/external-peer/peer-log.txt"));
-    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.ComparisonReport, "artifacts/external-peer/comparison-report.md"));
+    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PacketCapture, "artifacts/external-peer/peer.pcapng", "SHA256-001"));
+    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.SdkTrace, "artifacts/external-peer/sdk-trace.log", "SHA256-002"));
+    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PeerConfiguration, "artifacts/external-peer/peer-config.txt", "SHA256-003"));
+    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.PeerLog, "artifacts/external-peer/peer-log.txt", "SHA256-004"));
+    manifest.Add(new SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind.ComparisonReport, "artifacts/external-peer/comparison-report.md", "SHA256-005"));
     return manifest;
 }
 

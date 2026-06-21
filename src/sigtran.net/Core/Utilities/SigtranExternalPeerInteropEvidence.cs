@@ -1,13 +1,13 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Stores OpenSS7/IPSS7 interoperability execution evidence.
+/// Stores external peer interoperability execution evidence.
 /// </summary>
 public sealed class SigtranExternalPeerInteropEvidenceRegistry
 {
     private readonly List<SigtranExternalPeerInteropRunReport> _reports = [];
 
-    /// <summary>Adds an OpenSS7/IPSS7 execution report.</summary>
+    /// <summary>Adds an external peer execution report.</summary>
     /// <param name="report">The execution report.</param>
     public void Add(SigtranExternalPeerInteropRunReport report)
     {
@@ -22,17 +22,20 @@ public sealed class SigtranExternalPeerInteropEvidenceRegistry
         return _reports.ToArray();
     }
 
-    /// <summary>Whether passing OpenSS7/IPSS7 ASP-to-SG evidence exists.</summary>
+    /// <summary>Whether passing external peer ASP-to-SG evidence exists.</summary>
     public bool HasPassingAspToSgEvidence => _reports.Any(static report => report.HasPassingEvidence);
+
+    /// <summary>Whether passing external peer evidence is ready for commercial review.</summary>
+    public bool HasCommercialReviewReadyEvidence => _reports.Any(static report => report.HasCommercialReviewReadyEvidence);
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 interoperability evidence helpers.
+/// Provides external peer interoperability evidence helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropEvidence
 {
-    /// <summary>Creates the current OpenSS7/IPSS7 evidence registry.</summary>
-    /// <returns>The current OpenSS7/IPSS7 evidence registry.</returns>
+    /// <summary>Creates the current external peer evidence registry.</summary>
+    /// <returns>The current external peer evidence registry.</returns>
     public static SigtranExternalPeerInteropEvidenceRegistry CreateCurrentRegistry()
     {
         return new SigtranExternalPeerInteropEvidenceRegistry();
