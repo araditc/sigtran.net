@@ -2530,9 +2530,10 @@ static void SigtranPerformanceEvidenceStatusSummarizesReadinessAndBlockers()
     SigtranPerformanceEvidenceStatusReport current = SigtranPerformanceEvidenceStatus.GetStatus();
 
     AssertEqual("Performance and resilience evidence", current.Label, "performance evidence status label");
-    AssertEqual(9, current.CompletedUnitCount, "performance evidence completed unit count");
+    AssertEqual(10, current.CompletedUnitCount, "performance evidence completed unit count");
     AssertEqual(current.CompletedUnitCount, current.Capabilities.Count, "performance evidence capability count");
     Assert(current.FoundationReady, current.Describe());
+    Assert(current.Capabilities.Contains("final-sweep-validation"), "performance evidence final sweep capability should exist");
     Assert(!current.ReportPublishable, current.Describe());
     Assert(!current.ProductionPerformanceReady, current.Describe());
     Assert(current.Blockers.Contains("publishable-performance-report-required"), "current performance evidence should require retained report");

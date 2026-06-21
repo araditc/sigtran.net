@@ -110,6 +110,12 @@ This keeps retained benchmark evidence separate from production claims. A report
 
 `docs/PHASE33_SUMMARY.md` records the phase position for adopters: the foundation is ready to evaluate real peer benchmark evidence, but production performance remains blocked until a retained publishable report and wider commercial readiness are both present.
 
+## Unit 10 - Final Sweep And Validation
+
+The final unit completes the status count and validates the phase with naming, package-neutrality, build, test, and pack checks. The final status capability is `final-sweep-validation`.
+
+Phase 33 is foundation-complete for performance and resilience evidence contracts. Production performance claims still require a retained real peer-traffic benchmark report and wider commercial readiness.
+
 ## Validation
 
 Each unit in this phase is validated with:

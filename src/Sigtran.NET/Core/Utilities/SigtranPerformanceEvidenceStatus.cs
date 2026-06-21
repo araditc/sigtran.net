@@ -72,7 +72,7 @@ public static class SigtranPerformanceEvidenceStatus
     public const string StatusLabel = "Performance and resilience evidence";
 
     /// <summary>The number of completed performance evidence units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     private static readonly string[] CurrentCapabilities =
     [
@@ -84,7 +84,8 @@ public static class SigtranPerformanceEvidenceStatus
         "publishable-report",
         "production-evidence-gate",
         "runner-ci-handoff",
-        "status-and-summary-documentation"
+        "status-and-summary-documentation",
+        "final-sweep-validation"
     ];
 
     /// <summary>The completed capability names.</summary>
