@@ -42,6 +42,7 @@ Run("SIGTRAN maintained peer lab configuration validates environment contracts",
 Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths);
 Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps);
 Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence);
+Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifacts", SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -830,6 +831,38 @@ static void SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence()
 
     SigtranTraceComparisonReport comparison = SigtranTraceComparison.Compare(sequence, sequence);
     Assert(comparison.Passed, comparison.Describe());
+}
+
+static void SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts()
+{
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
+    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit8");
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+
+    SigtranMaintainedPeerLabEvidenceReport ready = new(
+        artifactPlan,
+        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        configuration.Validate(),
+        SigtranMaintainedPeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
+        comparisonPassed: true);
+
+    Assert(ready.PromotionReady, ready.Describe());
+    Assert(ready.HasRequiredArtifacts, ready.Describe());
+    Assert(ready.HasDigestCoverage, ready.Describe());
+
+    SigtranMaintainedPeerLabEvidenceReport missingDigest = new(
+        artifactPlan,
+        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        configuration.Validate(),
+        [new(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "artifacts/external-peer/maintained/pcap/missing.pcap", retained: true)],
+        comparisonPassed: true);
+
+    Assert(!missingDigest.PromotionReady, missingDigest.Describe());
+    Assert(!missingDigest.HasRequiredArtifacts, missingDigest.Describe());
+    Assert(!missingDigest.HasDigestCoverage, missingDigest.Describe());
+    Assert(missingDigest.Describe().Contains("promotion=False", StringComparison.Ordinal), missingDigest.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

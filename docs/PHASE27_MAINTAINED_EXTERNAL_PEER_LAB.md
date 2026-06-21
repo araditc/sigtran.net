@@ -84,6 +84,18 @@ The command plan is intentionally package-neutral. Real deployments can map `ext
 
 The catalog flattens these vectors into an ordered expected message sequence so comparison reports can separate protocol mismatch from host or package setup issues.
 
+## Unit 8 - Evidence Promotion Gate
+
+`SigtranMaintainedPeerLabEvidenceReport` now separates planned execution from promotable evidence. Promotion requires:
+
+- Host prerequisites ready.
+- Lab configuration valid.
+- Every required artifact retained.
+- Every retained artifact digest-covered.
+- Trace comparison passed.
+
+This keeps commercial readiness honest: a command plan or artifact plan is not treated as proof until retained outputs and digests exist.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -125,4 +137,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, and the traffic vector catalog yields a comparable expected message sequence.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, the traffic vector catalog yields a comparable expected message sequence, and evidence promotion is blocked without complete digest-covered artifacts.
