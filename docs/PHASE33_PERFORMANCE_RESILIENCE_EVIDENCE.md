@@ -57,6 +57,17 @@ The manifest requires SHA-256 digest coverage for all retained artifacts before 
 
 `SigtranPerformanceResourceEvidenceEvaluator` compares the evidence against `SigtranResourceBudgets.CreateCommercialDefault()`. The report separates CPU, working set, and allocation budget checks so performance evidence can identify the specific resource area that needs correction.
 
+## Unit 5 - Resilience And Failover Evidence
+
+`SigtranPerformanceResilienceEvidence` now models failover evidence as an ordered event timeline:
+
+- Failure detected.
+- Recovery started.
+- Failover completed.
+- Traffic restored.
+
+The evidence records recovery duration and lost messages, then gates commercial resilience claims on required event coverage, recovery within budget, and zero message loss. This gives peer benchmark reports a deterministic way to prove fault recovery behavior instead of only reporting throughput under healthy conditions.
+
 ## Validation
 
 Each unit in this phase is validated with:

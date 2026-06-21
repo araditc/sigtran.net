@@ -135,6 +135,7 @@ Run("SIGTRAN performance evidence workload covers peer traffic stages", SigtranP
 Run("SIGTRAN performance evidence artifacts require retained peer benchmark files", SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles);
 Run("SIGTRAN performance latency evidence evaluates P95 and P99 budgets", SigtranPerformanceLatencyEvidenceEvaluatesP95AndP99Budgets);
 Run("SIGTRAN performance resource evidence evaluates CPU memory and allocations", SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations);
+Run("SIGTRAN performance resilience evidence gates failover recovery", SigtranPerformanceResilienceEvidenceGatesFailoverRecovery);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2410,6 +2411,38 @@ static void SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations()
     Assert(!failingReport.CpuWithinBudget, failingReport.Describe());
     Assert(!failingReport.WorkingSetWithinBudget, failingReport.Describe());
     Assert(!failingReport.AllocationWithinBudget, failingReport.Describe());
+}
+
+static void SigtranPerformanceResilienceEvidenceGatesFailoverRecovery()
+{
+    DateTimeOffset start = DateTimeOffset.UnixEpoch;
+    SigtranPerformanceResilienceEvidence passing = SigtranPerformanceResilienceEvidenceFactory.CreateRecoveredFailover(
+        "perf-peer-run",
+        start,
+        start + TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(5));
+
+    Assert(passing.HasRequiredEvents, passing.Describe());
+    Assert(passing.RecoveryWithinBudget, passing.Describe());
+    Assert(passing.HasNoMessageLoss, passing.Describe());
+    Assert(passing.SupportsCommercialEvidence, passing.Describe());
+
+    SigtranPerformanceResilienceEvidence tooSlow = SigtranPerformanceResilienceEvidenceFactory.CreateRecoveredFailover(
+        "perf-peer-run",
+        start,
+        start + TimeSpan.FromSeconds(10),
+        TimeSpan.FromSeconds(5));
+    Assert(!tooSlow.RecoveryWithinBudget, tooSlow.Describe());
+    Assert(!tooSlow.SupportsCommercialEvidence, tooSlow.Describe());
+
+    SigtranPerformanceResilienceEvidence lostMessages = new(
+        "perf-peer-run",
+        passing.Events,
+        TimeSpan.FromSeconds(5),
+        lostMessages: 1);
+    Assert(lostMessages.RecoveryWithinBudget, lostMessages.Describe());
+    Assert(!lostMessages.HasNoMessageLoss, lostMessages.Describe());
+    Assert(!lostMessages.SupportsCommercialEvidence, lostMessages.Describe());
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()
