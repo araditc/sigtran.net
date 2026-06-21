@@ -65,6 +65,21 @@ This keeps artifact handoff separate from execution status: a command can pass w
 
 This report makes evidence packages traceable to source and host identity while keeping real lab execution evidence as a separate requirement.
 
+## Unit 6 - Failure Classification
+
+`SigtranMaintainedPeerLabRunnerFailureReport` now classifies runner blockers into stable categories. It covers:
+
+- Preflight failures.
+- Command execution failures.
+- Artifact retention failures.
+- Digest verification failures.
+- Provenance failures.
+- Comparison failures.
+- Run report failures.
+- Markdown rendering for failure triage.
+
+This gives operator and CI handoff a deterministic diagnosis surface when a maintained peer run cannot be promoted.
+
 ## Validation
 
 Each unit in this phase is validated with:

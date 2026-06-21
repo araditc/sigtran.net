@@ -70,6 +70,7 @@ Run("SIGTRAN maintained peer lab runner execution log renders lifecycle", Sigtra
 Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState);
 Run("SIGTRAN maintained peer lab runner artifact verification checks retained digests", SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests);
 Run("SIGTRAN maintained peer lab runner provenance records source and host identity", SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity);
+Run("SIGTRAN maintained peer lab runner failure classifier categorizes blockers", SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1431,6 +1432,52 @@ static void SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity
         "linux-runner-01",
         new DateTimeOffset(2026, 6, 21, 12, 0, 0, TimeSpan.FromHours(3)));
     Assert(!localTime.IsReviewReady, localTime.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit6");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
+    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
+    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+
+    SigtranMaintainedPeerLabRunnerFailureReport passed = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
+    Assert(passed.Passed, passed.Describe());
+    AssertEqual(0, passed.Failures.Count, "maintained peer lab runner passing failure count");
+    Assert(passed.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), passed.RenderMarkdown());
+
+    SigtranMaintainedPeerLabRunnerPreflightReport blockedPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    List<SigtranMaintainedPeerLabRunnerExecutionLogEntry> failedEntries = log.Entries.ToList();
+    failedEntries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranMaintainedPeerLabRunnerLogEventKind.Error, "capture failed", SigtranMaintainedPeerLabCommandKind.Capture));
+    SigtranMaintainedPeerLabRunnerCommandOutcomeReport failedCommands = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, new(runManifest.RunId, failedEntries));
+    SigtranMaintainedPeerLabRunnerEvidenceCollection missingCollection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths().Take(5).ToArray());
+    SigtranMaintainedPeerLabRunnerDigestReport missingDigestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, missingCollection, new Dictionary<string, string>(StringComparer.Ordinal));
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport missingArtifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(missingCollection, missingDigestReport);
+    SigtranMaintainedPeerLabRunnerProvenanceReport invalidProvenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abc", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranMaintainedPeerLabRunnerComparisonHandoff failedHandoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, missingDigestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
+
+    SigtranMaintainedPeerLabRunnerFailureReport failed = SigtranMaintainedPeerLabRunnerFailures.Classify(blockedPreflight, failedCommands, missingArtifactVerification, invalidProvenance, failedHandoff);
+    Assert(!failed.Passed, failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Preflight), failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution), failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.ArtifactRetention), failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.DigestVerification), failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Provenance), failed.Describe());
+    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Comparison), failed.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
