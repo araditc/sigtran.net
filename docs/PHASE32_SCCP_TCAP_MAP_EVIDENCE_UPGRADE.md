@@ -76,6 +76,17 @@ This gives release and readiness gates one deterministic SDK-side evidence repor
 
 This connects deterministic SDK vectors to captured trace output so later lab artifacts can be validated as ordered protocol evidence rather than isolated payload blobs.
 
+## Unit 7 - Mismatch Classification And Fix Guidance
+
+`SigtranProtocolEvidenceMismatchClassifier` now converts trace validation failures into actionable mismatch findings. It classifies:
+
+- Protocol label mismatches.
+- Byte-level payload mismatches.
+- Missing expected trace frames.
+- Unexpected extra trace frames.
+
+Each finding includes a stable recommended action token such as `fix-trace-protocol-label`, `fix-codec-or-reference-vector`, `capture-missing-trace-frame`, or `map-or-trim-unexpected-trace-frame`. This gives lab comparison reports a deterministic way to decide whether the next correction belongs in the SDK codec, the reference vector, the trace capture, or the artifact mapping.
+
 ## Validation
 
 Each unit in this phase is validated with:

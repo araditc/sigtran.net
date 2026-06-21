@@ -177,6 +177,7 @@ Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranP
 Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
 Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
 Run("SIGTRAN protocol evidence trace validator checks ordered frames", SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames);
+Run("SIGTRAN protocol evidence mismatch classifier recommends correction actions", SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2841,15 +2842,7 @@ static void SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap()
 static void SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames()
 {
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = SigtranProtocolEvidenceBundle.Create().Vectors;
-    SigtranTraceFrame[] frames = vectors
-        .Select(vector => new SigtranTraceFrame(
-            DateTimeOffset.UnixEpoch,
-            ToTraceProtocol(vector.Surface),
-            SigtranTraceDirection.Outbound,
-            "sdk",
-            "peer",
-            vector.ExpectedPayload))
-        .ToArray();
+    SigtranTraceFrame[] frames = CreateEvidenceTraceFrames(vectors);
 
     SigtranProtocolEvidenceTraceReport pass = SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames);
     Assert(pass.Passed, pass.Describe());
@@ -2866,6 +2859,59 @@ static void SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames()
     SigtranProtocolEvidenceTraceReport missing = SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames.Take(frames.Length - 1).ToArray());
     Assert(!missing.Passed, missing.Describe());
     AssertEqual(1, missing.MissingVectorIds.Count, "protocol evidence missing vector count");
+}
+
+static void SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions()
+{
+    IReadOnlyList<SigtranProtocolEvidenceVector> vectors = SigtranProtocolEvidenceBundle.Create().Vectors;
+    SigtranTraceFrame[] frames = CreateEvidenceTraceFrames(vectors);
+
+    SigtranProtocolEvidenceMismatchReport passing = SigtranProtocolEvidenceMismatchClassifier.Classify(
+        SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames));
+    Assert(!passing.HasMismatches, passing.Describe());
+
+    SigtranTraceFrame[] protocolFrames = frames.ToArray();
+    protocolFrames[0] = new SigtranTraceFrame(DateTimeOffset.UnixEpoch, "TCAP", SigtranTraceDirection.Outbound, "sdk", "peer", vectors[0].ExpectedPayload);
+    SigtranProtocolEvidenceMismatchReport protocolMismatch = SigtranProtocolEvidenceMismatchClassifier.Classify(
+        SigtranProtocolEvidenceTraceValidator.Validate(vectors, protocolFrames));
+    Assert(protocolMismatch.RequiresTraceCorrection, protocolMismatch.Describe());
+    Assert(protocolMismatch.Findings.Any(finding => finding.Kind == SigtranProtocolEvidenceMismatchKind.ProtocolLabelMismatch
+        && finding.RecommendedAction == "fix-trace-protocol-label"), "protocol mismatch should recommend trace label correction");
+
+    byte[] mutated = vectors[0].ExpectedPayload.ToArray();
+    mutated[^1] ^= 0xFF;
+    SigtranTraceFrame[] payloadFrames = frames.ToArray();
+    payloadFrames[0] = new SigtranTraceFrame(DateTimeOffset.UnixEpoch, "SCCP", SigtranTraceDirection.Outbound, "sdk", "peer", mutated);
+    SigtranProtocolEvidenceMismatchReport payloadMismatch = SigtranProtocolEvidenceMismatchClassifier.Classify(
+        SigtranProtocolEvidenceTraceValidator.Validate(vectors, payloadFrames));
+    Assert(payloadMismatch.RequiresCodecCorrection, payloadMismatch.Describe());
+    Assert(payloadMismatch.Findings.Any(finding => finding.Kind == SigtranProtocolEvidenceMismatchKind.PayloadByteMismatch
+        && finding.RecommendedAction == "fix-codec-or-reference-vector"), "payload mismatch should recommend codec or vector correction");
+
+    SigtranProtocolEvidenceMismatchReport missingFrame = SigtranProtocolEvidenceMismatchClassifier.Classify(
+        SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames.Take(frames.Length - 1).ToArray()));
+    Assert(missingFrame.RequiresTraceCorrection, missingFrame.Describe());
+    Assert(missingFrame.Findings.Any(finding => finding.Kind == SigtranProtocolEvidenceMismatchKind.MissingTraceFrame
+        && finding.RecommendedAction == "capture-missing-trace-frame"), "missing frame should recommend trace capture correction");
+
+    SigtranProtocolEvidenceMismatchReport unexpectedFrame = SigtranProtocolEvidenceMismatchClassifier.Classify(
+        SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames.Concat([frames[0]]).ToArray()));
+    Assert(unexpectedFrame.RequiresTraceCorrection, unexpectedFrame.Describe());
+    Assert(unexpectedFrame.Findings.Any(finding => finding.Kind == SigtranProtocolEvidenceMismatchKind.UnexpectedTraceFrame
+        && finding.RecommendedAction == "map-or-trim-unexpected-trace-frame"), "unexpected frame should recommend artifact mapping correction");
+}
+
+static SigtranTraceFrame[] CreateEvidenceTraceFrames(IReadOnlyList<SigtranProtocolEvidenceVector> vectors)
+{
+    return vectors
+        .Select(vector => new SigtranTraceFrame(
+            DateTimeOffset.UnixEpoch,
+            ToTraceProtocol(vector.Surface),
+            SigtranTraceDirection.Outbound,
+            "sdk",
+            "peer",
+            vector.ExpectedPayload))
+        .ToArray();
 }
 
 static string ToTraceProtocol(SigtranProtocolInteropSurface surface)
