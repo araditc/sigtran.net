@@ -30,6 +30,15 @@ This gives the next units a common validation language before adding SCCP, TCAP,
 
 Each vector stores literal expected bytes and validates the current SDK encoder output through `SigtranProtocolEvidenceValidator`. The tests also decode every expected payload to verify that the evidence bytes remain parseable by the SDK decoder.
 
+## Unit 3 - TCAP Evidence Vectors
+
+`TcapEvidenceVectors` now provides deterministic TCAP vectors and encoder validation for:
+
+- Begin transaction with originating transaction id, dialogue portion, and Invoke component.
+- End transaction with destination transaction id and ReturnResult component.
+
+Each vector stores literal BER expected bytes and validates the current TCAP transaction encoder output. Tests decode the transaction wrapper, dialogue portion, Invoke component, and ReturnResult component so byte evidence is tied to decoded field behavior.
+
 ## Validation
 
 Each unit in this phase is validated with:

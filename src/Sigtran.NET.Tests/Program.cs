@@ -257,6 +257,7 @@ Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarr
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
+Run("TCAP evidence vectors validate transaction bytes", TcapEvidenceVectorsValidateTransactionBytes);
 Run("TCAP readiness reports foundation status", TcapReadinessReportsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
@@ -3964,6 +3965,31 @@ static void TcapSessionBuilderCreatesBeginAndEndMessages()
     Assert(TcapTransactionMessage.TryDecode(end, out TcapTransactionMessage? decodedEnd, out error), error ?? "TCAP built End decode failed");
     AssertEqual(TcapPackageType.End, decodedEnd!.PackageType, "TCAP built End package");
     AssertEqual("03", decodedEnd.DestinationTransactionId?.ToString(), "TCAP built End destination id");
+}
+
+static void TcapEvidenceVectorsValidateTransactionBytes()
+{
+    IReadOnlyList<SigtranProtocolEvidenceVector> vectors = TcapEvidenceVectors.GetVectors();
+    AssertEqual(2, vectors.Count, "TCAP evidence vector count");
+    Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.Tcap), "all TCAP vectors should use TCAP surface");
+    AssertEqual("6217880101AB0406022A03AC0CA10A0201020201010402AABB", vectors[0].ToHex(), "TCAP Begin evidence hex");
+
+    IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = TcapEvidenceVectors.ValidateEncoders();
+    AssertEqual(vectors.Count, reports.Count, "TCAP evidence report count");
+    Assert(reports.All(report => report.Passed), string.Join("; ", reports.Select(report => report.Describe())));
+
+    Assert(TcapTransactionMessage.TryDecode(vectors[0].ExpectedPayload.Span, out TcapTransactionMessage? begin, out string? error), error ?? "TCAP evidence Begin decode failed");
+    AssertEqual(TcapPackageType.Begin, begin!.PackageType, "TCAP evidence Begin package");
+    Assert(TcapDialoguePortion.TryDecode(begin.DialoguePortion.Span, out TcapDialoguePortion? dialogue, out error), error ?? "TCAP evidence dialogue decode failed");
+    AssertEqual("1.2.3", dialogue!.ApplicationContext.ToString(), "TCAP evidence dialogue OID");
+    Assert(TcapBerInvokeComponent.TryDecode(begin.ComponentPortion.Span, out TcapBerInvokeComponent? invoke, out error), error ?? "TCAP evidence invoke decode failed");
+    AssertEqual((byte)2, invoke!.InvokeId, "TCAP evidence invoke id");
+
+    Assert(TcapTransactionMessage.TryDecode(vectors[1].ExpectedPayload.Span, out TcapTransactionMessage? end, out error), error ?? "TCAP evidence End decode failed");
+    AssertEqual(TcapPackageType.End, end!.PackageType, "TCAP evidence End package");
+    Assert(TcapBerReturnResultComponent.TryDecode(end.ComponentPortion.Span, out TcapBerReturnResultComponent? result, out error), error ?? "TCAP evidence result decode failed");
+    AssertEqual((byte)2, result!.InvokeId, "TCAP evidence result invoke id");
+    AssertSequence([0xCC], result.Parameters.Span, "TCAP evidence result parameters");
 }
 
 static void TcapReadinessReportsFoundationStatus()

@@ -150,6 +150,17 @@ byte[] end = builder.EndResult(
     resultParameters);
 ```
 
+## Evidence Vectors
+
+`TcapEvidenceVectors.GetVectors()` exposes deterministic byte-level vectors for Begin/Invoke/Dialogue and End/ReturnResult transaction flows.
+
+```csharp
+IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports =
+    TcapEvidenceVectors.ValidateEncoders();
+```
+
+Each vector stores literal BER expected bytes and validates the current transaction encoder output through the shared protocol evidence validator. These SDK-side vectors should be compared with external TCAP traces before TCAP is promoted for commercial interoperability claims.
+
 ## Readiness
 
 `TcapReadiness.GetReport()` reports the current TCAP BER foundation status. The foundation is complete when BER primitives, transaction models, component codecs, transaction envelopes, dialogue portions, dialogue state controls, and the session builder are present.
