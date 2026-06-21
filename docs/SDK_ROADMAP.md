@@ -277,6 +277,15 @@ Status: Phase 30 is foundation-complete. It has reviewable file materialization 
 
 Status: Phase 31 is foundation-complete. The outbound stream and PPID framing contract, association lifecycle journal, reconnect schedule, send backpressure policy, cancellation/timeout policy, multi-homing readiness checks, fault recovery decisions, transport diagnostics snapshots, production hardening readiness gate, and status report are available. Production readiness remains blocked until retained Linux SCTP and external peer evidence are complete.
 
+## Phase 32 - SCCP TCAP MAP Evidence Upgrade
+
+- Add byte-level evidence vectors for SCCP, TCAP, and MAP SMS.
+- Validate SDK encoders and decoders against deterministic expected bytes and trace-order expectations.
+- Report and correct mismatches before upgrading readiness claims from foundation-only to evidence-backed.
+- Keep external interoperability evidence as a commercial promotion gate.
+
+Status: Phase 32 is in progress. The shared protocol evidence vector and byte-level mismatch validation contract is available.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

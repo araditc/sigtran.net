@@ -174,6 +174,7 @@ Run("SIGTRAN external peer commercial readiness aggregates selection lab and evi
 Run("SIGTRAN external peer status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
 Run("SIGTRAN commercial roadmap realignment status summarizes package-neutral completion", SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
+Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2792,6 +2793,29 @@ static void SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap()
     Assert(vectors.Any(vector => vector.Surface == SigtranProtocolInteropSurface.Tcap), "TCAP vector should exist");
     Assert(vectors.Any(vector => vector.Surface == SigtranProtocolInteropSurface.MapSms), "MAP SMS vector should exist");
     Assert(vectors.All(vector => vector.RequiresExternalReference), "all protocol interop vectors should require external references");
+}
+
+static void SigtranProtocolEvidenceValidatorReportsByteMismatches()
+{
+    SigtranProtocolEvidenceVector vector = new(
+        "sccp/udt/basic",
+        SigtranProtocolInteropSurface.Sccp,
+        "SCCP UDT basic payload",
+        new byte[] { 0x09, 0x81, 0x03 },
+        "SDK deterministic vector");
+
+    SigtranProtocolEvidenceValidationReport pass = SigtranProtocolEvidenceValidator.Validate(vector, [0x09, 0x81, 0x03]);
+    Assert(pass.Passed, pass.Describe());
+    AssertEqual("098103", vector.ToHex(), "protocol evidence vector hex");
+
+    SigtranProtocolEvidenceValidationReport mismatch = SigtranProtocolEvidenceValidator.Validate(vector, [0x09, 0x80]);
+    Assert(!mismatch.Passed, mismatch.Describe());
+    AssertEqual(2, mismatch.Mismatches.Count, "protocol evidence mismatch count");
+    AssertEqual(1, mismatch.Mismatches[0].Offset, "protocol evidence mismatch offset");
+    AssertEqual((byte)0x81, mismatch.Mismatches[0].Expected, "protocol evidence expected byte");
+    AssertEqual((byte)0x80, mismatch.Mismatches[0].Actual, "protocol evidence actual byte");
+    AssertEqual((byte)0x03, mismatch.Mismatches[1].Expected, "protocol evidence missing expected byte");
+    Assert(mismatch.Mismatches[1].Actual is null, mismatch.Mismatches[1].Describe());
 }
 
 static void SigtranProtocolInteropReferencesRequireTraceValidation()
