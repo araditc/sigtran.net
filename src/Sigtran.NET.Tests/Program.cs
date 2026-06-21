@@ -40,6 +40,7 @@ Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral default
 Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMaintainedPeerLabPrerequisitesReportHostReadiness);
 Run("SIGTRAN maintained peer lab configuration validates environment contracts", SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts);
 Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths);
+Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -797,6 +798,21 @@ static void SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths()
     Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.PeerConfiguration && item.Path.Contains("/config/", StringComparison.Ordinal)), "artifact plan should include config path");
     Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.ComparisonReport && item.Path.Contains("/comparison/", StringComparison.Ordinal)), "artifact plan should include comparison path");
     Assert(plan.Describe().Contains("requiredReady=True", StringComparison.Ordinal), plan.Describe());
+}
+
+static void SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps()
+{
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
+    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit6");
+    SigtranMaintainedPeerLabCommandPlan commandPlan = SigtranMaintainedPeerLabCommandPlans.CreateDefault(configuration, artifactPlan);
+
+    AssertEqual(6, commandPlan.Commands.Count, "maintained peer lab command count");
+    Assert(commandPlan.CoversRequiredCommandKinds, commandPlan.Describe());
+    AssertEqual(SigtranMaintainedPeerLabCommandKind.Prepare, commandPlan.Commands[0].Kind, "first maintained peer lab command");
+    AssertEqual(SigtranMaintainedPeerLabCommandKind.Collect, commandPlan.Commands[^1].Kind, "last maintained peer lab command");
+    Assert(commandPlan.Commands.Any(static command => command.CommandLine.Contains("tcpdump", StringComparison.Ordinal)), "command plan should include packet capture");
+    Assert(commandPlan.Commands.Any(static command => command.ExpectedArtifactKinds.Contains(SigtranMaintainedPeerLabArtifactKind.SdkTrace)), "command plan should produce SDK trace");
+    Assert(commandPlan.Describe().Contains("ready=True", StringComparison.Ordinal), commandPlan.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

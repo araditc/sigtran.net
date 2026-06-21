@@ -61,6 +61,19 @@ The helper can create the default lab configuration or parse environment values 
 
 This unit still describes expected artifacts, not proof that they exist. Promotion evidence remains blocked until a real lab run retains those files and records digests.
 
+## Unit 6 - Command Plan
+
+`SigtranMaintainedPeerLabCommandPlans` now defines the ordered execution plan for a maintained peer lab run:
+
+- Prepare artifact directories and retained configuration.
+- Capture SCTP packets.
+- Start or verify the maintained external peer.
+- Run SDK-side traffic.
+- Compare traces.
+- Collect the run report.
+
+The command plan is intentionally package-neutral. Real deployments can map `external-peer-runner`, `sigtran-trace-compare`, and `sigtran-lab-report` to local scripts or CI steps without changing SDK public type names.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -102,4 +115,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, and the artifact plan covers every required retained evidence path.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, and the command plan covers every required execution step.
