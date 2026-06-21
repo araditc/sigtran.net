@@ -46,6 +46,7 @@ Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifa
 Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted);
 Run("SIGTRAN maintained peer lab status separates foundation from evidence", SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence);
 Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts);
+Run("SIGTRAN maintained peer lab environment file renders manifest values", SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -922,6 +923,26 @@ static void SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts()
     AssertEqual(3, manifest.TrafficVectors.Count, "maintained peer lab run manifest vector count");
     Assert(manifest.IsExecutableContract, manifest.Describe());
     Assert(manifest.Describe().Contains("executable=True", StringComparison.Ordinal), manifest.Describe());
+}
+
+static void SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues()
+{
+    SigtranMaintainedPeerLabRunManifest manifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit2");
+    SigtranMaintainedPeerLabEnvironmentFile environmentFile = SigtranMaintainedPeerLabEnvironmentFiles.FromManifest(manifest);
+    string rendered = environmentFile.Render();
+
+    Assert(environmentFile.Variables.ContainsKey("PEER_NAME"), "environment file should include peer name");
+    Assert(environmentFile.Variables.ContainsKey("SIGTRAN_EXTERNAL_PEER_PACKAGE"), "environment file should include peer package");
+    Assert(environmentFile.Variables.ContainsKey("SIGTRAN_LAB_RUN_ID"), "environment file should include run id");
+    Assert(rendered.Contains("LOCAL_SCTP_PORT='2905'", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("REMOTE_SCTP_PORT='2906'", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("SIGTRAN_LAB_RUN_ID='phase28-unit2'", StringComparison.Ordinal), rendered);
+
+    Dictionary<string, string> configurationEnvironment = environmentFile.Variables
+        .Where(static pair => !pair.Key.StartsWith("SIGTRAN_EXTERNAL_", StringComparison.Ordinal))
+        .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.FromEnvironment(configurationEnvironment);
+    Assert(configuration.Validate().IsValid, configuration.Validate().Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

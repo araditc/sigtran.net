@@ -15,6 +15,18 @@ Phase 28 turns the maintained external peer lab foundation into automation and e
 
 The manifest is executable only when every foundation contract is present and internally valid. It does not claim commercial evidence readiness until a real lab run produces retained, digest-covered artifacts.
 
+## Unit 2 - Environment File Renderer
+
+`SigtranMaintainedPeerLabEnvironmentFiles` now renders a deterministic shell-compatible environment file from the run manifest. The rendered file includes:
+
+- Peer binding variables.
+- Local and remote SCTP endpoint values.
+- M3UA routing context and traffic mode.
+- SS7 OPC, DPC, network indicator, and service indicator.
+- Artifact root and run id.
+
+This gives real lab scripts a stable input file while keeping package-specific values in configuration rather than public type names.
+
 ## Validation
 
 Each unit in this phase is validated with:

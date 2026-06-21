@@ -251,7 +251,7 @@ Status: Phase 27 is foundation-complete. It has canonical `Sigtran.NET` naming, 
 - Render environment files, command scripts, workflow templates, comparison reports, and evidence handoff bundles.
 - Keep automation package-neutral and separate planned contracts from retained commercial evidence.
 
-Status: Phase 28 has started with a run manifest that aggregates binding, configuration, artifact, command, traffic vector, and CI contracts.
+Status: Phase 28 has a run manifest that aggregates binding, configuration, artifact, command, traffic vector, and CI contracts, plus deterministic environment file rendering for lab scripts.
 
 ## Recommended First Deliverable
 

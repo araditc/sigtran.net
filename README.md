@@ -208,7 +208,7 @@ The roadmap is intentionally conservative:
 4. Harden TCAP with external interoperability vectors and MAP profile validation.
 
 Phase 27 completed the maintained external peer lab foundation, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, digest-covered retained evidence gates, and status reporting.
-Phase 28 builds the automation and evidence handoff layer above that foundation, starting with a single run manifest that aggregates the executable lab contracts.
+Phase 28 builds the automation and evidence handoff layer above that foundation, starting with a single run manifest and deterministic environment file rendering for lab scripts.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
