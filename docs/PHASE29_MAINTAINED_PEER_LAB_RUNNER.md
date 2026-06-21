@@ -50,6 +50,18 @@ This gives the runner a deterministic post-execution checklist before evidence c
 
 The preflight report returns stable failed check identifiers so operators can fix the lab environment before opening SCTP traffic.
 
+## Unit 5 - Command Manifest
+
+`SigtranMaintainedPeerLabRunnerCommandManifest` now turns the command plan into an execution manifest. It records:
+
+- One-based command sequence.
+- Command kind, name, and command line.
+- Expected output paths per command.
+- Preflight dependency.
+- Markdown rendering for retained run notes.
+
+The manifest is execution-ready only when inputs, outputs, preflight checks, command sequencing, and expected artifact mappings are all valid.
+
 ## Validation
 
 Each unit in this phase is validated with:
