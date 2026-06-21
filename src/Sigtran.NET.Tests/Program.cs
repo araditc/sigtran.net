@@ -38,6 +38,7 @@ Run("SIGTRAN external peer profile marks maintained commercial candidates", Sigt
 Run("SIGTRAN maintained peer selection policy requires package-neutral evidence criteria", SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
 Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral defaults", SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults);
 Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMaintainedPeerLabPrerequisitesReportHostReadiness);
+Run("SIGTRAN maintained peer lab configuration validates environment contracts", SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -722,6 +723,64 @@ static void SigtranMaintainedPeerLabPrerequisitesReportHostReadiness()
     Assert(missing.MissingPrerequisiteIds.Contains("native-sctp-tools"), "missing prerequisite report should include native SCTP tools");
     Assert(missing.MissingPrerequisiteIds.Contains("external-peer-package"), "missing prerequisite report should include external peer package");
     Assert(missing.Describe().Contains("missing=4", StringComparison.Ordinal), missing.Describe());
+}
+
+static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
+{
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
+    SigtranMaintainedPeerLabConfigurationValidation validation = configuration.Validate();
+
+    Assert(validation.IsValid, validation.Describe());
+    AssertEqual("M3UA", configuration.Adaptation, "maintained peer lab adaptation");
+    AssertEqual((uint)100, configuration.RoutingContext, "maintained peer lab routing context");
+    Assert(configuration.Describe().Contains("traffic=loadshare", StringComparison.Ordinal), configuration.Describe());
+
+    Dictionary<string, string> environment = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["PEER_NAME"] = "phase27-maintained-peer",
+        ["LOCAL_IP"] = "127.0.0.1",
+        ["LOCAL_SCTP_PORT"] = "2905",
+        ["REMOTE_IP"] = "127.0.0.1",
+        ["REMOTE_SCTP_PORT"] = "2906",
+        ["SIGTRAN_ADAPTATION"] = "M3UA",
+        ["NETWORK_INDICATOR"] = "2",
+        ["SERVICE_INDICATOR"] = "3",
+        ["OPC"] = "1",
+        ["DPC"] = "2",
+        ["ROUTING_CONTEXT"] = "100",
+        ["TRAFFIC_MODE"] = "loadshare",
+        ["ARTIFACT_ROOT"] = "artifacts/external-peer/phase27"
+    };
+
+    SigtranMaintainedPeerLabConfiguration parsed = SigtranMaintainedPeerLabConfigurations.FromEnvironment(environment);
+    AssertEqual("phase27-maintained-peer", parsed.PeerName, "parsed maintained peer name");
+    AssertEqual(2906, parsed.RemoteSctpPort, "parsed maintained peer remote SCTP port");
+    AssertEqual("artifacts/external-peer/phase27", parsed.ArtifactRoot, "parsed maintained peer artifact root");
+    Assert(parsed.Validate().IsValid, parsed.Validate().Describe());
+
+    SigtranMaintainedPeerLabConfiguration invalid = new(
+        "bad-peer",
+        "not-an-ip",
+        0,
+        "127.0.0.1",
+        70000,
+        "SUA",
+        2,
+        3,
+        1,
+        2,
+        0,
+        "invalid",
+        "artifacts/external-peer/bad");
+
+    SigtranMaintainedPeerLabConfigurationValidation invalidReport = invalid.Validate();
+    Assert(!invalidReport.IsValid, invalidReport.Describe());
+    Assert(invalidReport.Errors.Contains("local-ip-invalid"), "invalid config should report local IP");
+    Assert(invalidReport.Errors.Contains("local-sctp-port-invalid"), "invalid config should report local SCTP port");
+    Assert(invalidReport.Errors.Contains("remote-sctp-port-invalid"), "invalid config should report remote SCTP port");
+    Assert(invalidReport.Errors.Contains("adaptation-unsupported"), "invalid config should report unsupported adaptation");
+    Assert(invalidReport.Errors.Contains("routing-context-required"), "invalid config should report missing routing context");
+    Assert(invalidReport.Errors.Contains("traffic-mode-unsupported"), "invalid config should report unsupported traffic mode");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

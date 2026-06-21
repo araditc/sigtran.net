@@ -33,6 +33,21 @@ The public API keeps selected package details in values and configuration, not i
 
 The prerequisite report separates foundation code readiness from actual lab readiness. A commercial claim still requires a real host report with every prerequisite satisfied and retained alongside the run evidence.
 
+## Unit 4 - Lab Configuration Contract
+
+`SigtranMaintainedPeerLabConfiguration` now captures the ASP-to-SG lab configuration used by maintained external peer runs:
+
+- Peer name.
+- Local and remote SCTP endpoints.
+- SIGTRAN adaptation.
+- SS7 network indicator and service indicator.
+- OPC and DPC.
+- Routing context.
+- Traffic mode.
+- Retained artifact root.
+
+The helper can create the default lab configuration or parse environment values from a shell-driven lab file. Validation rejects invalid IP addresses, invalid SCTP ports, unsupported adaptation values, missing routing context, and unsupported traffic modes before a lab run is promoted.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -42,6 +57,24 @@ SIGTRAN_EXTERNAL_PEER_ID
 SIGTRAN_EXTERNAL_PEER_PACKAGE
 SIGTRAN_EXTERNAL_PEER_PACKAGE_VERSION
 SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT
+```
+
+Configuration env files should also provide:
+
+```text
+PEER_NAME
+LOCAL_IP
+LOCAL_SCTP_PORT
+REMOTE_IP
+REMOTE_SCTP_PORT
+SIGTRAN_ADAPTATION
+NETWORK_INDICATOR
+SERVICE_INDICATOR
+OPC
+DPC
+ROUTING_CONTEXT
+TRAFFIC_MODE
+ARTIFACT_ROOT
 ```
 
 Lab scripts should read these values and write retained artifacts under the configured artifact root. Real package names, versions, and installation paths belong in lab configuration and retained evidence, not in SDK type names.
@@ -56,4 +89,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, and host prerequisite reports identify missing lab capabilities.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, and environment-derived lab configuration is validated before use.
