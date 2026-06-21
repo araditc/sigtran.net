@@ -287,6 +287,7 @@ Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectio
 Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessageBuilderValidatesStreamAndPpid);
 Run("SCTP backpressure policy gates send queue pressure", SctpBackpressurePolicyGatesSendQueuePressure);
 Run("SCTP operation timeout policy creates cancellation budgets", SctpOperationTimeoutPolicyCreatesCancellationBudgets);
+Run("SCTP multi-homing readiness evaluates endpoint sets", SctpMultiHomingReadinessEvaluatesEndpointSets);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
@@ -4506,6 +4507,48 @@ static void SctpOperationTimeoutPolicyCreatesCancellationBudgets()
     AssertEqual(TimeSpan.FromSeconds(9), receive.Timeout, "SCTP receive timeout");
     Assert(receive.CallerCancellationRequested, receive.Describe());
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpOperationTimeoutPolicy(sendTimeout: TimeSpan.Zero));
+}
+
+static void SctpMultiHomingReadinessEvaluatesEndpointSets()
+{
+    SctpMultiHomingEndpointSet single = new(
+        remoteEndpoints: [new SctpEndpoint("sg-a.example.net", 2905)]);
+
+    SctpMultiHomingReadinessReport singleReport = SctpMultiHomingReadiness.Evaluate(single);
+    Assert(!singleReport.IsReady, singleReport.Describe());
+    Assert(singleReport.CanUseSingleHomedFallback, singleReport.Describe());
+    Assert(singleReport.Warnings.Contains("single-homed-endpoint-set"), singleReport.Describe());
+
+    SctpMultiHomingEndpointSet ready = new(
+        remoteEndpoints:
+        [
+            new SctpEndpoint("sg-a.example.net", 2905),
+            new SctpEndpoint("sg-b.example.net", 2905)
+        ],
+        localEndpoints:
+        [
+            new SctpEndpoint("10.0.0.10", 2905),
+            new SctpEndpoint("10.0.0.11", 2905)
+        ]);
+
+    SctpMultiHomingReadinessReport readyReport = SctpMultiHomingReadiness.Evaluate(ready);
+    Assert(readyReport.IsReady, readyReport.Describe());
+    AssertEqual("sg-a.example.net:2905", ready.PrimaryRemoteEndpoint.ToString(), "SCTP primary remote endpoint");
+    Assert(ready.HasMultipleLocalAddresses, ready.Describe());
+    Assert(ready.HasMultipleRemoteAddresses, ready.Describe());
+
+    SctpMultiHomingEndpointSet duplicate = new(
+        remoteEndpoints:
+        [
+            new SctpEndpoint("sg-a.example.net", 2905),
+            new SctpEndpoint("SG-A.example.net", 2905)
+        ]);
+
+    SctpMultiHomingReadinessReport duplicateReport = SctpMultiHomingReadiness.Evaluate(duplicate);
+    Assert(!duplicateReport.IsReady, duplicateReport.Describe());
+    Assert(duplicateReport.Warnings.Contains("duplicate-endpoint"), duplicateReport.Describe());
+
+    AssertThrows<ArgumentException>(() => new SctpMultiHomingEndpointSet(Array.Empty<SctpEndpoint>()));
 }
 
 static void SctpReconnectPoliciesComputeBoundedDelays()

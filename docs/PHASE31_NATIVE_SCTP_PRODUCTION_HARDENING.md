@@ -68,6 +68,19 @@ This gives native transports a deterministic pressure gate before accepting addi
 
 This gives native transports a single timeout contract for async socket operations and graceful shutdown handling.
 
+## Unit 6 - Multi-Homing Readiness
+
+`SctpMultiHomingEndpointSet` and `SctpMultiHomingReadiness` now define package-neutral readiness checks for SCTP multi-homing configuration. They provide:
+
+- Ordered remote endpoint lists with a primary remote endpoint.
+- Optional ordered local endpoint lists.
+- Distinct local and remote address checks.
+- Duplicate endpoint detection.
+- Single-homed fallback reporting.
+- Compact diagnostic summaries.
+
+This gives production transports a reviewable readiness gate before binding or connecting SCTP associations that require multiple local or remote addresses.
+
 ## Validation
 
 Each unit in this phase is validated with:

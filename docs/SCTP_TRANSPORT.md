@@ -88,6 +88,14 @@ Native transports can use this contract before adding user messages to a channel
 
 Native transports should use these budgets consistently around async socket calls so timeout behavior is deterministic and observable.
 
+## Multi-Homing Readiness
+
+`SctpMultiHomingEndpointSet` models ordered remote endpoints and optional ordered local endpoints for native SCTP associations. The first remote endpoint is treated as the primary remote association target.
+
+`SctpMultiHomingReadiness.Evaluate(...)` reports whether the endpoint set is ready for multi-homing, whether a single-homed fallback remains possible, and whether warnings such as duplicate endpoints or single-homed configuration should block production promotion.
+
+This contract is intentionally package-neutral. Platform-specific transports can map the endpoint set to their own bind/connect APIs after the SDK has validated that the configuration is reviewable.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.
