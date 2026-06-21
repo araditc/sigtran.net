@@ -267,7 +267,7 @@ Status: Phase 29 is foundation-complete. It has deterministic maintained peer la
 - Keep runner operations package-neutral and separate from real retained lab evidence.
 - Prepare real maintained peer lab execution without manufacturing passing artifacts.
 
-Status: Phase 30 has reviewable file materialization plan rendering and execution log contracts.
+Status: Phase 30 has reviewable file materialization plan rendering, execution log, and command outcome contracts.
 
 ## Recommended First Deliverable
 

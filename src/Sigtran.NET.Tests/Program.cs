@@ -67,6 +67,7 @@ Run("SIGTRAN maintained peer lab runner workflow readiness gates execution", Sig
 Run("SIGTRAN maintained peer lab runner status summarizes completion", SigtranMaintainedPeerLabRunnerStatusSummarizesCompletion);
 Run("SIGTRAN maintained peer lab runner file materialization renders shell plan", SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan);
 Run("SIGTRAN maintained peer lab runner execution log renders lifecycle", SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle);
+Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1346,6 +1347,31 @@ static void SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle()
     AssertEqual(14, log.Entries.Count, "maintained peer lab runner execution log entry count");
     Assert(log.RenderJsonLines().Contains("\"kind\":\"Started\"", StringComparison.Ordinal), log.RenderJsonLines());
     Assert(log.RenderMarkdown().Contains("Complete: `True`", StringComparison.Ordinal), log.RenderMarkdown());
+}
+
+static void SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit3");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+
+    SigtranMaintainedPeerLabRunnerCommandOutcomeReport report = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    Assert(report.Passed, report.Describe());
+    AssertEqual(6, report.Outcomes.Count, "maintained peer lab runner command outcome count");
+    Assert(report.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), report.RenderMarkdown());
+
+    List<SigtranMaintainedPeerLabRunnerExecutionLogEntry> entries = log.Entries.ToList();
+    entries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranMaintainedPeerLabRunnerLogEventKind.Error, "capture failed", SigtranMaintainedPeerLabCommandKind.Capture));
+    SigtranMaintainedPeerLabRunnerExecutionLog failedLog = new(runManifest.RunId, entries);
+    SigtranMaintainedPeerLabRunnerCommandOutcomeReport failed = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, failedLog);
+    Assert(!failed.Passed, failed.Describe());
+    Assert(failed.FailedCommandKinds.Contains(SigtranMaintainedPeerLabCommandKind.Capture), failed.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

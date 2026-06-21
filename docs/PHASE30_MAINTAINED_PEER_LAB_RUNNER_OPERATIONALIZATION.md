@@ -25,6 +25,18 @@ The plan does not write files. It renders the deterministic operation that a rea
 
 The log contract gives real runner output a structured shape without implying that the SDK has executed peer traffic locally.
 
+## Unit 3 - Command Outcomes
+
+`SigtranMaintainedPeerLabRunnerCommandOutcomeReport` now aggregates execution logs into per-command outcomes. It records:
+
+- Start and completion timestamps.
+- Command-level error detection.
+- Duration when timestamps are complete.
+- Failed command kind inventory.
+- Markdown rendering for retained run notes.
+
+This makes a runner log reviewable by command before artifact verification starts.
+
 ## Validation
 
 Each unit in this phase is validated with:
