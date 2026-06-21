@@ -176,6 +176,7 @@ Run("SIGTRAN commercial roadmap realignment status summarizes package-neutral co
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
 Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
+Run("SIGTRAN protocol evidence trace validator checks ordered frames", SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2835,6 +2836,47 @@ static void SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap()
     Assert(report.IsComplete, report.Describe());
     Assert(report.AllValidationPassed, report.Describe());
     Assert(report.EvidenceBacked, report.Describe());
+}
+
+static void SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames()
+{
+    IReadOnlyList<SigtranProtocolEvidenceVector> vectors = SigtranProtocolEvidenceBundle.Create().Vectors;
+    SigtranTraceFrame[] frames = vectors
+        .Select(vector => new SigtranTraceFrame(
+            DateTimeOffset.UnixEpoch,
+            ToTraceProtocol(vector.Surface),
+            SigtranTraceDirection.Outbound,
+            "sdk",
+            "peer",
+            vector.ExpectedPayload))
+        .ToArray();
+
+    SigtranProtocolEvidenceTraceReport pass = SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames);
+    Assert(pass.Passed, pass.Describe());
+    AssertEqual(vectors.Count, pass.FrameReports.Count, "protocol evidence trace frame report count");
+
+    byte[] mutated = vectors[0].ExpectedPayload.ToArray();
+    mutated[^1] ^= 0xFF;
+    SigtranTraceFrame[] mismatchFrames = frames.ToArray();
+    mismatchFrames[0] = new SigtranTraceFrame(DateTimeOffset.UnixEpoch, "SCCP", SigtranTraceDirection.Outbound, "sdk", "peer", mutated);
+    SigtranProtocolEvidenceTraceReport mismatch = SigtranProtocolEvidenceTraceValidator.Validate(vectors, mismatchFrames);
+    Assert(!mismatch.Passed, mismatch.Describe());
+    Assert(!mismatch.FrameReports[0].PayloadReport.Passed, mismatch.FrameReports[0].Describe());
+
+    SigtranProtocolEvidenceTraceReport missing = SigtranProtocolEvidenceTraceValidator.Validate(vectors, frames.Take(frames.Length - 1).ToArray());
+    Assert(!missing.Passed, missing.Describe());
+    AssertEqual(1, missing.MissingVectorIds.Count, "protocol evidence missing vector count");
+}
+
+static string ToTraceProtocol(SigtranProtocolInteropSurface surface)
+{
+    return surface switch
+    {
+        SigtranProtocolInteropSurface.Sccp => "SCCP",
+        SigtranProtocolInteropSurface.Tcap => "TCAP",
+        SigtranProtocolInteropSurface.MapSms => "MAP SMS",
+        _ => surface.ToString()
+    };
 }
 
 static void SigtranProtocolInteropReferencesRequireTraceValidation()

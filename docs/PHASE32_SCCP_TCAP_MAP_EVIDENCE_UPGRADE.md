@@ -63,6 +63,19 @@ Each vector stores literal BER-shaped parameter bytes and validates the current 
 
 This gives release and readiness gates one deterministic SDK-side evidence report before trace validation and external artifact comparison are applied.
 
+## Unit 6 - Evidence Trace Validation
+
+`SigtranProtocolEvidenceTraceValidator` now validates ordered `SigtranTraceFrame` sequences against SCCP, TCAP, and MAP SMS evidence vectors. It provides:
+
+- Protocol label checks.
+- Ordered vector-to-frame pairing.
+- Byte-level payload validation per frame.
+- Missing expected vector reporting.
+- Unexpected extra frame counting.
+- Full trace pass/fail summaries.
+
+This connects deterministic SDK vectors to captured trace output so later lab artifacts can be validated as ordered protocol evidence rather than isolated payload blobs.
+
 ## Validation
 
 Each unit in this phase is validated with:
