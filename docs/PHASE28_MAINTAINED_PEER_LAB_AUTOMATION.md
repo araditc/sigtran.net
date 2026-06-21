@@ -60,6 +60,18 @@ The renderer gives operators a deterministic script body while still allowing lo
 
 This report is designed to become the retained comparison artifact referenced by the evidence promotion gate.
 
+## Unit 6 - Run Report
+
+`SigtranMaintainedPeerLabRunReport` now records the execution outcome for each maintained peer lab command, the comparison result, and the retained run report path. The report records:
+
+- Ordered command step status values.
+- Optional step duration and retained log path metadata.
+- Comparison pass/fail state.
+- Overall run pass/fail state.
+- Markdown output suitable for retention as the run report artifact.
+
+This keeps lab execution evidence explicit: a passing comparison alone is not enough unless every command step also passed.
+
 ## Validation
 
 Each unit in this phase is validated with:

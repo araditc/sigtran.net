@@ -54,7 +54,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Release workflow orchestration | Phase 23 foundation-ready: release workflow triggers, stages, required secrets, supply-chain integration, commercial evidence verification, publish contract, concrete workflow file, YAML validation, publish guard, artifact retention, least-privilege permissions, concurrency policy, environment contract, promotion gate, readiness report, and status report added; promotion still requires real release evidence |
 | Package publication readiness | Phase 24 foundation-ready: release version policy, NuGet metadata contract, package output layout, dry-run publish plan, credential policy, channel policy, package integrity manifest, publication evidence manifest, publication gate, readiness status, and documentation added; real NuGet publication remains blocked until retained evidence, signing, SBOM, provenance, and live credentials are available |
 | Commercial release execution | Phase 25 execution foundation complete: retained execution evidence manifest, real Ubuntu VM Linux SCTP smoke capture evidence, structured external peer blocker evidence, artifact dossier, executable SBOM generation evidence, package signing execution evidence, provenance attestation evidence, smoke benchmark evidence, public API baseline evidence, and final readiness report added; commercial release remains blocked on external peer interop artifacts, trusted timestamped signing, and production benchmark evidence |
-| Commercial roadmap realignment | Phase 26 started: package-specific source API names are being replaced with package-neutral external SIGTRAN peer contracts; commercial release gates now use external peer readiness instead of package-specific interop names |
+| Commercial roadmap realignment | Phase 26 complete: package-specific source API names were replaced with package-neutral external SIGTRAN peer contracts; commercial release gates now use external peer readiness instead of package-specific interop names |
 | Package governance | Phase 7 policy added: current package metadata is tracked; commercial target still requires package signing and SBOM automation |
 | Security governance | Phase 7 security policy added with private disclosure and severity response targets |
 | Compatibility policy | Phase 7 policy added: net10.0 target, SemVer, pre-stable breaking-change allowance, and stable major-version rule |
@@ -63,6 +63,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
 | Native SCTP implementation | Phase 8 foundation-ready: Linux SCTP probe, socket factory, endpoint planner, native adapter, connector, listener, lab profile, readiness report, and commercial gate integration; production readiness still requires Linux SCTP lab verification |
 | Interoperability lab | Phase 9 foundation-ready: lab scenario catalog, artifact manifests, run reports, external peer M3UA ASP-to-SG template, trace comparison, evidence promotion, opt-in CI profile, readiness report, and commercial gate integration added; production readiness still requires passing external lab evidence |
+| Maintained peer lab automation | Phase 28 in progress: executable run manifest, deterministic environment file rendering, command script rendering, artifact digest manifests, comparison report, and run report contracts are available; commercial release still requires real retained maintained-peer evidence |
 
 ## Requirements
 
@@ -208,7 +209,7 @@ The roadmap is intentionally conservative:
 4. Harden TCAP with external interoperability vectors and MAP profile validation.
 
 Phase 27 completed the maintained external peer lab foundation, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, digest-covered retained evidence gates, and status reporting.
-Phase 28 builds the automation and evidence handoff layer above that foundation, starting with a single run manifest, deterministic environment file rendering, command script rendering, comparison reporting, and digest manifests for retained lab artifacts.
+Phase 28 builds the automation and evidence handoff layer above that foundation, starting with a single run manifest, deterministic environment file rendering, command script rendering, comparison reporting, run reporting, and digest manifests for retained lab artifacts.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.

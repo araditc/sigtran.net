@@ -50,6 +50,7 @@ Run("SIGTRAN maintained peer lab environment file renders manifest values", Sigt
 Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff);
 Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMaintainedPeerLabCommandScriptRendersCommandPlan);
 Run("SIGTRAN maintained peer lab comparison report renders trace outcome", SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome);
+Run("SIGTRAN maintained peer lab run report records step outcomes", SigtranMaintainedPeerLabRunReportRecordsStepOutcomes);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -995,6 +996,25 @@ static void SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome()
     Assert(!failed.Passed, failed.Describe());
     Assert(failed.TraceComparison.Mismatches.Count > 0, failed.Describe());
     Assert(failed.RenderMarkdown().Contains("## Mismatches", StringComparison.Ordinal), failed.RenderMarkdown());
+}
+
+static void SigtranMaintainedPeerLabRunReportRecordsStepOutcomes()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit6");
+    IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
+    SigtranMaintainedPeerLabComparisonReport comparison = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, expected);
+    SigtranMaintainedPeerLabRunReport report = SigtranMaintainedPeerLabRunReports.CreatePassing(runManifest, comparison, DateTimeOffset.UnixEpoch);
+
+    Assert(report.Passed, report.Describe());
+    AssertEqual(6, report.Steps.Count, "maintained peer lab run report step count");
+    Assert(report.ReportArtifactPath.EndsWith("/reports/phase28-unit6-run.md", StringComparison.Ordinal), report.ReportArtifactPath);
+    Assert(report.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), report.RenderMarkdown());
+
+    SigtranMaintainedPeerLabRunReport failed = new(
+        runManifest,
+        [new SigtranMaintainedPeerLabStepResult(SigtranMaintainedPeerLabCommandKind.Prepare, SigtranMaintainedPeerLabStepStatus.Failed, DateTimeOffset.UnixEpoch)],
+        comparison);
+    Assert(!failed.Passed, failed.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
