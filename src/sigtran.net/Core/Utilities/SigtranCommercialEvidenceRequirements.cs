@@ -8,7 +8,7 @@ public enum SigtranCommercialEvidenceArea
     /// <summary>Native SCTP production verification evidence.</summary>
     NativeSctp,
 
-    /// <summary>OpenSS7/IPSS7 interoperability evidence.</summary>
+    /// <summary>External SIGTRAN peer interoperability evidence.</summary>
     ExternalPeerInterop,
 
     /// <summary>SCCP, TCAP, and MAP SMS protocol vector evidence.</summary>

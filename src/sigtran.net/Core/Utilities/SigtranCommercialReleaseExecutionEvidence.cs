@@ -8,7 +8,7 @@ public enum SigtranCommercialReleaseEvidenceArea
     /// <summary>Linux native SCTP lab evidence.</summary>
     LinuxSctp,
 
-    /// <summary>OpenSS7/IPSS7 peer interoperability evidence.</summary>
+    /// <summary>External SIGTRAN peer interoperability evidence.</summary>
     ExternalPeerInterop,
 
     /// <summary>Supply-chain security evidence.</summary>
@@ -174,7 +174,7 @@ public sealed class SigtranCommercialReleaseEvidenceManifest
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.Performance)
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.ApiBaseline);
 
-    /// <summary>Creates a sample manifest that records current Linux SCTP evidence and the OpenSS7 blocker.</summary>
+    /// <summary>Creates a sample manifest that records current Linux SCTP evidence and the retained external peer blocker.</summary>
     /// <returns>The sample manifest.</returns>
     public static SigtranCommercialReleaseEvidenceManifest CreateCurrentSample()
     {

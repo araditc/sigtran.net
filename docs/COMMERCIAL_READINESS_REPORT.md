@@ -14,7 +14,7 @@ Status: not commercially releasable yet.
 
 ## Remaining Commercial Blockers
 
-- OpenSS7/IPSS7 interoperability is blocked on Linux 5.15 `open_softirq` compatibility and still needs a passing external peer run.
+- External peer interoperability still needs a passing maintained peer run with retained PCAP, peer logs, SDK traces, configuration, and comparison report. The retained legacy OpenSS7/IPSS7 attempt is blocked on Linux 5.15 `open_softirq` compatibility.
 - External interoperability evidence still needs PCAP, peer logs, SDK traces, and comparison report from a passing run.
 - Package signing verification currently fails commercial requirements because the signing certificate is not trusted by the verifier and the signature is not timestamped.
 - Performance evidence is smoke-only; commercial release needs sustained peer/load benchmark evidence with latency and resource metrics.
@@ -24,4 +24,4 @@ Status: not commercially releasable yet.
 
 Do not publish this SDK as commercially production-ready yet.
 
-The next release-candidate milestone should close the OpenSS7/IPSS7 lab blocker on a Linux 4.x-era OpenSS7-compatible environment or a maintained SIGTRAN peer, replace test signing with trusted timestamped production signing, and attach the generated evidence artifacts to the release workflow.
+The next release-candidate milestone should complete a maintained external SIGTRAN peer lab run, replace test signing with trusted timestamped production signing, and attach the generated evidence artifacts to the release workflow. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.

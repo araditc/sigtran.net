@@ -182,7 +182,7 @@ Current passed execution items:
 
 Current blockers:
 
-- OpenSS7/IPSS7 interoperability remains blocked by Linux 5.15 `open_softirq` compatibility.
+- External peer interoperability remains blocked until a maintained peer run produces PCAP, peer logs, SDK traces, configuration, and comparison evidence. The retained legacy OpenSS7/IPSS7 attempt remains blocked by Linux 5.15 `open_softirq` compatibility.
 - Artifact dossier is missing SDK trace and comparison report from a passing external peer run.
 - Package signing produced a signed package, but verification still requires a trusted timestamped production signature.
 - Performance evidence is smoke-only and does not prove commercial peer/load targets.

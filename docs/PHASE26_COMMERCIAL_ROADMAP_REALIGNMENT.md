@@ -96,6 +96,12 @@ The current report remains blocked because no real maintained peer package has b
 - Run plan is executable.
 - Evidence registry contains passing, digest-covered artifacts.
 
+## Unit 8 - Commercial Release Gate Alignment
+
+Commercial evidence and release execution readiness now use `externalPeerInteropVerified` and `external-peer-interop` instead of package-specific gate names.
+
+`SigtranCommercialReleaseExecutionReadiness` now consumes `SigtranExternalPeerCommercialReadiness.CreateCurrent()` so the release decision is based on maintained peer selection, lab environment, run plan, and review-ready evidence. Retained legacy blocker notes remain evidence context, not public gate names.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

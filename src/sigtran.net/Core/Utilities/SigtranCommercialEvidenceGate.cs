@@ -37,14 +37,14 @@ public static class SigtranCommercialEvidenceGate
     /// <summary>Evaluates whether a commercial evidence bundle can support production claims.</summary>
     /// <param name="bundle">The commercial evidence bundle.</param>
     /// <param name="nativeSctpVerified">Whether native SCTP is verified.</param>
-    /// <param name="openSs7Verified">Whether OpenSS7/IPSS7 interop is verified.</param>
+    /// <param name="externalPeerInteropVerified">Whether external peer interop is verified.</param>
     /// <param name="protocolInteropVerified">Whether protocol vector interop is verified.</param>
     /// <param name="releaseGovernanceReady">Whether release governance is ready.</param>
     /// <returns>The commercial evidence gate result.</returns>
     public static SigtranCommercialEvidenceGateResult Evaluate(
         SigtranCommercialEvidenceBundle bundle,
         bool nativeSctpVerified,
-        bool openSs7Verified,
+        bool externalPeerInteropVerified,
         bool protocolInteropVerified,
         bool releaseGovernanceReady)
     {
@@ -66,7 +66,7 @@ public static class SigtranCommercialEvidenceGate
             reasons.Add("native-sctp-evidence-required");
         }
 
-        if (!openSs7Verified)
+        if (!externalPeerInteropVerified)
         {
             reasons.Add("external-peer-evidence-required");
         }

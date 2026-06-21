@@ -1927,7 +1927,7 @@ static void SigtranCommercialEvidenceGateReportsMissingCurrentEvidence()
     SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
         bundle,
         nativeSctpVerified: false,
-        openSs7Verified: false,
+        externalPeerInteropVerified: false,
         protocolInteropVerified: false,
         releaseGovernanceReady: false);
 
@@ -1947,7 +1947,7 @@ static void SigtranCommercialEvidenceGateAllowsCompleteVerifiedDossier()
     SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
         bundle,
         nativeSctpVerified: true,
-        openSs7Verified: true,
+        externalPeerInteropVerified: true,
         protocolInteropVerified: true,
         releaseGovernanceReady: true);
 
