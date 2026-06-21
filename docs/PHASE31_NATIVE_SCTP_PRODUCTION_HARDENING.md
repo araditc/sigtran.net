@@ -1,0 +1,26 @@
+# Phase 31 Native SCTP Production Hardening
+
+Phase 31 hardens the native SCTP production boundary around stream and PPID correctness, reconnect behavior, backpressure, cancellation, multi-homing readiness, association lifecycle, and fault recovery. The phase does not claim production SCTP readiness without retained Linux SCTP and external peer evidence.
+
+## Unit 1 - Stream And PPID Framing
+
+`SctpOutboundMessage` and `SctpOutboundMessageBuilder` now provide a validated outbound user-message contract. They cover:
+
+- Non-empty SCTP user message payloads.
+- Default or caller-provided PPID selection.
+- Known SIGTRAN PPID validation.
+- Stream selection through `SctpStreamSelectionPolicy`.
+- Negotiated outbound stream count validation.
+- Compact diagnostic summaries.
+
+This gives native transports a hardened send boundary before payloads are passed to kernel SCTP send APIs.
+
+## Validation
+
+Each unit in this phase is validated with:
+
+```powershell
+dotnet build src\Sigtran.NET.sln
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
+```

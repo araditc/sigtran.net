@@ -68,6 +68,12 @@ ushort streamId = policy.SelectStream(sequence: messageNumber);
 
 Fixed mode always uses one stream id. Round-robin mode applies modulo to a caller-provided sequence value so transports can remain stateless if they prefer.
 
+## Outbound Message Contract
+
+`SctpOutboundMessage` pairs a non-empty user message payload with validated stream and PPID metadata. `SctpOutboundMessageBuilder.TryCreate(...)` applies the connection options, stream selection policy, sequence number, optional PPID override, and unordered flag before a native transport attempts a send.
+
+The builder rejects unknown SIGTRAN PPIDs and stream ids outside the negotiated outbound stream count. This keeps the native send boundary deterministic and reviewable before platform-specific SCTP APIs are used.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

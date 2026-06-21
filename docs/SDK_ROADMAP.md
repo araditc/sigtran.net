@@ -269,6 +269,14 @@ Status: Phase 29 is foundation-complete. It has deterministic maintained peer la
 
 Status: Phase 30 is foundation-complete. It has reviewable file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, operator handoff, and operations status contracts. Commercial readiness still requires real maintained peer execution with retained digest-covered evidence and operator handoff artifacts.
 
+## Phase 31 - Native SCTP Production Hardening
+
+- Harden native SCTP stream and PPID framing before send.
+- Add reconnect orchestration, backpressure policy, cancellation contracts, multi-homing readiness, association lifecycle journaling, fault classification, and recovery decisions.
+- Keep production readiness blocked until retained Linux SCTP and external peer evidence prove the hardened contracts against real traffic.
+
+Status: Phase 31 is in progress. The outbound stream and PPID framing contract is available.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

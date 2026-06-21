@@ -283,6 +283,7 @@ Run("SCTP association events describe lifecycle state", SctpAssociationEventsDes
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
+Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessageBuilderValidatesStreamAndPpid);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
@@ -4405,6 +4406,33 @@ static void SctpStreamSelectionPoliciesChooseOutboundStreams()
     AssertEqual((ushort)3, roundRobin.SelectStream(7), "round-robin modulo stream");
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 0));
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpStreamSelectionPolicy(streamCount: 2, fixedStreamId: 2));
+}
+
+static void SctpOutboundMessageBuilderValidatesStreamAndPpid()
+{
+    SctpConnectionOptions options = new(
+        new SctpEndpoint("127.0.0.1", 2905),
+        outboundStreams: 4,
+        defaultPayloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua);
+    SctpStreamSelectionPolicy streamPolicy = new(SctpStreamSelectionMode.RoundRobin, streamCount: 4);
+
+    Assert(
+        SctpOutboundMessageBuilder.TryCreate(new byte[] { 0x01, 0x02 }, options, streamPolicy, sequence: 5, out SctpOutboundMessage? message, out string? error),
+        error ?? "outbound SCTP message should build");
+    AssertEqual((ushort)1, message!.Metadata.StreamId, "outbound SCTP stream");
+    AssertEqual(SctpPayloadProtocolIdentifiers.M3ua, message.Metadata.PayloadProtocolIdentifier, "outbound SCTP PPID");
+    Assert(message.HasKnownSigtranPpid, message.Describe());
+
+    Assert(
+        !SctpOutboundMessageBuilder.TryCreate(new byte[] { 0x01 }, options, streamPolicy, 0, out _, out error, payloadProtocolIdentifier: 999),
+        "unknown PPID should be rejected");
+    Assert(error!.Contains("Unsupported SCTP Payload Protocol Identifier", StringComparison.Ordinal), error);
+
+    SctpConnectionOptions oneStream = new(new SctpEndpoint("127.0.0.1", 2905), outboundStreams: 1);
+    Assert(
+        !SctpOutboundMessageBuilder.TryCreate(new byte[] { 0x01 }, oneStream, streamPolicy, sequence: 3, out _, out error),
+        "stream outside negotiated count should be rejected");
+    Assert(error!.Contains("outside the negotiated outbound stream count", StringComparison.Ordinal), error);
 }
 
 static void SctpReconnectPoliciesComputeBoundedDelays()
