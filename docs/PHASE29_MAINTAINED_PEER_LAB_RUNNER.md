@@ -15,6 +15,18 @@ Phase 29 turns the maintained peer lab automation contracts into runner material
 
 This gives lab automation a single path contract before rendering inputs or starting peer traffic.
 
+## Unit 2 - Runner Input Bundle
+
+`SigtranMaintainedPeerLabRunnerInputBundle` now joins the runner workspace, rendered environment file, and command script into the deterministic input files a lab runner should materialize. It records:
+
+- Environment file path.
+- Command script path.
+- Rendered environment content.
+- Rendered command script content.
+- Materialization readiness based on run-id consistency and command-plan coverage.
+
+The bundle still does not write files or claim evidence. It only defines the exact files a real runner should create before execution.
+
 ## Validation
 
 Each unit in this phase is validated with:

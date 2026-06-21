@@ -56,6 +56,7 @@ Run("SIGTRAN maintained peer lab workflow template is manual and self-hosted", S
 Run("SIGTRAN maintained peer lab commercial bridge gates readiness", SigtranMaintainedPeerLabCommercialBridgeGatesReadiness);
 Run("SIGTRAN maintained peer lab automation status summarizes completion", SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion);
 Run("SIGTRAN maintained peer lab runner workspace materializes deterministic paths", SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths);
+Run("SIGTRAN maintained peer lab runner inputs render environment and script", SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1126,6 +1127,20 @@ static void SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPath
     Assert(directories.Contains("artifacts/external-peer/maintained/pcap"), workspace.Describe());
     Assert(directories.Contains("artifacts/external-peer/maintained/reports"), workspace.Describe());
     AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab", workspace.ScriptRoot, "maintained peer lab runner script root");
+}
+
+static void SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit2");
+    SigtranMaintainedPeerLabRunnerInputBundle bundle = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    IReadOnlyList<SigtranMaintainedPeerLabRunnerInputFile> inputs = bundle.GetInputFiles();
+
+    Assert(bundle.IsMaterializationReady, bundle.Describe());
+    AssertEqual(2, inputs.Count, "maintained peer lab runner input count");
+    AssertEqual("artifacts/external-peer/maintained/config/phase29-unit2-peer.env", bundle.EnvironmentFilePath, "maintained peer lab runner env path");
+    AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab/phase29-unit2.sh", bundle.CommandScriptPath, "maintained peer lab runner script path");
+    Assert(inputs[0].Content.Contains("SIGTRAN_LAB_RUN_ID='phase29-unit2'", StringComparison.Ordinal), inputs[0].Content);
+    Assert(inputs[1].Content.Contains("source 'artifacts/external-peer/maintained/config/phase29-unit2-peer.env'", StringComparison.Ordinal), inputs[1].Content);
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

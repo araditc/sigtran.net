@@ -259,7 +259,7 @@ Status: Phase 28 is foundation-complete. It has a run manifest that aggregates b
 - Keep runner materialization package-neutral and separate from real retained lab evidence.
 - Prepare the SDK for a real maintained external peer lab run without manufacturing passing artifacts.
 
-Status: Phase 29 has started with a deterministic maintained peer lab runner workspace contract.
+Status: Phase 29 has started with deterministic maintained peer lab runner workspace and execution input bundle contracts.
 
 ## Recommended First Deliverable
 
