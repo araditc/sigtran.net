@@ -27,6 +27,17 @@ This gives lab automation a single path contract before rendering inputs or star
 
 The bundle still does not write files or claim evidence. It only defines the exact files a real runner should create before execution.
 
+## Unit 3 - Output Artifact Materialization
+
+`SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan` now maps every expected retained artifact to the command expected to produce it. The plan checks:
+
+- Required artifact coverage.
+- Output paths under the artifact root.
+- Producer command coverage.
+- Required output path inventory.
+
+This gives the runner a deterministic post-execution checklist before evidence collection and digest generation.
+
 ## Validation
 
 Each unit in this phase is validated with:

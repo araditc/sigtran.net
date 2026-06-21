@@ -57,6 +57,7 @@ Run("SIGTRAN maintained peer lab commercial bridge gates readiness", SigtranMain
 Run("SIGTRAN maintained peer lab automation status summarizes completion", SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion);
 Run("SIGTRAN maintained peer lab runner workspace materializes deterministic paths", SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths);
 Run("SIGTRAN maintained peer lab runner inputs render environment and script", SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript);
+Run("SIGTRAN maintained peer lab runner artifacts map outputs to producers", SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1141,6 +1142,21 @@ static void SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript()
     AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab/phase29-unit2.sh", bundle.CommandScriptPath, "maintained peer lab runner script path");
     Assert(inputs[0].Content.Contains("SIGTRAN_LAB_RUN_ID='phase29-unit2'", StringComparison.Ordinal), inputs[0].Content);
     Assert(inputs[1].Content.Contains("source 'artifacts/external-peer/maintained/config/phase29-unit2-peer.env'", StringComparison.Ordinal), inputs[1].Content);
+}
+
+static void SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit3");
+    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan plan = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
+
+    Assert(plan.IsMaterializationReady, plan.Describe());
+    AssertEqual(6, plan.Outputs.Count, "maintained peer lab runner output count");
+    AssertEqual(6, plan.GetRequiredOutputPaths().Count, "maintained peer lab runner required output path count");
+    Assert(plan.OutputPathsStayUnderArtifactRoot, plan.Describe());
+    Assert(plan.HasProducerCommands, plan.Describe());
+    Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.PacketCapture && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Capture), plan.Describe());
+    Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.RunReport && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Collect), plan.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
