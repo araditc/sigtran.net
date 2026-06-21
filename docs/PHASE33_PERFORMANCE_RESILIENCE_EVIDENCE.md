@@ -68,6 +68,17 @@ The manifest requires SHA-256 digest coverage for all retained artifacts before 
 
 The evidence records recovery duration and lost messages, then gates commercial resilience claims on required event coverage, recovery within budget, and zero message loss. This gives peer benchmark reports a deterministic way to prove fault recovery behavior instead of only reporting throughput under healthy conditions.
 
+## Unit 6 - Publishable Performance Report
+
+`SigtranPerformanceEvidenceReport` now aggregates:
+
+- Peer-traffic workload and retained artifacts.
+- Latency P95/P99 budget reports.
+- CPU, memory, and allocation budget report.
+- Resilience and failover evidence.
+
+The report exposes a single `Publishable` gate and can render a Markdown benchmark summary suitable for release evidence review. The report only becomes publishable when workload/artifacts, latency, resource, and resilience gates all pass.
+
 ## Validation
 
 Each unit in this phase is validated with:

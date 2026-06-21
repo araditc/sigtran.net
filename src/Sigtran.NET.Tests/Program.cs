@@ -136,6 +136,7 @@ Run("SIGTRAN performance evidence artifacts require retained peer benchmark file
 Run("SIGTRAN performance latency evidence evaluates P95 and P99 budgets", SigtranPerformanceLatencyEvidenceEvaluatesP95AndP99Budgets);
 Run("SIGTRAN performance resource evidence evaluates CPU memory and allocations", SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations);
 Run("SIGTRAN performance resilience evidence gates failover recovery", SigtranPerformanceResilienceEvidenceGatesFailoverRecovery);
+Run("SIGTRAN performance evidence report renders publishable benchmark summary", SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2443,6 +2444,45 @@ static void SigtranPerformanceResilienceEvidenceGatesFailoverRecovery()
     Assert(lostMessages.RecoveryWithinBudget, lostMessages.Describe());
     Assert(!lostMessages.HasNoMessageLoss, lostMessages.Describe());
     Assert(!lostMessages.SupportsCommercialEvidence, lostMessages.Describe());
+}
+
+static void SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary()
+{
+    SigtranPerformanceEvidenceReport report = CreatePassingPerformanceEvidenceReport();
+
+    Assert(report.Publishable, report.Describe());
+    Assert(report.LatencyEvidencePassed, report.Describe());
+    string markdown = report.RenderMarkdown();
+    Assert(markdown.Contains("# SIGTRAN.NET Performance Evidence Report", StringComparison.Ordinal), "performance report should include title");
+    Assert(markdown.Contains("Latency P95/P99", StringComparison.Ordinal), "performance report should include latency gate");
+    Assert(markdown.Contains("Resilience failover", StringComparison.Ordinal), "performance report should include resilience gate");
+
+    SigtranPerformanceEvidenceReport failing = SigtranPerformanceEvidenceReports.Create(
+        SigtranPerformanceEvidenceRunPlans.CreateDefault(CreateCompletePerformanceArtifactManifest("perf-peer-run")),
+        CreatePassingLatencyEvidence(),
+        new SigtranPerformanceResourceEvidence(80, 95, 2048, 128, 2),
+        SigtranPerformanceResilienceEvidenceFactory.CreateRecoveredFailover(
+            "perf-peer-run",
+            DateTimeOffset.UnixEpoch,
+            DateTimeOffset.UnixEpoch + TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(5)),
+        DateTimeOffset.UnixEpoch);
+    Assert(!failing.Publishable, failing.Describe());
+    Assert(!failing.ResourceReport.Passed, failing.ResourceReport.Describe());
+}
+
+static SigtranPerformanceEvidenceReport CreatePassingPerformanceEvidenceReport()
+{
+    return SigtranPerformanceEvidenceReports.Create(
+        SigtranPerformanceEvidenceRunPlans.CreateDefault(CreateCompletePerformanceArtifactManifest("perf-peer-run")),
+        CreatePassingLatencyEvidence(),
+        new SigtranPerformanceResourceEvidence(50, 80, 768, 0, 0),
+        SigtranPerformanceResilienceEvidenceFactory.CreateRecoveredFailover(
+            "perf-peer-run",
+            DateTimeOffset.UnixEpoch,
+            DateTimeOffset.UnixEpoch + TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(5)),
+        DateTimeOffset.UnixEpoch);
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()
