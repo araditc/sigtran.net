@@ -92,6 +92,19 @@ This gives operator and CI handoff a deterministic diagnosis surface when a main
 
 The default policy treats command and selected comparison failures as potentially transient, while preflight, artifact, digest, provenance, and run-report failures require operator or environment correction.
 
+## Unit 8 - Evidence Package Manifest
+
+`SigtranMaintainedPeerLabRunnerEvidencePackageManifest` now gathers verified runner outputs into a reviewable handoff package. It records:
+
+- Retained artifact package items.
+- Digest manifest package item.
+- Provenance report package item.
+- Failure report package item.
+- Package readiness gates.
+- Markdown rendering for evidence handoff.
+
+The package manifest only becomes ready when artifacts, digest coverage, provenance, comparison handoff, and failure classification are all clean.
+
 ## Validation
 
 Each unit in this phase is validated with:
