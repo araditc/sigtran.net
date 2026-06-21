@@ -51,6 +51,18 @@ Each vector stores literal BER expected bytes and validates the current TCAP tra
 
 Each vector stores literal BER-shaped parameter bytes and validates the current MAP SMS encoder output. Tests decode every vector back into its operation model to tie byte evidence to decoded field behavior.
 
+## Unit 5 - Cross-Layer Evidence Bundle
+
+`SigtranProtocolEvidenceBundle` now aggregates SCCP, TCAP, and MAP SMS vectors into one validation report. It provides:
+
+- Required cross-layer vector count.
+- Surface-specific vector counts.
+- Duplicate vector id detection.
+- Aggregate validation pass count.
+- Complete and evidence-backed summary flags.
+
+This gives release and readiness gates one deterministic SDK-side evidence report before trace validation and external artifact comparison are applied.
+
 ## Validation
 
 Each unit in this phase is validated with:

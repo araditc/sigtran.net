@@ -284,7 +284,7 @@ Status: Phase 31 is foundation-complete. The outbound stream and PPID framing co
 - Report and correct mismatches before upgrading readiness claims from foundation-only to evidence-backed.
 - Keep external interoperability evidence as a commercial promotion gate.
 
-Status: Phase 32 is in progress. The shared protocol evidence vector and byte-level mismatch validation contract is available. SCCP has deterministic UDT, XUDT, LUDT, and UDTS evidence vectors. TCAP has deterministic Begin/Invoke/Dialogue and End/ReturnResult evidence vectors. MAP SMS has deterministic MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre evidence vectors.
+Status: Phase 32 is in progress. The shared protocol evidence vector and byte-level mismatch validation contract is available. SCCP has deterministic UDT, XUDT, LUDT, and UDTS evidence vectors. TCAP has deterministic Begin/Invoke/Dialogue and End/ReturnResult evidence vectors. MAP SMS has deterministic MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre evidence vectors. A cross-layer evidence bundle aggregates vector counts, duplicate-id checks, and validation pass/fail status.
 
 ## Recommended First Deliverable
 

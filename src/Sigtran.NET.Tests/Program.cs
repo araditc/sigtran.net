@@ -175,6 +175,7 @@ Run("SIGTRAN external peer status summarizes execution foundation", SigtranExter
 Run("SIGTRAN commercial roadmap realignment status summarizes package-neutral completion", SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
+Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2819,6 +2820,21 @@ static void SigtranProtocolEvidenceValidatorReportsByteMismatches()
     AssertEqual((byte)0x80, mismatch.Mismatches[0].Actual, "protocol evidence actual byte");
     AssertEqual((byte)0x03, mismatch.Mismatches[1].Expected, "protocol evidence missing expected byte");
     Assert(mismatch.Mismatches[1].Actual is null, mismatch.Mismatches[1].Describe());
+}
+
+static void SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap()
+{
+    SigtranProtocolEvidenceBundleReport report = SigtranProtocolEvidenceBundle.Create();
+
+    AssertEqual(11, SigtranProtocolEvidenceBundle.RequiredVectorCount, "protocol evidence required vector count");
+    AssertEqual(11, report.VectorCount, "protocol evidence vector count");
+    AssertEqual(4, report.CountBySurface(SigtranProtocolInteropSurface.Sccp), "protocol evidence SCCP count");
+    AssertEqual(2, report.CountBySurface(SigtranProtocolInteropSurface.Tcap), "protocol evidence TCAP count");
+    AssertEqual(5, report.CountBySurface(SigtranProtocolInteropSurface.MapSms), "protocol evidence MAP SMS count");
+    AssertEqual(0, report.DuplicateVectorIds.Count, "protocol evidence duplicate ids");
+    Assert(report.IsComplete, report.Describe());
+    Assert(report.AllValidationPassed, report.Describe());
+    Assert(report.EvidenceBacked, report.Describe());
 }
 
 static void SigtranProtocolInteropReferencesRequireTraceValidation()
