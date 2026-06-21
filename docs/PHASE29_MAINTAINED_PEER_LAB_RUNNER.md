@@ -96,6 +96,17 @@ The SDK still does not invent digests. A real runner must calculate them from re
 
 The handoff is ready only when run ids are consistent, digest coverage is complete, comparison passed, and the run report passed. It can then create the evidence bundle used by commercial readiness gates.
 
+## Unit 9 - Workflow Readiness
+
+`SigtranMaintainedPeerLabRunnerWorkflowReadiness` now evaluates whether the manual self-hosted workflow template can safely execute a materialized runner command manifest. It checks:
+
+- Manual dispatch and self-hosted Linux policy.
+- Default CI safety.
+- Runner materialization readiness.
+- Artifact upload pattern coverage.
+
+This keeps workflow availability separate from runner readiness and prevents planned YAML from being mistaken for a passing lab execution.
+
 ## Validation
 
 Each unit in this phase is validated with:

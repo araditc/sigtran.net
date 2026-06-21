@@ -63,6 +63,7 @@ Run("SIGTRAN maintained peer lab runner command manifest orders execution", Sigt
 Run("SIGTRAN maintained peer lab runner evidence collection tracks retained artifacts", SigtranMaintainedPeerLabRunnerEvidenceCollectionTracksRetainedArtifacts);
 Run("SIGTRAN maintained peer lab runner digests cover retained artifacts", SigtranMaintainedPeerLabRunnerDigestsCoverRetainedArtifacts);
 Run("SIGTRAN maintained peer lab runner comparison handoff creates evidence bundle", SigtranMaintainedPeerLabRunnerComparisonHandoffCreatesEvidenceBundle);
+Run("SIGTRAN maintained peer lab runner workflow readiness gates execution", SigtranMaintainedPeerLabRunnerWorkflowReadinessGatesExecution);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1258,6 +1259,29 @@ static void SigtranMaintainedPeerLabRunnerComparisonHandoffCreatesEvidenceBundle
     SigtranMaintainedPeerLabRunnerComparisonHandoff failed = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
     Assert(!failed.IsHandoffReady, failed.Describe());
     Assert(!failed.ToEvidenceBundle().IsHandoffReady, failed.ToEvidenceBundle().Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerWorkflowReadinessGatesExecution()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit9");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+    SigtranMaintainedPeerLabRunnerPreflightReport readyPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranMaintainedPeerLabRunnerCommandManifest readyManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, readyPreflight);
+
+    SigtranMaintainedPeerLabRunnerWorkflowReadinessReport ready = SigtranMaintainedPeerLabRunnerWorkflowReadiness.Evaluate(readyManifest);
+    Assert(ready.Ready, ready.Describe());
+    Assert(ready.WorkflowPolicyReady, ready.Describe());
+    Assert(ready.ArtifactUploadReady, ready.Describe());
+
+    SigtranMaintainedPeerLabRunnerPreflightReport blockedPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    SigtranMaintainedPeerLabRunnerCommandManifest blockedManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, blockedPreflight);
+    SigtranMaintainedPeerLabRunnerWorkflowReadinessReport blocked = SigtranMaintainedPeerLabRunnerWorkflowReadiness.Evaluate(blockedManifest);
+    Assert(!blocked.Ready, blocked.Describe());
+    Assert(!blocked.RunnerMaterializationReady, blocked.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
