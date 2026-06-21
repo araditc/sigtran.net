@@ -82,6 +82,12 @@ The builder rejects unknown SIGTRAN PPIDs and stream ids outside the negotiated 
 
 Native transports can use this contract before adding user messages to a channel, socket writer, or platform-specific send queue.
 
+## Cancellation And Timeouts
+
+`SctpOperationTimeoutPolicy` defines operation-specific timeouts for connect, send, receive, reconnect, and shutdown operations. It creates `SctpOperationCancellationBudget` values that expose UTC deadlines, timeout checks, and caller cancellation state.
+
+Native transports should use these budgets consistently around async socket calls so timeout behavior is deterministic and observable.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

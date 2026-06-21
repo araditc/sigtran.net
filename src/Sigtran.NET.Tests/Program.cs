@@ -286,6 +286,7 @@ Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRe
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessageBuilderValidatesStreamAndPpid);
 Run("SCTP backpressure policy gates send queue pressure", SctpBackpressurePolicyGatesSendQueuePressure);
+Run("SCTP operation timeout policy creates cancellation budgets", SctpOperationTimeoutPolicyCreatesCancellationBudgets);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
@@ -4481,6 +4482,30 @@ static void SctpBackpressurePolicyGatesSendQueuePressure()
     SctpBackpressureDecision rejectBytes = policy.Evaluate(new SctpSendQueueSnapshot(0, 9), message);
     AssertEqual(SctpBackpressureDecisionKind.Reject, rejectBytes.Kind, "SCTP backpressure byte reject decision");
     Assert(rejectBytes.Describe().Contains("queued-byte-limit-exceeded", StringComparison.Ordinal), rejectBytes.Describe());
+}
+
+static void SctpOperationTimeoutPolicyCreatesCancellationBudgets()
+{
+    SctpOperationTimeoutPolicy policy = new(
+        connectTimeout: TimeSpan.FromSeconds(7),
+        sendTimeout: TimeSpan.FromSeconds(2),
+        receiveTimeout: TimeSpan.FromSeconds(9),
+        reconnectTimeout: TimeSpan.FromSeconds(4),
+        shutdownTimeout: TimeSpan.FromSeconds(1));
+    DateTimeOffset started = DateTimeOffset.UnixEpoch;
+
+    SctpOperationCancellationBudget send = policy.CreateBudget(SctpOperationKind.Send, started);
+    AssertEqual(TimeSpan.FromSeconds(2), send.Timeout, "SCTP send timeout");
+    AssertEqual(started.AddSeconds(2), send.DeadlineUtc, "SCTP send deadline");
+    Assert(!send.IsTimedOut(started.AddSeconds(1)), send.Describe());
+    Assert(send.IsTimedOut(started.AddSeconds(2)), send.Describe());
+
+    using CancellationTokenSource cts = new();
+    cts.Cancel();
+    SctpOperationCancellationBudget receive = policy.CreateBudget(SctpOperationKind.Receive, started, cts.Token);
+    AssertEqual(TimeSpan.FromSeconds(9), receive.Timeout, "SCTP receive timeout");
+    Assert(receive.CallerCancellationRequested, receive.Describe());
+    AssertThrows<ArgumentOutOfRangeException>(() => new SctpOperationTimeoutPolicy(sendTimeout: TimeSpan.Zero));
 }
 
 static void SctpReconnectPoliciesComputeBoundedDelays()

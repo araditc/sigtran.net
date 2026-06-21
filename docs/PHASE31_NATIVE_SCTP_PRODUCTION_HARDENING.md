@@ -54,6 +54,20 @@ This keeps reconnect orchestration deterministic while leaving actual sleeping, 
 
 This gives native transports a deterministic pressure gate before accepting additional outbound user messages.
 
+## Unit 5 - Cancellation And Timeout Policy
+
+`SctpOperationTimeoutPolicy` now defines operation-specific cancellation budgets. It provides:
+
+- Connect timeout.
+- Send timeout.
+- Receive timeout.
+- Reconnect timeout.
+- Shutdown timeout.
+- UTC operation deadlines.
+- Caller cancellation visibility.
+
+This gives native transports a single timeout contract for async socket operations and graceful shutdown handling.
+
 ## Validation
 
 Each unit in this phase is validated with:
