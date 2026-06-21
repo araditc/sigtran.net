@@ -73,6 +73,7 @@ Run("SIGTRAN maintained peer lab runner provenance records source and host ident
 Run("SIGTRAN maintained peer lab runner failure classifier categorizes blockers", SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers);
 Run("SIGTRAN maintained peer lab runner retry policy gates transient failures", SigtranMaintainedPeerLabRunnerRetryPolicyGatesTransientFailures);
 Run("SIGTRAN maintained peer lab runner evidence package manifest gates handoff", SigtranMaintainedPeerLabRunnerEvidencePackageManifestGatesHandoff);
+Run("SIGTRAN maintained peer lab runner operator handoff recommends actions", SigtranMaintainedPeerLabRunnerOperatorHandoffRecommendsActions);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1557,6 +1558,52 @@ static void SigtranMaintainedPeerLabRunnerEvidencePackageManifestGatesHandoff()
     SigtranMaintainedPeerLabRunnerEvidencePackageManifest blocked = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, blockedFailures);
     Assert(!blocked.IsPackageReady, blocked.Describe());
     Assert(!blocked.HasNoBlockingFailures, blocked.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerOperatorHandoffRecommendsActions()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit9");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
+    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
+    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranMaintainedPeerLabRunnerFailureReport failures = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
+    SigtranMaintainedPeerLabRunnerEvidencePackageManifest package = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, failures);
+    SigtranMaintainedPeerLabRunnerRetryPolicy policy = SigtranMaintainedPeerLabRunnerRetryPolicy.CreateDefault();
+    SigtranMaintainedPeerLabRunnerRetryEvaluation retry = policy.Evaluate(failures, attemptNumber: 1);
+
+    SigtranMaintainedPeerLabRunnerOperatorHandoffReport ready = SigtranMaintainedPeerLabRunnerOperatorHandoffs.Create(package, retry, DateTimeOffset.UnixEpoch);
+    Assert(ready.ReadyForOperatorReview, ready.Describe());
+    Assert(ready.ReadyForCommercialPromotion, ready.Describe());
+    AssertEqual(SigtranMaintainedPeerLabRunnerOperatorAction.PromoteEvidence, ready.RecommendedAction, "maintained peer lab runner promotion action");
+    Assert(ready.RenderMarkdown().Contains("Recommended action: `PromoteEvidence`", StringComparison.Ordinal), ready.RenderMarkdown());
+
+    SigtranMaintainedPeerLabRunnerFailureReport commandFailure = new(
+        runManifest.RunId,
+        [
+            new(
+                SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution,
+                "command:Capture",
+                "Capture command failed.")
+        ]);
+    SigtranMaintainedPeerLabRunnerEvidencePackageManifest blockedPackage = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, commandFailure);
+    SigtranMaintainedPeerLabRunnerRetryEvaluation retryable = policy.Evaluate(commandFailure, attemptNumber: 1);
+    SigtranMaintainedPeerLabRunnerOperatorHandoffReport blocked = SigtranMaintainedPeerLabRunnerOperatorHandoffs.Create(blockedPackage, retryable, DateTimeOffset.UnixEpoch);
+    Assert(!blocked.ReadyForCommercialPromotion, blocked.Describe());
+    AssertEqual(SigtranMaintainedPeerLabRunnerOperatorAction.RetryRun, blocked.RecommendedAction, "maintained peer lab runner retry action");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

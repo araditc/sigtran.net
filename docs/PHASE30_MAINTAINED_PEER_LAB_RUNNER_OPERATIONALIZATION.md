@@ -105,6 +105,19 @@ The default policy treats command and selected comparison failures as potentiall
 
 The package manifest only becomes ready when artifacts, digest coverage, provenance, comparison handoff, and failure classification are all clean.
 
+## Unit 9 - Operator Handoff
+
+`SigtranMaintainedPeerLabRunnerOperatorHandoffReport` now converts package and retry state into an operator-facing decision. It records:
+
+- Operator review readiness.
+- Commercial promotion readiness.
+- Recommended action.
+- Package readiness.
+- Retry readiness.
+- Markdown rendering for handoff notes.
+
+The handoff recommends evidence promotion only when the package is ready, retry only when failures are transient, and blocker correction when evidence cannot be promoted or retried.
+
 ## Validation
 
 Each unit in this phase is validated with:
