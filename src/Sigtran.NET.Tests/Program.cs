@@ -131,6 +131,7 @@ Run("SIGTRAN resource budget requires allocation tracking", SigtranResourceBudge
 Run("SIGTRAN performance readiness separates foundation from benchmark evidence", SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence);
 Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformanceCiProfileKeepsBenchmarksOptIn);
 Run("SIGTRAN performance status summarizes foundation", SigtranPerformanceStatusSummarizesPerformanceFoundation);
+Run("SIGTRAN performance evidence workload covers peer traffic stages", SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2288,6 +2289,30 @@ static void SigtranPerformanceStatusSummarizesPerformanceFoundation()
     Assert(capabilities.Contains("performance-ci-profile"), "performance status should include performance CI profile");
     Assert(SigtranPerformanceStatus.FoundationReady, SigtranPerformanceStatus.Describe());
     Assert(!SigtranPerformanceStatus.ProductionPerformanceReady, SigtranPerformanceStatus.Describe());
+}
+
+static void SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages()
+{
+    SigtranPerformanceEvidenceWorkload workload = SigtranPerformanceEvidenceWorkloads.CreateExpectedCommercialPeerTraffic();
+
+    AssertEqual("commercial-peer-traffic", workload.Name, "performance evidence workload name");
+    Assert(workload.RequiresPeerTraffic, "commercial workload should require peer traffic");
+    Assert(workload.HasRequiredStageCoverage, workload.Describe());
+    Assert(workload.AllStagesPassed, workload.Describe());
+    Assert(workload.SupportsCommercialEvidence, workload.Describe());
+    AssertEqual(3, workload.Stages.Count, "performance evidence stage count");
+    Assert(workload.Stages.Any(stage => stage.Kind == SigtranPerformanceEvidenceStageKind.Warmup), "warmup stage should exist");
+    Assert(workload.Stages.Any(stage => stage.Kind == SigtranPerformanceEvidenceStageKind.Sustained), "sustained stage should exist");
+    Assert(workload.Stages.Any(stage => stage.Kind == SigtranPerformanceEvidenceStageKind.Peak), "peak stage should exist");
+
+    SigtranPerformanceEvidenceStage failedStage = new(
+        SigtranPerformanceEvidenceStageKind.Peak,
+        TimeSpan.FromMinutes(1),
+        50000,
+        45000,
+        100,
+        99);
+    Assert(!failedStage.Passed, failedStage.Describe());
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

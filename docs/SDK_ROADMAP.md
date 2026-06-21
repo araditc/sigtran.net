@@ -286,6 +286,15 @@ Status: Phase 31 is foundation-complete. The outbound stream and PPID framing co
 
 Status: Phase 32 is complete for SDK evidence-backed behavior. The shared protocol evidence vector and byte-level mismatch validation contract is available. SCCP has deterministic UDT, XUDT, LUDT, and UDTS evidence vectors. TCAP has deterministic Begin/Invoke/Dialogue and End/ReturnResult evidence vectors. MAP SMS has deterministic MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre evidence vectors. A cross-layer evidence bundle aggregates vector counts, duplicate-id checks, and validation pass/fail status. Ordered trace validation compares `SigtranTraceFrame` sequences against those vectors, mismatch classification recommends whether correction belongs to protocol labels, codec/vector bytes, missing capture frames, or extra artifact mapping, readiness gates separate SDK evidence-backed status from production evidence claims, status reporting summarizes completed capabilities, and final sweeps validated naming/package-neutrality. Production evidence remains blocked until retained external interoperability artifacts exist.
 
+## Phase 33 - Performance And Resilience Evidence
+
+- Capture real peer-traffic benchmark evidence with warmup, sustained, and peak stages.
+- Track latency P95/P99, throughput, message loss, CPU, memory, allocation, and failover behavior.
+- Produce a publishable performance report with retained artifact references.
+- Keep production performance claims blocked until retained benchmark evidence is complete and reviewed.
+
+Status: Phase 33 is in progress. Peer-traffic benchmark workload evidence now maps the commercial load-test plan into warmup, sustained, and peak stages with target/actual message-rate checks and message-loss validation.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

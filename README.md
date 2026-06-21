@@ -68,6 +68,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Maintained peer lab runner operations | Phase 30 foundation-ready: file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, operator handoff, and operations status contracts are available; commercial release still requires execution against a real maintained external peer |
 | Native SCTP production hardening | Phase 31 foundation-complete: outbound stream/PPID framing, association lifecycle journal, reconnect schedule, send backpressure, cancellation/timeout, multi-homing readiness, fault recovery, transport diagnostics, production hardening readiness gate, and status reporting are available; production readiness still requires retained Linux SCTP and external peer evidence |
 | SCCP/TCAP/MAP evidence upgrade | Phase 32 SDK evidence-backed: shared protocol evidence vectors, SCCP/TCAP/MAP SMS evidence suites, cross-layer evidence bundle, ordered trace validation, actionable mismatch classification, SDK evidence-backed readiness gates, status reporting, and final validation are available; production evidence remains blocked until retained external interoperability artifacts exist |
+| Performance and resilience evidence | Phase 33 in progress: peer-traffic benchmark workload evidence now models warmup, sustained, and peak stages with throughput and message-loss checks; publishable performance evidence still requires real retained peer benchmark artifacts |
 
 ## Requirements
 
@@ -202,6 +203,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 31 Summary](docs/PHASE31_SUMMARY.md)
 - [Phase 32 SCCP TCAP MAP Evidence Upgrade](docs/PHASE32_SCCP_TCAP_MAP_EVIDENCE_UPGRADE.md)
 - [Phase 32 Summary](docs/PHASE32_SUMMARY.md)
+- [Phase 33 Performance Resilience Evidence](docs/PHASE33_PERFORMANCE_RESILIENCE_EVIDENCE.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
@@ -227,6 +229,7 @@ Phase 29 completed the maintained peer lab runner materialization layer, includi
 Phase 30 completed the maintained peer lab runner operationalization layer, including reviewable file materialization, structured execution logs, command outcomes, artifact verification, runner provenance, failure classification, retry policy, evidence package manifests, operator handoff reports, and operations status reporting for real lab execution.
 Phase 31 completed the native SCTP production hardening foundation, including outbound stream and PPID framing, association lifecycle journaling, reconnect scheduling, send backpressure, cancellation/timeout policy, multi-homing readiness, deterministic fault recovery, transport diagnostics snapshots, production hardening readiness gates, and status reporting.
 Phase 32 completed the SCCP, TCAP, and MAP SMS SDK evidence-backed upgrade, with shared byte-level evidence vector validation, SCCP/TCAP/MAP SMS evidence vectors, a cross-layer evidence bundle, ordered trace validation, mismatch classification, an SDK evidence-backed readiness gate, status reporting, and final validation in place while production claims remain tied to retained external interoperability artifacts.
+Phase 33 upgrades performance and resilience evidence, starting with a peer-traffic benchmark workload contract that requires warmup, sustained, and peak stages before latency, resource, failover, and publishable report evidence are accepted.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
