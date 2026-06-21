@@ -76,6 +76,12 @@ Fixed mode always uses one stream id. Round-robin mode applies modulo to a calle
 
 The builder rejects unknown SIGTRAN PPIDs and stream ids outside the negotiated outbound stream count. This keeps the native send boundary deterministic and reviewable before platform-specific SCTP APIs are used.
 
+## Send Backpressure
+
+`SctpBackpressurePolicy` evaluates send queue pressure from `SctpSendQueueSnapshot` and an outbound message. It returns enqueue, drain, or reject decisions based on queued message count, queued bytes, and configured drain thresholds.
+
+Native transports can use this contract before adding user messages to a channel, socket writer, or platform-specific send queue.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

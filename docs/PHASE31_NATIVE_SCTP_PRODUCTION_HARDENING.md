@@ -41,6 +41,19 @@ This makes association behavior auditable across connect, reconnect, shutdown, a
 
 This keeps reconnect orchestration deterministic while leaving actual sleeping, socket recreation, and peer-specific recovery to the transport implementation.
 
+## Unit 4 - Send Backpressure Policy
+
+`SctpBackpressurePolicy` now defines send queue pressure decisions. It provides:
+
+- Queue message and byte snapshots.
+- Maximum queued message limits.
+- Maximum queued byte limits.
+- Drain thresholds.
+- Enqueue, drain, and reject decisions.
+- Compact diagnostic summaries.
+
+This gives native transports a deterministic pressure gate before accepting additional outbound user messages.
+
 ## Validation
 
 Each unit in this phase is validated with:

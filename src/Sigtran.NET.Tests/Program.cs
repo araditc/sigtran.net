@@ -285,6 +285,7 @@ Run("SCTP connection options validate endpoints and stream counts", SctpConnecti
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessageBuilderValidatesStreamAndPpid);
+Run("SCTP backpressure policy gates send queue pressure", SctpBackpressurePolicyGatesSendQueuePressure);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
@@ -4452,6 +4453,34 @@ static void SctpOutboundMessageBuilderValidatesStreamAndPpid()
         !SctpOutboundMessageBuilder.TryCreate(new byte[] { 0x01 }, oneStream, streamPolicy, sequence: 3, out _, out error),
         "stream outside negotiated count should be rejected");
     Assert(error!.Contains("outside the negotiated outbound stream count", StringComparison.Ordinal), error);
+}
+
+static void SctpBackpressurePolicyGatesSendQueuePressure()
+{
+    SctpBackpressurePolicy policy = new(
+        maxQueuedMessages: 3,
+        maxQueuedBytes: 10,
+        drainAtQueuedMessages: 2,
+        drainAtQueuedBytes: 8);
+    SctpOutboundMessage message = new(new byte[] { 0x01, 0x02, 0x03 }, new SctpPayloadMetadata(0, SctpPayloadProtocolIdentifiers.M3ua));
+
+    SctpBackpressureDecision enqueue = policy.Evaluate(new SctpSendQueueSnapshot(0, 0), message);
+    AssertEqual(SctpBackpressureDecisionKind.Enqueue, enqueue.Kind, "SCTP backpressure enqueue decision");
+    Assert(enqueue.CanAccept, enqueue.Describe());
+    Assert(!enqueue.ShouldDrain, enqueue.Describe());
+
+    SctpBackpressureDecision drain = policy.Evaluate(new SctpSendQueueSnapshot(1, 5), message);
+    AssertEqual(SctpBackpressureDecisionKind.Drain, drain.Kind, "SCTP backpressure drain decision");
+    Assert(drain.CanAccept, drain.Describe());
+    Assert(drain.ShouldDrain, drain.Describe());
+
+    SctpBackpressureDecision rejectMessages = policy.Evaluate(new SctpSendQueueSnapshot(3, 1), message);
+    AssertEqual(SctpBackpressureDecisionKind.Reject, rejectMessages.Kind, "SCTP backpressure message reject decision");
+    Assert(!rejectMessages.CanAccept, rejectMessages.Describe());
+
+    SctpBackpressureDecision rejectBytes = policy.Evaluate(new SctpSendQueueSnapshot(0, 9), message);
+    AssertEqual(SctpBackpressureDecisionKind.Reject, rejectBytes.Kind, "SCTP backpressure byte reject decision");
+    Assert(rejectBytes.Describe().Contains("queued-byte-limit-exceeded", StringComparison.Ordinal), rejectBytes.Describe());
 }
 
 static void SctpReconnectPoliciesComputeBoundedDelays()
