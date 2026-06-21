@@ -261,6 +261,14 @@ Status: Phase 28 is foundation-complete. It has a run manifest that aggregates b
 
 Status: Phase 29 is foundation-complete. It has deterministic maintained peer lab runner workspace, execution input bundle, output artifact materialization, preflight, command manifest, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting contracts. Commercial readiness still requires a real maintained peer lab execution with retained digest-covered runner evidence.
 
+## Phase 30 - Maintained Peer Lab Runner Operationalization
+
+- Operationalize runner materialization with reviewable file creation, execution logs, command outcomes, artifact verification, provenance, failure handling, retry policy, evidence packaging, and operator handoff.
+- Keep runner operations package-neutral and separate from real retained lab evidence.
+- Prepare real maintained peer lab execution without manufacturing passing artifacts.
+
+Status: Phase 30 has started with reviewable file materialization plan rendering.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

@@ -65,6 +65,7 @@ Run("SIGTRAN maintained peer lab runner digests cover retained artifacts", Sigtr
 Run("SIGTRAN maintained peer lab runner comparison handoff creates evidence bundle", SigtranMaintainedPeerLabRunnerComparisonHandoffCreatesEvidenceBundle);
 Run("SIGTRAN maintained peer lab runner workflow readiness gates execution", SigtranMaintainedPeerLabRunnerWorkflowReadinessGatesExecution);
 Run("SIGTRAN maintained peer lab runner status summarizes completion", SigtranMaintainedPeerLabRunnerStatusSummarizesCompletion);
+Run("SIGTRAN maintained peer lab runner file materialization renders shell plan", SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1310,6 +1311,22 @@ static void SigtranMaintainedPeerLabRunnerStatusSummarizesCompletion()
     Assert(commercial.FoundationReady, commercial.Describe());
     Assert(commercial.RunnerEvidenceReady, commercial.Describe());
     Assert(commercial.CommercialReady, commercial.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit1");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerFileMaterializationPlan plan = SigtranMaintainedPeerLabRunnerFileMaterialization.CreateDefault(inputs);
+    string script = plan.RenderShellScript();
+
+    Assert(plan.IsMaterializationReady, plan.Describe());
+    AssertEqual(9, plan.Directories.Count, "maintained peer lab runner materialization directory count");
+    AssertEqual(2, plan.InputFiles.Count, "maintained peer lab runner materialization input count");
+    Assert(script.StartsWith("#!/usr/bin/env bash", StringComparison.Ordinal), script);
+    Assert(script.Contains("mkdir -p 'artifacts/external-peer/maintained/config'", StringComparison.Ordinal), script);
+    Assert(script.Contains("cat > 'artifacts/external-peer/maintained/config/phase30-unit1-peer.env'", StringComparison.Ordinal), script);
+    Assert(script.Contains("chmod +x 'artifacts/external-peer/maintained/scripts/maintained-peer-lab/phase30-unit1.sh'", StringComparison.Ordinal), script);
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
