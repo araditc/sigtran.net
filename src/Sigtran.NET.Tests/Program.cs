@@ -178,6 +178,7 @@ Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtoc
 Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
 Run("SIGTRAN protocol evidence trace validator checks ordered frames", SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames);
 Run("SIGTRAN protocol evidence mismatch classifier recommends correction actions", SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions);
+Run("SIGTRAN protocol evidence readiness separates SDK evidence from production claims", SigtranProtocolEvidenceReadinessSeparatesSdkEvidenceFromProductionClaims);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2899,6 +2900,22 @@ static void SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions
     Assert(unexpectedFrame.RequiresTraceCorrection, unexpectedFrame.Describe());
     Assert(unexpectedFrame.Findings.Any(finding => finding.Kind == SigtranProtocolEvidenceMismatchKind.UnexpectedTraceFrame
         && finding.RecommendedAction == "map-or-trim-unexpected-trace-frame"), "unexpected frame should recommend artifact mapping correction");
+}
+
+static void SigtranProtocolEvidenceReadinessSeparatesSdkEvidenceFromProductionClaims()
+{
+    SigtranProtocolEvidenceReadinessReport current = SigtranProtocolEvidenceReadiness.GetReport();
+
+    Assert(current.FoundationReady, current.Describe());
+    Assert(current.SdkEvidenceBacked, current.Describe());
+    Assert(!current.ProductionEvidenceReady, current.Describe());
+    Assert(current.Blockers.Contains("external-protocol-interoperability-evidence-required"), "current readiness should require external protocol evidence");
+
+    SigtranProtocolEvidenceReadinessReport retainedExternal = SigtranProtocolEvidenceReadiness.GetReport(hasExternalInteroperabilityEvidence: true);
+    Assert(retainedExternal.FoundationReady, retainedExternal.Describe());
+    Assert(retainedExternal.SdkEvidenceBacked, retainedExternal.Describe());
+    Assert(retainedExternal.ProductionEvidenceReady, retainedExternal.Describe());
+    AssertEqual(0, retainedExternal.Blockers.Count, "protocol evidence production blocker count");
 }
 
 static SigtranTraceFrame[] CreateEvidenceTraceFrames(IReadOnlyList<SigtranProtocolEvidenceVector> vectors)

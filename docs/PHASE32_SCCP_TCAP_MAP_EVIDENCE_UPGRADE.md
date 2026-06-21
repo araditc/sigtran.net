@@ -87,6 +87,16 @@ This connects deterministic SDK vectors to captured trace output so later lab ar
 
 Each finding includes a stable recommended action token such as `fix-trace-protocol-label`, `fix-codec-or-reference-vector`, `capture-missing-trace-frame`, or `map-or-trim-unexpected-trace-frame`. This gives lab comparison reports a deterministic way to decide whether the next correction belongs in the SDK codec, the reference vector, the trace capture, or the artifact mapping.
 
+## Unit 8 - Evidence-Backed Readiness Gates
+
+`SigtranProtocolEvidenceReadiness` now reports three distinct readiness levels:
+
+- `FoundationReady`: SCCP, TCAP, and MAP SMS foundations are present.
+- `SdkEvidenceBacked`: deterministic SDK vectors, cross-layer validation, trace validation, and mismatch classification are all clean.
+- `ProductionEvidenceReady`: SDK evidence is backed by retained external interoperability evidence.
+
+The default report marks SDK evidence as backed while keeping production evidence blocked by `external-protocol-interoperability-evidence-required`. This prevents the SDK from treating deterministic internal vectors as a substitute for real external PCAP, peer logs, SDK traces, and comparison artifacts.
+
 ## Validation
 
 Each unit in this phase is validated with:
