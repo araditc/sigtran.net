@@ -47,6 +47,7 @@ Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranM
 Run("SIGTRAN maintained peer lab status separates foundation from evidence", SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence);
 Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts);
 Run("SIGTRAN maintained peer lab environment file renders manifest values", SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues);
+Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -943,6 +944,25 @@ static void SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues()
         .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase);
     SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.FromEnvironment(configurationEnvironment);
     Assert(configuration.Validate().IsValid, configuration.Validate().Describe());
+}
+
+static void SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit3");
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+    SigtranMaintainedPeerLabArtifactDigestManifest manifest = SigtranMaintainedPeerLabArtifactDigestManifests.CreateDigestCovered(runManifest.ArtifactPlan, digest);
+    AssertEqual(6, manifest.Digests.Count, "maintained peer lab digest count");
+    Assert(manifest.CoversRequiredArtifacts, manifest.Describe());
+    Assert(manifest.HasValidDigests, manifest.Describe());
+    Assert(manifest.IsHandoffReady, manifest.Describe());
+    AssertEqual(6, manifest.ToEvidenceArtifacts().Count, "maintained peer lab evidence artifact count");
+
+    SigtranMaintainedPeerLabArtifactDigestManifest invalid = new(
+        runManifest.ArtifactPlan,
+        [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
+    Assert(!invalid.IsHandoffReady, invalid.Describe());
+    Assert(!invalid.HasValidDigests, invalid.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

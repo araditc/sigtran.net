@@ -27,6 +27,16 @@ The manifest is executable only when every foundation contract is present and in
 
 This gives real lab scripts a stable input file while keeping package-specific values in configuration rather than public type names.
 
+## Unit 3 - Artifact Digest Manifest
+
+`SigtranMaintainedPeerLabArtifactDigestManifest` now records SHA-256 digest entries for every planned retained artifact. Handoff is ready only when:
+
+- Every required planned artifact has a digest entry.
+- Every digest is a valid SHA-256 hex value.
+- The digest manifest can be converted into retained evidence artifacts for promotion gates.
+
+The manifest does not generate digests itself. Real lab automation must calculate the digests from retained files and pass them into this contract.
+
 ## Validation
 
 Each unit in this phase is validated with:
