@@ -84,6 +84,18 @@ This keeps lab execution evidence explicit: a passing comparison alone is not en
 
 The bundle can produce the maintained peer lab evidence promotion report, but invalid digest manifests are intentionally blocked instead of being treated as commercial evidence.
 
+## Unit 8 - Workflow Template
+
+`SigtranMaintainedPeerLabWorkflowTemplate` now renders a guarded GitHub Actions workflow template for maintained peer lab execution. The template is intentionally:
+
+- Manual-dispatch only.
+- Self-hosted Linux runner only.
+- Read-only for repository contents.
+- Artifact-upload enabled for retained PCAP, logs, config, traces, comparison reports, and run reports.
+- Not safe for default pull request CI.
+
+The SDK exposes this as a renderable contract instead of adding an always-active workflow file, so maintainers can choose when a real lab runner is available.
+
 ## Validation
 
 Each unit in this phase is validated with:

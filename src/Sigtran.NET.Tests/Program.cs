@@ -52,6 +52,7 @@ Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMa
 Run("SIGTRAN maintained peer lab comparison report renders trace outcome", SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome);
 Run("SIGTRAN maintained peer lab run report records step outcomes", SigtranMaintainedPeerLabRunReportRecordsStepOutcomes);
 Run("SIGTRAN maintained peer lab evidence bundle creates promotion report", SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport);
+Run("SIGTRAN maintained peer lab workflow template is manual and self-hosted", SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1043,6 +1044,23 @@ static void SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport()
 
     Assert(!invalid.IsHandoffReady, invalid.Describe());
     Assert(!invalid.ToEvidenceReport().PromotionReady, invalid.ToEvidenceReport().Describe());
+}
+
+static void SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted()
+{
+    SigtranMaintainedPeerLabWorkflowTemplate template = SigtranMaintainedPeerLabWorkflows.CreateDefault();
+    string yaml = template.RenderYaml();
+
+    AssertEqual(".github/workflows/maintained-peer-lab.yml", template.Path, "maintained peer lab workflow path");
+    Assert(template.ManualDispatchOnly, template.Describe());
+    Assert(template.RequiresSelfHostedLinux, template.Describe());
+    Assert(!template.SafeForDefaultCi, template.Describe());
+    Assert(template.IsReady, template.Describe());
+    Assert(yaml.Contains("workflow_dispatch", StringComparison.Ordinal), yaml);
+    Assert(yaml.Contains("self-hosted", StringComparison.Ordinal), yaml);
+    Assert(yaml.Contains("actions/upload-artifact@v4", StringComparison.Ordinal), yaml);
+    Assert(yaml.Contains("artifacts/external-peer/**/pcap/*.pcap", StringComparison.Ordinal), yaml);
+    Assert(!yaml.Contains("pull_request", StringComparison.Ordinal), yaml);
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
