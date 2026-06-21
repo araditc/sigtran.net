@@ -28,6 +28,19 @@ This gives native transports a hardened send boundary before payloads are passed
 
 This makes association behavior auditable across connect, reconnect, shutdown, and failure paths.
 
+## Unit 3 - Reconnect Schedule
+
+`SctpReconnectSchedule` now turns a reconnect policy into deterministic retry entries. It provides:
+
+- Attempt numbers.
+- Bounded reconnect delays.
+- Scheduled UTC attempt times.
+- Next-attempt lookup.
+- Exhaustion checks.
+- Disabled reconnect handling.
+
+This keeps reconnect orchestration deterministic while leaving actual sleeping, socket recreation, and peer-specific recovery to the transport implementation.
+
 ## Validation
 
 Each unit in this phase is validated with:

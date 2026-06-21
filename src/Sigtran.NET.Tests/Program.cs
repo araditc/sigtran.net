@@ -286,6 +286,7 @@ Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRe
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
 Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessageBuilderValidatesStreamAndPpid);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
+Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
 Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
@@ -4467,6 +4468,30 @@ static void SctpReconnectPoliciesComputeBoundedDelays()
     AssertEqual(TimeSpan.FromMilliseconds(250), policy.GetDelay(3), "bounded reconnect delay");
     AssertThrows<ArgumentOutOfRangeException>(() => new SctpReconnectPolicy(maxAttempts: -1));
     AssertThrows<ArgumentOutOfRangeException>(() => policy.GetDelay(0));
+}
+
+static void SctpReconnectSchedulesProduceDeterministicAttempts()
+{
+    SctpReconnectPolicy policy = new(
+        maxAttempts: 3,
+        initialDelay: TimeSpan.FromSeconds(1),
+        maxDelay: TimeSpan.FromSeconds(3),
+        backoffMultiplier: 2.0);
+    DateTimeOffset failedAt = DateTimeOffset.UnixEpoch;
+
+    SctpReconnectSchedule schedule = SctpReconnectSchedules.Create(policy, failedAt);
+    Assert(schedule.IsEnabled, schedule.Describe());
+    AssertEqual(3, schedule.Entries.Count, "SCTP reconnect schedule count");
+    AssertEqual(TimeSpan.FromSeconds(1), schedule.Entries[0].Delay, "SCTP reconnect first delay");
+    AssertEqual(TimeSpan.FromSeconds(2), schedule.Entries[1].Delay, "SCTP reconnect second delay");
+    AssertEqual(TimeSpan.FromSeconds(3), schedule.Entries[2].Delay, "SCTP reconnect bounded delay");
+    AssertEqual(DateTimeOffset.UnixEpoch.AddSeconds(2), schedule.GetNextAttempt(1)!.Value.ScheduledUtc, "SCTP reconnect next scheduled time");
+    Assert(schedule.IsExhausted(3), schedule.Describe());
+    Assert(schedule.GetNextAttempt(3) is null, "exhausted schedule should not return next attempt");
+
+    SctpReconnectSchedule disabled = SctpReconnectSchedules.Create(new SctpReconnectPolicy(maxAttempts: 0), failedAt);
+    Assert(!disabled.IsEnabled, disabled.Describe());
+    AssertEqual(0, disabled.Entries.Count, "disabled SCTP reconnect schedule count");
 }
 
 static void SctpTransportHealthSnapshotsExposeAssociationDetails()

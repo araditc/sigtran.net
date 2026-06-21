@@ -90,6 +90,8 @@ SctpReconnectPolicy reconnect = new(
 
 The policy is deterministic and does not sleep by itself. Transport implementations call `GetDelay(attempt)` and decide how to schedule reconnect attempts.
 
+`SctpReconnectSchedule` converts a policy and failure timestamp into deterministic scheduled attempts. It exposes attempt entries, next-attempt lookup, and exhaustion checks so native transports can separate retry planning from socket recreation and timers.
+
 ## Health Snapshot
 
 `SctpTransportHealth` is the shared health shape for native and adapter transports. It captures association state, endpoints, negotiated stream counts, default PPID, and sent/received message counters.
