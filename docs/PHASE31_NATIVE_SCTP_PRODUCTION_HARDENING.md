@@ -81,6 +81,18 @@ This gives native transports a single timeout contract for async socket operatio
 
 This gives production transports a reviewable readiness gate before binding or connecting SCTP associations that require multiple local or remote addresses.
 
+## Unit 7 - Fault Classification And Recovery
+
+`SctpTransportFault`, `SctpFaultRecovery`, and `SctpRecoveryDecision` now define deterministic recovery decisions for SCTP transport failures. They provide:
+
+- Fault categories for timeouts, peer closure, peer reset, socket errors, backpressure rejection, caller cancellation, and protocol errors.
+- Recovery actions for retry, reconnect, close, and fail-fast outcomes.
+- Reconnect schedule integration.
+- Exhausted reconnect detection.
+- Compact diagnostic summaries.
+
+This gives production transports a single decision point for association recovery instead of scattering retry behavior across socket callbacks and exception handlers.
+
 ## Validation
 
 Each unit in this phase is validated with:

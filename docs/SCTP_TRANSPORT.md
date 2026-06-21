@@ -96,6 +96,14 @@ Native transports should use these budgets consistently around async socket call
 
 This contract is intentionally package-neutral. Platform-specific transports can map the endpoint set to their own bind/connect APIs after the SDK has validated that the configuration is reviewable.
 
+## Fault Recovery
+
+`SctpTransportFaultKind` classifies transport-level failures such as connect timeout, send timeout, receive timeout, peer reset, socket error, backpressure rejection, caller cancellation, and protocol error.
+
+`SctpFaultRecovery.Decide(...)` combines a fault with an `SctpReconnectSchedule` and returns a `SctpRecoveryDecision`. Reconnectable faults schedule the next reconnect attempt while the schedule has capacity; exhausted reconnect schedules fail fast. Backpressure rejection asks the caller to retry after drain, caller cancellation closes the association, and protocol errors fail fast for operator attention.
+
+Native transports should record the decision in diagnostics before reconnecting or closing the association.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

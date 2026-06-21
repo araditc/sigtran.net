@@ -288,6 +288,7 @@ Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessa
 Run("SCTP backpressure policy gates send queue pressure", SctpBackpressurePolicyGatesSendQueuePressure);
 Run("SCTP operation timeout policy creates cancellation budgets", SctpOperationTimeoutPolicyCreatesCancellationBudgets);
 Run("SCTP multi-homing readiness evaluates endpoint sets", SctpMultiHomingReadinessEvaluatesEndpointSets);
+Run("SCTP fault recovery selects deterministic actions", SctpFaultRecoverySelectsDeterministicActions);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
@@ -4549,6 +4550,44 @@ static void SctpMultiHomingReadinessEvaluatesEndpointSets()
     Assert(duplicateReport.Warnings.Contains("duplicate-endpoint"), duplicateReport.Describe());
 
     AssertThrows<ArgumentException>(() => new SctpMultiHomingEndpointSet(Array.Empty<SctpEndpoint>()));
+}
+
+static void SctpFaultRecoverySelectsDeterministicActions()
+{
+    SctpReconnectSchedule schedule = SctpReconnectSchedules.Create(
+        new SctpReconnectPolicy(maxAttempts: 2, initialDelay: TimeSpan.FromSeconds(1), maxDelay: TimeSpan.FromSeconds(5)),
+        DateTimeOffset.UnixEpoch);
+
+    SctpRecoveryDecision socketDecision = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.SocketError, "send failed"),
+        schedule);
+    AssertEqual(SctpRecoveryAction.ReconnectAssociation, socketDecision.Action, socketDecision.Describe());
+    Assert(socketDecision.ShouldReconnect, socketDecision.Describe());
+    AssertEqual(1, socketDecision.NextReconnectAttempt?.Attempt, "SCTP next reconnect attempt");
+
+    SctpRecoveryDecision exhausted = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.PeerReset, "peer reset"),
+        schedule,
+        completedReconnectAttempts: 2);
+    AssertEqual(SctpRecoveryAction.FailFast, exhausted.Action, exhausted.Describe());
+    Assert(exhausted.ShouldFailFast, exhausted.Describe());
+
+    SctpRecoveryDecision backpressure = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.BackpressureRejected, "queue full"),
+        schedule);
+    AssertEqual(SctpRecoveryAction.RetryOperation, backpressure.Action, backpressure.Describe());
+
+    SctpRecoveryDecision cancelled = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.CallerCancelled, "caller aborted"),
+        schedule);
+    AssertEqual(SctpRecoveryAction.CloseAssociation, cancelled.Action, cancelled.Describe());
+
+    SctpRecoveryDecision protocol = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.ProtocolError, "invalid chunk sequence"),
+        schedule);
+    AssertEqual(SctpRecoveryAction.FailFast, protocol.Action, protocol.Describe());
+
+    AssertThrows<ArgumentException>(() => new SctpTransportFault(SctpTransportFaultKind.Unknown, ""));
 }
 
 static void SctpReconnectPoliciesComputeBoundedDelays()
