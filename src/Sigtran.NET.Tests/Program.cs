@@ -51,6 +51,7 @@ Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", Sigtra
 Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMaintainedPeerLabCommandScriptRendersCommandPlan);
 Run("SIGTRAN maintained peer lab comparison report renders trace outcome", SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome);
 Run("SIGTRAN maintained peer lab run report records step outcomes", SigtranMaintainedPeerLabRunReportRecordsStepOutcomes);
+Run("SIGTRAN maintained peer lab evidence bundle creates promotion report", SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1015,6 +1016,33 @@ static void SigtranMaintainedPeerLabRunReportRecordsStepOutcomes()
         [new SigtranMaintainedPeerLabStepResult(SigtranMaintainedPeerLabCommandKind.Prepare, SigtranMaintainedPeerLabStepStatus.Failed, DateTimeOffset.UnixEpoch)],
         comparison);
     Assert(!failed.Passed, failed.Describe());
+}
+
+static void SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport()
+{
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    SigtranMaintainedPeerLabEvidenceBundle bundle = SigtranMaintainedPeerLabEvidenceBundles.CreatePassing("phase28-unit7", digest, DateTimeOffset.UnixEpoch);
+
+    Assert(bundle.UsesConsistentRun, bundle.Describe());
+    Assert(bundle.IsHandoffReady, bundle.Describe());
+    SigtranMaintainedPeerLabEvidenceReport evidence = bundle.ToEvidenceReport();
+    Assert(evidence.PromotionReady, evidence.Describe());
+    AssertEqual(6, evidence.Artifacts.Count, "maintained peer lab evidence bundle artifact count");
+    Assert(bundle.Describe().Contains("handoff=True", StringComparison.Ordinal), bundle.Describe());
+
+    SigtranMaintainedPeerLabArtifactDigestManifest invalidDigestManifest = new(
+        bundle.RunManifest.ArtifactPlan,
+        [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
+    SigtranMaintainedPeerLabEvidenceBundle invalid = new(
+        bundle.RunManifest,
+        bundle.EnvironmentFile,
+        bundle.CommandScript,
+        bundle.ComparisonReport,
+        bundle.RunReport,
+        invalidDigestManifest);
+
+    Assert(!invalid.IsHandoffReady, invalid.Describe());
+    Assert(!invalid.ToEvidenceReport().PromotionReady, invalid.ToEvidenceReport().Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

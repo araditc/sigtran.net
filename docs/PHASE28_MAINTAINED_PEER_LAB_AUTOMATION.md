@@ -72,6 +72,18 @@ This report is designed to become the retained comparison artifact referenced by
 
 This keeps lab execution evidence explicit: a passing comparison alone is not enough unless every command step also passed.
 
+## Unit 7 - Evidence Bundle Handoff
+
+`SigtranMaintainedPeerLabEvidenceBundle` now joins the executable manifest, rendered environment file, command script, comparison report, run report, and digest manifest into one handoff object. The bundle is handoff-ready only when:
+
+- Every component references the same run id.
+- The manifest is executable.
+- The rendered script covers the command plan.
+- Comparison and run reports are passing.
+- Retained artifacts are digest-covered with valid SHA-256 values.
+
+The bundle can produce the maintained peer lab evidence promotion report, but invalid digest manifests are intentionally blocked instead of being treated as commercial evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:
