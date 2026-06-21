@@ -43,6 +43,7 @@ Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", 
 Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps);
 Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence);
 Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifacts", SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
+Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -863,6 +864,20 @@ static void SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifact
     Assert(!missingDigest.HasRequiredArtifacts, missingDigest.Describe());
     Assert(!missingDigest.HasDigestCoverage, missingDigest.Describe());
     Assert(missingDigest.Describe().Contains("promotion=False", StringComparison.Ordinal), missingDigest.Describe());
+}
+
+static void SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted()
+{
+    SigtranMaintainedPeerLabCiProfile profile = SigtranMaintainedPeerLabCi.CreateDefault();
+
+    AssertEqual("maintained-peer-lab", profile.Name, "maintained peer lab CI profile name");
+    Assert(profile.ManualDispatchOnly, profile.Describe());
+    Assert(profile.RequiresSelfHostedLinux, profile.Describe());
+    Assert(!profile.SafeForDefaultCi, profile.Describe());
+    Assert(profile.RequiredEnvironmentVariables.Contains(SigtranMaintainedPeerLabBindings.PackageEnvironmentVariable), "CI profile should require peer package variable");
+    Assert(profile.RequiredEnvironmentVariables.Contains("LOCAL_SCTP_PORT"), "CI profile should require local SCTP port");
+    Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/pcap/", StringComparison.Ordinal)), "CI profile should upload PCAP artifacts");
+    Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/comparison/", StringComparison.Ordinal)), "CI profile should upload comparison artifacts");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

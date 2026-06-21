@@ -96,6 +96,17 @@ The catalog flattens these vectors into an ordered expected message sequence so 
 
 This keeps commercial readiness honest: a command plan or artifact plan is not treated as proof until retained outputs and digests exist.
 
+## Unit 9 - CI Profile
+
+`SigtranMaintainedPeerLabCi` now defines the CI execution policy for the maintained peer lab:
+
+- Manual dispatch only.
+- Self-hosted Linux runner required.
+- Environment variables required for peer binding and SCTP endpoints.
+- Artifact upload patterns for PCAP, logs, config, traces, comparison, and reports.
+
+The profile is deliberately not safe for default pull request CI because it depends on native SCTP, packet capture permissions, retained artifacts, and a configured maintained peer package.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -137,4 +148,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, the traffic vector catalog yields a comparable expected message sequence, and evidence promotion is blocked without complete digest-covered artifacts.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, the traffic vector catalog yields a comparable expected message sequence, evidence promotion is blocked without complete digest-covered artifacts, and CI remains manual/self-hosted for real lab execution.
