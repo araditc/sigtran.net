@@ -137,6 +137,7 @@ Run("SIGTRAN performance latency evidence evaluates P95 and P99 budgets", Sigtra
 Run("SIGTRAN performance resource evidence evaluates CPU memory and allocations", SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations);
 Run("SIGTRAN performance resilience evidence gates failover recovery", SigtranPerformanceResilienceEvidenceGatesFailoverRecovery);
 Run("SIGTRAN performance evidence report renders publishable benchmark summary", SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary);
+Run("SIGTRAN performance evidence gate separates reports from production claims", SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2483,6 +2484,25 @@ static SigtranPerformanceEvidenceReport CreatePassingPerformanceEvidenceReport()
             DateTimeOffset.UnixEpoch + TimeSpan.FromSeconds(2),
             TimeSpan.FromSeconds(5)),
         DateTimeOffset.UnixEpoch);
+}
+
+static void SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims()
+{
+    SigtranPerformanceEvidenceGateResult missing = SigtranPerformanceEvidenceGate.Evaluate(null, commercialReady: false);
+    Assert(!missing.CanClaimProductionPerformance, missing.Describe());
+    Assert(missing.Reasons.Contains("publishable-performance-report-required"), "missing performance report should block gate");
+    Assert(missing.Reasons.Contains("commercial-readiness-required"), "missing commercial readiness should block gate");
+
+    SigtranPerformanceEvidenceReport report = CreatePassingPerformanceEvidenceReport();
+    SigtranPerformanceEvidenceGateResult reportOnly = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady: false);
+    Assert(reportOnly.FoundationReady, reportOnly.Describe());
+    Assert(reportOnly.ReportPublishable, reportOnly.Describe());
+    Assert(!reportOnly.CanClaimProductionPerformance, reportOnly.Describe());
+    Assert(reportOnly.Reasons.Contains("commercial-readiness-required"), "commercial readiness should remain required");
+
+    SigtranPerformanceEvidenceGateResult ready = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady: true);
+    Assert(ready.CanClaimProductionPerformance, ready.Describe());
+    AssertEqual(0, ready.Reasons.Count, "performance evidence gate reason count");
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

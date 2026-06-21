@@ -79,6 +79,16 @@ The evidence records recovery duration and lost messages, then gates commercial 
 
 The report exposes a single `Publishable` gate and can render a Markdown benchmark summary suitable for release evidence review. The report only becomes publishable when workload/artifacts, latency, resource, and resilience gates all pass.
 
+## Unit 7 - Production Performance Evidence Gate
+
+`SigtranPerformanceEvidenceGate` now connects publishable benchmark reports to production performance claims. The gate requires:
+
+- Performance foundation readiness.
+- A publishable performance evidence report.
+- Wider commercial readiness.
+
+This keeps retained benchmark evidence separate from production claims. A report can be complete and publishable while production performance still remains blocked by `commercial-readiness-required`.
+
 ## Validation
 
 Each unit in this phase is validated with:
