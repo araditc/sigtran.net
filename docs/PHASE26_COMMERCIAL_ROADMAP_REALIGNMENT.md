@@ -23,6 +23,19 @@ Renamed source surfaces:
 
 Commercial evidence now uses `ExternalPeerInterop` as the evidence area. The retained OpenSS7/IPSS7 failure remains valid blocker evidence, but it is represented as one external peer trial rather than as the SDK's permanent interoperability gate.
 
+## Unit 2 - External Peer Profile Model
+
+`SigtranInteropPeerProfile` now records `SupportModel` so release evidence can distinguish maintained peer stacks, legacy references, operator-provided peers, and simulators.
+
+The default profile is package-neutral:
+
+- Stable id: `external-sigtran-sg`.
+- Product label: maintained SIGTRAN peer.
+- Transport: `SCTP/M3UA`.
+- Support model: maintained peer stack.
+
+`IsMaintainedCommercialCandidate` is true only for a maintained Signalling Gateway profile with M3UA transport. This keeps simulator and legacy evidence useful for development without allowing it to satisfy the commercial peer gate.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

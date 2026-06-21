@@ -33,7 +33,8 @@ Run("SIGTRAN commercialization status summarizes foundation", SigtranCommerciali
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
-Run("SIGTRAN OpenSS7 interop profile exposes M3UA ASP-to-SG template", SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate);
+Run("SIGTRAN external peer profile exposes M3UA ASP-to-SG template", SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate);
+Run("SIGTRAN external peer profile marks maintained commercial candidates", SigtranExternalPeerProfileMarksMaintainedCommercialCandidates);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -621,16 +622,36 @@ static void SigtranInteropLabRunReportIdentifiesPassingEvidence()
 static void SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate()
 {
     SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
-    AssertEqual("external-sigtran-sg", profile.Id, "OpenSS7 peer id");
-    AssertEqual(SigtranInteropPeerRole.SignallingGateway, profile.Role, "OpenSS7 peer role");
-    AssertEqual(SigtranInteropPeerProfiles.ExternalPeerIpSs7ManualUrl, profile.ReferenceUrl, "OpenSS7 reference URL");
+    AssertEqual("external-sigtran-sg", profile.Id, "external peer id");
+    AssertEqual(SigtranInteropPeerRole.SignallingGateway, profile.Role, "external peer role");
+    AssertEqual(SigtranInteropPeerProfiles.MaintainedPeerReferenceUrl, profile.ReferenceUrl, "external peer reference URL");
 
     SigtranInteropLabTemplate template = SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate();
-    AssertEqual("external-peer-m3ua-asp-to-sg", template.Scenario.Id, "OpenSS7 lab scenario");
-    AssertEqual("external-sigtran-sg", template.PeerProfile.Id, "OpenSS7 template peer");
-    Assert(template.ExpectedMessages.Contains("ASPUP"), "OpenSS7 template should include ASPUP");
-    Assert(template.ExpectedMessages.Contains("DATA"), "OpenSS7 template should include DATA");
+    AssertEqual("external-peer-m3ua-asp-to-sg", template.Scenario.Id, "external peer lab scenario");
+    AssertEqual("external-sigtran-sg", template.PeerProfile.Id, "external peer template peer");
+    Assert(template.ExpectedMessages.Contains("ASPUP"), "external peer template should include ASPUP");
+    Assert(template.ExpectedMessages.Contains("DATA"), "external peer template should include DATA");
     Assert(template.Describe().Contains("messages=11", StringComparison.Ordinal), template.Describe());
+}
+
+static void SigtranExternalPeerProfileMarksMaintainedCommercialCandidates()
+{
+    SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
+
+    AssertEqual(SigtranInteropPeerSupportModel.MaintainedPeerStack, profile.SupportModel, "external peer support model");
+    Assert(profile.IsMaintainedCommercialCandidate, profile.Describe());
+    Assert(profile.Describe().Contains("support=MaintainedPeerStack", StringComparison.Ordinal), profile.Describe());
+
+    SigtranInteropPeerProfile simulator = new(
+        "external-peer-simulator",
+        SigtranInteropPeerRole.SignallingGateway,
+        "Protocol simulator",
+        "https://example.invalid/simulator",
+        "SCTP/M3UA",
+        "Simulator evidence is useful for development but not commercial promotion.",
+        SigtranInteropPeerSupportModel.Simulator);
+
+    Assert(!simulator.IsMaintainedCommercialCandidate, simulator.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

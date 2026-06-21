@@ -19,6 +19,24 @@ public enum SigtranInteropPeerRole
 }
 
 /// <summary>
+/// Identifies how an interoperability peer stack is supported for release evidence.
+/// </summary>
+public enum SigtranInteropPeerSupportModel
+{
+    /// <summary>The peer stack is maintained and suitable for current commercial lab runs.</summary>
+    MaintainedPeerStack,
+
+    /// <summary>The peer stack is retained for historical or legacy evidence only.</summary>
+    LegacyReference,
+
+    /// <summary>The peer stack is provided by an operator, vendor, or customer lab.</summary>
+    OperatorProvided,
+
+    /// <summary>The peer stack is a simulator and cannot independently prove commercial interoperability.</summary>
+    Simulator
+}
+
+/// <summary>
 /// Describes an external peer stack used by the interoperability lab.
 /// </summary>
 public sealed class SigtranInteropPeerProfile
@@ -30,13 +48,15 @@ public sealed class SigtranInteropPeerProfile
     /// <param name="referenceUrl">The upstream reference URL.</param>
     /// <param name="transport">The expected transport.</param>
     /// <param name="notes">The optional lab notes.</param>
+    /// <param name="supportModel">The support model used for release evidence.</param>
     public SigtranInteropPeerProfile(
         string id,
         SigtranInteropPeerRole role,
         string productName,
         string referenceUrl,
         string transport,
-        string? notes = null)
+        string? notes = null,
+        SigtranInteropPeerSupportModel supportModel = SigtranInteropPeerSupportModel.MaintainedPeerStack)
     {
         Id = string.IsNullOrWhiteSpace(id) ? throw new ArgumentException("Peer id is required.", nameof(id)) : id;
         Role = role;
@@ -44,6 +64,7 @@ public sealed class SigtranInteropPeerProfile
         ReferenceUrl = string.IsNullOrWhiteSpace(referenceUrl) ? throw new ArgumentException("Reference URL is required.", nameof(referenceUrl)) : referenceUrl;
         Transport = string.IsNullOrWhiteSpace(transport) ? throw new ArgumentException("Transport is required.", nameof(transport)) : transport;
         Notes = string.IsNullOrWhiteSpace(notes) ? null : notes;
+        SupportModel = supportModel;
     }
 
     /// <summary>The stable peer id.</summary>
@@ -64,11 +85,19 @@ public sealed class SigtranInteropPeerProfile
     /// <summary>The optional lab notes.</summary>
     public string? Notes { get; }
 
+    /// <summary>The support model used for release evidence.</summary>
+    public SigtranInteropPeerSupportModel SupportModel { get; }
+
+    /// <summary>Whether the profile can be used as a maintained commercial interop candidate.</summary>
+    public bool IsMaintainedCommercialCandidate => SupportModel == SigtranInteropPeerSupportModel.MaintainedPeerStack
+        && Role == SigtranInteropPeerRole.SignallingGateway
+        && Transport.Contains("M3UA", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Formats a compact peer profile summary.</summary>
     /// <returns>The peer profile summary.</returns>
     public string Describe()
     {
-        return $"{Id}: role={Role} product={ProductName} transport={Transport}";
+        return $"{Id}: role={Role} product={ProductName} transport={Transport} support={SupportModel}";
     }
 }
 
@@ -123,29 +152,29 @@ public sealed class SigtranInteropLabTemplate
 /// </summary>
 public static class SigtranInteropPeerProfiles
 {
-    /// <summary>The OpenSS7/IPSS7 manual URL used as the peer reference.</summary>
-    public const string ExternalPeerIpSs7ManualUrl = "http://www.openss7.org/ipss7_man.html";
+    /// <summary>The maintained external peer reference URL used by the default lab profile.</summary>
+    public const string MaintainedPeerReferenceUrl = "https://osmocom.org/projects/osmo-stp/wiki";
 
-    /// <summary>Creates the OpenSS7/IPSS7 Signalling Gateway peer profile.</summary>
-    /// <returns>The OpenSS7/IPSS7 peer profile.</returns>
+    /// <summary>Creates the default external Signalling Gateway peer profile.</summary>
+    /// <returns>The default external peer profile.</returns>
     public static SigtranInteropPeerProfile CreateExternalPeerSignallingGateway()
     {
         return new(
             "external-sigtran-sg",
             SigtranInteropPeerRole.SignallingGateway,
-            "OpenSS7/IPSS7",
-            ExternalPeerIpSs7ManualUrl,
+            "Maintained SIGTRAN peer",
+            MaintainedPeerReferenceUrl,
             "SCTP/M3UA",
-            "Use as an external SG peer for ASP lifecycle and DATA validation.");
+            "Bind this profile to a maintained lab package outside the SDK contract.");
     }
 
-    /// <summary>Creates the OpenSS7/IPSS7 M3UA ASP-to-SG lab template.</summary>
-    /// <returns>The OpenSS7/IPSS7 lab template.</returns>
+    /// <summary>Creates the default external peer M3UA ASP-to-SG lab template.</summary>
+    /// <returns>The default external peer lab template.</returns>
     public static SigtranInteropLabTemplate CreateExternalPeerM3uaAspToSgTemplate()
     {
         if (!SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario))
         {
-            throw new InvalidOperationException("OpenSS7 M3UA ASP-to-SG scenario is not registered.");
+            throw new InvalidOperationException("External peer M3UA ASP-to-SG scenario is not registered.");
         }
 
         return new(
