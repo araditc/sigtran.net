@@ -179,6 +179,7 @@ Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProt
 Run("SIGTRAN protocol evidence trace validator checks ordered frames", SigtranProtocolEvidenceTraceValidatorChecksOrderedFrames);
 Run("SIGTRAN protocol evidence mismatch classifier recommends correction actions", SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions);
 Run("SIGTRAN protocol evidence readiness separates SDK evidence from production claims", SigtranProtocolEvidenceReadinessSeparatesSdkEvidenceFromProductionClaims);
+Run("SIGTRAN protocol evidence status summarizes evidence upgrade", SigtranProtocolEvidenceStatusSummarizesEvidenceUpgrade);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
 Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
@@ -2916,6 +2917,20 @@ static void SigtranProtocolEvidenceReadinessSeparatesSdkEvidenceFromProductionCl
     Assert(retainedExternal.SdkEvidenceBacked, retainedExternal.Describe());
     Assert(retainedExternal.ProductionEvidenceReady, retainedExternal.Describe());
     AssertEqual(0, retainedExternal.Blockers.Count, "protocol evidence production blocker count");
+}
+
+static void SigtranProtocolEvidenceStatusSummarizesEvidenceUpgrade()
+{
+    SigtranProtocolEvidenceStatusReport status = SigtranProtocolEvidenceStatus.GetStatus();
+
+    AssertEqual("SCCP TCAP MAP evidence upgrade", status.Label, "protocol evidence status label");
+    AssertEqual(9, status.CompletedUnitCount, "protocol evidence completed unit count");
+    AssertEqual(status.CompletedUnitCount, status.Capabilities.Count, "protocol evidence capability count");
+    Assert(status.FoundationReady, status.Describe());
+    Assert(status.SdkEvidenceBacked, status.Describe());
+    Assert(!status.ProductionEvidenceReady, status.Describe());
+    Assert(status.Capabilities.Contains("status-and-documentation-summary"), "protocol evidence status capability should exist");
+    Assert(status.Blockers.Contains("external-protocol-interoperability-evidence-required"), "protocol evidence status should retain external evidence blocker");
 }
 
 static SigtranTraceFrame[] CreateEvidenceTraceFrames(IReadOnlyList<SigtranProtocolEvidenceVector> vectors)

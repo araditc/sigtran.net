@@ -97,6 +97,19 @@ Each finding includes a stable recommended action token such as `fix-trace-proto
 
 The default report marks SDK evidence as backed while keeping production evidence blocked by `external-protocol-interoperability-evidence-required`. This prevents the SDK from treating deterministic internal vectors as a substitute for real external PCAP, peer logs, SDK traces, and comparison artifacts.
 
+## Unit 9 - Evidence Status And Summary
+
+`SigtranProtocolEvidenceStatus` now provides a domain-level status report for the evidence upgrade. It exposes:
+
+- Completed capability ids.
+- Completed unit count.
+- Foundation readiness.
+- SDK evidence-backed readiness.
+- Production evidence readiness.
+- Current blocker identifiers.
+
+`docs/PHASE32_SUMMARY.md` summarizes the evidence position for adopters and keeps the commercial gate explicit: internal deterministic vectors support SDK behavior claims, while production promotion still requires retained external interoperability artifacts.
+
 ## Validation
 
 Each unit in this phase is validated with:
