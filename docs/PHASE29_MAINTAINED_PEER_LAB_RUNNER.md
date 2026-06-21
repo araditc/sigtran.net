@@ -38,6 +38,18 @@ The bundle still does not write files or claim evidence. It only defines the exa
 
 This gives the runner a deterministic post-execution checklist before evidence collection and digest generation.
 
+## Unit 4 - Runner Preflight
+
+`SigtranMaintainedPeerLabRunnerPreflight` now evaluates the checks that must pass before real maintained peer lab execution starts:
+
+- Workspace materialization readiness.
+- Input bundle materialization readiness.
+- Output artifact materialization readiness.
+- Configuration validity.
+- Host prerequisite readiness.
+
+The preflight report returns stable failed check identifiers so operators can fix the lab environment before opening SCTP traffic.
+
 ## Validation
 
 Each unit in this phase is validated with:

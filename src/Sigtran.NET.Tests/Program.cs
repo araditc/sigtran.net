@@ -58,6 +58,7 @@ Run("SIGTRAN maintained peer lab automation status summarizes completion", Sigtr
 Run("SIGTRAN maintained peer lab runner workspace materializes deterministic paths", SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths);
 Run("SIGTRAN maintained peer lab runner inputs render environment and script", SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript);
 Run("SIGTRAN maintained peer lab runner artifacts map outputs to producers", SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers);
+Run("SIGTRAN maintained peer lab runner preflight gates execution", SigtranMaintainedPeerLabRunnerPreflightGatesExecution);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1157,6 +1158,25 @@ static void SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers()
     Assert(plan.HasProducerCommands, plan.Describe());
     Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.PacketCapture && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Capture), plan.Describe());
     Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.RunReport && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Collect), plan.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerPreflightGatesExecution()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit4");
+    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+
+    SigtranMaintainedPeerLabRunnerPreflightReport ready = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    Assert(ready.Ready, ready.Describe());
+    AssertEqual(5, ready.Checks.Count, "maintained peer lab runner preflight check count");
+    AssertEqual(0, ready.FailedRequiredCheckIds.Count, "maintained peer lab runner ready preflight failures");
+
+    SigtranMaintainedPeerLabRunnerPreflightReport blocked = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    Assert(!blocked.Ready, blocked.Describe());
+    Assert(blocked.FailedRequiredCheckIds.Contains("host-prerequisites-ready"), blocked.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
