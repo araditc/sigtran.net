@@ -20,6 +20,19 @@ See [Phase 27 Sigtran.NET Branding](PHASE27_SIGTRAN_NET_BRANDING.md) for the foc
 
 The public API keeps selected package details in values and configuration, not in class names. This preserves the ability to bind a modern maintained peer package later without coupling the SDK contract to a specific project.
 
+## Unit 3 - Host Prerequisite Model
+
+`SigtranMaintainedPeerLabPrerequisites` now defines the package-neutral host checks that must be satisfied before a maintained peer lab run can claim execution readiness:
+
+- Linux host or VM with kernel SCTP support.
+- Native SCTP tools and kernel module availability.
+- Packet capture tooling.
+- .NET 10 SDK or runtime for the SDK lab runner.
+- Maintained external peer package installed outside the SDK.
+- Writable retained artifact storage.
+
+The prerequisite report separates foundation code readiness from actual lab readiness. A commercial claim still requires a real host report with every prerequisite satisfied and retained alongside the run evidence.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -43,4 +56,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy and that public binding summaries remain package-neutral.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, and host prerequisite reports identify missing lab capabilities.

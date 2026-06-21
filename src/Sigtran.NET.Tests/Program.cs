@@ -37,6 +37,7 @@ Run("SIGTRAN external peer profile exposes M3UA ASP-to-SG template", SigtranExte
 Run("SIGTRAN external peer profile marks maintained commercial candidates", SigtranExternalPeerProfileMarksMaintainedCommercialCandidates);
 Run("SIGTRAN maintained peer selection policy requires package-neutral evidence criteria", SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
 Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral defaults", SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults);
+Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMaintainedPeerLabPrerequisitesReportHostReadiness);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -701,6 +702,26 @@ static void SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults(
     Assert(!description.Contains("OpenSS7", StringComparison.OrdinalIgnoreCase), description);
     Assert(!description.Contains("Osmocom", StringComparison.OrdinalIgnoreCase), description);
     Assert(description.Contains("packageConfigured=True", StringComparison.Ordinal), description);
+}
+
+static void SigtranMaintainedPeerLabPrerequisitesReportHostReadiness()
+{
+    IReadOnlyList<SigtranMaintainedPeerLabPrerequisite> prerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault();
+    IReadOnlyList<string> allPrerequisites = prerequisites.Select(static prerequisite => prerequisite.Id).ToArray();
+
+    AssertEqual(6, prerequisites.Count, "maintained peer lab prerequisite count");
+    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranMaintainedPeerLabPrerequisiteKind.NativeSctp), "prerequisites should include native SCTP");
+    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranMaintainedPeerLabPrerequisiteKind.PacketCapture), "prerequisites should include packet capture");
+
+    SigtranMaintainedPeerLabPrerequisiteReport ready = SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites);
+    Assert(ready.Ready, ready.Describe());
+    AssertEqual(0, ready.MissingPrerequisiteIds.Count, "ready maintained peer prerequisite missing count");
+
+    SigtranMaintainedPeerLabPrerequisiteReport missing = SigtranMaintainedPeerLabPrerequisites.Evaluate(["linux-host", "dotnet-10-runtime"]);
+    Assert(!missing.Ready, missing.Describe());
+    Assert(missing.MissingPrerequisiteIds.Contains("native-sctp-tools"), "missing prerequisite report should include native SCTP tools");
+    Assert(missing.MissingPrerequisiteIds.Contains("external-peer-package"), "missing prerequisite report should include external peer package");
+    Assert(missing.Describe().Contains("missing=4", StringComparison.Ordinal), missing.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
