@@ -133,6 +133,7 @@ Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformance
 Run("SIGTRAN performance status summarizes foundation", SigtranPerformanceStatusSummarizesPerformanceFoundation);
 Run("SIGTRAN performance evidence workload covers peer traffic stages", SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages);
 Run("SIGTRAN performance evidence artifacts require retained peer benchmark files", SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles);
+Run("SIGTRAN performance latency evidence evaluates P95 and P99 budgets", SigtranPerformanceLatencyEvidenceEvaluatesP95AndP99Budgets);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2347,6 +2348,40 @@ static SigtranPerformanceEvidenceArtifactManifest CreateCompletePerformanceArtif
     manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.ResilienceLog, $"artifacts/perf/{runId}-resilience.json", new string('2', 64)));
     manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.BenchmarkReport, $"artifacts/perf/{runId}-report.md", new string('3', 64)));
     return manifest;
+}
+
+static void SigtranPerformanceLatencyEvidenceEvaluatesP95AndP99Budgets()
+{
+    IReadOnlyList<SigtranPerformanceLatencyEvidence> passing = CreatePassingLatencyEvidence();
+    IReadOnlyList<SigtranPerformanceLatencyBudgetReport> reports = SigtranPerformanceLatencyEvidenceEvaluator.Evaluate(passing);
+
+    AssertEqual(SigtranLatencyBudgets.GetBudgets().Count, reports.Count, "latency budget report count");
+    Assert(reports.All(report => report.Passed), "all latency reports should pass");
+    Assert(SigtranPerformanceLatencyEvidenceEvaluator.CoversAndPassesAllBudgets(passing), "latency evidence should cover all budgets");
+
+    SigtranPerformanceLatencyEvidence failingTransport = new(
+        SigtranLatencySurface.TransportLoopback,
+        1000,
+        TimeSpan.FromMilliseconds(5),
+        TimeSpan.FromMilliseconds(20),
+        TimeSpan.FromMilliseconds(35),
+        TimeSpan.FromMilliseconds(40));
+    IReadOnlyList<SigtranPerformanceLatencyBudgetReport> failingReports = SigtranPerformanceLatencyEvidenceEvaluator.Evaluate([failingTransport]);
+    Assert(!failingReports[0].Passed, failingReports[0].Describe());
+    Assert(!failingReports[0].P99WithinBudget, failingReports[0].Describe());
+}
+
+static IReadOnlyList<SigtranPerformanceLatencyEvidence> CreatePassingLatencyEvidence()
+{
+    return SigtranLatencyBudgets.GetBudgets()
+        .Select(budget => new SigtranPerformanceLatencyEvidence(
+            budget.Surface,
+            10000,
+            TimeSpan.FromTicks(Math.Max(1, budget.P95Budget.Ticks / 2)),
+            budget.P95Budget,
+            budget.P99Budget,
+            budget.P99Budget + TimeSpan.FromTicks(1)))
+        .ToArray();
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

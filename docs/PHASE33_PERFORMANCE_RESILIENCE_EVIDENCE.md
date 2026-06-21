@@ -33,6 +33,18 @@ The phase does not manufacture benchmark evidence. Production performance claims
 
 The manifest requires SHA-256 digest coverage for all retained artifacts before it can support commercial performance evidence. The run plan combines the peer-traffic workload and retained artifact manifest without naming any specific peer package.
 
+## Unit 3 - Latency Percentile Evidence
+
+`SigtranPerformanceLatencyEvidence` now captures measured latency percentiles for each SDK latency surface:
+
+- Sample count.
+- P50.
+- P95.
+- P99.
+- Maximum latency.
+
+`SigtranPerformanceLatencyEvidenceEvaluator` compares measured P95/P99 values against `SigtranLatencyBudgets`. The evaluator can report per-surface pass/fail results and verify that retained latency evidence covers every configured budget.
+
 ## Validation
 
 Each unit in this phase is validated with:
