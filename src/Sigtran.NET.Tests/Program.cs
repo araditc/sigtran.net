@@ -134,6 +134,7 @@ Run("SIGTRAN performance status summarizes foundation", SigtranPerformanceStatus
 Run("SIGTRAN performance evidence workload covers peer traffic stages", SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages);
 Run("SIGTRAN performance evidence artifacts require retained peer benchmark files", SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles);
 Run("SIGTRAN performance latency evidence evaluates P95 and P99 budgets", SigtranPerformanceLatencyEvidenceEvaluatesP95AndP99Budgets);
+Run("SIGTRAN performance resource evidence evaluates CPU memory and allocations", SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2382,6 +2383,33 @@ static IReadOnlyList<SigtranPerformanceLatencyEvidence> CreatePassingLatencyEvid
             budget.P99Budget,
             budget.P99Budget + TimeSpan.FromTicks(1)))
         .ToArray();
+}
+
+static void SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations()
+{
+    SigtranPerformanceResourceEvidence passing = new(
+        averageCpuPercent: 50,
+        peakCpuPercent: 80,
+        peakWorkingSetMegabytes: 768,
+        allocatedBytesPerMessage: 0,
+        gen2Collections: 0);
+    SigtranPerformanceResourceBudgetReport passingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateCommercial(passing);
+    Assert(passingReport.Passed, passingReport.Describe());
+    Assert(passingReport.CpuWithinBudget, passingReport.Describe());
+    Assert(passingReport.WorkingSetWithinBudget, passingReport.Describe());
+    Assert(passingReport.AllocationWithinBudget, passingReport.Describe());
+
+    SigtranPerformanceResourceEvidence failing = new(
+        averageCpuPercent: 80,
+        peakCpuPercent: 95,
+        peakWorkingSetMegabytes: 2048,
+        allocatedBytesPerMessage: 128,
+        gen2Collections: 2);
+    SigtranPerformanceResourceBudgetReport failingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateCommercial(failing);
+    Assert(!failingReport.Passed, failingReport.Describe());
+    Assert(!failingReport.CpuWithinBudget, failingReport.Describe());
+    Assert(!failingReport.WorkingSetWithinBudget, failingReport.Describe());
+    Assert(!failingReport.AllocationWithinBudget, failingReport.Describe());
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

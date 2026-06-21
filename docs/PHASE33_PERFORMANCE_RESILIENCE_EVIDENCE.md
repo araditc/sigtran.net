@@ -45,6 +45,18 @@ The manifest requires SHA-256 digest coverage for all retained artifacts before 
 
 `SigtranPerformanceLatencyEvidenceEvaluator` compares measured P95/P99 values against `SigtranLatencyBudgets`. The evaluator can report per-surface pass/fail results and verify that retained latency evidence covers every configured budget.
 
+## Unit 4 - CPU Memory And Allocation Evidence
+
+`SigtranPerformanceResourceEvidence` now captures runtime resource measurements for peer benchmark runs:
+
+- Average CPU percentage.
+- Peak CPU percentage.
+- Peak working set in megabytes.
+- Allocated bytes per message.
+- Generation 2 garbage collection count.
+
+`SigtranPerformanceResourceEvidenceEvaluator` compares the evidence against `SigtranResourceBudgets.CreateCommercialDefault()`. The report separates CPU, working set, and allocation budget checks so performance evidence can identify the specific resource area that needs correction.
+
 ## Validation
 
 Each unit in this phase is validated with:
