@@ -139,6 +139,7 @@ Run("SIGTRAN performance resilience evidence gates failover recovery", SigtranPe
 Run("SIGTRAN performance evidence report renders publishable benchmark summary", SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary);
 Run("SIGTRAN performance evidence gate separates reports from production claims", SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims);
 Run("SIGTRAN performance evidence runner exposes manual peer benchmark handoff", SigtranPerformanceEvidenceRunnerExposesManualPeerBenchmarkHandoff);
+Run("SIGTRAN performance evidence status summarizes readiness and blockers", SigtranPerformanceEvidenceStatusSummarizesReadinessAndBlockers);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2522,6 +2523,27 @@ static void SigtranPerformanceEvidenceRunnerExposesManualPeerBenchmarkHandoff()
     Assert(ci.ManualTriggerOnly, "performance evidence workflow should be manual");
     Assert(ci.IsReady, "performance CI handoff should be ready");
     Assert(ci.ArtifactPatterns.All(pattern => pattern.StartsWith(runner.ArtifactRoot, StringComparison.Ordinal)), "artifact patterns should stay under artifact root");
+}
+
+static void SigtranPerformanceEvidenceStatusSummarizesReadinessAndBlockers()
+{
+    SigtranPerformanceEvidenceStatusReport current = SigtranPerformanceEvidenceStatus.GetStatus();
+
+    AssertEqual("Performance and resilience evidence", current.Label, "performance evidence status label");
+    AssertEqual(9, current.CompletedUnitCount, "performance evidence completed unit count");
+    AssertEqual(current.CompletedUnitCount, current.Capabilities.Count, "performance evidence capability count");
+    Assert(current.FoundationReady, current.Describe());
+    Assert(!current.ReportPublishable, current.Describe());
+    Assert(!current.ProductionPerformanceReady, current.Describe());
+    Assert(current.Blockers.Contains("publishable-performance-report-required"), "current performance evidence should require retained report");
+
+    SigtranPerformanceEvidenceStatusReport ready = SigtranPerformanceEvidenceStatus.GetStatus(
+        CreatePassingPerformanceEvidenceReport(),
+        commercialReady: true);
+    Assert(ready.FoundationReady, ready.Describe());
+    Assert(ready.ReportPublishable, ready.Describe());
+    Assert(ready.ProductionPerformanceReady, ready.Describe());
+    AssertEqual(0, ready.Blockers.Count, "performance evidence ready blocker count");
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

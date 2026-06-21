@@ -104,6 +104,12 @@ This keeps retained benchmark evidence separate from production claims. A report
 
 `SigtranPerformanceEvidenceCiHandoff` keeps the benchmark workflow manual and self-hosted, with artifact upload patterns under the retained artifact root. This prevents accidental CI publication of performance claims while still making the execution handoff repeatable.
 
+## Unit 9 - Status And Summary Documentation
+
+`SigtranPerformanceEvidenceStatus` now summarizes completed evidence capabilities, foundation readiness, report publishability, production performance readiness, and blocker identifiers.
+
+`docs/PHASE33_SUMMARY.md` records the phase position for adopters: the foundation is ready to evaluate real peer benchmark evidence, but production performance remains blocked until a retained publishable report and wider commercial readiness are both present.
+
 ## Validation
 
 Each unit in this phase is validated with:
