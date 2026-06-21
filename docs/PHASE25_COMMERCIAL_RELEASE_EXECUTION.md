@@ -10,20 +10,28 @@ The phase is intentionally evidence-driven. Source APIs keep domain names and do
 
 Current retained evidence includes:
 
-- Passed Linux SCTP loopback PCAP from WSL2.
-- Blocked OpenSS7/IPSS7 configure log showing the WSL2 kernel-major compatibility blocker.
+- Passed Linux SCTP loopback PCAP from a real Ubuntu 22.04 VM.
+- Blocked OpenSS7/IPSS7 configure log showing the Linux 5.15 `open_softirq` compatibility blocker.
 
 The manifest does not support commercial promotion while any blocker is present.
 
 ## Unit 2 - Linux SCTP Smoke Evidence
 
-`SigtranLinuxSctpEvidence` records the retained WSL2 Linux SCTP smoke capture summary.
+`SigtranLinuxSctpEvidence` records the retained Linux VM SCTP smoke capture summary.
+
+VM execution:
+
+- Host: `192.168.100.28`.
+- OS: Ubuntu 22.04.1 LTS.
+- Kernel: `5.15.0-181-generic`.
+- Tooling: `lksctp-tools`, `tcpdump`, `tshark`.
 
 The current capture has:
 
-- `PACKET_COUNT=14`
-- `SCTP_COUNT=14`
-- `PCAP_SIZE=1556`
+- `PACKET_COUNT=10`
+- `SCTP_COUNT=10`
+- `PCAP_SIZE=2224`
+- `SHA256=5ad2e3fb1e59d770962ffbf053f10991d6a66939071234063c88d536127dbfdc`
 - SCTP association handshake, DATA exchange, and clean shutdown.
 
 This is valid Linux SCTP smoke evidence, but it is not yet full external peer interoperability evidence.
@@ -34,10 +42,17 @@ This is valid Linux SCTP smoke evidence, but it is not yet full external peer in
 
 Current blocker:
 
-- Environment: WSL2 Ubuntu 24.04.
+- Environment: Ubuntu 22.04.1 VM, Linux `5.15.0-181-generic`.
 - Log: `/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log`.
-- Failure: OpenSS7 configure rejects Linux kernel major version 6 before peer runtime can start.
-- Required action: retest on a compatible Linux kernel or patch the OpenSS7 kernel-version check with retained build evidence.
+- Failure: OpenSS7 Fast STREAMS configure requires the legacy `open_softirq` kernel symbol, which is not present in the VM kernel `System.map`.
+- Required action: retest OpenSS7/IPSS7 on a Linux 4.x-era kernel supported by OpenSS7 or replace the peer with a maintained SIGTRAN interoperability target.
+
+Retained OpenSS7/IPSS7 execution artifacts:
+
+- Autogen log: `artifacts/vm/192.168.100.28/logs/openss7-autogen.log`.
+- Configure log: `artifacts/vm/192.168.100.28/logs/openss7-configure.log`.
+- Tools-only configure log: `artifacts/vm/192.168.100.28/logs/openss7-configure-tools-only.log`.
+- Compiler-check patch evidence: `artifacts/vm/192.168.100.28/logs/openss7-configure-compiler-check.patch`.
 
 The blocker intentionally prevents interoperability promotion until a passing OpenSS7/IPSS7 run produces PCAP, peer logs, SDK traces, and comparison evidence.
 
@@ -49,7 +64,7 @@ Current retained items:
 
 - Linux SCTP PCAP: retained.
 - OpenSS7 configure log: retained.
-- Peer configuration: retained.
+- Peer configuration: retained with SHA-256 `dc260bf293f1f1bd95524d27f64e4a88a3777f944ac1cde8d48bb9ffa9b98833`.
 
 Current missing items:
 
@@ -167,7 +182,7 @@ Current passed execution items:
 
 Current blockers:
 
-- OpenSS7/IPSS7 interoperability remains blocked by WSL2 kernel compatibility.
+- OpenSS7/IPSS7 interoperability remains blocked by Linux 5.15 `open_softirq` compatibility.
 - Artifact dossier is missing SDK trace and comparison report from a passing external peer run.
 - Package signing produced a signed package, but verification still requires a trusted timestamped production signature.
 - Performance evidence is smoke-only and does not prove commercial peer/load targets.

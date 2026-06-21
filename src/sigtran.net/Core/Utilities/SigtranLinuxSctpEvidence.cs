@@ -78,10 +78,10 @@ public static class SigtranLinuxSctpEvidence
     public static SigtranLinuxSctpCaptureSummary CreateCurrentSmokeSummary()
     {
         return new(
-            "/home/ammar/sigtran-lab/artifacts/pcap/phase25-sctp-smoke-20260620T104356Z.pcap",
-            packetCount: 14,
-            sctpPacketCount: 14,
-            fileSizeBytes: 1556,
+            "/home/ammar/sigtran-lab/artifacts/pcap/linux-vm-sctp-smoke-20260621T073532Z.pcap",
+            packetCount: 10,
+            sctpPacketCount: 10,
+            fileSizeBytes: 2224,
             hasAssociationHandshake: true,
             hasDataExchange: true,
             hasCleanShutdown: true);

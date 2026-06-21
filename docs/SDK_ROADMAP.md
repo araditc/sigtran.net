@@ -225,7 +225,7 @@ Status: Phase 24 is foundation-ready for package publication readiness. Real NuG
 - Keep blocker evidence explicit instead of manufacturing passing artifacts.
 - Promote only when all retained evidence areas are passing and digest-covered.
 
-Status: Phase 25 has started with an execution evidence manifest. Linux SCTP loopback evidence is retained; OpenSS7/IPSS7 remains blocked on WSL2 kernel-major compatibility until patched or moved to a compatible Linux peer environment.
+Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM; OpenSS7/IPSS7 remains blocked on Linux 5.15 `open_softirq` compatibility until moved to a Linux 4.x-era OpenSS7-compatible environment or replaced with a maintained SIGTRAN peer.
 
 ## Recommended First Deliverable
 

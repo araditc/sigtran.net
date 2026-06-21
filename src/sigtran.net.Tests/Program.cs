@@ -2327,8 +2327,8 @@ static void SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture()
     SigtranLinuxSctpCaptureSummary summary = SigtranLinuxSctpEvidence.CreateCurrentSmokeSummary();
 
     Assert(summary.IsPassingSmokeEvidence, summary.Describe());
-    AssertEqual(14, summary.PacketCount, "Linux SCTP packet count");
-    AssertEqual(14, summary.SctpPacketCount, "Linux SCTP SCTP-packet count");
+    AssertEqual(10, summary.PacketCount, "Linux SCTP packet count");
+    AssertEqual(10, summary.SctpPacketCount, "Linux SCTP SCTP-packet count");
     Assert(summary.FileSizeBytes > 24, "Linux SCTP PCAP should be larger than a header-only capture");
     Assert(summary.HasAssociationHandshake, "Linux SCTP capture should include association handshake");
     Assert(summary.HasDataExchange, "Linux SCTP capture should include DATA chunks");
@@ -2340,9 +2340,9 @@ static void SigtranOpenSs7InteropBlockerEvidenceRecordsRetainedFailureContext()
     SigtranOpenSs7InteropBlocker blocker = SigtranOpenSs7InteropBlockerEvidence.CreateCurrentBlocker();
 
     Assert(blocker.BlocksInteropPromotion, "OpenSS7/IPSS7 blocker should prevent interop promotion");
-    Assert(blocker.EnvironmentName.Contains("WSL2", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should record the environment");
+    Assert(blocker.EnvironmentName.Contains("Ubuntu 22.04.1 VM", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should record the environment");
     Assert(blocker.LogPath.EndsWith("openss7-configure.log", StringComparison.Ordinal), "OpenSS7/IPSS7 blocker should retain configure log path");
-    Assert(blocker.ObservedFailure.Contains("kernel major version 6", StringComparison.OrdinalIgnoreCase), blocker.Describe());
+    Assert(blocker.ObservedFailure.Contains("open_softirq", StringComparison.OrdinalIgnoreCase), blocker.Describe());
     Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should describe the next action");
 }
 

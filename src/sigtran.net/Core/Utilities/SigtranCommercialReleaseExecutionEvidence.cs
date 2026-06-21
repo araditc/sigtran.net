@@ -182,16 +182,16 @@ public sealed class SigtranCommercialReleaseEvidenceManifest
         manifest.Add(new(
             SigtranCommercialReleaseEvidenceArea.LinuxSctp,
             SigtranCommercialReleaseEvidenceKind.PacketCapture,
-            "/home/ammar/sigtran-lab/artifacts/pcap/phase25-sctp-smoke-20260620T104356Z.pcap",
+            "/home/ammar/sigtran-lab/artifacts/pcap/linux-vm-sctp-smoke-20260621T073532Z.pcap",
             SigtranCommercialReleaseEvidenceStatus.Passed,
-            "SHA256-PENDING-LINUX-SCTP-PCAP",
-            "Captured SCTP INIT, DATA, SACK, and SHUTDOWN on WSL2 loopback."));
+            "5ad2e3fb1e59d770962ffbf053f10991d6a66939071234063c88d536127dbfdc",
+            "Captured SCTP INIT, DATA, and SHUTDOWN on a real Ubuntu 22.04 VM."));
         manifest.Add(new(
             SigtranCommercialReleaseEvidenceArea.OpenSs7Interop,
             SigtranCommercialReleaseEvidenceKind.BlockerReport,
             "/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log",
             SigtranCommercialReleaseEvidenceStatus.Blocked,
-            note: "OpenSS7 configure rejects Linux kernel major version 6 on WSL2."));
+            note: "OpenSS7 Fast STREAMS configure requires the legacy open_softirq kernel symbol on Linux 5.15."));
 
         return manifest;
     }

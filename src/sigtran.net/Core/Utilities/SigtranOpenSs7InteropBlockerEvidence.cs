@@ -63,9 +63,9 @@ public static class SigtranOpenSs7InteropBlockerEvidence
     public static SigtranOpenSs7InteropBlocker CreateCurrentBlocker()
     {
         return new(
-            "WSL2 Ubuntu 24.04",
+            "Ubuntu 22.04.1 VM, Linux 5.15.0-181-generic",
             "/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log",
-            "OpenSS7 configure rejects Linux kernel major version 6 before peer runtime can start.",
-            "Retest OpenSS7/IPSS7 on a compatible Linux kernel or patch the OpenSS7 kernel-version check with retained build evidence.");
+            "OpenSS7 Fast STREAMS configure requires the legacy open_softirq kernel symbol, which is not present in the VM kernel System.map.",
+            "Retest OpenSS7/IPSS7 on a Linux 4.x-era kernel supported by OpenSS7 or replace the peer with a maintained SIGTRAN interoperability target.");
     }
 }

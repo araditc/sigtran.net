@@ -110,9 +110,9 @@ public static class SigtranCommercialReleaseArtifactDossiers
         SigtranCommercialReleaseArtifactDossier dossier = new();
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.PacketCapture,
-            "/home/ammar/sigtran-lab/artifacts/pcap/phase25-sctp-smoke-20260620T104356Z.pcap",
+            "/home/ammar/sigtran-lab/artifacts/pcap/linux-vm-sctp-smoke-20260621T073532Z.pcap",
             SigtranCommercialReleaseArtifactRetention.Retained,
-            "SHA256-PENDING-LINUX-SCTP-PCAP"));
+            "5ad2e3fb1e59d770962ffbf053f10991d6a66939071234063c88d536127dbfdc"));
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.Log,
             "/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log",
@@ -120,9 +120,9 @@ public static class SigtranCommercialReleaseArtifactDossiers
             "SHA256-PENDING-OPENSS7-CONFIGURE-LOG"));
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.Configuration,
-            "/home/ammar/sigtran-lab/artifacts/config/phase25-peer.env",
+            "/home/ammar/sigtran-lab/artifacts/config/linux-vm-phase25-peer.env",
             SigtranCommercialReleaseArtifactRetention.Retained,
-            "SHA256-PENDING-PEER-CONFIG"));
+            "dc260bf293f1f1bd95524d27f64e4a88a3777f944ac1cde8d48bb9ffa9b98833"));
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.Trace,
             "/home/ammar/sigtran-lab/artifacts/trace/open-interop-sdk-trace.jsonl",
