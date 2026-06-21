@@ -104,6 +104,14 @@ This contract is intentionally package-neutral. Platform-specific transports can
 
 Native transports should record the decision in diagnostics before reconnecting or closing the association.
 
+## Transport Diagnostics
+
+`SctpTransportDiagnostics.CreateSnapshot(...)` creates an immutable diagnostic envelope from transport health, association lifecycle history, optional multi-homing readiness, optional backpressure decision, optional recovery decision, and optional active operation timeout budget.
+
+The snapshot summarizes transport state as healthy, degraded, or faulted. Healthy requires an established association with no warnings or recovery pressure. Degraded captures usable but attention-worthy states such as single-homed fallback, drain pressure, reconnect scheduling, or non-established lifecycle state. Faulted captures failed association state, recorded failure events, or fail-fast recovery decisions.
+
+Transport implementations should emit this snapshot into structured logs and retained lab traces when diagnosing SCTP behavior.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

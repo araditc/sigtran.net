@@ -292,6 +292,7 @@ Run("SCTP fault recovery selects deterministic actions", SctpFaultRecoverySelect
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
+Run("SCTP transport diagnostics snapshots summarize state", SctpTransportDiagnosticsSnapshotsSummarizeState);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
 Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
@@ -4649,6 +4650,50 @@ static void SctpTransportHealthSnapshotsExposeAssociationDetails()
     AssertEqual(local, health.LocalEndpoint, "SCTP health local endpoint");
     AssertEqual(10L, health.SentMessages, "SCTP health sent messages");
     AssertEqual(11L, health.ReceivedMessages, "SCTP health received messages");
+}
+
+static void SctpTransportDiagnosticsSnapshotsSummarizeState()
+{
+    SctpEndpoint remote = new("sg.example.net", 2905);
+    SctpEndpoint local = new("0.0.0.0", 2905);
+    SctpTransportHealth healthyTransport = new(
+        SctpAssociationState.Established,
+        remote,
+        local,
+        outboundStreams: 8,
+        inboundStreams: 8,
+        defaultPayloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua,
+        sentMessages: 10,
+        receivedMessages: 9);
+
+    SctpAssociationJournal journal = new();
+    journal.Record(new SctpAssociationEvent(SctpAssociationEventType.Established, SctpAssociationState.Established), DateTimeOffset.UnixEpoch);
+
+    SctpTransportDiagnosticsSnapshot healthy = SctpTransportDiagnostics.CreateSnapshot(healthyTransport, journal);
+    Assert(healthy.IsHealthy, healthy.Describe());
+    AssertEqual(SctpTransportDiagnosticState.Healthy, healthy.DiagnosticState, healthy.Describe());
+    AssertEqual(1, healthy.AssociationEvents.Count, "SCTP diagnostics event count");
+
+    SctpMultiHomingReadinessReport singleHome = SctpMultiHomingReadiness.Evaluate(new SctpMultiHomingEndpointSet([remote]));
+    SctpTransportDiagnosticsSnapshot degraded = SctpTransportDiagnostics.CreateSnapshot(
+        healthyTransport,
+        journal,
+        multiHomingReport: singleHome,
+        activeOperationBudget: new SctpOperationTimeoutPolicy(sendTimeout: TimeSpan.FromSeconds(1)).CreateBudget(SctpOperationKind.Send, DateTimeOffset.UnixEpoch));
+    AssertEqual(SctpTransportDiagnosticState.Degraded, degraded.DiagnosticState, degraded.Describe());
+    Assert(degraded.RequiresAttention, degraded.Describe());
+    Assert(degraded.HasWarnings, degraded.Describe());
+
+    SctpReconnectSchedule schedule = SctpReconnectSchedules.Create(new SctpReconnectPolicy(maxAttempts: 0), DateTimeOffset.UnixEpoch);
+    SctpRecoveryDecision failFast = SctpFaultRecovery.Decide(
+        new SctpTransportFault(SctpTransportFaultKind.SocketError, "adapter failed"),
+        schedule);
+    SctpTransportDiagnosticsSnapshot faulted = SctpTransportDiagnostics.CreateSnapshot(
+        healthyTransport,
+        journal,
+        lastRecoveryDecision: failFast);
+    AssertEqual(SctpTransportDiagnosticState.Faulted, faulted.DiagnosticState, faulted.Describe());
+    Assert(faulted.RequiresAttention, faulted.Describe());
 }
 
 static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()

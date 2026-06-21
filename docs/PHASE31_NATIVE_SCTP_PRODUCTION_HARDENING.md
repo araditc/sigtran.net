@@ -93,6 +93,20 @@ This gives production transports a reviewable readiness gate before binding or c
 
 This gives production transports a single decision point for association recovery instead of scattering retry behavior across socket callbacks and exception handlers.
 
+## Unit 8 - Transport Diagnostics Snapshot
+
+`SctpTransportDiagnostics` and `SctpTransportDiagnosticsSnapshot` now aggregate point-in-time transport diagnostics. They provide:
+
+- Health snapshot capture.
+- Association lifecycle event snapshot capture.
+- Multi-homing readiness inclusion.
+- Backpressure decision inclusion.
+- Recovery decision inclusion.
+- Active operation timeout budget inclusion.
+- Healthy, degraded, and faulted state summarization.
+
+This gives production transports and operations tooling a single diagnostic envelope for logs, traces, health checks, and retained evidence artifacts.
+
 ## Validation
 
 Each unit in this phase is validated with:
