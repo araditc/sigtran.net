@@ -1662,18 +1662,24 @@ static void SigtranExternalPeerRunPlanIsExecutableWithDefaultContracts()
 {
     SigtranExternalPeerInteropRunPlan plan = SigtranExternalPeerInteropRunPlans.CreateDefaultAspToSg();
 
-    AssertEqual("external-peer-m3ua-asp-to-sg", plan.Template.Scenario.Id, "OpenSS7 scenario id");
-    AssertEqual("external-sigtran-sg", plan.Template.PeerProfile.Id, "OpenSS7 peer profile id");
-    Assert(plan.IsExecutable, "OpenSS7 run plan should be executable");
+    AssertEqual("external-peer-m3ua-asp-to-sg", plan.Template.Scenario.Id, "external peer scenario id");
+    AssertEqual("external-sigtran-sg", plan.Template.PeerProfile.Id, "external peer profile id");
+    Assert(plan.CommandSet.IsCommercialLabCommandSet, "external peer run plan should include commercial lab commands");
+    Assert(plan.IsExecutable, "external peer run plan should be executable");
 }
 
 static void SigtranExternalPeerCommandsRequirePeerAndPacketCapture()
 {
     SigtranExternalPeerInteropCommandSet commands = SigtranExternalPeerInteropCommands.CreateDefault();
 
-    Assert(commands.RequiresExternalPeer, "OpenSS7 commands should require OpenSS7");
-    Assert(commands.RequiresPacketCapture, "OpenSS7 commands should require packet capture");
-    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_INTEROP_PEER=external-sigtran-peer", StringComparison.Ordinal)), "OpenSS7 commands should select peer");
+    Assert(commands.RequiresExternalPeer, "external peer commands should require an external peer");
+    Assert(commands.RequiresPacketCapture, "external peer commands should require packet capture");
+    Assert(commands.RequiresSdkTrace, "external peer commands should require SDK trace capture");
+    Assert(commands.RequiresComparisonReport, "external peer commands should require comparison report generation");
+    Assert(commands.RequiredEnvironmentVariables.Contains("SIGTRAN_EXTERNAL_PEER_PACKAGE"), "external peer commands should require selected peer package env var");
+    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_EXTERNAL_PEER_ID", StringComparison.Ordinal)), "external peer commands should select peer id through env");
+    Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT", StringComparison.Ordinal)), "external peer commands should write under artifact root");
+    Assert(commands.IsCommercialLabCommandSet, "external peer command set should be commercial lab ready");
 }
 
 static void SigtranExternalPeerRunReportIdentifiesPassingEvidence()

@@ -75,6 +75,16 @@ The policy evaluates a `SigtranInteropPeerProfile` plus explicitly satisfied cri
 
 The required artifact kinds are packet capture, SDK trace, peer configuration, peer log, and comparison report. `SigtranExternalPeerInteropRunReport` and `SigtranExternalPeerInteropEvidenceRegistry` now expose commercial-review-ready evidence in addition to passing evidence.
 
+## Unit 6 - External Peer Run Commands
+
+`SigtranExternalPeerInteropCommandSet` now models a package-neutral lab command contract. The default commands use environment variables instead of embedding a peer package name:
+
+- `SIGTRAN_EXTERNAL_PEER_ID`
+- `SIGTRAN_EXTERNAL_PEER_PACKAGE`
+- `SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT`
+
+The command set requires external peer execution, packet capture, SDK trace capture, and comparison report generation. `SigtranExternalPeerInteropRunPlan` now includes the command set and is executable only when the environment, configuration, trace expectations, and commercial lab commands are all present.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.
