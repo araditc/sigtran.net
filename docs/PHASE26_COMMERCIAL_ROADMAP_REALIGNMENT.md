@@ -85,6 +85,17 @@ The required artifact kinds are packet capture, SDK trace, peer configuration, p
 
 The command set requires external peer execution, packet capture, SDK trace capture, and comparison report generation. `SigtranExternalPeerInteropRunPlan` now includes the command set and is executable only when the environment, configuration, trace expectations, and commercial lab commands are all present.
 
+## Unit 7 - Commercial Readiness Aggregation
+
+`SigtranExternalPeerCommercialReadiness` aggregates maintained peer selection, lab environment capability, executable run plan, and commercial-review-ready evidence.
+
+The current report remains blocked because no real maintained peer package has been selected and no passing digest-covered external peer evidence is retained. A commercial claim requires all of the following:
+
+- Maintained peer selection policy passes.
+- Lab environment can produce commercial artifacts.
+- Run plan is executable.
+- Evidence registry contains passing, digest-covered artifacts.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

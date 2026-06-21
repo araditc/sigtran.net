@@ -131,6 +131,7 @@ Run("SIGTRAN OpenSS7 commands require peer and packet capture", SigtranExternalP
 Run("SIGTRAN OpenSS7 run report identifies passing evidence", SigtranExternalPeerRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN OpenSS7 evidence registry starts empty", SigtranExternalPeerEvidenceRegistryStartsEmpty);
 Run("SIGTRAN OpenSS7 readiness separates foundation from evidence", SigtranExternalPeerReadinessSeparatesFoundationFromEvidence);
+Run("SIGTRAN external peer commercial readiness aggregates selection lab and evidence", SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence);
 Run("SIGTRAN OpenSS7 status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
@@ -1715,6 +1716,37 @@ static void SigtranExternalPeerReadinessSeparatesFoundationFromEvidence()
     Assert(report.FoundationReady, "OpenSS7 interop foundation should be ready");
     Assert(!report.HasPassingEvidence, "OpenSS7 interop should wait for real evidence");
     Assert(!report.Verified, "OpenSS7 interop should not be verified without evidence");
+}
+
+static void SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence()
+{
+    SigtranExternalPeerCommercialReadinessReport current = SigtranExternalPeerCommercialReadiness.CreateCurrent();
+    Assert(!current.FoundationReady, current.Describe());
+    Assert(!current.CommercialInteropReady, current.Describe());
+    Assert(current.Blockers.Contains("maintained-peer-selection-required"), "current commercial readiness should require maintained peer selection");
+    Assert(current.Blockers.Contains("external-peer-review-ready-evidence-required"), "current commercial readiness should require review-ready evidence");
+
+    SigtranExternalPeerInteropEvidenceRegistry registry = new();
+    registry.Add(new SigtranExternalPeerInteropRunReport(
+        SigtranExternalPeerInteropRunPlans.CreateDefaultAspToSg(),
+        CreateCompleteExternalPeerManifest(),
+        SigtranExternalPeerInteropRunStatus.Passed,
+        DateTimeOffset.UnixEpoch,
+        DateTimeOffset.UnixEpoch.AddMinutes(1)));
+
+    IReadOnlyList<string> criteria = SigtranMaintainedPeerSelectionPolicy.CreateDefault()
+        .GetCriteria()
+        .Select(static criterion => criterion.Id)
+        .ToArray();
+
+    SigtranExternalPeerCommercialReadinessReport ready = SigtranExternalPeerCommercialReadiness.Create(
+        SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway(),
+        criteria,
+        registry);
+
+    Assert(ready.FoundationReady, ready.Describe());
+    Assert(ready.CommercialInteropReady, ready.Describe());
+    AssertEqual(0, ready.Blockers.Count, "ready external peer commercial blocker count");
 }
 
 static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
