@@ -138,6 +138,7 @@ Run("SIGTRAN performance resource evidence evaluates CPU memory and allocations"
 Run("SIGTRAN performance resilience evidence gates failover recovery", SigtranPerformanceResilienceEvidenceGatesFailoverRecovery);
 Run("SIGTRAN performance evidence report renders publishable benchmark summary", SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary);
 Run("SIGTRAN performance evidence gate separates reports from production claims", SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims);
+Run("SIGTRAN performance evidence runner exposes manual peer benchmark handoff", SigtranPerformanceEvidenceRunnerExposesManualPeerBenchmarkHandoff);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2503,6 +2504,24 @@ static void SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims()
     SigtranPerformanceEvidenceGateResult ready = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady: true);
     Assert(ready.CanClaimProductionPerformance, ready.Describe());
     AssertEqual(0, ready.Reasons.Count, "performance evidence gate reason count");
+}
+
+static void SigtranPerformanceEvidenceRunnerExposesManualPeerBenchmarkHandoff()
+{
+    SigtranPerformanceEvidenceRunnerPlan runner = SigtranPerformanceEvidenceRunnerPlans.CreateDefault();
+
+    Assert(runner.RequiresSelfHostedRunner, runner.Describe());
+    Assert(runner.RequiresPeerTraffic, runner.Describe());
+    Assert(runner.CoversRequiredCommands, runner.Describe());
+    Assert(runner.IsCommercialRunnerPlan, runner.Describe());
+    AssertEqual(8, runner.Commands.Count, "performance runner command count");
+    Assert(runner.Commands.Any(command => command.Kind == SigtranPerformanceEvidenceRunnerCommandKind.TriggerFailover), "runner should trigger failover");
+
+    SigtranPerformanceEvidenceCiHandoff ci = SigtranPerformanceEvidenceRunnerPlans.CreateCiHandoff(runner);
+    AssertEqual("performance-evidence-peer-benchmark", ci.WorkflowName, "performance evidence workflow name");
+    Assert(ci.ManualTriggerOnly, "performance evidence workflow should be manual");
+    Assert(ci.IsReady, "performance CI handoff should be ready");
+    Assert(ci.ArtifactPatterns.All(pattern => pattern.StartsWith(runner.ArtifactRoot, StringComparison.Ordinal)), "artifact patterns should stay under artifact root");
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

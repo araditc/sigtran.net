@@ -89,6 +89,21 @@ The report exposes a single `Publishable` gate and can render a Markdown benchma
 
 This keeps retained benchmark evidence separate from production claims. A report can be complete and publishable while production performance still remains blocked by `commercial-readiness-required`.
 
+## Unit 8 - Runner And CI Handoff
+
+`SigtranPerformanceEvidenceRunnerPlan` now defines the command sequence for real peer benchmark execution:
+
+- Prepare environment.
+- Start capture.
+- Run warmup.
+- Run sustained.
+- Run peak.
+- Trigger failover.
+- Collect metrics.
+- Render report.
+
+`SigtranPerformanceEvidenceCiHandoff` keeps the benchmark workflow manual and self-hosted, with artifact upload patterns under the retained artifact root. This prevents accidental CI publication of performance claims while still making the execution handoff repeatable.
+
 ## Validation
 
 Each unit in this phase is validated with:
