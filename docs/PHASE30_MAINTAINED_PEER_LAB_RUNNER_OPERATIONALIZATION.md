@@ -37,6 +37,19 @@ The log contract gives real runner output a structured shape without implying th
 
 This makes a runner log reviewable by command before artifact verification starts.
 
+## Unit 4 - Artifact Verification
+
+`SigtranMaintainedPeerLabRunnerArtifactVerificationReport` now cross-checks retained runner artifacts against digest evidence. It records:
+
+- Per-artifact retained state.
+- Digest presence and SHA-256 validity.
+- Missing required artifact paths.
+- Missing retained artifact digest paths.
+- Invalid retained artifact digest paths.
+- Markdown rendering for operator review.
+
+This keeps artifact handoff separate from execution status: a command can pass while the artifact package still fails verification.
+
 ## Validation
 
 Each unit in this phase is validated with:

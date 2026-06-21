@@ -68,6 +68,7 @@ Run("SIGTRAN maintained peer lab runner status summarizes completion", SigtranMa
 Run("SIGTRAN maintained peer lab runner file materialization renders shell plan", SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan);
 Run("SIGTRAN maintained peer lab runner execution log renders lifecycle", SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle);
 Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState);
+Run("SIGTRAN maintained peer lab runner artifact verification checks retained digests", SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1372,6 +1373,34 @@ static void SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState()
     SigtranMaintainedPeerLabRunnerCommandOutcomeReport failed = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, failedLog);
     Assert(!failed.Passed, failed.Describe());
     Assert(failed.FailedCommandKinds.Contains(SigtranMaintainedPeerLabCommandKind.Capture), failed.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit4");
+    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
+    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
+
+    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport verified = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    Assert(verified.Verified, verified.Describe());
+    AssertEqual(6, verified.Items.Count, "maintained peer lab runner artifact verification item count");
+    Assert(verified.RenderMarkdown().Contains("Verified: `True`", StringComparison.Ordinal), verified.RenderMarkdown());
+
+    Dictionary<string, string> partial = collection.Artifacts.Take(5).ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
+    SigtranMaintainedPeerLabRunnerDigestReport missingDigest = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, partial);
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport missing = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, missingDigest);
+    Assert(!missing.Verified, missing.Describe());
+    AssertEqual(1, missing.MissingDigestPaths.Count, "maintained peer lab runner artifact verification missing digest count");
+
+    Dictionary<string, string> invalidDigestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => "not-a-digest", StringComparer.Ordinal);
+    SigtranMaintainedPeerLabRunnerDigestReport invalidDigest = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, invalidDigestByPath);
+    SigtranMaintainedPeerLabRunnerArtifactVerificationReport invalid = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, invalidDigest);
+    Assert(!invalid.Verified, invalid.Describe());
+    AssertEqual(6, invalid.InvalidDigestPaths.Count, "maintained peer lab runner artifact verification invalid digest count");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
