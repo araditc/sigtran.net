@@ -96,6 +96,18 @@ The bundle can produce the maintained peer lab evidence promotion report, but in
 
 The SDK exposes this as a renderable contract instead of adding an always-active workflow file, so maintainers can choose when a real lab runner is available.
 
+## Unit 9 - Commercial Readiness Bridge
+
+`SigtranMaintainedPeerLabCommercialBridge` now evaluates whether a maintained peer lab evidence bundle can support a commercial readiness claim. The bridge checks:
+
+- Workflow template readiness.
+- Bundle run-id consistency.
+- Handoff readiness.
+- Evidence promotion readiness.
+- Maintained peer lab status readiness.
+
+When evidence is incomplete or invalid, the report returns blocker identifiers instead of silently treating the bundle as production evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:
