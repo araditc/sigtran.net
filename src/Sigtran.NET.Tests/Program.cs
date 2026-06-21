@@ -293,6 +293,7 @@ Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesCompu
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("SCTP transport diagnostics snapshots summarize state", SctpTransportDiagnosticsSnapshotsSummarizeState);
+Run("SCTP production hardening readiness gates evidence", SctpProductionHardeningReadinessGatesEvidence);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
 Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
@@ -4694,6 +4695,25 @@ static void SctpTransportDiagnosticsSnapshotsSummarizeState()
         lastRecoveryDecision: failFast);
     AssertEqual(SctpTransportDiagnosticState.Faulted, faulted.DiagnosticState, faulted.Describe());
     Assert(faulted.RequiresAttention, faulted.Describe());
+}
+
+static void SctpProductionHardeningReadinessGatesEvidence()
+{
+    SctpProductionHardeningReadinessReport current = SctpProductionHardeningReadiness.GetReport();
+    AssertEqual(8, SctpProductionHardeningReadiness.RequiredFoundationCapabilityCount, "SCTP hardening capability count");
+    AssertEqual(8, current.FoundationCapabilityCount, "SCTP hardening completed capability count");
+    Assert(current.FoundationReady, current.Describe());
+    Assert(!current.EvidenceReady, current.Describe());
+    Assert(!current.ProductionReady, current.Describe());
+    Assert(current.Describe().Contains("linuxEvidence=False", StringComparison.Ordinal), current.Describe());
+
+    SctpProductionHardeningReadinessReport evidenced = SctpProductionHardeningReadiness.GetReport(
+        hasRetainedLinuxSctpEvidence: true,
+        hasRetainedExternalPeerEvidence: true);
+    Assert(evidenced.FoundationReady, evidenced.Describe());
+    Assert(evidenced.EvidenceReady, evidenced.Describe());
+    Assert(evidenced.ProductionReady, evidenced.Describe());
+    Assert(SctpProductionHardeningReadiness.ProductionGateDescription.Contains("Retained Linux SCTP", StringComparison.Ordinal), SctpProductionHardeningReadiness.ProductionGateDescription);
 }
 
 static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()

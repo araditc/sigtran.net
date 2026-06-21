@@ -112,6 +112,14 @@ The snapshot summarizes transport state as healthy, degraded, or faulted. Health
 
 Transport implementations should emit this snapshot into structured logs and retained lab traces when diagnosing SCTP behavior.
 
+## Production Hardening Readiness
+
+`SctpProductionHardeningReadiness.GetReport(...)` reports whether the SCTP hardening foundation is complete and whether retained production evidence is available.
+
+The foundation gate covers stream and PPID framing, association lifecycle journal, reconnect schedule, send backpressure, operation timeout policy, multi-homing readiness, fault recovery, and transport diagnostics. The production gate additionally requires retained Linux SCTP evidence and retained external peer traffic evidence.
+
+This keeps source-level SDK readiness separate from production claims backed by lab artifacts.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.

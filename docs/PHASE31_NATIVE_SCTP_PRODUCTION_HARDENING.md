@@ -107,6 +107,19 @@ This gives production transports a single decision point for association recover
 
 This gives production transports and operations tooling a single diagnostic envelope for logs, traces, health checks, and retained evidence artifacts.
 
+## Unit 9 - Production Hardening Readiness Gate
+
+`SctpProductionHardeningReadiness` now reports the SCTP hardening gate separately from retained production evidence. It provides:
+
+- Foundation capability counting.
+- Stream and PPID framing readiness.
+- Lifecycle, reconnect, backpressure, timeout, multi-homing, fault recovery, and diagnostics readiness.
+- Retained Linux SCTP evidence gating.
+- Retained external peer evidence gating.
+- Production-ready evaluation only when foundation and evidence are both complete.
+
+This prevents the SDK from claiming production SCTP hardening readiness until real Linux SCTP and external peer traffic artifacts have been retained.
+
 ## Validation
 
 Each unit in this phase is validated with:
