@@ -267,7 +267,7 @@ Status: Phase 29 is foundation-complete. It has deterministic maintained peer la
 - Keep runner operations package-neutral and separate from real retained lab evidence.
 - Prepare real maintained peer lab execution without manufacturing passing artifacts.
 
-Status: Phase 30 has reviewable file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, and operator handoff contracts.
+Status: Phase 30 is foundation-complete. It has reviewable file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, operator handoff, and operations status contracts. Commercial readiness still requires real maintained peer execution with retained digest-covered evidence and operator handoff artifacts.
 
 ## Recommended First Deliverable
 

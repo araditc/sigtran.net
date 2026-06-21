@@ -118,6 +118,19 @@ The package manifest only becomes ready when artifacts, digest coverage, provena
 
 The handoff recommends evidence promotion only when the package is ready, retry only when failures are transient, and blocker correction when evidence cannot be promoted or retried.
 
+## Unit 10 - Operations Status
+
+`SigtranMaintainedPeerLabRunnerOperationsStatus` now summarizes the completed operationalization foundation. It records:
+
+- Completed operations capability count.
+- Foundation readiness.
+- Runner evidence readiness.
+- Operator handoff readiness.
+- Current blocker identifiers.
+- Commercial readiness gating.
+
+This status makes the runner operations layer foundation-ready while keeping the commercial claim blocked until real retained maintained-peer evidence is produced and handed off.
+
 ## Validation
 
 Each unit in this phase is validated with:

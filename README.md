@@ -65,7 +65,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Interoperability lab | Phase 9 foundation-ready: lab scenario catalog, artifact manifests, run reports, external peer M3UA ASP-to-SG template, trace comparison, evidence promotion, opt-in CI profile, readiness report, and commercial gate integration added; production readiness still requires passing external lab evidence |
 | Maintained peer lab automation | Phase 28 foundation-ready: executable run manifest, deterministic environment file rendering, command script rendering, artifact digest manifests, comparison report, run report, evidence bundle, manual self-hosted workflow template, commercial readiness bridge, and automation status reporting are available; commercial release still requires real retained maintained-peer evidence |
 | Maintained peer lab runner | Phase 29 foundation-ready: runner workspace, execution input bundle, output artifact materialization, preflight, command manifest, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting contracts are available; commercial release still requires execution against a real maintained external peer |
-| Maintained peer lab runner operations | Phase 30 in progress: file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, and operator handoff contracts are available; commercial release still requires execution against a real maintained external peer |
+| Maintained peer lab runner operations | Phase 30 foundation-ready: file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, operator handoff, and operations status contracts are available; commercial release still requires execution against a real maintained external peer |
 
 ## Requirements
 
@@ -195,6 +195,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 29 Maintained Peer Lab Runner](docs/PHASE29_MAINTAINED_PEER_LAB_RUNNER.md)
 - [Phase 29 Summary](docs/PHASE29_SUMMARY.md)
 - [Phase 30 Maintained Peer Lab Runner Operationalization](docs/PHASE30_MAINTAINED_PEER_LAB_RUNNER_OPERATIONALIZATION.md)
+- [Phase 30 Summary](docs/PHASE30_SUMMARY.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
@@ -217,7 +218,7 @@ The roadmap is intentionally conservative:
 Phase 27 completed the maintained external peer lab foundation, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, digest-covered retained evidence gates, and status reporting.
 Phase 28 completed the automation and evidence handoff layer above that foundation, including a single run manifest, deterministic environment file rendering, command script rendering, comparison reporting, run reporting, digest manifests, an evidence bundle, a manual self-hosted workflow template, a commercial readiness bridge, and automation status reporting for retained lab artifact handoff.
 Phase 29 completed the maintained peer lab runner materialization layer, including deterministic runner workspace paths, execution input bundles, output artifact mapping, preflight checks, command manifests, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting for real lab execution.
-Phase 30 operationalizes the maintained peer lab runner layer, starting with reviewable file materialization, structured execution logs, command outcomes, artifact verification, runner provenance, failure classification, retry policy, evidence package manifests, and operator handoff reports for real lab execution.
+Phase 30 completed the maintained peer lab runner operationalization layer, including reviewable file materialization, structured execution logs, command outcomes, artifact verification, runner provenance, failure classification, retry policy, evidence package manifests, operator handoff reports, and operations status reporting for real lab execution.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
