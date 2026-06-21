@@ -45,6 +45,7 @@ Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", Si
 Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifacts", SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
 Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted);
 Run("SIGTRAN maintained peer lab status separates foundation from evidence", SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence);
+Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -908,6 +909,19 @@ static void SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence()
     SigtranMaintainedPeerLabStatusReport commercial = SigtranMaintainedPeerLabStatus.FromEvidence(evidence);
     Assert(commercial.CommercialReady, commercial.Describe());
     AssertEqual(0, commercial.Blockers.Count, "commercial maintained peer lab blocker count");
+}
+
+static void SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts()
+{
+    SigtranMaintainedPeerLabRunManifest manifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit1");
+
+    AssertEqual("phase28-unit1", manifest.RunId, "maintained peer lab run manifest id");
+    AssertEqual("maintained-external-peer-lab", manifest.Binding.Id, "maintained peer lab run manifest binding");
+    AssertEqual("phase28-unit1", manifest.ArtifactPlan.RunId, "maintained peer lab run manifest artifact run id");
+    AssertEqual(6, manifest.CommandPlan.Commands.Count, "maintained peer lab run manifest command count");
+    AssertEqual(3, manifest.TrafficVectors.Count, "maintained peer lab run manifest vector count");
+    Assert(manifest.IsExecutableContract, manifest.Describe());
+    Assert(manifest.Describe().Contains("executable=True", StringComparison.Ordinal), manifest.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

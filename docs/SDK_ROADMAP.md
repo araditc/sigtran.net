@@ -245,6 +245,14 @@ Status: Phase 26 is foundation-complete for package-neutral commercial roadmap r
 
 Status: Phase 27 is foundation-complete. It has canonical `Sigtran.NET` naming, a package-neutral maintained peer lab binding catalog, host prerequisite readiness modeling, validated lab configuration contracts, deterministic retained artifact planning, an ordered command plan, maintained peer traffic vectors, a digest-covered evidence promotion gate, manual self-hosted CI policy, and final status reporting. Commercial release remains blocked until the maintained peer lab produces passing digest-covered evidence.
 
+## Phase 28 - Maintained Peer Lab Automation And Evidence Handoff
+
+- Aggregate maintained peer lab contracts into an executable run manifest.
+- Render environment files, command scripts, workflow templates, comparison reports, and evidence handoff bundles.
+- Keep automation package-neutral and separate planned contracts from retained commercial evidence.
+
+Status: Phase 28 has started with a run manifest that aggregates binding, configuration, artifact, command, traffic vector, and CI contracts.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
