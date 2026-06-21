@@ -13,6 +13,18 @@ Phase 30 turns the maintained peer lab runner materialization contracts into ope
 
 The plan does not write files. It renders the deterministic operation that a real lab runner can execute or review.
 
+## Unit 2 - Execution Log
+
+`SigtranMaintainedPeerLabRunnerExecutionLog` now records timestamped runner events with package-neutral event kinds. It supports:
+
+- Runner lifecycle events.
+- Command start and completion events.
+- Warning and error events.
+- JSON Lines rendering.
+- Markdown rendering.
+
+The log contract gives real runner output a structured shape without implying that the SDK has executed peer traffic locally.
+
 ## Validation
 
 Each unit in this phase is validated with:
