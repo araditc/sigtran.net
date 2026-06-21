@@ -2,7 +2,7 @@
 
 Phase 20 adds the commercial evidence dossier foundation for SIGTRAN.NET.
 
-Earlier phases created separate foundations for native SCTP verification, OpenSS7/IPSS7 execution, protocol interop vectors, release provenance, package governance, SBOM policy, and signing policy. This phase introduces a single evidence bundle contract that can collect those artifacts into one release dossier.
+Earlier phases created separate foundations for native SCTP verification, external peer execution, protocol interop vectors, release provenance, package governance, SBOM policy, and signing policy. This phase introduces a single evidence bundle contract that can collect those artifacts into one release dossier.
 
 The public APIs use domain names such as `SigtranCommercialEvidenceStatus`; phase numbers are intentionally kept out of source type names.
 
@@ -11,7 +11,7 @@ The public APIs use domain names such as `SigtranCommercialEvidenceStatus`; phas
 `SigtranCommercialEvidenceRequirements.GetRequirements()` defines five production claim areas:
 
 - Native SCTP Linux kernel peer-traffic evidence.
-- OpenSS7/IPSS7 M3UA ASP-to-SG evidence.
+- External peer M3UA ASP-to-SG evidence.
 - SCCP, TCAP, and MAP SMS protocol vector evidence.
 - Release provenance and package manifest evidence.
 - Package, symbol package, SBOM, and signature evidence.
@@ -43,7 +43,7 @@ A bundle is complete only when all requirements are satisfied and every retained
 - Complete commercial evidence artifacts.
 - Complete commercial evidence digests.
 - Native SCTP verification.
-- OpenSS7/IPSS7 verification.
+- External peer interoperability verification.
 - Protocol vector verification.
 - Release governance readiness.
 

@@ -1,11 +1,11 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes OpenSS7/IPSS7 ASP-to-SG interoperability configuration.
+/// Describes external peer ASP-to-SG interoperability configuration.
 /// </summary>
 public sealed class SigtranExternalPeerInteropConfiguration
 {
-    /// <summary>Creates an OpenSS7/IPSS7 interoperability configuration.</summary>
+    /// <summary>Creates an external peer interoperability configuration.</summary>
     /// <param name="associationName">The association name.</param>
     /// <param name="applicationServerName">The application server name.</param>
     /// <param name="routingContext">The routing context.</param>
@@ -45,12 +45,12 @@ public sealed class SigtranExternalPeerInteropConfiguration
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 interoperability configuration helpers.
+/// Provides external peer interoperability configuration helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropConfigurations
 {
-    /// <summary>Creates the default OpenSS7/IPSS7 ASP-to-SG configuration.</summary>
-    /// <returns>The default OpenSS7/IPSS7 ASP-to-SG configuration.</returns>
+    /// <summary>Creates the default external peer ASP-to-SG configuration.</summary>
+    /// <returns>The default external peer ASP-to-SG configuration.</returns>
     public static SigtranExternalPeerInteropConfiguration CreateDefaultAspToSg()
     {
         return new(

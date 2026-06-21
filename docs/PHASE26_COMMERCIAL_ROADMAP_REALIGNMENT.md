@@ -102,6 +102,12 @@ Commercial evidence and release execution readiness now use `externalPeerInterop
 
 `SigtranCommercialReleaseExecutionReadiness` now consumes `SigtranExternalPeerCommercialReadiness.CreateCurrent()` so the release decision is based on maintained peer selection, lab environment, run plan, and review-ready evidence. Retained legacy blocker notes remain evidence context, not public gate names.
 
+## Unit 9 - Migration Notes And Public Labels
+
+`docs/EXTERNAL_PEER_INTEROP_MIGRATION.md` records the naming rule for future contributors.
+
+Public labels, CI variables, status capability names, and README roadmap text now use external peer terminology. Legacy OpenSS7/IPSS7 wording is retained only where the repository is documenting historical blocker evidence or reference material.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

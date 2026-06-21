@@ -91,12 +91,12 @@ Status: SDK foundation is complete for Linux native SCTP platform probing, socke
 
 ## Real Interoperability Lab
 
-- Define required lab scenarios for Linux native SCTP, OpenSS7/IPSS7 M3UA ASP-to-SG, and MAP SMS trace comparison.
+- Define required lab scenarios for Linux native SCTP, external peer M3UA ASP-to-SG, and MAP SMS trace comparison.
 - Capture PCAPs, SDK traces, peer configuration, peer logs, and comparison reports.
 - Convert passing lab runs into release evidence that can unlock commercial readiness gates.
 - Keep evidence pending until artifacts are real and reviewable.
 
-Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
+Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, external peer lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
 
 ## Release Automation And Supply Chain
 
@@ -163,13 +163,13 @@ Status: Phase 16 is foundation-ready for configuration schema, validation helper
 
 Status: Phase 17 is foundation-ready for native SCTP lab scenario catalog, artifact manifest, run plan, command set, run report, evidence registry, lab readiness, lab CI profile, commercial gate, and phase documentation. Native SCTP production verification remains blocked until complete passing Linux SCTP lab evidence is captured.
 
-## Phase 18 - OpenSS7/IPSS7 Interop Execution
+## Phase 18 - External Peer Interop Execution
 
-- Add OpenSS7/IPSS7 environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
-- Keep execution foundation readiness separate from verified OpenSS7/IPSS7 evidence.
-- Make required OpenSS7/IPSS7 artifacts explicit before commercial interoperability claims.
+- Add external peer environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
+- Keep execution foundation readiness separate from verified external peer evidence.
+- Make required external peer artifacts explicit before commercial interoperability claims.
 
-Status: Phase 18 is foundation-ready for OpenSS7/IPSS7 interoperability execution. Verification remains blocked until real OpenSS7/IPSS7 packet captures, SDK traces, peer configuration, peer logs, and comparison reports are captured and promoted.
+Status: Phase 18 is foundation-ready for external peer interoperability execution. Verification remains blocked until real external peer packet captures, SDK traces, peer configuration, peer logs, and comparison reports are captured and promoted.
 
 ## Phase 19 - SCCP TCAP MAP Interop Vectors
 
@@ -182,10 +182,10 @@ Status: Phase 19 is foundation-ready for SCCP, TCAP, and MAP SMS protocol intero
 ## Phase 20 - Commercial Evidence Dossier
 
 - Add commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI metadata, and status reporting.
-- Consolidate native SCTP, OpenSS7/IPSS7, protocol-vector, release provenance, package, SBOM, and signing evidence into one release dossier contract.
+- Consolidate native SCTP, external peer, protocol-vector, release provenance, package, SBOM, and signing evidence into one release dossier contract.
 - Normalize source status capability labels so source-level metadata uses domain names instead of roadmap phase labels.
 
-Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. Commercial evidence readiness remains blocked until real retained artifacts, digest coverage, native SCTP verification, OpenSS7/IPSS7 verification, protocol vector verification, and release governance are complete.
+Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. Commercial evidence readiness remains blocked until real retained artifacts, digest coverage, native SCTP verification, external peer verification, protocol vector verification, and release governance are complete.
 
 ## Phase 21 - Supply Chain Automation
 
@@ -221,11 +221,11 @@ Status: Phase 24 is foundation-ready for package publication readiness. Real NuG
 
 ## Phase 25 - Commercial Release Execution And Evidence
 
-- Retain real Linux SCTP, OpenSS7/IPSS7, packet capture, trace, comparison, SBOM, signing, provenance, benchmark, public API baseline, workflow, dry-run, and publication gate evidence.
+- Retain real Linux SCTP, external peer, packet capture, trace, comparison, SBOM, signing, provenance, benchmark, public API baseline, workflow, dry-run, and publication gate evidence.
 - Keep blocker evidence explicit instead of manufacturing passing artifacts.
 - Promote only when all retained evidence areas are passing and digest-covered.
 
-Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM; OpenSS7/IPSS7 remains blocked on Linux 5.15 `open_softirq` compatibility until moved to a Linux 4.x-era OpenSS7-compatible environment or replaced with a maintained SIGTRAN peer.
+Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM; external peer interoperability remains blocked until a maintained SIGTRAN peer run is captured. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility.
 
 ## Phase 26 - Commercial Roadmap Realignment
 

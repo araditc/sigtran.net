@@ -1,14 +1,14 @@
-# Phase 18 OpenSS7/IPSS7 Interop Execution
+# Phase 18 External Peer Interop Execution
 
-Phase 18 adds the OpenSS7/IPSS7 interoperability execution framework for SIGTRAN.NET.
+Phase 18 adds the external SIGTRAN peer interoperability execution framework for SIGTRAN.NET.
 
-The earlier lab template identified OpenSS7/IPSS7 as a peer reference. This phase turns that template into an executable contract with environment requirements, ASP-to-SG configuration, trace expectations, artifact capture, run reports, evidence registry, readiness, and CI metadata.
+The earlier lab template identified the need for a real M3UA ASP-to-SG peer. This phase turns that template into an executable contract with environment requirements, ASP-to-SG configuration, trace expectations, artifact capture, run reports, evidence registry, readiness, and CI metadata.
 
 ## Environment
 
-`SigtranExternalPeerInteropEnvironments.CreateDefault()` defines the OpenSS7/IPSS7 lab environment.
+`SigtranExternalPeerInteropEnvironments.CreateDefault()` defines the external peer lab environment.
 
-The environment requires Linux, native SCTP, an OpenSS7/IPSS7 peer, and packet capture.
+The environment requires Linux, native SCTP, a configured SIGTRAN peer, and packet capture.
 
 ## Configuration
 
@@ -19,7 +19,7 @@ The environment requires Linux, native SCTP, an OpenSS7/IPSS7 peer, and packet c
 - Routing Context.
 - Traffic mode.
 
-These values are planning defaults and must be adapted to the actual OpenSS7/IPSS7 host configuration.
+These values are planning defaults and must be adapted to the actual peer host configuration.
 
 ## Trace Expectations
 
@@ -41,7 +41,7 @@ All artifact kinds must be present before a run can count as passing evidence.
 
 ## Run Plan
 
-`SigtranExternalPeerInteropRunPlans.CreateDefaultAspToSg()` combines the OpenSS7/IPSS7 template, environment, configuration, and trace expectations.
+`SigtranExternalPeerInteropRunPlans.CreateDefaultAspToSg()` combines the external peer template, environment, configuration, and trace expectations.
 
 The plan is executable when all prerequisite contracts are present. Executable does not mean verified; verification requires real captured artifacts.
 
@@ -49,7 +49,7 @@ The plan is executable when all prerequisite contracts are present. Executable d
 
 `SigtranExternalPeerInteropCommands.CreateDefault()` defines the command contract for a prepared lab host.
 
-The commands assume OpenSS7/IPSS7 configuration tooling, packet capture, and an opt-in test run with `SIGTRAN_INTEROP_PEER=external-sigtran-peer`.
+The commands assume peer configuration tooling, packet capture, and an opt-in test run with `SIGTRAN_INTEROP_PEER=external-sigtran-peer`.
 
 ## Run Reports
 
@@ -61,7 +61,7 @@ Only passed runs with a complete artifact manifest count as passing evidence.
 
 `SigtranExternalPeerInteropEvidence.CreateCurrentRegistry()` currently returns an empty registry.
 
-Real OpenSS7/IPSS7 artifacts must be captured and promoted before commercial readiness can use this evidence.
+Real external peer artifacts must be captured and promoted before commercial readiness can use this evidence.
 
 ## Readiness
 
@@ -71,10 +71,10 @@ The execution foundation is ready. Verification remains false until real passing
 
 ## CI Profile
 
-`SigtranExternalPeerInteropCi.CreateDefault()` defines an opt-in OpenSS7/IPSS7 CI profile.
+`SigtranExternalPeerInteropCi.CreateDefault()` defines an opt-in external peer CI profile.
 
-The profile is enabled with `SIGTRAN_OPENSS7_INTEROP` and stores artifacts under `SIGTRAN_OPENSS7_ARTIFACT_ROOT`.
+The profile is enabled with `SIGTRAN_EXTERNAL_PEER_INTEROP` and stores artifacts under `SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT`.
 
 ## Status
 
-`SigtranExternalPeerInteropStatus.Describe()` summarizes the OpenSS7/IPSS7 execution foundation and keeps verified status false until passing evidence exists.
+`SigtranExternalPeerInteropStatus.Describe()` summarizes the external peer execution foundation and keeps verified status false until passing evidence exists.

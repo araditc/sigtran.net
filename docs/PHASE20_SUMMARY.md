@@ -19,7 +19,7 @@ Phase 20 adds the commercial evidence dossier foundation for SIGTRAN.NET.
 
 The commercial evidence dossier foundation is complete.
 
-`SigtranCommercialEvidenceStatus.FoundationReady` is expected to be true. `CommercialEvidenceReady` remains false until complete retained artifacts, digest coverage, native SCTP verification, OpenSS7/IPSS7 verification, protocol vector verification, and release governance are all complete.
+`SigtranCommercialEvidenceStatus.FoundationReady` is expected to be true. `CommercialEvidenceReady` remains false until complete retained artifacts, digest coverage, native SCTP verification, external peer interoperability verification, protocol vector verification, and release governance are all complete.
 
 ## Production Claim Boundary
 

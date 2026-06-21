@@ -40,7 +40,7 @@ Phase 8 adds the native SCTP implementation foundation and exposes it through `S
 SigtranInteropEvidenceRegistry registry = new();
 registry.Add(new SigtranInteropEvidenceItem(
     "lab/linux/m3ua-asp",
-    "openss7",
+    "external-sigtran-peer",
     "M3UA ASP to SG",
     "traces/m3ua-asp.pcapng",
     SigtranInteropEvidenceResult.Passed));

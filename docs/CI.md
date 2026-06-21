@@ -74,11 +74,11 @@ Phase 17 adds `SigtranNativeSctpLabCi.CreateDefault()` as the metadata contract 
 
 The profile is opt-in, Linux-only, and enabled by `SIGTRAN_NATIVE_SCTP_LAB`. Real runs must retain artifacts under `SIGTRAN_NATIVE_SCTP_ARTIFACT_ROOT`.
 
-## OpenSS7/IPSS7 Interop CI
+## External Peer Interop CI
 
-Phase 18 adds `SigtranExternalPeerInteropCi.CreateDefault()` as the metadata contract for OpenSS7/IPSS7 interoperability execution.
+Phase 18 adds `SigtranExternalPeerInteropCi.CreateDefault()` as the metadata contract for external peer interoperability execution.
 
-The profile is opt-in and enabled by `SIGTRAN_OPENSS7_INTEROP`. Real runs require a prepared OpenSS7/IPSS7 runner and must retain artifacts under `SIGTRAN_OPENSS7_ARTIFACT_ROOT`.
+The profile is opt-in and enabled by `SIGTRAN_EXTERNAL_PEER_INTEROP`. Real runs require a prepared external peer runner and must retain artifacts under `SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT`.
 
 ## Protocol Interop Vector CI
 
@@ -90,7 +90,7 @@ The profile is opt-in and enabled by `SIGTRAN_PROTOCOL_INTEROP`. Real runs requi
 
 Phase 20 adds `SigtranCommercialEvidenceCi.CreateDefault()` as the metadata contract for commercial evidence dossier verification.
 
-The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, OpenSS7/IPSS7 evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.
+The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, external peer evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.
 
 ## Supply Chain CI
 

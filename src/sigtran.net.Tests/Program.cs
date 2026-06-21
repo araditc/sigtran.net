@@ -122,17 +122,17 @@ Run("SIGTRAN native SCTP lab readiness separates foundation from evidence", Sigt
 Run("SIGTRAN native SCTP lab CI profile is opt-in and Linux-only", SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly);
 Run("SIGTRAN native SCTP lab commercial gate waits for complete evidence", SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence);
 Run("SIGTRAN native SCTP lab verification status summarizes foundation", SigtranNativeSctpLabVerificationStatusSummarizesFoundation);
-Run("SIGTRAN OpenSS7 interop environment requires Linux SCTP peer and packet capture", SigtranExternalPeerInteropEnvironmentRequiresLinuxSctpPeerAndPacketCapture);
-Run("SIGTRAN OpenSS7 interop configuration exposes ASP-to-SG defaults", SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults);
-Run("SIGTRAN OpenSS7 trace expectations cover ASP lifecycle and DATA", SigtranExternalPeerTraceExpectationsCoverAspLifecycleAndData);
-Run("SIGTRAN OpenSS7 artifact manifest requires trace peer config logs and comparison", SigtranExternalPeerArtifactManifestRequiresTracePeerConfigLogsAndComparison);
-Run("SIGTRAN OpenSS7 run plan is executable with default contracts", SigtranExternalPeerRunPlanIsExecutableWithDefaultContracts);
-Run("SIGTRAN OpenSS7 commands require peer and packet capture", SigtranExternalPeerCommandsRequirePeerAndPacketCapture);
-Run("SIGTRAN OpenSS7 run report identifies passing evidence", SigtranExternalPeerRunReportIdentifiesPassingEvidence);
-Run("SIGTRAN OpenSS7 evidence registry starts empty", SigtranExternalPeerEvidenceRegistryStartsEmpty);
-Run("SIGTRAN OpenSS7 readiness separates foundation from evidence", SigtranExternalPeerReadinessSeparatesFoundationFromEvidence);
+Run("SIGTRAN external peer interop environment requires Linux SCTP peer and packet capture", SigtranExternalPeerInteropEnvironmentRequiresLinuxSctpPeerAndPacketCapture);
+Run("SIGTRAN external peer interop configuration exposes ASP-to-SG defaults", SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults);
+Run("SIGTRAN external peer trace expectations cover ASP lifecycle and DATA", SigtranExternalPeerTraceExpectationsCoverAspLifecycleAndData);
+Run("SIGTRAN external peer artifact manifest requires trace peer config logs and comparison", SigtranExternalPeerArtifactManifestRequiresTracePeerConfigLogsAndComparison);
+Run("SIGTRAN external peer run plan is executable with default contracts", SigtranExternalPeerRunPlanIsExecutableWithDefaultContracts);
+Run("SIGTRAN external peer commands require peer and packet capture", SigtranExternalPeerCommandsRequirePeerAndPacketCapture);
+Run("SIGTRAN external peer run report identifies passing evidence", SigtranExternalPeerRunReportIdentifiesPassingEvidence);
+Run("SIGTRAN external peer evidence registry starts empty", SigtranExternalPeerEvidenceRegistryStartsEmpty);
+Run("SIGTRAN external peer readiness separates foundation from evidence", SigtranExternalPeerReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN external peer commercial readiness aggregates selection lab and evidence", SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence);
-Run("SIGTRAN OpenSS7 status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
+Run("SIGTRAN external peer status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
@@ -189,7 +189,7 @@ Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublica
 Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
 Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
 Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
-Run("SIGTRAN OpenSS7 interop blocker evidence records retained failure context", SigtranExternalPeerInteropBlockerEvidenceRecordsRetainedFailureContext);
+Run("SIGTRAN external peer interop blocker evidence records retained failure context", SigtranExternalPeerInteropBlockerEvidenceRecordsRetainedFailureContext);
 Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
 Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
 Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
@@ -482,7 +482,7 @@ static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
 static void SigtranInteropEvidenceRegistryTracksLabResults()
 {
     SigtranInteropEvidenceRegistry registry = new();
-    registry.Add(new SigtranInteropEvidenceItem("lab/linux/m3ua-asp", "openss7", "M3UA ASP to SG", "traces/m3ua-asp.pcapng", SigtranInteropEvidenceResult.Passed));
+    registry.Add(new SigtranInteropEvidenceItem("lab/linux/m3ua-asp", "external-sigtran-peer", "M3UA ASP to SG", "traces/m3ua-asp.pcapng", SigtranInteropEvidenceResult.Passed));
 
     AssertEqual(1, registry.Snapshot().Count, "interop evidence count");
     Assert(registry.HasPassingEvidence(), "interop evidence should pass with one passing item");
@@ -574,15 +574,15 @@ static void SigtranInteropLabScenarioCatalogExposesRequiredScenarios()
 
     AssertEqual(3, scenarios.Count, "interop lab scenario count");
     AssertEqual("linux-native-sctp-loopback", scenarios[0].Id, "interop lab first scenario");
-    Assert(SigtranInteropLabScenarios.TryGet("EXTERNAL-PEER-M3UA-ASP-TO-SG", out SigtranInteropLabScenario? openss7), "OpenSS7 lab scenario should exist");
-    AssertEqual(SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway, openss7!.Kind, "OpenSS7 lab scenario kind");
-    Assert(openss7.RequiredArtifacts.Contains("pcap"), "OpenSS7 lab scenario should require PCAP");
-    Assert(openss7.Describe().Contains("external-sigtran-peer", StringComparison.Ordinal), openss7.Describe());
+    Assert(SigtranInteropLabScenarios.TryGet("EXTERNAL-PEER-M3UA-ASP-TO-SG", out SigtranInteropLabScenario? externalPeer), "external peer lab scenario should exist");
+    AssertEqual(SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway, externalPeer!.Kind, "external peer lab scenario kind");
+    Assert(externalPeer.RequiredArtifacts.Contains("pcap"), "external peer lab scenario should require PCAP");
+    Assert(externalPeer.Describe().Contains("external-sigtran-peer", StringComparison.Ordinal), externalPeer.Describe());
 }
 
 static void SigtranInteropLabArtifactManifestValidatesRequiredFiles()
 {
-    Assert(SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "OpenSS7 scenario should exist");
+    Assert(SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "external peer scenario should exist");
     SigtranInteropLabArtifactManifest manifest = new(scenario!.Id);
 
     manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PacketCapture, "artifacts/external-peer/pcap/m3ua-asp.pcapng", "ABC123"));
@@ -590,7 +590,7 @@ static void SigtranInteropLabArtifactManifestValidatesRequiredFiles()
     manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerConfiguration, "artifacts/external-peer/peer-config/sg.conf"));
     manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PeerLog, "artifacts/external-peer/peer-log/sg.log"));
 
-    Assert(manifest.Satisfies(scenario), "artifact manifest should satisfy OpenSS7 scenario");
+    Assert(manifest.Satisfies(scenario), "artifact manifest should satisfy external peer scenario");
     AssertEqual(4, manifest.Snapshot().Count, "artifact manifest count");
     AssertEqual("ABC123", manifest.Snapshot()[0].Sha256, "artifact digest");
     Assert(!new SigtranInteropLabArtifactManifest("wrong").Satisfies(scenario), "wrong scenario manifest should not satisfy");
@@ -598,7 +598,7 @@ static void SigtranInteropLabArtifactManifestValidatesRequiredFiles()
 
 static void SigtranInteropLabRunReportIdentifiesPassingEvidence()
 {
-    Assert(SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "OpenSS7 scenario should exist");
+    Assert(SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario), "external peer scenario should exist");
     SigtranInteropLabArtifactManifest manifest = new(scenario!.Id);
     manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.PacketCapture, "artifacts/external-peer/pcap/m3ua-asp.pcapng"));
     manifest.Add(new SigtranInteropLabArtifact(SigtranInteropLabArtifactKind.SdkTrace, "artifacts/external-peer/sdk-trace/m3ua-asp.log"));
@@ -1626,21 +1626,21 @@ static void SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults()
 {
     SigtranExternalPeerInteropConfiguration configuration = SigtranExternalPeerInteropConfigurations.CreateDefaultAspToSg();
 
-    AssertEqual("sigtran-net-asp", configuration.AssociationName, "OpenSS7 association name");
-    AssertEqual("sigtran-net-as", configuration.ApplicationServerName, "OpenSS7 AS name");
-    AssertEqual(1u, configuration.RoutingContext, "OpenSS7 routing context");
-    AssertEqual("override", configuration.TrafficMode, "OpenSS7 traffic mode");
-    Assert(configuration.IsAspToSgReady, "OpenSS7 ASP-to-SG configuration should be ready");
+    AssertEqual("sigtran-net-asp", configuration.AssociationName, "external peer association name");
+    AssertEqual("sigtran-net-as", configuration.ApplicationServerName, "external peer AS name");
+    AssertEqual(1u, configuration.RoutingContext, "external peer routing context");
+    AssertEqual("override", configuration.TrafficMode, "external peer traffic mode");
+    Assert(configuration.IsAspToSgReady, "external peer ASP-to-SG configuration should be ready");
 }
 
 static void SigtranExternalPeerTraceExpectationsCoverAspLifecycleAndData()
 {
     SigtranExternalPeerInteropTraceExpectations expectations = SigtranExternalPeerInteropTraceExpectationsCatalog.CreateAspToSg();
 
-    AssertEqual("external-peer-m3ua-asp-to-sg", expectations.ScenarioId, "OpenSS7 trace scenario");
-    Assert(expectations.CoversAspLifecycle, "OpenSS7 trace expectations should cover ASP lifecycle");
-    Assert(expectations.RequiresDataTransfer, "OpenSS7 trace expectations should require DATA transfer");
-    Assert(expectations.ExpectedMessages.Contains("DATA"), "OpenSS7 trace expectations should include DATA");
+    AssertEqual("external-peer-m3ua-asp-to-sg", expectations.ScenarioId, "external peer trace scenario");
+    Assert(expectations.CoversAspLifecycle, "external peer trace expectations should cover ASP lifecycle");
+    Assert(expectations.RequiresDataTransfer, "external peer trace expectations should require DATA transfer");
+    Assert(expectations.ExpectedMessages.Contains("DATA"), "external peer trace expectations should include DATA");
 }
 
 static void SigtranExternalPeerArtifactManifestRequiresTracePeerConfigLogsAndComparison()
@@ -1705,17 +1705,17 @@ static void SigtranExternalPeerEvidenceRegistryStartsEmpty()
 {
     SigtranExternalPeerInteropEvidenceRegistry registry = SigtranExternalPeerInteropEvidence.CreateCurrentRegistry();
 
-    AssertEqual(0, registry.Snapshot().Count, "current OpenSS7 evidence count");
-    Assert(!registry.HasPassingAspToSgEvidence, "current OpenSS7 evidence should be empty until real artifacts are promoted");
+    AssertEqual(0, registry.Snapshot().Count, "current external peer evidence count");
+    Assert(!registry.HasPassingAspToSgEvidence, "current external peer evidence should be empty until real artifacts are promoted");
 }
 
 static void SigtranExternalPeerReadinessSeparatesFoundationFromEvidence()
 {
     SigtranExternalPeerInteropReadinessReport report = SigtranExternalPeerInteropReadiness.GetReport();
 
-    Assert(report.FoundationReady, "OpenSS7 interop foundation should be ready");
-    Assert(!report.HasPassingEvidence, "OpenSS7 interop should wait for real evidence");
-    Assert(!report.Verified, "OpenSS7 interop should not be verified without evidence");
+    Assert(report.FoundationReady, "external peer interop foundation should be ready");
+    Assert(!report.HasPassingEvidence, "external peer interop should wait for real evidence");
+    Assert(!report.Verified, "external peer interop should not be verified without evidence");
 }
 
 static void SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence()
@@ -1753,9 +1753,9 @@ static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
 {
     IReadOnlyList<string> capabilities = SigtranExternalPeerInteropStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranExternalPeerInteropStatus.CompletedUnitCount, "OpenSS7 completed unit count");
-    AssertEqual(10, capabilities.Count, "OpenSS7 capability count");
-    Assert(capabilities.Contains("openss7-ci-profile"), "OpenSS7 status should include CI profile");
+    AssertEqual(10, SigtranExternalPeerInteropStatus.CompletedUnitCount, "external peer completed unit count");
+    AssertEqual(10, capabilities.Count, "external peer capability count");
+    Assert(capabilities.Contains("external-peer-ci-profile"), "external peer status should include CI profile");
     Assert(SigtranExternalPeerInteropStatus.FoundationReady, SigtranExternalPeerInteropStatus.Describe());
     Assert(!SigtranExternalPeerInteropStatus.Verified, SigtranExternalPeerInteropStatus.Describe());
 }
@@ -1883,7 +1883,7 @@ static void SigtranCommercialEvidenceRequirementsCoverProductionClaimAreas()
 
     AssertEqual(5, requirements.Count, "commercial evidence requirement count");
     Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.NativeSctp), "native SCTP evidence requirement should exist");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ExternalPeerInterop), "OpenSS7 evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ExternalPeerInterop), "external peer evidence requirement should exist");
     Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ProtocolInterop), "protocol evidence requirement should exist");
     Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ReleaseProvenance), "release provenance evidence requirement should exist");
     Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.PackageArtifacts), "package artifact evidence requirement should exist");
@@ -1934,7 +1934,7 @@ static void SigtranCommercialEvidenceGateReportsMissingCurrentEvidence()
     Assert(!result.CanClaimCommercialEvidence, "empty commercial evidence should not support claims");
     Assert(result.Reasons.Contains("commercial-evidence-artifacts-incomplete"), "commercial evidence gate should report incomplete artifacts");
     Assert(result.Reasons.Contains("native-sctp-evidence-required"), "commercial evidence gate should report native SCTP evidence");
-    Assert(result.Reasons.Contains("external-peer-evidence-required"), "commercial evidence gate should report OpenSS7 evidence");
+    Assert(result.Reasons.Contains("external-peer-evidence-required"), "commercial evidence gate should report external peer evidence");
     Assert(result.Reasons.Contains("protocol-vector-evidence-required"), "commercial evidence gate should report protocol vector evidence");
 }
 
@@ -2414,9 +2414,9 @@ static void SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtif
     SigtranCommercialReleaseEvidenceManifest manifest = SigtranCommercialReleaseEvidenceManifest.CreateCurrentSample();
 
     Assert(manifest.HasPassedArea(SigtranCommercialReleaseEvidenceArea.LinuxSctp), "commercial release evidence should include Linux SCTP evidence");
-    Assert(manifest.HasBlockers, "commercial release evidence should record the OpenSS7 blocker");
+    Assert(manifest.HasBlockers, "commercial release evidence should record the external peer blocker");
     Assert(manifest.HasDigestCoverage, "commercial release evidence should require digest coverage for passed artifacts");
-    Assert(!manifest.SupportsCommercialPromotion, "commercial release evidence should not promote while OpenSS7 is blocked");
+    Assert(!manifest.SupportsCommercialPromotion, "commercial release evidence should not promote while external peer is blocked");
     Assert(manifest.Artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.BlockerReport), "commercial release evidence should include blocker report artifact");
 }
 
@@ -2437,11 +2437,11 @@ static void SigtranExternalPeerInteropBlockerEvidenceRecordsRetainedFailureConte
 {
     SigtranExternalPeerInteropBlocker blocker = SigtranExternalPeerInteropBlockerEvidence.CreateCurrentBlocker();
 
-    Assert(blocker.BlocksInteropPromotion, "OpenSS7/IPSS7 blocker should prevent interop promotion");
-    Assert(blocker.EnvironmentName.Contains("Ubuntu 22.04.1 VM", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should record the environment");
-    Assert(blocker.LogPath.EndsWith("openss7-configure.log", StringComparison.Ordinal), "OpenSS7/IPSS7 blocker should retain configure log path");
+    Assert(blocker.BlocksInteropPromotion, "external peer blocker should prevent interop promotion");
+    Assert(blocker.EnvironmentName.Contains("Ubuntu 22.04.1 VM", StringComparison.OrdinalIgnoreCase), "external peer blocker should record the environment");
+    Assert(blocker.LogPath.EndsWith("openss7-configure.log", StringComparison.Ordinal), "external peer blocker should retain configure log path");
     Assert(blocker.ObservedFailure.Contains("open_softirq", StringComparison.OrdinalIgnoreCase), blocker.Describe());
-    Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "OpenSS7/IPSS7 blocker should describe the next action");
+    Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "external peer blocker should describe the next action");
 }
 
 static void SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts()
@@ -2527,7 +2527,7 @@ static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
     Assert(report.CommercialReleaseReady == false, report.Describe());
     Assert(report.PassedCount > 0, "commercial release execution readiness should include passed evidence items");
     Assert(report.BlockedCount > 0, "commercial release execution readiness should include blocked evidence items");
-    Assert(report.Items.Any(static item => item.Name == "external-peer-interop" && !item.Passed), "commercial release execution readiness should block OpenSS7/IPSS7 interop");
+    Assert(report.Items.Any(static item => item.Name == "external-peer-interop" && !item.Passed), "commercial release execution readiness should block external peer interop");
     Assert(report.Items.Any(static item => item.Name == "package-signing" && !item.Passed), "commercial release execution readiness should block incomplete signing verification");
     Assert(report.Items.Any(static item => item.Name == "performance" && !item.Passed), "commercial release execution readiness should block smoke-only performance evidence");
 }
@@ -2569,11 +2569,11 @@ static SigtranCommercialEvidenceManifest CreateCompleteCommercialEvidenceManifes
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/native-sctp-sdk.log", "SHA256-002"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/native-sctp-peer.log", "SHA256-003"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/native-sctp-comparison.md", "SHA256-004"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/openss7.pcapng", "SHA256-005"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/openss7-sdk.log", "SHA256-006"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerConfiguration, "artifacts/commercial/openss7-peer.conf", "SHA256-007"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/openss7-peer.log", "SHA256-008"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/openss7-comparison.md", "SHA256-009"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/external-peer.pcapng", "SHA256-005"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/external-peer-sdk.log", "SHA256-006"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerConfiguration, "artifacts/commercial/external-peer.conf", "SHA256-007"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/external-peer.log", "SHA256-008"));
+    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/external-peer-comparison.md", "SHA256-009"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ReferenceVector, "artifacts/commercial/protocol-reference.ber", "SHA256-010"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.SdkVector, "artifacts/commercial/protocol-sdk.ber", "SHA256-011"));
     manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/protocol-comparison.md", "SHA256-012"));

@@ -21,7 +21,7 @@ This phase defines the contracts needed to discuss enterprise load safely. It do
 - M3UA DATA decode.
 - M3UA route dispatch.
 - Native SCTP loopback throughput.
-- OpenSS7/IPSS7 peer throughput.
+- External peer throughput.
 - MAP SMS TCAP flow construction.
 
 Scenarios that require an external peer set `RequiresExternalPeer` to true.

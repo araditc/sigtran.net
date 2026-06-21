@@ -1,11 +1,11 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes ordered protocol messages expected during OpenSS7/IPSS7 interop execution.
+/// Describes ordered protocol messages expected during external peer interop execution.
 /// </summary>
 public sealed class SigtranExternalPeerInteropTraceExpectations
 {
-    /// <summary>Creates OpenSS7/IPSS7 trace expectations.</summary>
+    /// <summary>Creates external peer trace expectations.</summary>
     /// <param name="scenarioId">The scenario id.</param>
     /// <param name="expectedMessages">The expected ordered messages.</param>
     /// <param name="requiresDataTransfer">Whether DATA transfer is required.</param>
@@ -36,12 +36,12 @@ public sealed class SigtranExternalPeerInteropTraceExpectations
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 trace expectation helpers.
+/// Provides external peer trace expectation helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropTraceExpectationsCatalog
 {
-    /// <summary>Creates the default OpenSS7/IPSS7 ASP-to-SG trace expectations.</summary>
-    /// <returns>The default OpenSS7/IPSS7 ASP-to-SG trace expectations.</returns>
+    /// <summary>Creates the default external peer ASP-to-SG trace expectations.</summary>
+    /// <returns>The default external peer ASP-to-SG trace expectations.</returns>
     public static SigtranExternalPeerInteropTraceExpectations CreateAspToSg()
     {
         return new(

@@ -1,15 +1,15 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes the OpenSS7/IPSS7 interoperability CI profile.
+/// Describes the external peer interoperability CI profile.
 /// </summary>
 public sealed class SigtranExternalPeerInteropCiProfile
 {
-    /// <summary>Creates an OpenSS7/IPSS7 interoperability CI profile.</summary>
+    /// <summary>Creates an external peer interoperability CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
     /// <param name="artifactRootVariable">The artifact root variable.</param>
     /// <param name="commands">The commands.</param>
-    /// <param name="requiresExternalPeerRunner">Whether an OpenSS7/IPSS7 runner is required.</param>
+    /// <param name="requiresExternalPeerRunner">Whether an external peer runner is required.</param>
     public SigtranExternalPeerInteropCiProfile(
         string enableVariable,
         string artifactRootVariable,
@@ -32,7 +32,7 @@ public sealed class SigtranExternalPeerInteropCiProfile
     /// <summary>The commands.</summary>
     public IReadOnlyList<string> Commands { get; }
 
-    /// <summary>Whether an OpenSS7/IPSS7 runner is required.</summary>
+    /// <summary>Whether an external peer runner is required.</summary>
     public bool RequiresExternalPeerRunner { get; }
 
     /// <summary>Returns whether the profile is enabled by environment variables.</summary>
@@ -48,17 +48,17 @@ public sealed class SigtranExternalPeerInteropCiProfile
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 interoperability CI profile helpers.
+/// Provides external peer interoperability CI profile helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropCi
 {
-    /// <summary>Creates the default OpenSS7/IPSS7 interoperability CI profile.</summary>
-    /// <returns>The default OpenSS7/IPSS7 interoperability CI profile.</returns>
+    /// <summary>Creates the default external peer interoperability CI profile.</summary>
+    /// <returns>The default external peer interoperability CI profile.</returns>
     public static SigtranExternalPeerInteropCiProfile CreateDefault()
     {
         return new(
-            "SIGTRAN_OPENSS7_INTEROP",
-            "SIGTRAN_OPENSS7_ARTIFACT_ROOT",
+            "SIGTRAN_EXTERNAL_PEER_INTEROP",
+            "SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT",
             SigtranExternalPeerInteropCommands.CreateDefault().Commands,
             requiresExternalPeerRunner: true);
     }

@@ -2,7 +2,7 @@
 
 Phase 19 adds the SCCP, TCAP, and MAP SMS protocol interoperability vector foundation for SIGTRAN.NET.
 
-The goal is to make higher-layer protocol evidence executable and reviewable in the same way as the lower transport and OpenSS7/IPSS7 lab work. The SDK now exposes a catalog of required vectors, external references, artifact requirements, comparison rules, run plans, run reports, evidence registry, readiness, and CI metadata.
+The goal is to make higher-layer protocol evidence executable and reviewable in the same way as the lower transport and external peer lab work. The SDK now exposes a catalog of required vectors, external references, artifact requirements, comparison rules, run plans, run reports, evidence registry, readiness, and CI metadata.
 
 The public APIs use domain names such as `SigtranProtocolInteropStatus`; phase numbers are intentionally kept out of source type names.
 

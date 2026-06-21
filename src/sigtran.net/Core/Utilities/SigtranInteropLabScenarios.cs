@@ -81,7 +81,7 @@ public static class SigtranInteropLabScenarios
             "external-peer-m3ua-asp-to-sg",
             SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway,
             "external-sigtran-peer",
-            "Validate M3UA ASP Up, ASP Active, Heartbeat, DATA, ASP Inactive, and ASP Down against an OpenSS7/IPSS7 peer.",
+            "Validate M3UA ASP Up, ASP Active, Heartbeat, DATA, ASP Inactive, and ASP Down against a maintained external SIGTRAN peer.",
             ["pcap", "sdk-trace", "peer-config", "peer-log"]),
         new(
             "map-sms-trace-comparison",

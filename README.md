@@ -47,7 +47,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | API lifecycle | Phase 15 foundation-ready: API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, readiness report, API lifecycle CI profile, and status report added; stable API lifecycle claims still require commercial readiness and validation evidence |
 | Configuration readiness | Phase 16 foundation-ready: configuration schema, validation helpers, environment matrix, secret policy, transport configuration, routing configuration, readiness report, configuration CI profile, commercial configuration gate, and status report added; production configuration still requires commercial readiness and deployment review |
 | Native SCTP lab verification | Phase 17 foundation-ready: Linux SCTP lab scenario catalog, artifact manifest, run plan, command set, run reports, evidence registry, readiness report, lab CI profile, commercial gate, and status report added; production verification still requires complete passing Linux SCTP evidence |
-| OpenSS7/IPSS7 interop execution | Phase 18 foundation-ready: OpenSS7/IPSS7 environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real retained lab evidence |
+| External peer interop execution | Phase 18 foundation-ready: package-neutral external peer environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real retained lab evidence |
 | Protocol interop vectors | Phase 19 foundation-ready: SCCP, TCAP, and MAP SMS vector catalog, external references, artifact manifest, comparison rules, run plan, command set, run reports, evidence registry, readiness report, CI profile, and status report added; verification still requires real reference vectors, SDK vectors, and comparison reports |
 | Commercial evidence dossier | Phase 20 foundation-ready: commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI profile, status report, and source status naming normalization added; commercial evidence readiness still requires real retained artifacts and verification gates |
 | Supply chain automation | Phase 21 foundation-ready: supply-chain automation plan, SBOM generation contract, package signing contract, signature verification contract, provenance attestation contract, artifact manifest, gate, readiness report, CI profile, and status report added; promotion still requires real signed artifacts and commercial evidence |
@@ -62,7 +62,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Deployment profiles | Phase 7 profiles added for commercial Linux and local development use |
 | Phase 7 status | Commercialization foundation complete; commercial production remains blocked on native SCTP verification, external lab evidence, signing, and SBOM |
 | Native SCTP implementation | Phase 8 foundation-ready: Linux SCTP probe, socket factory, endpoint planner, native adapter, connector, listener, lab profile, readiness report, and commercial gate integration; production readiness still requires Linux SCTP lab verification |
-| Interoperability lab | Phase 9 foundation-ready: lab scenario catalog, artifact manifests, run reports, OpenSS7/IPSS7 M3UA ASP-to-SG template, trace comparison, evidence promotion, opt-in CI profile, readiness report, and commercial gate integration added; production readiness still requires passing external lab evidence |
+| Interoperability lab | Phase 9 foundation-ready: lab scenario catalog, artifact manifests, run reports, external peer M3UA ASP-to-SG template, trace comparison, evidence promotion, opt-in CI profile, readiness report, and commercial gate integration added; production readiness still requires passing external lab evidence |
 
 ## Requirements
 
@@ -167,7 +167,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 16 Summary](docs/PHASE16_SUMMARY.md)
 - [Phase 17 Native SCTP Lab Verification](docs/PHASE17_NATIVE_SCTP_LAB_VERIFICATION.md)
 - [Phase 17 Summary](docs/PHASE17_SUMMARY.md)
-- [Phase 18 OpenSS7/IPSS7 Interop Execution](docs/PHASE18_OPENSS7_INTEROP_EXECUTION.md)
+- [Phase 18 External Peer Interop Execution](docs/PHASE18_EXTERNAL_PEER_INTEROP_EXECUTION.md)
 - [Phase 18 Summary](docs/PHASE18_SUMMARY.md)
 - [Phase 19 Protocol Interop Vectors](docs/PHASE19_PROTOCOL_INTEROP_VECTORS.md)
 - [Phase 19 Summary](docs/PHASE19_SUMMARY.md)
@@ -183,6 +183,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 24 Summary](docs/PHASE24_SUMMARY.md)
 - [Phase 25 Commercial Release Execution](docs/PHASE25_COMMERCIAL_RELEASE_EXECUTION.md)
 - [Phase 26 Commercial Roadmap Realignment](docs/PHASE26_COMMERCIAL_ROADMAP_REALIGNMENT.md)
+- [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -213,7 +214,7 @@ The roadmap is intentionally conservative:
 15. Complete API stability, deprecation, and migration readiness foundations.
 16. Complete configuration, policy, and environment readiness foundations.
 17. Complete native SCTP lab verification framework and capture Linux SCTP evidence.
-18. Complete OpenSS7/IPSS7 interop execution framework and capture peer evidence.
+18. Complete external peer interop execution framework and capture peer evidence.
 19. Complete SCCP, TCAP, and MAP SMS protocol vector framework and capture external vector evidence.
 20. Complete commercial evidence dossier framework and retain release-ready evidence artifacts.
 21. Complete supply-chain automation framework and retain signed release-security artifacts.

@@ -1,11 +1,11 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes OpenSS7/IPSS7 interoperability execution readiness.
+/// Describes external peer interoperability execution readiness.
 /// </summary>
 public sealed class SigtranExternalPeerInteropReadinessReport
 {
-    /// <summary>Creates an OpenSS7/IPSS7 interoperability readiness report.</summary>
+    /// <summary>Creates an external peer interoperability readiness report.</summary>
     /// <param name="hasEnvironment">Whether environment requirements are available.</param>
     /// <param name="hasConfiguration">Whether configuration is available.</param>
     /// <param name="hasTraceExpectations">Whether trace expectations are available.</param>
@@ -64,20 +64,20 @@ public sealed class SigtranExternalPeerInteropReadinessReport
     /// <summary>Whether passing evidence exists.</summary>
     public bool HasPassingEvidence { get; }
 
-    /// <summary>Whether the OpenSS7/IPSS7 execution foundation is ready.</summary>
+    /// <summary>Whether the external peer execution foundation is ready.</summary>
     public bool FoundationReady => HasEnvironment && HasConfiguration && HasTraceExpectations && HasArtifacts && HasRunPlan && HasCommandSet && HasRunReport && HasEvidenceRegistry;
 
-    /// <summary>Whether OpenSS7/IPSS7 interop can be claimed as verified.</summary>
+    /// <summary>Whether external peer interop can be claimed as verified.</summary>
     public bool Verified => FoundationReady && HasPassingEvidence;
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 interoperability readiness helpers.
+/// Provides external peer interoperability readiness helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropReadiness
 {
-    /// <summary>Returns the current OpenSS7/IPSS7 interoperability readiness report.</summary>
-    /// <returns>The current OpenSS7/IPSS7 interoperability readiness report.</returns>
+    /// <summary>Returns the current external peer interoperability readiness report.</summary>
+    /// <returns>The current external peer interoperability readiness report.</returns>
     public static SigtranExternalPeerInteropReadinessReport GetReport()
     {
         return new(

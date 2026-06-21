@@ -36,7 +36,7 @@ The current capture has:
 
 This is valid Linux SCTP smoke evidence, but it is not yet full external peer interoperability evidence.
 
-## Unit 3 - OpenSS7/IPSS7 Blocker Evidence
+## Unit 3 - Legacy External Peer Blocker Evidence
 
 `SigtranExternalPeerInteropBlockerEvidence` records the retained OpenSS7/IPSS7 execution blocker as structured evidence.
 
@@ -45,7 +45,7 @@ Current blocker:
 - Environment: Ubuntu 22.04.1 VM, Linux `5.15.0-181-generic`.
 - Log: `/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log`.
 - Failure: OpenSS7 Fast STREAMS configure requires the legacy `open_softirq` kernel symbol, which is not present in the VM kernel `System.map`.
-- Required action: retest OpenSS7/IPSS7 on a Linux 4.x-era kernel supported by OpenSS7 or replace the peer with a maintained SIGTRAN interoperability target.
+- Required action: retest the retained legacy peer only as historical comparison evidence, or replace the commercial gate with a maintained SIGTRAN interoperability target.
 
 Retained OpenSS7/IPSS7 execution artifacts:
 
@@ -54,7 +54,7 @@ Retained OpenSS7/IPSS7 execution artifacts:
 - Tools-only configure log: `artifacts/vm/192.168.100.28/logs/openss7-configure-tools-only.log`.
 - Compiler-check patch evidence: `artifacts/vm/192.168.100.28/logs/openss7-configure-compiler-check.patch`.
 
-The blocker intentionally prevents interoperability promotion until a passing OpenSS7/IPSS7 run produces PCAP, peer logs, SDK traces, and comparison evidence.
+The blocker intentionally prevents interoperability promotion until a passing external peer run produces PCAP, peer logs, SDK traces, and comparison evidence.
 
 ## Unit 4 - Artifact Dossier
 
@@ -68,8 +68,8 @@ Current retained items:
 
 Current missing items:
 
-- SDK trace from a passing OpenSS7/IPSS7 run.
-- OpenSS7/IPSS7 comparison report.
+- SDK trace from a passing external peer run.
+- External peer comparison report.
 
 The dossier is intentionally not review-ready while trace and comparison evidence are missing. Retained artifacts are represented with digest placeholders until real SHA-256 values are materialized in the release evidence bundle.
 

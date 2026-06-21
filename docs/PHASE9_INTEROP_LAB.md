@@ -9,7 +9,7 @@ Phase 9 captures real interoperability evidence from native SCTP and peer-stack 
 | Id | Peer | Purpose |
 | --- | --- | --- |
 | `linux-native-sctp-loopback` | `linux-kernel-sctp` | Validate native SCTP loopback socket, connect, accept, send, receive, and health |
-| `external-peer-m3ua-asp-to-sg` | `external-sigtran-peer` | Validate M3UA ASP-to-SG lifecycle and DATA against OpenSS7/IPSS7 |
+| `external-peer-m3ua-asp-to-sg` | `external-sigtran-peer` | Validate M3UA ASP-to-SG lifecycle and DATA against a maintained external peer |
 | `map-sms-trace-comparison` | `operator-or-simulator-peer` | Validate MAP SMS traces against a real peer or approved simulator profile |
 
 Every scenario defines required artifacts such as PCAP captures, SDK traces, peer configuration, peer logs, and comparison reports.
@@ -33,11 +33,11 @@ A manifest satisfies a scenario only when every required artifact name is presen
 
 `HasPassingEvidence` is true only when the run status is `Passed` and the manifest satisfies the scenario artifact requirements.
 
-## OpenSS7/IPSS7 Template
+## External Peer Template
 
-`SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for the OpenSS7/IPSS7 peer.
+`SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for a maintained external peer.
 
-The template references `http://www.openss7.org/ipss7_man.html`, expects SCTP/M3UA transport, and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`.
+The template expects SCTP/M3UA transport and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`. Legacy OpenSS7/IPSS7 references remain in `REFERENCES.md` for comparison notes, but they do not define the public peer contract.
 
 ## Trace Comparison
 
