@@ -132,6 +132,7 @@ Run("SIGTRAN performance readiness separates foundation from benchmark evidence"
 Run("SIGTRAN performance CI profile keeps benchmarks opt-in", SigtranPerformanceCiProfileKeepsBenchmarksOptIn);
 Run("SIGTRAN performance status summarizes foundation", SigtranPerformanceStatusSummarizesPerformanceFoundation);
 Run("SIGTRAN performance evidence workload covers peer traffic stages", SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages);
+Run("SIGTRAN performance evidence artifacts require retained peer benchmark files", SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles);
 Run("SIGTRAN API surface catalog exposes protocol and governance surfaces", SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces);
 Run("SIGTRAN API stability contracts mark pre-stable surfaces", SigtranApiStabilityContractsMarkPreStableSurfaces);
 Run("SIGTRAN API version matrix separates pre-stable and stable lines", SigtranApiVersionMatrixSeparatesPreStableAndStableLines);
@@ -2313,6 +2314,39 @@ static void SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages()
         100,
         99);
     Assert(!failedStage.Passed, failedStage.Describe());
+}
+
+static void SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles()
+{
+    SigtranPerformanceEvidenceArtifactManifest incomplete = new("perf-peer-run");
+    incomplete.Add(new(SigtranPerformanceEvidenceArtifactKind.PacketCapture, "artifacts/perf/perf-peer-run.pcap", new string('a', 64)));
+    Assert(!incomplete.IsComplete, incomplete.Describe());
+    Assert(!incomplete.SupportsCommercialEvidence, incomplete.Describe());
+
+    SigtranPerformanceEvidenceArtifactManifest complete = CreateCompletePerformanceArtifactManifest("perf-peer-run");
+    AssertEqual(9, complete.Snapshot().Count, "performance artifact count");
+    Assert(complete.IsComplete, complete.Describe());
+    Assert(complete.HasDigestCoverage, complete.Describe());
+    Assert(complete.SupportsCommercialEvidence, complete.Describe());
+
+    SigtranPerformanceEvidenceRunPlan runPlan = SigtranPerformanceEvidenceRunPlans.CreateDefault(complete);
+    Assert(runPlan.RequiresPeerTraffic, runPlan.Describe());
+    Assert(runPlan.SupportsCommercialEvidence, runPlan.Describe());
+}
+
+static SigtranPerformanceEvidenceArtifactManifest CreateCompletePerformanceArtifactManifest(string runId)
+{
+    SigtranPerformanceEvidenceArtifactManifest manifest = new(runId);
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.PacketCapture, $"artifacts/perf/{runId}.pcap", new string('a', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.SdkTrace, $"artifacts/perf/{runId}-sdk.jsonl", new string('b', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.PeerLog, $"artifacts/perf/{runId}-peer.log", new string('c', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.PeerConfiguration, $"artifacts/perf/{runId}-peer.env", new string('d', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.Metrics, $"artifacts/perf/{runId}-metrics.json", new string('e', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.LatencyProfile, $"artifacts/perf/{runId}-latency.json", new string('f', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.ResourceProfile, $"artifacts/perf/{runId}-resources.json", new string('1', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.ResilienceLog, $"artifacts/perf/{runId}-resilience.json", new string('2', 64)));
+    manifest.Add(new(SigtranPerformanceEvidenceArtifactKind.BenchmarkReport, $"artifacts/perf/{runId}-report.md", new string('3', 64)));
+    return manifest;
 }
 
 static void SigtranApiSurfaceCatalogExposesProtocolAndGovernanceSurfaces()

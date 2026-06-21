@@ -17,6 +17,22 @@ The phase does not manufacture benchmark evidence. Production performance claims
 
 `SigtranPerformanceEvidenceWorkloads.CreateExpectedCommercialPeerTraffic()` maps the existing commercial load-test plan into the expected evidence workload. This gives later units a deterministic contract for real peer benchmark results.
 
+## Unit 2 - Peer-Traffic Artifacts And Run Plan
+
+`SigtranPerformanceEvidenceArtifactManifest` and `SigtranPerformanceEvidenceRunPlan` now define the retained artifact contract for a commercial peer benchmark. Required artifacts include:
+
+- Packet capture.
+- SDK trace.
+- Peer log.
+- Peer configuration.
+- Structured metrics.
+- Latency profile.
+- Resource profile.
+- Resilience log.
+- Publishable benchmark report.
+
+The manifest requires SHA-256 digest coverage for all retained artifacts before it can support commercial performance evidence. The run plan combines the peer-traffic workload and retained artifact manifest without naming any specific peer package.
+
 ## Validation
 
 Each unit in this phase is validated with:
