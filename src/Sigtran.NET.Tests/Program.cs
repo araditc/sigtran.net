@@ -41,6 +41,7 @@ Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMa
 Run("SIGTRAN maintained peer lab configuration validates environment contracts", SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts);
 Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths);
 Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps);
+Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -813,6 +814,22 @@ static void SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps()
     Assert(commandPlan.Commands.Any(static command => command.CommandLine.Contains("tcpdump", StringComparison.Ordinal)), "command plan should include packet capture");
     Assert(commandPlan.Commands.Any(static command => command.ExpectedArtifactKinds.Contains(SigtranMaintainedPeerLabArtifactKind.SdkTrace)), "command plan should produce SDK trace");
     Assert(commandPlan.Describe().Contains("ready=True", StringComparison.Ordinal), commandPlan.Describe());
+}
+
+static void SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence()
+{
+    IReadOnlyList<SigtranMaintainedPeerLabTrafficVector> vectors = SigtranMaintainedPeerLabTrafficVectors.GetDefault();
+    IReadOnlyList<string> sequence = SigtranMaintainedPeerLabTrafficVectors.GetExpectedMessageSequence();
+
+    AssertEqual(3, vectors.Count, "maintained peer lab traffic vector count");
+    Assert(vectors.All(static vector => vector.IsComparable), "traffic vectors should be comparable");
+    Assert(vectors.Any(static vector => vector.Kind == SigtranMaintainedPeerLabTrafficVectorKind.PayloadData && vector.RequiresPayload), "traffic vectors should include payload DATA");
+    Assert(sequence.Contains("ASPUP"), "traffic sequence should include ASPUP");
+    Assert(sequence.Contains("BEAT_ACK"), "traffic sequence should include heartbeat acknowledgement");
+    Assert(sequence.Contains("DATA"), "traffic sequence should include DATA");
+
+    SigtranTraceComparisonReport comparison = SigtranTraceComparison.Compare(sequence, sequence);
+    Assert(comparison.Passed, comparison.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

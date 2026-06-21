@@ -74,6 +74,16 @@ This unit still describes expected artifacts, not proof that they exist. Promoti
 
 The command plan is intentionally package-neutral. Real deployments can map `external-peer-runner`, `sigtran-trace-compare`, and `sigtran-lab-report` to local scripts or CI steps without changing SDK public type names.
 
+## Unit 7 - Traffic Vector Catalog
+
+`SigtranMaintainedPeerLabTrafficVectors` now defines the expected maintained peer traffic sequence for comparison:
+
+- M3UA ASP lifecycle.
+- M3UA heartbeat and acknowledgement.
+- M3UA DATA payload.
+
+The catalog flattens these vectors into an ordered expected message sequence so comparison reports can separate protocol mismatch from host or package setup issues.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -115,4 +125,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, and the command plan covers every required execution step.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, and the traffic vector catalog yields a comparable expected message sequence.
