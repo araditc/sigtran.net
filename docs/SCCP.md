@@ -138,6 +138,17 @@ byte[] encoded = udts.Encode();
 
 Use UDTS when an incoming UDT cannot be delivered and the protocol class asks for return-on-error behavior.
 
+## Evidence Vectors
+
+`SccpEvidenceVectors.GetVectors()` exposes deterministic byte-level vectors for UDT, XUDT segmentation, LUDT pointer layout, and UDTS return-cause behavior.
+
+```csharp
+IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports =
+    SccpEvidenceVectors.ValidateEncoders();
+```
+
+Each vector stores literal expected bytes and validates the current encoder output through the shared protocol evidence validator. These vectors are SDK-side evidence and should be compared with retained external traces before SCCP is promoted for commercial interoperability claims.
+
 ## Routing
 
 `SccpRouteTable` resolves application routes by subsystem number or global title prefix.

@@ -19,6 +19,17 @@ The phase does not replace the need for retained external interoperability evide
 
 This gives the next units a common validation language before adding SCCP, TCAP, and MAP-specific vector suites.
 
+## Unit 2 - SCCP Evidence Vectors
+
+`SccpEvidenceVectors` now provides deterministic SCCP vectors and encoder validation for:
+
+- UDT route-on-SSN MAP-to-MSC payload.
+- XUDT with segmentation optional parameter.
+- LUDT with 16-bit variable parameter pointers.
+- UDTS with subsystem-failure return cause.
+
+Each vector stores literal expected bytes and validates the current SDK encoder output through `SigtranProtocolEvidenceValidator`. The tests also decode every expected payload to verify that the evidence bytes remain parseable by the SDK decoder.
+
 ## Validation
 
 Each unit in this phase is validated with:

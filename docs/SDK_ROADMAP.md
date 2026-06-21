@@ -284,7 +284,7 @@ Status: Phase 31 is foundation-complete. The outbound stream and PPID framing co
 - Report and correct mismatches before upgrading readiness claims from foundation-only to evidence-backed.
 - Keep external interoperability evidence as a commercial promotion gate.
 
-Status: Phase 32 is in progress. The shared protocol evidence vector and byte-level mismatch validation contract is available.
+Status: Phase 32 is in progress. The shared protocol evidence vector and byte-level mismatch validation contract is available, and SCCP has deterministic UDT, XUDT, LUDT, and UDTS evidence vectors.
 
 ## Recommended First Deliverable
 

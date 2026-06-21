@@ -278,6 +278,7 @@ Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmenta
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
+Run("SCCP evidence vectors validate codec bytes", SccpEvidenceVectorsValidateCodecBytes);
 Run("SCCP readiness reports foundation status", SccpReadinessReportsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
@@ -4361,6 +4362,34 @@ static void SccpRouteTableResolvesSsnAndGlobalTitleRoutes()
     Assert(table.TryResolve(gtAddress, out SccpRoute? gtRoute), "SCCP GT route should resolve");
     AssertEqual("smsc-uk-specific", gtRoute!.Name, "SCCP longest GT prefix route");
     AssertEqual(3, table.Snapshot().Count, "SCCP route snapshot count");
+}
+
+static void SccpEvidenceVectorsValidateCodecBytes()
+{
+    IReadOnlyList<SigtranProtocolEvidenceVector> vectors = SccpEvidenceVectors.GetVectors();
+    AssertEqual(4, vectors.Count, "SCCP evidence vector count");
+    Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.Sccp), "all SCCP vectors should use SCCP surface");
+    AssertEqual("090003070B0443010106044302010802CAFE", vectors[0].ToHex(), "SCCP UDT evidence hex");
+
+    IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = SccpEvidenceVectors.ValidateEncoders();
+    AssertEqual(vectors.Count, reports.Count, "SCCP evidence report count");
+    Assert(reports.All(report => report.Passed), string.Join("; ", reports.Select(report => report.Describe())));
+
+    foreach (SigtranProtocolEvidenceVector vector in vectors)
+    {
+        ReadOnlySpan<byte> payload = vector.ExpectedPayload.Span;
+        byte messageType = payload[0];
+        bool decoded = messageType switch
+        {
+            (byte)SccpMessageType.Unitdata => SccpUnitdataMessage.TryDecode(payload, out _, out _),
+            (byte)SccpMessageType.ExtendedUnitdata => SccpExtendedUnitdataMessage.TryDecode(payload, out _, out _),
+            (byte)SccpMessageType.LongUnitdata => SccpLongUnitdataMessage.TryDecode(payload, out _, out _),
+            (byte)SccpMessageType.UnitdataService => SccpUnitdataServiceMessage.TryDecode(payload, out _, out _),
+            _ => false
+        };
+
+        Assert(decoded, vector.Describe());
+    }
 }
 
 static void SccpReadinessReportsFoundationStatus()
