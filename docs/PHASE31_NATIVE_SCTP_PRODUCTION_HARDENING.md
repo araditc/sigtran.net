@@ -15,6 +15,19 @@ Phase 31 hardens the native SCTP production boundary around stream and PPID corr
 
 This gives native transports a hardened send boundary before payloads are passed to kernel SCTP send APIs.
 
+## Unit 2 - Association Lifecycle Journal
+
+`SctpAssociationJournal` now records timestamped association lifecycle history. It provides:
+
+- Timestamped lifecycle entries.
+- Current state inference.
+- Failure detection.
+- Latest failure reason lookup.
+- Snapshot export for diagnostics.
+- Native adapter lifecycle recording for established, failed, and closed events.
+
+This makes association behavior auditable across connect, reconnect, shutdown, and failure paths.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -15,6 +15,7 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
     private long _receivedMessages;
     private bool _disposed;
     private SctpAssociationState _associationState;
+    private readonly SctpAssociationJournal _associationJournal = new();
 
     /// <summary>Creates a native SCTP socket adapter.</summary>
     /// <param name="socket">The native SCTP socket.</param>
@@ -33,19 +34,25 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
     /// <summary>The current association state.</summary>
     public SctpAssociationState AssociationState => _disposed ? SctpAssociationState.Closed : _associationState;
 
+    /// <summary>The recorded association lifecycle events.</summary>
+    public IReadOnlyList<SctpAssociationJournalEntry> AssociationEvents => _associationJournal.Snapshot();
+
     /// <summary>Marks the association as established.</summary>
     public void MarkEstablished()
     {
         ThrowIfDisposed();
         _associationState = SctpAssociationState.Established;
+        _associationJournal.Record(new(SctpAssociationEventType.Established, SctpAssociationState.Established));
     }
 
     /// <summary>Marks the association as failed.</summary>
-    public void MarkFailed()
+    /// <param name="reason">The optional failure reason.</param>
+    public void MarkFailed(string? reason = null)
     {
         if (!_disposed)
         {
             _associationState = SctpAssociationState.Failed;
+            _associationJournal.Record(new(SctpAssociationEventType.Failed, SctpAssociationState.Failed, reason));
         }
     }
 
@@ -110,6 +117,7 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
 
         _disposed = true;
         _associationState = SctpAssociationState.Closed;
+        _associationJournal.Record(new(SctpAssociationEventType.Closed, SctpAssociationState.Closed, "disposed"));
         _socket.Dispose();
     }
 

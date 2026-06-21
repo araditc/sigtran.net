@@ -27,6 +27,8 @@ The development `TcpSctpAdapter` now implements `ISctpMetadataSocket` with defau
 
 `SctpAssociationState` and `SctpAssociationEvent` define the lifecycle vocabulary for production transports. Native implementations should report transitions such as connect start, established, reconnect start, shutdown, closed, and failed using these SDK types.
 
+`SctpAssociationJournal` records timestamped lifecycle entries and exposes current state, failure detection, latest failure reason, and snapshots for diagnostics. `NativeSctpSocketAdapter` records established, failed, and closed events so higher layers can inspect lifecycle history in addition to the current health snapshot.
+
 ## Connection Options
 
 `SctpEndpoint` and `SctpConnectionOptions` define the configuration surface for a production transport.

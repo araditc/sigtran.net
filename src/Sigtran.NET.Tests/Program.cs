@@ -280,6 +280,7 @@ Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResol
 Run("SCCP readiness reports foundation status", SccpReadinessReportsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
+Run("SCTP association journal records lifecycle history", SctpAssociationJournalRecordsLifecycleHistory);
 Run("SCTP connection options validate endpoints and stream counts", SctpConnectionOptionsValidateEndpointsAndStreamCounts);
 Run("SCTP PPID helpers recognize SIGTRAN payload identifiers", SctpPpidHelpersRecognizeSigtranPayloadIdentifiers);
 Run("SCTP stream selection policies choose outbound streams", SctpStreamSelectionPoliciesChooseOutboundStreams);
@@ -4363,6 +4364,23 @@ static void SctpAssociationEventsDescribeLifecycleState()
     AssertEqual(SctpAssociationEventType.Established, established.EventType, "SCTP event type");
     AssertEqual(SctpAssociationState.Established, established.State, "SCTP event state");
     AssertEqual("connected", established.Reason, "SCTP event reason");
+}
+
+static void SctpAssociationJournalRecordsLifecycleHistory()
+{
+    SctpAssociationJournal journal = new();
+    journal.Record(new(SctpAssociationEventType.ConnectStarted, SctpAssociationState.Connecting, "dial"), DateTimeOffset.UnixEpoch);
+    journal.Record(new(SctpAssociationEventType.Established, SctpAssociationState.Established, "connected"), DateTimeOffset.UnixEpoch.AddSeconds(1));
+
+    AssertEqual(2, journal.Count, "SCTP association journal count");
+    AssertEqual(SctpAssociationState.Established, journal.CurrentState, "SCTP association journal state");
+    Assert(!journal.HasFailure, journal.Describe());
+    Assert(journal.Snapshot()[0].Describe().Contains("ConnectStarted", StringComparison.Ordinal), journal.Snapshot()[0].Describe());
+
+    journal.Record(new(SctpAssociationEventType.Failed, SctpAssociationState.Failed, "peer reset"), DateTimeOffset.UnixEpoch.AddSeconds(2));
+    Assert(journal.HasFailure, journal.Describe());
+    AssertEqual("peer reset", journal.LastFailureReason, "SCTP association journal failure reason");
+    Assert(journal.Describe().Contains("failed=True", StringComparison.Ordinal), journal.Describe());
 }
 
 static void SctpConnectionOptionsValidateEndpointsAndStreamCounts()
