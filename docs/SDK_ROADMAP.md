@@ -259,7 +259,7 @@ Status: Phase 28 is foundation-complete. It has a run manifest that aggregates b
 - Keep runner materialization package-neutral and separate from real retained lab evidence.
 - Prepare the SDK for a real maintained external peer lab run without manufacturing passing artifacts.
 
-Status: Phase 29 has deterministic maintained peer lab runner workspace, execution input bundle, output artifact materialization, preflight, command manifest, evidence collection, digest generation, comparison handoff, and workflow readiness contracts.
+Status: Phase 29 is foundation-complete. It has deterministic maintained peer lab runner workspace, execution input bundle, output artifact materialization, preflight, command manifest, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting contracts. Commercial readiness still requires a real maintained peer lab execution with retained digest-covered runner evidence.
 
 ## Recommended First Deliverable
 

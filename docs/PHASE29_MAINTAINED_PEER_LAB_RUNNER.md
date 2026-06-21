@@ -107,6 +107,23 @@ The handoff is ready only when run ids are consistent, digest coverage is comple
 
 This keeps workflow availability separate from runner readiness and prevents planned YAML from being mistaken for a passing lab execution.
 
+## Unit 10 - Runner Status
+
+`SigtranMaintainedPeerLabRunnerStatus` now summarizes the completed runner materialization foundation. It reports ten completed capabilities:
+
+- Runner workspace materialization.
+- Runner input bundle.
+- Artifact output materialization.
+- Runner preflight.
+- Runner command manifest.
+- Runner evidence collection.
+- Runner digest generation.
+- Runner comparison handoff.
+- Runner workflow readiness.
+- Runner status reporting.
+
+The foundation report is ready, but commercial readiness remains blocked until a real maintained peer run produces retained runner evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:
