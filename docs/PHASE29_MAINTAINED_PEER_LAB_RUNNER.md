@@ -74,6 +74,17 @@ The manifest is execution-ready only when inputs, outputs, preflight checks, com
 
 The collection can convert retained artifacts into evidence artifacts, but it intentionally does not add digest coverage. Digest generation is a separate step.
 
+## Unit 7 - Digest Generation
+
+`SigtranMaintainedPeerLabRunnerDigestReport` now validates calculated SHA-256 values for retained artifacts and produces the maintained peer lab digest manifest. It checks:
+
+- Retained required artifact coverage.
+- Missing digest paths.
+- SHA-256 format validity through the digest manifest.
+- Handoff readiness for digest-covered artifacts.
+
+The SDK still does not invent digests. A real runner must calculate them from retained files and pass the values into this contract.
+
 ## Validation
 
 Each unit in this phase is validated with:
