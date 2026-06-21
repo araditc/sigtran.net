@@ -294,6 +294,7 @@ Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSche
 Run("SCTP transport health snapshots expose association details", SctpTransportHealthSnapshotsExposeAssociationDetails);
 Run("SCTP transport diagnostics snapshots summarize state", SctpTransportDiagnosticsSnapshotsSummarizeState);
 Run("SCTP production hardening readiness gates evidence", SctpProductionHardeningReadinessGatesEvidence);
+Run("SCTP production hardening status summarizes foundation", SctpProductionHardeningStatusSummarizesFoundation);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
 Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
@@ -4714,6 +4715,19 @@ static void SctpProductionHardeningReadinessGatesEvidence()
     Assert(evidenced.EvidenceReady, evidenced.Describe());
     Assert(evidenced.ProductionReady, evidenced.Describe());
     Assert(SctpProductionHardeningReadiness.ProductionGateDescription.Contains("Retained Linux SCTP", StringComparison.Ordinal), SctpProductionHardeningReadiness.ProductionGateDescription);
+}
+
+static void SctpProductionHardeningStatusSummarizesFoundation()
+{
+    SctpProductionHardeningStatusReport status = SctpProductionHardeningStatus.GetStatus();
+    AssertEqual("Native SCTP production hardening foundation", status.Label, "SCTP hardening status label");
+    AssertEqual(10, status.CompletedUnitCount, "SCTP hardening completed units");
+    AssertEqual(10, status.Capabilities.Count, "SCTP hardening capabilities");
+    Assert(status.FoundationReady, status.Describe());
+    Assert(!status.ProductionReady, status.Describe());
+    Assert(status.Blockers.Contains("retained-linux-sctp-evidence-required"), status.Describe());
+    Assert(status.Blockers.Contains("retained-external-peer-evidence-required"), status.Describe());
+    Assert(status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), status.Describe());
 }
 
 static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()

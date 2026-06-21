@@ -275,7 +275,7 @@ Status: Phase 30 is foundation-complete. It has reviewable file materialization 
 - Add reconnect orchestration, backpressure policy, cancellation contracts, multi-homing readiness, association lifecycle journaling, fault classification, and recovery decisions.
 - Keep production readiness blocked until retained Linux SCTP and external peer evidence prove the hardened contracts against real traffic.
 
-Status: Phase 31 is in progress. The outbound stream and PPID framing contract, association lifecycle journal, reconnect schedule, send backpressure policy, cancellation/timeout policy, multi-homing readiness checks, fault recovery decisions, transport diagnostics snapshots, and production hardening readiness gate are available. Production readiness remains blocked until retained Linux SCTP and external peer evidence are complete.
+Status: Phase 31 is foundation-complete. The outbound stream and PPID framing contract, association lifecycle journal, reconnect schedule, send backpressure policy, cancellation/timeout policy, multi-homing readiness checks, fault recovery decisions, transport diagnostics snapshots, production hardening readiness gate, and status report are available. Production readiness remains blocked until retained Linux SCTP and external peer evidence are complete.
 
 ## Recommended First Deliverable
 

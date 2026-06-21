@@ -120,6 +120,19 @@ This gives production transports and operations tooling a single diagnostic enve
 
 This prevents the SDK from claiming production SCTP hardening readiness until real Linux SCTP and external peer traffic artifacts have been retained.
 
+## Unit 10 - Foundation Status And Summary
+
+`SctpProductionHardeningStatus` now summarizes the completed hardening foundation without using phase-numbered API names. It provides:
+
+- Completed unit count.
+- Completed capability names.
+- Foundation readiness.
+- Production readiness.
+- Remaining evidence blockers.
+- Compact status summaries.
+
+The phase summary is recorded in [Phase 31 Summary](PHASE31_SUMMARY.md). The source-level foundation is complete, while production SCTP hardening remains blocked until retained Linux SCTP and external peer evidence are complete.
+
 ## Validation
 
 Each unit in this phase is validated with:

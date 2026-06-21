@@ -120,6 +120,8 @@ The foundation gate covers stream and PPID framing, association lifecycle journa
 
 This keeps source-level SDK readiness separate from production claims backed by lab artifacts.
 
+`SctpProductionHardeningStatus.GetStatus()` summarizes the completed hardening foundation, completed capabilities, and remaining evidence blockers for release reporting.
+
 ## Reconnect Policy
 
 `SctpReconnectPolicy` defines reconnect attempt count and bounded exponential backoff.
