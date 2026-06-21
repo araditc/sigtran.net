@@ -54,6 +54,7 @@ Run("SIGTRAN maintained peer lab run report records step outcomes", SigtranMaint
 Run("SIGTRAN maintained peer lab evidence bundle creates promotion report", SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport);
 Run("SIGTRAN maintained peer lab workflow template is manual and self-hosted", SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted);
 Run("SIGTRAN maintained peer lab commercial bridge gates readiness", SigtranMaintainedPeerLabCommercialBridgeGatesReadiness);
+Run("SIGTRAN maintained peer lab automation status summarizes completion", SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1090,6 +1091,26 @@ static void SigtranMaintainedPeerLabCommercialBridgeGatesReadiness()
     Assert(!blocked.CommercialReady, blocked.Describe());
     Assert(blocked.Blockers.Contains("maintained-peer-bundle-handoff-required"), blocked.Describe());
     Assert(blocked.Blockers.Contains("maintained-peer-promotion-evidence-required"), blocked.Describe());
+}
+
+static void SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion()
+{
+    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabAutomationStatus.GetCompletedCapabilities();
+    SigtranMaintainedPeerLabAutomationStatusReport foundation = SigtranMaintainedPeerLabAutomationStatus.GetFoundationReport();
+
+    AssertEqual(10, SigtranMaintainedPeerLabAutomationStatus.CompletedUnitCount, "maintained peer lab automation unit count");
+    AssertEqual(10, capabilities.Count, "maintained peer lab automation capability count");
+    Assert(foundation.FoundationReady, foundation.Describe());
+    Assert(!foundation.CommercialReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-maintained-peer-execution-required"), foundation.Describe());
+
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    SigtranMaintainedPeerLabEvidenceBundle bundle = SigtranMaintainedPeerLabEvidenceBundles.CreatePassing("phase28-unit10", digest, DateTimeOffset.UnixEpoch);
+    SigtranMaintainedPeerLabAutomationStatusReport commercial = SigtranMaintainedPeerLabAutomationStatus.FromBundle(bundle);
+
+    Assert(commercial.FoundationReady, commercial.Describe());
+    Assert(commercial.CommercialEvidenceReady, commercial.Describe());
+    Assert(commercial.CommercialReady, commercial.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

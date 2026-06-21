@@ -108,6 +108,23 @@ The SDK exposes this as a renderable contract instead of adding an always-active
 
 When evidence is incomplete or invalid, the report returns blocker identifiers instead of silently treating the bundle as production evidence.
 
+## Unit 10 - Automation Status
+
+`SigtranMaintainedPeerLabAutomationStatus` now summarizes the completed automation foundation. It reports ten completed capabilities:
+
+- Run manifest aggregation.
+- Environment file rendering.
+- Artifact digest manifest.
+- Command script rendering.
+- Comparison reporting.
+- Run reporting.
+- Evidence bundle handoff.
+- Workflow template rendering.
+- Commercial readiness bridge.
+- Automation status reporting.
+
+The foundation report is ready, but commercial evidence remains blocked until a real maintained peer lab run produces a retained evidence bundle.
+
 ## Validation
 
 Each unit in this phase is validated with:
