@@ -39,6 +39,18 @@ Each vector stores literal expected bytes and validates the current SDK encoder 
 
 Each vector stores literal BER expected bytes and validates the current TCAP transaction encoder output. Tests decode the transaction wrapper, dialogue portion, Invoke component, and ReturnResult component so byte evidence is tied to decoded field behavior.
 
+## Unit 4 - MAP SMS Evidence Vectors
+
+`MapSmsEvidenceVectors` now provides deterministic MAP SMS vectors and encoder validation for:
+
+- MO-ForwardSM.
+- MT-ForwardSM.
+- SendRoutingInfoForSM.
+- ReportSM-DeliveryStatus.
+- AlertServiceCentre.
+
+Each vector stores literal BER-shaped parameter bytes and validates the current MAP SMS encoder output. Tests decode every vector back into its operation model to tie byte evidence to decoded field behavior.
+
 ## Validation
 
 Each unit in this phase is validated with:

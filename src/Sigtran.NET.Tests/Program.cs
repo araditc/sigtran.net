@@ -268,6 +268,7 @@ Run("MAP ReportSM-DeliveryStatus model encodes delivery status", MapReportSmDeli
 Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCentreModelEncodesAlertParameters);
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
+Run("MAP SMS evidence vectors validate operation bytes", MapSmsEvidenceVectorsValidateOperationBytes);
 Run("MAP SMS readiness reports foundation status", MapSmsReadinessReportsFoundationStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
@@ -4144,6 +4145,29 @@ static void MapSmsTcapClientBuildsBeginInvokeTransactions()
     AssertEqual((TcapOperationCode)MapSmsOperationCode.MoForwardShortMessage, invoke!.OperationCode, "MAP TCAP operation code");
     Assert(MapMoForwardShortMessage.TryDecode(invoke.Parameters.Span, out MapMoForwardShortMessage? decodedMo, out error), error ?? "MAP TCAP MO params decode failed");
     AssertEqual("989121234567", decodedMo!.SmRpOa.Digits, "MAP TCAP decoded MO originator");
+}
+
+static void MapSmsEvidenceVectorsValidateOperationBytes()
+{
+    IReadOnlyList<SigtranProtocolEvidenceVector> vectors = MapSmsEvidenceVectors.GetVectors();
+    AssertEqual(5, vectors.Count, "MAP SMS evidence vector count");
+    Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.MapSms), "all MAP SMS vectors should use MAP SMS surface");
+    AssertEqual("8006030401442143810901040189191232547682021122", vectors[0].ToHex(), "MAP MO evidence hex");
+
+    IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = MapSmsEvidenceVectors.ValidateEncoders();
+    AssertEqual(vectors.Count, reports.Count, "MAP SMS evidence report count");
+    Assert(reports.All(report => report.Passed), string.Join("; ", reports.Select(report => report.Describe())));
+
+    Assert(MapMoForwardShortMessage.TryDecode(vectors[0].ExpectedPayload.Span, out MapMoForwardShortMessage? mo, out string? error), error ?? "MAP MO evidence decode failed");
+    AssertEqual("989121234567", mo!.SmRpOa.Digits, "MAP MO evidence decoded originator");
+    Assert(MapMtForwardShortMessage.TryDecode(vectors[1].ExpectedPayload.Span, out MapMtForwardShortMessage? mt, out error), error ?? "MAP MT evidence decode failed");
+    AssertEqual("432109876543210", mt!.SmRpDa.Digits, "MAP MT evidence decoded IMSI");
+    Assert(MapSendRoutingInfoForShortMessage.TryDecode(vectors[2].ExpectedPayload.Span, out MapSendRoutingInfoForShortMessage? sri, out error), error ?? "MAP SRI evidence decode failed");
+    Assert(sri!.GprsSupportIndicator, "MAP SRI evidence should request GPRS support");
+    Assert(MapReportShortMessageDeliveryStatus.TryDecode(vectors[3].ExpectedPayload.Span, out MapReportShortMessageDeliveryStatus? report, out error), error ?? "MAP report evidence decode failed");
+    AssertEqual(MapSmsDeliveryStatus.MemoryCapacityExceeded, report!.DeliveryStatus, "MAP report evidence status");
+    Assert(MapAlertServiceCentre.TryDecode(vectors[4].ExpectedPayload.Span, out MapAlertServiceCentre? alert, out error), error ?? "MAP alert evidence decode failed");
+    AssertEqual("441234", alert!.ServiceCentreAddress.Digits, "MAP alert evidence service centre");
 }
 
 static void MapSmsReadinessReportsFoundationStatus()

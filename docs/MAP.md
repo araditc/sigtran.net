@@ -147,6 +147,17 @@ byte[] tcapMessage = built.EncodedMessage;
 
 The facade hides TCAP transaction-id, invoke-id, dialogue portion, and component wrapping while keeping the encoded transaction available for lower-level routing.
 
+## Evidence Vectors
+
+`MapSmsEvidenceVectors.GetVectors()` exposes deterministic byte-level vectors for MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre operation parameters.
+
+```csharp
+IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports =
+    MapSmsEvidenceVectors.ValidateEncoders();
+```
+
+Each vector stores literal BER-shaped expected bytes and validates the current operation encoder output through the shared protocol evidence validator. These SDK-side vectors should be compared with external MAP SMS traces before MAP is promoted for commercial interoperability claims.
+
 ## Readiness
 
 `MapSmsReadiness.GetReport()` reports the current MAP SMS profile status. The foundation is complete when operation metadata, address primitives, ForwardSM codecs, SRI-SM, delivery status, AlertServiceCentre, errors/extensions, and the TCAP client facade are present.
