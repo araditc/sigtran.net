@@ -48,6 +48,7 @@ Run("SIGTRAN maintained peer lab status separates foundation from evidence", Sig
 Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts);
 Run("SIGTRAN maintained peer lab environment file renders manifest values", SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues);
 Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff);
+Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMaintainedPeerLabCommandScriptRendersCommandPlan);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -963,6 +964,20 @@ static void SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff()
         [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
     Assert(!invalid.IsHandoffReady, invalid.Describe());
     Assert(!invalid.HasValidDigests, invalid.Describe());
+}
+
+static void SigtranMaintainedPeerLabCommandScriptRendersCommandPlan()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit4");
+    SigtranMaintainedPeerLabCommandScript script = SigtranMaintainedPeerLabCommandScripts.CreateDefault(runManifest);
+    string rendered = script.Render();
+
+    Assert(rendered.StartsWith("#!/usr/bin/env bash", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("set -euo pipefail", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("source 'artifacts/external-peer/maintained/config/phase28-unit4-peer.env'", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("tcpdump -i lo", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("sigtran-trace-compare", StringComparison.Ordinal), rendered);
+    Assert(script.CoversCommandPlan, script.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

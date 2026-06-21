@@ -37,6 +37,17 @@ This gives real lab scripts a stable input file while keeping package-specific v
 
 The manifest does not generate digests itself. Real lab automation must calculate the digests from retained files and pass them into this contract.
 
+## Unit 4 - Command Script Renderer
+
+`SigtranMaintainedPeerLabCommandScripts` now renders the ordered command plan as a shell script with:
+
+- `#!/usr/bin/env bash`
+- `set -euo pipefail`
+- A sourced environment file.
+- The ordered prepare, capture, peer, SDK, compare, and collect commands.
+
+The renderer gives operators a deterministic script body while still allowing local lab automation to map package-neutral runner commands to site-specific scripts.
+
 ## Validation
 
 Each unit in this phase is validated with:
