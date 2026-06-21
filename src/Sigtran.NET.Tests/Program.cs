@@ -71,6 +71,7 @@ Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", S
 Run("SIGTRAN maintained peer lab runner artifact verification checks retained digests", SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests);
 Run("SIGTRAN maintained peer lab runner provenance records source and host identity", SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity);
 Run("SIGTRAN maintained peer lab runner failure classifier categorizes blockers", SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers);
+Run("SIGTRAN maintained peer lab runner retry policy gates transient failures", SigtranMaintainedPeerLabRunnerRetryPolicyGatesTransientFailures);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1478,6 +1479,43 @@ static void SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers()
     Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.DigestVerification), failed.Describe());
     Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Provenance), failed.Describe());
     Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Comparison), failed.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerRetryPolicyGatesTransientFailures()
+{
+    SigtranMaintainedPeerLabRunnerRetryPolicy policy = SigtranMaintainedPeerLabRunnerRetryPolicy.CreateDefault();
+    AssertEqual(7, policy.Rules.Count, "maintained peer lab runner retry rule count");
+    Assert(policy.GetRule(SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution).Retryable, "command execution should be retryable");
+    Assert(!policy.GetRule(SigtranMaintainedPeerLabRunnerFailureKind.Preflight).Retryable, "preflight should not be retryable");
+
+    SigtranMaintainedPeerLabRunnerFailureReport commandFailure = new(
+        "phase30-unit7",
+        [
+            new(
+                SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution,
+                "command:Capture",
+                "Capture command failed.")
+        ]);
+    SigtranMaintainedPeerLabRunnerRetryEvaluation retry = policy.Evaluate(commandFailure, attemptNumber: 1);
+    Assert(retry.CanRetry, retry.Describe());
+    AssertEqual(TimeSpan.FromSeconds(5), retry.NextDelay, "maintained peer lab runner command retry delay");
+    Assert(retry.RenderMarkdown().Contains("Can retry: `True`", StringComparison.Ordinal), retry.RenderMarkdown());
+
+    SigtranMaintainedPeerLabRunnerRetryEvaluation exhausted = policy.Evaluate(commandFailure, attemptNumber: 3);
+    Assert(!exhausted.CanRetry, exhausted.Describe());
+    AssertEqual(1, exhausted.NonRetryableFailures.Count, "maintained peer lab runner exhausted retry count");
+
+    SigtranMaintainedPeerLabRunnerFailureReport preflightFailure = new(
+        "phase30-unit7",
+        [
+            new(
+                SigtranMaintainedPeerLabRunnerFailureKind.Preflight,
+                "preflight:host-prerequisites-ready",
+                "Host prerequisites are missing.")
+        ]);
+    SigtranMaintainedPeerLabRunnerRetryEvaluation blocked = policy.Evaluate(preflightFailure, attemptNumber: 1);
+    Assert(!blocked.CanRetry, blocked.Describe());
+    AssertEqual(1, blocked.NonRetryableFailures.Count, "maintained peer lab runner non-retryable preflight count");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

@@ -80,6 +80,18 @@ This report makes evidence packages traceable to source and host identity while 
 
 This gives operator and CI handoff a deterministic diagnosis surface when a maintained peer run cannot be promoted.
 
+## Unit 7 - Retry Policy
+
+`SigtranMaintainedPeerLabRunnerRetryPolicy` now defines which classified failures can be retried. It records:
+
+- Failure-kind retry rules.
+- Maximum attempt counts.
+- Retry delays.
+- Retryable and non-retryable failure inventory.
+- Markdown rendering for runner control flow.
+
+The default policy treats command and selected comparison failures as potentially transient, while preflight, artifact, digest, provenance, and run-report failures require operator or environment correction.
+
 ## Validation
 
 Each unit in this phase is validated with:
