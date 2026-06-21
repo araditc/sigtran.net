@@ -35,6 +35,7 @@ Run("SIGTRAN interoperability lab artifact manifest validates required files", S
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN external peer profile exposes M3UA ASP-to-SG template", SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate);
 Run("SIGTRAN external peer profile marks maintained commercial candidates", SigtranExternalPeerProfileMarksMaintainedCommercialCandidates);
+Run("SIGTRAN maintained peer selection policy requires package-neutral evidence criteria", SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -652,6 +653,25 @@ static void SigtranExternalPeerProfileMarksMaintainedCommercialCandidates()
         SigtranInteropPeerSupportModel.Simulator);
 
     Assert(!simulator.IsMaintainedCommercialCandidate, simulator.Describe());
+}
+
+static void SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria()
+{
+    SigtranMaintainedPeerSelectionPolicy policy = SigtranMaintainedPeerSelectionPolicy.CreateDefault();
+    SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
+    IReadOnlyList<string> allCriteria = policy.GetCriteria().Select(static criterion => criterion.Id).ToArray();
+
+    AssertEqual(6, policy.GetCriteria().Count, "maintained peer criterion count");
+    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranMaintainedPeerSelectionCriterionKind.ModernLinuxSupport), "selection policy should require modern Linux support");
+    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranMaintainedPeerSelectionCriterionKind.LicenseIsolation), "selection policy should require license isolation");
+
+    SigtranMaintainedPeerSelectionReport selected = policy.Evaluate(profile, allCriteria);
+    Assert(selected.Selected, selected.Describe());
+
+    SigtranMaintainedPeerSelectionReport missing = policy.Evaluate(profile, ["maintained-upstream", "modern-linux", "native-sctp"]);
+    Assert(!missing.Selected, missing.Describe());
+    Assert(missing.MissingCriteria.Contains("retained-artifacts"), "selection policy should require retained artifacts");
+    Assert(missing.Describe().Contains("missing=3", StringComparison.Ordinal), missing.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

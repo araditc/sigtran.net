@@ -36,6 +36,19 @@ The default profile is package-neutral:
 
 `IsMaintainedCommercialCandidate` is true only for a maintained Signalling Gateway profile with M3UA transport. This keeps simulator and legacy evidence useful for development without allowing it to satisfy the commercial peer gate.
 
+## Unit 3 - Maintained Peer Selection Policy
+
+`SigtranMaintainedPeerSelectionPolicy` defines package-neutral criteria that a lab package must satisfy before it can back commercial external peer evidence:
+
+- Maintained upstream or active distribution packaging.
+- Current Linux support without legacy kernel requirements.
+- Native SCTP support.
+- M3UA ASP-to-SG lifecycle and DATA coverage.
+- Retained PCAP, peer log, SDK trace, configuration, and comparison artifacts.
+- License isolation from the SDK package.
+
+The policy evaluates a `SigtranInteropPeerProfile` plus explicitly satisfied criterion ids. This keeps the package choice outside the SDK contract while still making the commercial gate deterministic.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.

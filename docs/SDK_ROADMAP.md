@@ -234,7 +234,7 @@ Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence i
 - Add maintained peer selection, lab environment, artifact, run, comparison, and readiness contracts without naming public APIs after a peer package.
 - Document any selected peer package only in lab profile notes, configuration examples, and retained evidence.
 
-Status: Phase 26 has started with package-neutral source contract naming. Commercial release remains blocked until a maintained external SIGTRAN peer run produces passing PCAP, peer logs, SDK traces, and comparison evidence.
+Status: Phase 26 has started with package-neutral source contract naming, external peer profile support models, and maintained peer selection policy criteria. Commercial release remains blocked until a maintained external SIGTRAN peer run produces passing PCAP, peer logs, SDK traces, and comparison evidence.
 
 ## Recommended First Deliverable
 
