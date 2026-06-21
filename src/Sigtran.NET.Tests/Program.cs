@@ -60,6 +60,7 @@ Run("SIGTRAN maintained peer lab runner inputs render environment and script", S
 Run("SIGTRAN maintained peer lab runner artifacts map outputs to producers", SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers);
 Run("SIGTRAN maintained peer lab runner preflight gates execution", SigtranMaintainedPeerLabRunnerPreflightGatesExecution);
 Run("SIGTRAN maintained peer lab runner command manifest orders execution", SigtranMaintainedPeerLabRunnerCommandManifestOrdersExecution);
+Run("SIGTRAN maintained peer lab runner evidence collection tracks retained artifacts", SigtranMaintainedPeerLabRunnerEvidenceCollectionTracksRetainedArtifacts);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1197,6 +1198,24 @@ static void SigtranMaintainedPeerLabRunnerCommandManifestOrdersExecution()
     Assert(manifest.CoversExpectedArtifacts, manifest.Describe());
     AssertEqual(SigtranMaintainedPeerLabCommandKind.Prepare, manifest.Commands[0].Command.Kind, "maintained peer lab runner first command");
     Assert(manifest.RenderMarkdown().Contains("Ready: `True`", StringComparison.Ordinal), manifest.RenderMarkdown());
+}
+
+static void SigtranMaintainedPeerLabRunnerEvidenceCollectionTracksRetainedArtifacts()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit6");
+    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
+    IReadOnlyList<string> retainedPaths = artifacts.GetRequiredOutputPaths();
+
+    SigtranMaintainedPeerLabRunnerEvidenceCollection retained = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths);
+    Assert(retained.HasRequiredArtifacts, retained.Describe());
+    AssertEqual(6, retained.Artifacts.Count, "maintained peer lab runner retained artifact count");
+    AssertEqual(6, retained.ToEvidenceArtifacts().Count, "maintained peer lab runner evidence artifact count");
+    Assert(!retained.ToEvidenceArtifacts()[0].IsPromotionReady, "collection should not add digest coverage");
+
+    SigtranMaintainedPeerLabRunnerEvidenceCollection missing = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths.Take(5).ToArray());
+    Assert(!missing.HasRequiredArtifacts, missing.Describe());
+    AssertEqual(1, missing.MissingRequiredArtifactPaths.Count, "maintained peer lab runner missing artifact count");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

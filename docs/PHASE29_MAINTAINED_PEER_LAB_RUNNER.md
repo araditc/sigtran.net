@@ -62,6 +62,18 @@ The preflight report returns stable failed check identifiers so operators can fi
 
 The manifest is execution-ready only when inputs, outputs, preflight checks, command sequencing, and expected artifact mappings are all valid.
 
+## Unit 6 - Evidence Collection
+
+`SigtranMaintainedPeerLabRunnerEvidenceCollection` now records which expected runner artifacts were retained after execution. It tracks:
+
+- Artifact kind.
+- Artifact path.
+- Required/optional status.
+- Retained/missing status.
+- Missing required artifact paths.
+
+The collection can convert retained artifacts into evidence artifacts, but it intentionally does not add digest coverage. Digest generation is a separate step.
+
 ## Validation
 
 Each unit in this phase is validated with:
