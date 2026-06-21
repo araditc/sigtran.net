@@ -72,7 +72,7 @@ public static class SigtranProtocolEvidenceStatus
     public const string StatusLabel = "SCCP TCAP MAP evidence upgrade";
 
     /// <summary>The number of completed protocol evidence upgrade units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     private static readonly string[] CurrentCapabilities =
     [
@@ -84,7 +84,8 @@ public static class SigtranProtocolEvidenceStatus
         "ordered-trace-validation",
         "mismatch-classification",
         "evidence-backed-readiness-gate",
-        "status-and-documentation-summary"
+        "status-and-documentation-summary",
+        "final-sweep-validation"
     ];
 
     /// <summary>The completed capability names.</summary>

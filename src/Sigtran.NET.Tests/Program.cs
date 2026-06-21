@@ -2924,12 +2924,13 @@ static void SigtranProtocolEvidenceStatusSummarizesEvidenceUpgrade()
     SigtranProtocolEvidenceStatusReport status = SigtranProtocolEvidenceStatus.GetStatus();
 
     AssertEqual("SCCP TCAP MAP evidence upgrade", status.Label, "protocol evidence status label");
-    AssertEqual(9, status.CompletedUnitCount, "protocol evidence completed unit count");
+    AssertEqual(10, status.CompletedUnitCount, "protocol evidence completed unit count");
     AssertEqual(status.CompletedUnitCount, status.Capabilities.Count, "protocol evidence capability count");
     Assert(status.FoundationReady, status.Describe());
     Assert(status.SdkEvidenceBacked, status.Describe());
     Assert(!status.ProductionEvidenceReady, status.Describe());
     Assert(status.Capabilities.Contains("status-and-documentation-summary"), "protocol evidence status capability should exist");
+    Assert(status.Capabilities.Contains("final-sweep-validation"), "protocol evidence final sweep capability should exist");
     Assert(status.Blockers.Contains("external-protocol-interoperability-evidence-required"), "protocol evidence status should retain external evidence blocker");
 }
 

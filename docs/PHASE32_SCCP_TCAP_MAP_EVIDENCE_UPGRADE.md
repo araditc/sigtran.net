@@ -110,6 +110,18 @@ The default report marks SDK evidence as backed while keeping production evidenc
 
 `docs/PHASE32_SUMMARY.md` summarizes the evidence position for adopters and keeps the commercial gate explicit: internal deterministic vectors support SDK behavior claims, while production promotion still requires retained external interoperability artifacts.
 
+## Unit 10 - Final Sweep And Validation
+
+The final unit completes the status count and validates the phase with naming and package-neutrality sweeps. The final status capability is `final-sweep-validation`.
+
+The sweep confirmed:
+
+- No non-canonical repository or package casing remains outside ignored build and git output.
+- No phase-number-based public source names were introduced for this evidence upgrade.
+- Package-specific peer references in source are limited to retained historical blocker evidence and tests that guard package-neutral public descriptions.
+
+Phase 32 is SDK evidence-backed for the covered SCCP, TCAP, and MAP SMS deterministic vectors. Production and commercial claims still require retained external interoperability evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:

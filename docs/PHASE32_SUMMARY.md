@@ -13,6 +13,7 @@ Phase 32 moves SCCP, TCAP, and MAP SMS from foundation-only protocol layers towa
 - Ordered trace validation against `SigtranTraceFrame`.
 - Actionable mismatch classification for protocol labels, codec/vector bytes, missing frames, and extra frames.
 - SDK evidence readiness and status reports.
+- Final naming, package-neutrality, build, test, and pack validation.
 
 ## Readiness Position
 
@@ -22,7 +23,7 @@ Phase 32 moves SCCP, TCAP, and MAP SMS from foundation-only protocol layers towa
 - `SdkEvidenceBacked`: deterministic vectors, trace validation, and mismatch classification are clean.
 - `ProductionEvidenceReady`: retained external interoperability evidence is available.
 
-The current default status is SDK evidence-backed but not production evidence-ready. The remaining blocker is `external-protocol-interoperability-evidence-required`.
+The completed status is SDK evidence-backed but not production evidence-ready. The remaining blocker is `external-protocol-interoperability-evidence-required`.
 
 ## Commercial Gate
 
