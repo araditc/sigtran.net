@@ -39,6 +39,7 @@ Run("SIGTRAN maintained peer selection policy requires package-neutral evidence 
 Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral defaults", SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults);
 Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMaintainedPeerLabPrerequisitesReportHostReadiness);
 Run("SIGTRAN maintained peer lab configuration validates environment contracts", SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts);
+Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -781,6 +782,21 @@ static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
     Assert(invalidReport.Errors.Contains("adaptation-unsupported"), "invalid config should report unsupported adaptation");
     Assert(invalidReport.Errors.Contains("routing-context-required"), "invalid config should report missing routing context");
     Assert(invalidReport.Errors.Contains("traffic-mode-unsupported"), "invalid config should report unsupported traffic mode");
+}
+
+static void SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths()
+{
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
+    SigtranMaintainedPeerLabArtifactPlan plan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit5");
+
+    AssertEqual("phase27-unit5", plan.RunId, "maintained peer artifact plan run id");
+    AssertEqual("artifacts/external-peer/maintained", plan.ArtifactRoot, "maintained peer artifact plan root");
+    AssertEqual(6, plan.Items.Count, "maintained peer artifact plan item count");
+    Assert(plan.CoversRequiredArtifacts, plan.Describe());
+    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.PacketCapture && item.Path.EndsWith("/pcap/phase27-unit5.pcap", StringComparison.Ordinal)), "artifact plan should include PCAP path");
+    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.PeerConfiguration && item.Path.Contains("/config/", StringComparison.Ordinal)), "artifact plan should include config path");
+    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.ComparisonReport && item.Path.Contains("/comparison/", StringComparison.Ordinal)), "artifact plan should include comparison path");
+    Assert(plan.Describe().Contains("requiredReady=True", StringComparison.Ordinal), plan.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

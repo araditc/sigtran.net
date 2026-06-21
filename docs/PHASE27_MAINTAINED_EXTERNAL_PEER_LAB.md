@@ -48,6 +48,19 @@ The prerequisite report separates foundation code readiness from actual lab read
 
 The helper can create the default lab configuration or parse environment values from a shell-driven lab file. Validation rejects invalid IP addresses, invalid SCTP ports, unsupported adaptation values, missing routing context, and unsupported traffic modes before a lab run is promoted.
 
+## Unit 5 - Retained Artifact Plan
+
+`SigtranMaintainedPeerLabArtifactPlans` now defines the retained artifact layout for each maintained peer lab run. The default plan creates deterministic paths for:
+
+- PCAP capture.
+- Peer log.
+- Peer configuration.
+- SDK trace.
+- Trace comparison report.
+- Run summary report.
+
+This unit still describes expected artifacts, not proof that they exist. Promotion evidence remains blocked until a real lab run retains those files and records digests.
+
 ## Environment Contract
 
 The default binding exposes these variables:
@@ -89,4 +102,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, and environment-derived lab configuration is validated before use.
+The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, and the artifact plan covers every required retained evidence path.
