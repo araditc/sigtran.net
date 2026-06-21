@@ -44,6 +44,7 @@ Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMa
 Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence);
 Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifacts", SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
 Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted);
+Run("SIGTRAN maintained peer lab status separates foundation from evidence", SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -878,6 +879,35 @@ static void SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted()
     Assert(profile.RequiredEnvironmentVariables.Contains("LOCAL_SCTP_PORT"), "CI profile should require local SCTP port");
     Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/pcap/", StringComparison.Ordinal)), "CI profile should upload PCAP artifacts");
     Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/comparison/", StringComparison.Ordinal)), "CI profile should upload comparison artifacts");
+}
+
+static void SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence()
+{
+    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabStatus.GetCompletedCapabilities();
+    SigtranMaintainedPeerLabStatusReport foundation = SigtranMaintainedPeerLabStatus.GetFoundationReport();
+
+    AssertEqual(10, SigtranMaintainedPeerLabStatus.CompletedUnitCount, "maintained peer lab completed unit count");
+    AssertEqual(10, capabilities.Count, "maintained peer lab completed capability count");
+    Assert(capabilities.Contains("package-neutral-binding-catalog"), "status should include binding catalog capability");
+    Assert(foundation.FoundationReady, foundation.Describe());
+    Assert(!foundation.CommercialReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-maintained-peer-run-required"), "foundation status should require real lab run");
+
+    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
+    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit10");
+    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+        .Select(static prerequisite => prerequisite.Id)
+        .ToArray();
+    SigtranMaintainedPeerLabEvidenceReport evidence = new(
+        artifactPlan,
+        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        configuration.Validate(),
+        SigtranMaintainedPeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
+        comparisonPassed: true);
+
+    SigtranMaintainedPeerLabStatusReport commercial = SigtranMaintainedPeerLabStatus.FromEvidence(evidence);
+    Assert(commercial.CommercialReady, commercial.Describe());
+    AssertEqual(0, commercial.Blockers.Count, "commercial maintained peer lab blocker count");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

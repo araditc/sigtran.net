@@ -186,6 +186,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 26 Summary](docs/PHASE26_SUMMARY.md)
 - [Phase 27 Maintained External Peer Lab](docs/PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md)
 - [Phase 27 Sigtran.NET Branding](docs/PHASE27_SIGTRAN_NET_BRANDING.md)
+- [Phase 27 Summary](docs/PHASE27_SUMMARY.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
@@ -205,7 +206,7 @@ The roadmap is intentionally conservative:
 3. Harden SCCP with external interoperability vectors and trace validation.
 4. Harden TCAP with external interoperability vectors and MAP profile validation.
 
-Phase 27 tracks the maintained external peer lab contract, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, and digest-covered retained evidence gates.
+Phase 27 completed the maintained external peer lab foundation, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, digest-covered retained evidence gates, and status reporting.
 5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
 6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
 7. Complete commercial readiness gates and publish governed release candidates.
