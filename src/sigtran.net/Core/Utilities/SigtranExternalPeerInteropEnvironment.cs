@@ -1,28 +1,45 @@
 namespace sigtran.net.Core.Utilities;
 
 /// <summary>
-/// Describes the OpenSS7/IPSS7 interoperability execution environment.
+/// Describes the external peer interoperability execution environment.
 /// </summary>
 public sealed class SigtranExternalPeerInteropEnvironment
 {
-    /// <summary>Creates an OpenSS7/IPSS7 interoperability environment.</summary>
+    /// <summary>Creates an external peer interoperability environment.</summary>
     /// <param name="name">The environment name.</param>
     /// <param name="requiresLinux">Whether Linux is required.</param>
     /// <param name="requiresNativeSctp">Whether native SCTP is required.</param>
-    /// <param name="requiresExternalPeer">Whether an OpenSS7/IPSS7 peer is required.</param>
+    /// <param name="requiresExternalPeer">Whether an external SIGTRAN peer is required.</param>
     /// <param name="requiresPacketCapture">Whether packet capture is required.</param>
+    /// <param name="artifactRoot">The artifact root used by the lab run.</param>
+    /// <param name="requiredTools">The required lab tools.</param>
+    /// <param name="requiresSdkTrace">Whether SDK trace capture is required.</param>
+    /// <param name="requiresPeerConfiguration">Whether peer configuration capture is required.</param>
+    /// <param name="requiresPeerLog">Whether peer log capture is required.</param>
     public SigtranExternalPeerInteropEnvironment(
         string name,
         bool requiresLinux,
         bool requiresNativeSctp,
         bool requiresExternalPeer,
-        bool requiresPacketCapture)
+        bool requiresPacketCapture,
+        string artifactRoot = "artifacts/external-peer",
+        IReadOnlyList<string>? requiredTools = null,
+        bool requiresSdkTrace = true,
+        bool requiresPeerConfiguration = true,
+        bool requiresPeerLog = true)
     {
         Name = string.IsNullOrWhiteSpace(name) ? throw new ArgumentException("Environment name is required.", nameof(name)) : name;
         RequiresLinux = requiresLinux;
         RequiresNativeSctp = requiresNativeSctp;
         RequiresExternalPeer = requiresExternalPeer;
         RequiresPacketCapture = requiresPacketCapture;
+        ArtifactRoot = string.IsNullOrWhiteSpace(artifactRoot) ? throw new ArgumentException("Artifact root is required.", nameof(artifactRoot)) : artifactRoot;
+        RequiredTools = requiredTools is null || requiredTools.Count == 0
+            ? ["dotnet", "tcpdump", "tshark", "sctp-tools"]
+            : requiredTools.ToArray();
+        RequiresSdkTrace = requiresSdkTrace;
+        RequiresPeerConfiguration = requiresPeerConfiguration;
+        RequiresPeerLog = requiresPeerLog;
     }
 
     /// <summary>The environment name.</summary>
@@ -34,23 +51,45 @@ public sealed class SigtranExternalPeerInteropEnvironment
     /// <summary>Whether native SCTP is required.</summary>
     public bool RequiresNativeSctp { get; }
 
-    /// <summary>Whether an OpenSS7/IPSS7 peer is required.</summary>
+    /// <summary>Whether an external SIGTRAN peer is required.</summary>
     public bool RequiresExternalPeer { get; }
 
     /// <summary>Whether packet capture is required.</summary>
     public bool RequiresPacketCapture { get; }
 
-    /// <summary>Whether the environment has the minimum OpenSS7/IPSS7 lab prerequisites.</summary>
+    /// <summary>The artifact root used by the lab run.</summary>
+    public string ArtifactRoot { get; }
+
+    /// <summary>The required lab tools.</summary>
+    public IReadOnlyList<string> RequiredTools { get; }
+
+    /// <summary>Whether SDK trace capture is required.</summary>
+    public bool RequiresSdkTrace { get; }
+
+    /// <summary>Whether peer configuration capture is required.</summary>
+    public bool RequiresPeerConfiguration { get; }
+
+    /// <summary>Whether peer log capture is required.</summary>
+    public bool RequiresPeerLog { get; }
+
+    /// <summary>Whether the environment has the minimum external peer lab prerequisites.</summary>
     public bool HasMinimumLabPrerequisites => RequiresLinux && RequiresNativeSctp && RequiresExternalPeer && RequiresPacketCapture;
+
+    /// <summary>Whether the environment can produce commercial interop evidence artifacts.</summary>
+    public bool CanProduceCommercialArtifacts => HasMinimumLabPrerequisites
+        && RequiresSdkTrace
+        && RequiresPeerConfiguration
+        && RequiresPeerLog
+        && RequiredTools.Count >= 4;
 }
 
 /// <summary>
-/// Provides OpenSS7/IPSS7 interoperability environment helpers.
+/// Provides external peer interoperability environment helpers.
 /// </summary>
 public static class SigtranExternalPeerInteropEnvironments
 {
-    /// <summary>Creates the default OpenSS7/IPSS7 lab environment.</summary>
-    /// <returns>The default OpenSS7/IPSS7 lab environment.</returns>
+    /// <summary>Creates the default external peer lab environment.</summary>
+    /// <returns>The default external peer lab environment.</returns>
     public static SigtranExternalPeerInteropEnvironment CreateDefault()
     {
         return new(

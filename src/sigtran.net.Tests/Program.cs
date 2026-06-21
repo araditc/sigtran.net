@@ -1608,12 +1608,17 @@ static void SigtranExternalPeerInteropEnvironmentRequiresLinuxSctpPeerAndPacketC
 {
     SigtranExternalPeerInteropEnvironment environment = SigtranExternalPeerInteropEnvironments.CreateDefault();
 
-    AssertEqual("external-sigtran-peer-linux-lab", environment.Name, "OpenSS7 environment name");
-    Assert(environment.RequiresLinux, "OpenSS7 interop should require Linux");
-    Assert(environment.RequiresNativeSctp, "OpenSS7 interop should require native SCTP");
-    Assert(environment.RequiresExternalPeer, "OpenSS7 interop should require peer");
-    Assert(environment.RequiresPacketCapture, "OpenSS7 interop should require packet capture");
-    Assert(environment.HasMinimumLabPrerequisites, "OpenSS7 environment should have minimum prerequisites");
+    AssertEqual("external-sigtran-peer-linux-lab", environment.Name, "external peer environment name");
+    Assert(environment.RequiresLinux, "external peer interop should require Linux");
+    Assert(environment.RequiresNativeSctp, "external peer interop should require native SCTP");
+    Assert(environment.RequiresExternalPeer, "external peer interop should require peer");
+    Assert(environment.RequiresPacketCapture, "external peer interop should require packet capture");
+    Assert(environment.RequiresSdkTrace, "external peer interop should require SDK trace capture");
+    Assert(environment.RequiresPeerConfiguration, "external peer interop should require peer configuration capture");
+    Assert(environment.RequiresPeerLog, "external peer interop should require peer log capture");
+    AssertEqual("artifacts/external-peer", environment.ArtifactRoot, "external peer artifact root");
+    Assert(environment.RequiredTools.Contains("tcpdump"), "external peer environment should require packet capture tooling");
+    Assert(environment.CanProduceCommercialArtifacts, "external peer environment should produce commercial artifacts");
 }
 
 static void SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults()

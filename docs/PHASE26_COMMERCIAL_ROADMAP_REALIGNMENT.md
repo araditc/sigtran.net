@@ -49,6 +49,22 @@ The default profile is package-neutral:
 
 The policy evaluates a `SigtranInteropPeerProfile` plus explicitly satisfied criterion ids. This keeps the package choice outside the SDK contract while still making the commercial gate deterministic.
 
+## Unit 4 - External Peer Lab Environment Contract
+
+`SigtranExternalPeerInteropEnvironment` now records the lab evidence contract:
+
+- Linux runner.
+- Native SCTP support.
+- External SIGTRAN peer.
+- Packet capture.
+- SDK trace capture.
+- Peer configuration capture.
+- Peer log capture.
+- Required tools such as `dotnet`, `tcpdump`, `tshark`, and SCTP tooling.
+- Stable artifact root under `artifacts/external-peer`.
+
+`CanProduceCommercialArtifacts` is true only when the environment can produce the artifact classes needed by commercial review. This keeps a simple transport smoke test separate from a commercial interoperability lab.
+
 ## Direction
 
 The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.
