@@ -253,6 +253,14 @@ Status: Phase 27 is foundation-complete. It has canonical `Sigtran.NET` naming, 
 
 Status: Phase 28 is foundation-complete. It has a run manifest that aggregates binding, configuration, artifact, command, traffic vector, and CI contracts, deterministic environment file rendering, command script rendering, maintained peer comparison reporting, run reporting, artifact digest manifests, evidence bundle handoff for promotion reports, a manual self-hosted workflow template, a commercial readiness bridge, and automation status reporting. Commercial readiness still requires a real maintained peer lab execution with digest-covered retained artifacts.
 
+## Phase 29 - Maintained Peer Lab Runner Materialization
+
+- Materialize maintained peer lab runner workspace directories, inputs, commands, expected outputs, evidence collection, and handoff checks.
+- Keep runner materialization package-neutral and separate from real retained lab evidence.
+- Prepare the SDK for a real maintained external peer lab run without manufacturing passing artifacts.
+
+Status: Phase 29 has started with a deterministic maintained peer lab runner workspace contract.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

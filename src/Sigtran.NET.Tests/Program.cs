@@ -55,6 +55,7 @@ Run("SIGTRAN maintained peer lab evidence bundle creates promotion report", Sigt
 Run("SIGTRAN maintained peer lab workflow template is manual and self-hosted", SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted);
 Run("SIGTRAN maintained peer lab commercial bridge gates readiness", SigtranMaintainedPeerLabCommercialBridgeGatesReadiness);
 Run("SIGTRAN maintained peer lab automation status summarizes completion", SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion);
+Run("SIGTRAN maintained peer lab runner workspace materializes deterministic paths", SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1111,6 +1112,20 @@ static void SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion()
     Assert(commercial.FoundationReady, commercial.Describe());
     Assert(commercial.CommercialEvidenceReady, commercial.Describe());
     Assert(commercial.CommercialReady, commercial.Describe());
+}
+
+static void SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit1");
+    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    IReadOnlyList<string> directories = workspace.GetRequiredDirectories();
+
+    Assert(workspace.IsMaterializationReady, workspace.Describe());
+    AssertEqual(9, directories.Count, "maintained peer lab runner workspace directory count");
+    Assert(directories.Contains("artifacts/external-peer/maintained/config"), workspace.Describe());
+    Assert(directories.Contains("artifacts/external-peer/maintained/pcap"), workspace.Describe());
+    Assert(directories.Contains("artifacts/external-peer/maintained/reports"), workspace.Describe());
+    AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab", workspace.ScriptRoot, "maintained peer lab runner script root");
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
