@@ -69,6 +69,7 @@ Run("SIGTRAN maintained peer lab runner file materialization renders shell plan"
 Run("SIGTRAN maintained peer lab runner execution log renders lifecycle", SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle);
 Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState);
 Run("SIGTRAN maintained peer lab runner artifact verification checks retained digests", SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests);
+Run("SIGTRAN maintained peer lab runner provenance records source and host identity", SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -1401,6 +1402,35 @@ static void SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDige
     SigtranMaintainedPeerLabRunnerArtifactVerificationReport invalid = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, invalidDigest);
     Assert(!invalid.Verified, invalid.Describe());
     AssertEqual(6, invalid.InvalidDigestPaths.Count, "maintained peer lab runner artifact verification invalid digest count");
+}
+
+static void SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit5");
+    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+        runManifest,
+        "abcdef123456",
+        "linux-runner-01",
+        DateTimeOffset.UnixEpoch);
+
+    Assert(provenance.IsReviewReady, provenance.Describe());
+    AssertEqual("Sigtran.NET", provenance.SdkName, "maintained peer lab runner provenance SDK name");
+    AssertEqual(runManifest.ArtifactPlan.ArtifactRoot, provenance.ArtifactRoot, "maintained peer lab runner provenance artifact root");
+    Assert(provenance.RenderMarkdown().Contains("Review ready: `True`", StringComparison.Ordinal), provenance.RenderMarkdown());
+
+    SigtranMaintainedPeerLabRunnerProvenanceReport shortCommit = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+        runManifest,
+        "abc",
+        "linux-runner-01",
+        DateTimeOffset.UnixEpoch);
+    Assert(!shortCommit.IsReviewReady, shortCommit.Describe());
+
+    SigtranMaintainedPeerLabRunnerProvenanceReport localTime = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+        runManifest,
+        "abcdef123456",
+        "linux-runner-01",
+        new DateTimeOffset(2026, 6, 21, 12, 0, 0, TimeSpan.FromHours(3)));
+    Assert(!localTime.IsReviewReady, localTime.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

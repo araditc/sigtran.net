@@ -50,6 +50,21 @@ This makes a runner log reviewable by command before artifact verification start
 
 This keeps artifact handoff separate from execution status: a command can pass while the artifact package still fails verification.
 
+## Unit 5 - Runner Provenance
+
+`SigtranMaintainedPeerLabRunnerProvenanceReport` now records the runner evidence source identity. It includes:
+
+- Run id.
+- SDK name and version.
+- Source repository and commit.
+- Runner host identity.
+- Workflow or runner plan name.
+- Retained artifact root.
+- UTC generation timestamp.
+- Markdown rendering for retained review notes.
+
+This report makes evidence packages traceable to source and host identity while keeping real lab execution evidence as a separate requirement.
+
 ## Validation
 
 Each unit in this phase is validated with:
