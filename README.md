@@ -183,6 +183,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 24 Summary](docs/PHASE24_SUMMARY.md)
 - [Phase 25 Commercial Release Execution](docs/PHASE25_COMMERCIAL_RELEASE_EXECUTION.md)
 - [Phase 26 Commercial Roadmap Realignment](docs/PHASE26_COMMERCIAL_ROADMAP_REALIGNMENT.md)
+- [Phase 26 Summary](docs/PHASE26_SUMMARY.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
@@ -208,6 +209,7 @@ The roadmap is intentionally conservative:
 9. Capture real interoperability lab evidence and promote passing artifacts into commercial readiness.
 10. Complete release automation and supply-chain hardening for governed package publication.
 11. Complete developer experience and enterprise adoption guidance.
+12. Keep external peer interoperability package-neutral in SDK source while executing maintained peer labs as retained release evidence.
 12. Complete production operations and support readiness.
 13. Complete compliance and audit readiness foundations.
 14. Complete performance, capacity, and benchmark readiness foundations.

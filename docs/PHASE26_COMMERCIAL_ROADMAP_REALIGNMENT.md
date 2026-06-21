@@ -108,6 +108,21 @@ Commercial evidence and release execution readiness now use `externalPeerInterop
 
 Public labels, CI variables, status capability names, and README roadmap text now use external peer terminology. Legacy OpenSS7/IPSS7 wording is retained only where the repository is documenting historical blocker evidence or reference material.
 
-## Direction
+## Unit 10 - Final Realignment Status
 
-The next units build a maintained peer selection policy, neutral lab environment contract, artifact contract, run plan, comparison contract, and readiness aggregation. The default lab may use a maintained package, but the SDK API remains independent of that package.
+`SigtranCommercialRoadmapRealignmentStatus` summarizes the completed package-neutral realignment work without using a roadmap phase number or peer package name in the source API.
+
+The status report checks:
+
+- Ten completed package-neutral realignment capabilities.
+- Public contract names do not include package-specific peer fragments.
+- Maintained peer selection policy is available.
+- External peer execution foundation is ready.
+- Commercial release gates use `external-peer-interop`.
+- Commercial release remains blocked until maintained peer selection and digest-covered external peer evidence are retained.
+
+## Final Status
+
+The commercial roadmap realignment foundation is complete.
+
+The next implementation work should execute a maintained external SIGTRAN peer lab and attach review-ready evidence. The default lab may use a maintained package, but the SDK API remains independent of that package.

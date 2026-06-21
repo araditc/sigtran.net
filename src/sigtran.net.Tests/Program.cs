@@ -133,6 +133,7 @@ Run("SIGTRAN external peer evidence registry starts empty", SigtranExternalPeerE
 Run("SIGTRAN external peer readiness separates foundation from evidence", SigtranExternalPeerReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN external peer commercial readiness aggregates selection lab and evidence", SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence);
 Run("SIGTRAN external peer status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
+Run("SIGTRAN commercial roadmap realignment status summarizes package-neutral completion", SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
@@ -1758,6 +1759,35 @@ static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
     Assert(capabilities.Contains("external-peer-ci-profile"), "external peer status should include CI profile");
     Assert(SigtranExternalPeerInteropStatus.FoundationReady, SigtranExternalPeerInteropStatus.Describe());
     Assert(!SigtranExternalPeerInteropStatus.Verified, SigtranExternalPeerInteropStatus.Describe());
+}
+
+static void SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialRoadmapRealignmentStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> publicNames = SigtranCommercialRoadmapRealignmentStatus.GetPublicContractNames();
+    IReadOnlyList<string> guardCategories = SigtranCommercialRoadmapRealignmentStatus.GetPackageSpecificNameGuardCategories();
+    SigtranCommercialRoadmapRealignmentReport report = SigtranCommercialRoadmapRealignmentStatus.GetReport();
+
+    AssertEqual(10, SigtranCommercialRoadmapRealignmentStatus.CompletedUnitCount, "commercial roadmap realignment completed unit count");
+    AssertEqual(10, capabilities.Count, "commercial roadmap realignment capability count");
+    AssertEqual(3, guardCategories.Count, "commercial roadmap realignment guard category count");
+    Assert(capabilities.Contains("public-label-migration"), "commercial roadmap realignment should include public label migration");
+    Assert(publicNames.All(name => name.Contains("external", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("commercial", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("maintained", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("evidence", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("package-neutral", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("public-label", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(name, "documentation", StringComparison.OrdinalIgnoreCase)), "public realignment contract names should use package-neutral domains");
+    Assert(report.PackageNeutralNamingReady, report.Describe());
+    Assert(report.MaintainedPeerPolicyReady, report.Describe());
+    Assert(report.ExternalPeerExecutionFoundationReady, report.Describe());
+    Assert(report.CommercialGateAligned, report.Describe());
+    Assert(report.FoundationReady, report.Describe());
+    Assert(!report.CommercialReleaseReady, report.Describe());
+    Assert(report.Blockers.Contains("maintained-peer-selection-required"), "current realignment report should require maintained peer selection evidence");
+    Assert(report.Blockers.Contains("external-peer-review-ready-evidence-required"), "current realignment report should require review-ready external peer evidence");
+    Assert(SigtranCommercialRoadmapRealignmentStatus.Describe().Contains(SigtranCommercialRoadmapRealignmentStatus.StatusLabel, StringComparison.Ordinal), "realignment description should include the status label");
 }
 
 static SigtranExternalPeerInteropArtifactManifest CreateCompleteExternalPeerManifest()
