@@ -66,7 +66,7 @@ public static class SigtranCommercialEvidenceReadiness
         SigtranCommercialEvidenceGateResult gate = SigtranCommercialEvidenceGate.Evaluate(
             currentBundle,
             SigtranNativeSctpLabVerificationStatus.NativeSctpProductionVerified,
-            SigtranOpenSs7InteropStatus.Verified,
+            SigtranExternalPeerInteropStatus.Verified,
             SigtranProtocolInteropStatus.Verified,
             SigtranPackageGovernance.CreateCommercialTargetPolicy().IsSatisfiedByCurrentPackage);
 

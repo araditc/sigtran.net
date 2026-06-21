@@ -68,7 +68,7 @@ public static class SigtranCommercialEvidenceGate
 
         if (!openSs7Verified)
         {
-            reasons.Add("openss7-evidence-required");
+            reasons.Add("external-peer-evidence-required");
         }
 
         if (!protocolInteropVerified)

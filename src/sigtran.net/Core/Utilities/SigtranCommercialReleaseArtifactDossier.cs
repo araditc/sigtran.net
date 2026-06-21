@@ -125,11 +125,11 @@ public static class SigtranCommercialReleaseArtifactDossiers
             "dc260bf293f1f1bd95524d27f64e4a88a3777f944ac1cde8d48bb9ffa9b98833"));
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.Trace,
-            "/home/ammar/sigtran-lab/artifacts/trace/open-interop-sdk-trace.jsonl",
+            "/home/ammar/sigtran-lab/artifacts/trace/external-peer-interop-sdk-trace.jsonl",
             SigtranCommercialReleaseArtifactRetention.Missing));
         dossier.Add(new(
             SigtranCommercialReleaseEvidenceKind.ComparisonReport,
-            "/home/ammar/sigtran-lab/artifacts/comparison/open-interop-comparison.md",
+            "/home/ammar/sigtran-lab/artifacts/comparison/external-peer-interop-comparison.md",
             SigtranCommercialReleaseArtifactRetention.Missing));
 
         return dossier;

@@ -3,7 +3,7 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Describes OpenSS7/IPSS7 interoperability execution readiness.
 /// </summary>
-public sealed class SigtranOpenSs7InteropReadinessReport
+public sealed class SigtranExternalPeerInteropReadinessReport
 {
     /// <summary>Creates an OpenSS7/IPSS7 interoperability readiness report.</summary>
     /// <param name="hasEnvironment">Whether environment requirements are available.</param>
@@ -15,7 +15,7 @@ public sealed class SigtranOpenSs7InteropReadinessReport
     /// <param name="hasRunReport">Whether run report support is available.</param>
     /// <param name="hasEvidenceRegistry">Whether evidence registry is available.</param>
     /// <param name="hasPassingEvidence">Whether passing evidence exists.</param>
-    public SigtranOpenSs7InteropReadinessReport(
+    public SigtranExternalPeerInteropReadinessReport(
         bool hasEnvironment,
         bool hasConfiguration,
         bool hasTraceExpectations,
@@ -74,21 +74,21 @@ public sealed class SigtranOpenSs7InteropReadinessReport
 /// <summary>
 /// Provides OpenSS7/IPSS7 interoperability readiness helpers.
 /// </summary>
-public static class SigtranOpenSs7InteropReadiness
+public static class SigtranExternalPeerInteropReadiness
 {
     /// <summary>Returns the current OpenSS7/IPSS7 interoperability readiness report.</summary>
     /// <returns>The current OpenSS7/IPSS7 interoperability readiness report.</returns>
-    public static SigtranOpenSs7InteropReadinessReport GetReport()
+    public static SigtranExternalPeerInteropReadinessReport GetReport()
     {
         return new(
-            hasEnvironment: SigtranOpenSs7InteropEnvironments.CreateDefault().HasMinimumLabPrerequisites,
-            hasConfiguration: SigtranOpenSs7InteropConfigurations.CreateDefaultAspToSg().IsAspToSgReady,
-            hasTraceExpectations: SigtranOpenSs7InteropTraceExpectationsCatalog.CreateAspToSg().CoversAspLifecycle,
+            hasEnvironment: SigtranExternalPeerInteropEnvironments.CreateDefault().HasMinimumLabPrerequisites,
+            hasConfiguration: SigtranExternalPeerInteropConfigurations.CreateDefaultAspToSg().IsAspToSgReady,
+            hasTraceExpectations: SigtranExternalPeerInteropTraceExpectationsCatalog.CreateAspToSg().CoversAspLifecycle,
             hasArtifacts: true,
-            hasRunPlan: SigtranOpenSs7InteropRunPlans.CreateDefaultAspToSg().IsExecutable,
-            hasCommandSet: SigtranOpenSs7InteropCommands.CreateDefault().Commands.Count > 0,
+            hasRunPlan: SigtranExternalPeerInteropRunPlans.CreateDefaultAspToSg().IsExecutable,
+            hasCommandSet: SigtranExternalPeerInteropCommands.CreateDefault().Commands.Count > 0,
             hasRunReport: true,
             hasEvidenceRegistry: true,
-            hasPassingEvidence: SigtranOpenSs7InteropEvidence.CreateCurrentRegistry().HasPassingAspToSgEvidence);
+            hasPassingEvidence: SigtranExternalPeerInteropEvidence.CreateCurrentRegistry().HasPassingAspToSgEvidence);
     }
 }

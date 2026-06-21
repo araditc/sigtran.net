@@ -9,7 +9,7 @@ public enum SigtranCommercialReleaseEvidenceArea
     LinuxSctp,
 
     /// <summary>OpenSS7/IPSS7 peer interoperability evidence.</summary>
-    OpenSs7Interop,
+    ExternalPeerInterop,
 
     /// <summary>Supply-chain security evidence.</summary>
     SupplyChain,
@@ -168,7 +168,7 @@ public sealed class SigtranCommercialReleaseEvidenceManifest
     public bool SupportsCommercialPromotion => !HasBlockers
         && HasDigestCoverage
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.LinuxSctp)
-        && HasPassedArea(SigtranCommercialReleaseEvidenceArea.OpenSs7Interop)
+        && HasPassedArea(SigtranCommercialReleaseEvidenceArea.ExternalPeerInterop)
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.SupplyChain)
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.PackagePublication)
         && HasPassedArea(SigtranCommercialReleaseEvidenceArea.Performance)
@@ -187,7 +187,7 @@ public sealed class SigtranCommercialReleaseEvidenceManifest
             "5ad2e3fb1e59d770962ffbf053f10991d6a66939071234063c88d536127dbfdc",
             "Captured SCTP INIT, DATA, and SHUTDOWN on a real Ubuntu 22.04 VM."));
         manifest.Add(new(
-            SigtranCommercialReleaseEvidenceArea.OpenSs7Interop,
+            SigtranCommercialReleaseEvidenceArea.ExternalPeerInterop,
             SigtranCommercialReleaseEvidenceKind.BlockerReport,
             "/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log",
             SigtranCommercialReleaseEvidenceStatus.Blocked,

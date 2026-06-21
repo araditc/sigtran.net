@@ -78,9 +78,9 @@ public static class SigtranInteropLabScenarios
             "Validate native SCTP socket creation, client connect, server accept, send, receive, and health snapshots on Linux.",
             ["pcap", "test-log", "kernel-sctp-version"]),
         new(
-            "openss7-m3ua-asp-to-sg",
+            "external-peer-m3ua-asp-to-sg",
             SigtranInteropLabScenarioKind.M3uaAspToSignallingGateway,
-            "openss7-ipss7",
+            "external-sigtran-peer",
             "Validate M3UA ASP Up, ASP Active, Heartbeat, DATA, ASP Inactive, and ASP Down against an OpenSS7/IPSS7 peer.",
             ["pcap", "sdk-trace", "peer-config", "peer-log"]),
         new(

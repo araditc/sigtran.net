@@ -63,7 +63,7 @@ public static class SigtranBenchmarkScenarios
         new(SigtranBenchmarkScenarioCategory.Parser, "m3ua-data-decode", "Decode M3UA DATA messages with routing context and protocol data.", requiresExternalPeer: false),
         new(SigtranBenchmarkScenarioCategory.Routing, "m3ua-route-dispatch", "Resolve inbound DATA messages through the payload route table.", requiresExternalPeer: false),
         new(SigtranBenchmarkScenarioCategory.Transport, "native-sctp-loopback-throughput", "Measure native SCTP loopback send and receive throughput.", requiresExternalPeer: false),
-        new(SigtranBenchmarkScenarioCategory.Transport, "openss7-peer-throughput", "Measure ASP-to-SG throughput against an OpenSS7/IPSS7 peer.", requiresExternalPeer: true),
+        new(SigtranBenchmarkScenarioCategory.Transport, "external-peer-throughput", "Measure ASP-to-SG throughput against an external SIGTRAN peer.", requiresExternalPeer: true),
         new(SigtranBenchmarkScenarioCategory.MapSms, "map-sms-tcap-flow", "Build and dispatch MAP SMS TCAP Begin Invoke flows.", requiresExternalPeer: false)
     ];
 

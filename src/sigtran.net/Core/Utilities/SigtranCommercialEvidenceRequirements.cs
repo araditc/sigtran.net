@@ -9,7 +9,7 @@ public enum SigtranCommercialEvidenceArea
     NativeSctp,
 
     /// <summary>OpenSS7/IPSS7 interoperability evidence.</summary>
-    OpenSs7Interop,
+    ExternalPeerInterop,
 
     /// <summary>SCCP, TCAP, and MAP SMS protocol vector evidence.</summary>
     ProtocolInterop,
@@ -120,9 +120,9 @@ public static class SigtranCommercialEvidenceRequirements
                 SigtranCommercialEvidenceArtifactKind.ComparisonReport
             ]),
         new(
-            SigtranCommercialEvidenceArea.OpenSs7Interop,
-            "openss7/m3ua-asp-to-sg",
-            "OpenSS7/IPSS7 M3UA ASP-to-SG interoperability evidence.",
+            SigtranCommercialEvidenceArea.ExternalPeerInterop,
+            "external-peer/m3ua-asp-to-sg",
+            "External SIGTRAN peer M3UA ASP-to-SG interoperability evidence.",
             [
                 SigtranCommercialEvidenceArtifactKind.PacketCapture,
                 SigtranCommercialEvidenceArtifactKind.SdkTrace,

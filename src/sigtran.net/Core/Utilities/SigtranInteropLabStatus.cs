@@ -10,7 +10,7 @@ public static class SigtranInteropLabStatus
         "interop-lab-scenario-catalog",
         "interop-lab-artifact-manifests",
         "interop-lab-run-reports",
-        "openss7-ipss7-peer-template",
+        "external-peer-template",
         "trace-comparison-reporting",
         "evidence-promotion",
         "interop-lab-ci-profile",

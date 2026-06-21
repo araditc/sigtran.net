@@ -3,13 +3,13 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Describes ordered protocol messages expected during OpenSS7/IPSS7 interop execution.
 /// </summary>
-public sealed class SigtranOpenSs7InteropTraceExpectations
+public sealed class SigtranExternalPeerInteropTraceExpectations
 {
     /// <summary>Creates OpenSS7/IPSS7 trace expectations.</summary>
     /// <param name="scenarioId">The scenario id.</param>
     /// <param name="expectedMessages">The expected ordered messages.</param>
     /// <param name="requiresDataTransfer">Whether DATA transfer is required.</param>
-    public SigtranOpenSs7InteropTraceExpectations(
+    public SigtranExternalPeerInteropTraceExpectations(
         string scenarioId,
         IReadOnlyList<string> expectedMessages,
         bool requiresDataTransfer)
@@ -38,15 +38,15 @@ public sealed class SigtranOpenSs7InteropTraceExpectations
 /// <summary>
 /// Provides OpenSS7/IPSS7 trace expectation helpers.
 /// </summary>
-public static class SigtranOpenSs7InteropTraceExpectationsCatalog
+public static class SigtranExternalPeerInteropTraceExpectationsCatalog
 {
     /// <summary>Creates the default OpenSS7/IPSS7 ASP-to-SG trace expectations.</summary>
     /// <returns>The default OpenSS7/IPSS7 ASP-to-SG trace expectations.</returns>
-    public static SigtranOpenSs7InteropTraceExpectations CreateAspToSg()
+    public static SigtranExternalPeerInteropTraceExpectations CreateAspToSg()
     {
         return new(
-            "openss7-m3ua-asp-to-sg",
-            SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate().ExpectedMessages,
+            "external-peer-m3ua-asp-to-sg",
+            SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate().ExpectedMessages,
             requiresDataTransfer: true);
     }
 }

@@ -3,14 +3,14 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Describes an OpenSS7/IPSS7 interoperability execution blocker.
 /// </summary>
-public sealed class SigtranOpenSs7InteropBlocker
+public sealed class SigtranExternalPeerInteropBlocker
 {
     /// <summary>Creates an OpenSS7/IPSS7 interoperability blocker record.</summary>
     /// <param name="environmentName">The lab environment where the blocker was observed.</param>
     /// <param name="logPath">The retained log path.</param>
     /// <param name="observedFailure">The observed failure summary.</param>
     /// <param name="requiredAction">The required action before retesting.</param>
-    public SigtranOpenSs7InteropBlocker(
+    public SigtranExternalPeerInteropBlocker(
         string environmentName,
         string logPath,
         string observedFailure,
@@ -56,11 +56,11 @@ public sealed class SigtranOpenSs7InteropBlocker
 /// <summary>
 /// Provides OpenSS7/IPSS7 interoperability blocker evidence helpers.
 /// </summary>
-public static class SigtranOpenSs7InteropBlockerEvidence
+public static class SigtranExternalPeerInteropBlockerEvidence
 {
     /// <summary>Creates the current retained OpenSS7/IPSS7 blocker evidence record.</summary>
     /// <returns>The current retained OpenSS7/IPSS7 blocker evidence record.</returns>
-    public static SigtranOpenSs7InteropBlocker CreateCurrentBlocker()
+    public static SigtranExternalPeerInteropBlocker CreateCurrentBlocker()
     {
         return new(
             "Ubuntu 22.04.1 VM, Linux 5.15.0-181-generic",

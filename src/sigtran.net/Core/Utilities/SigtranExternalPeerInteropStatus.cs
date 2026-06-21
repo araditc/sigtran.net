@@ -3,7 +3,7 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Provides OpenSS7/IPSS7 interoperability execution status.
 /// </summary>
-public static class SigtranOpenSs7InteropStatus
+public static class SigtranExternalPeerInteropStatus
 {
     private static readonly string[] Capabilities =
     [
@@ -34,11 +34,11 @@ public static class SigtranOpenSs7InteropStatus
 
     /// <summary>Whether the OpenSS7/IPSS7 execution foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
-        && SigtranOpenSs7InteropReadiness.GetReport().FoundationReady
-        && SigtranOpenSs7InteropCi.CreateDefault().RequiresOpenSs7Runner;
+        && SigtranExternalPeerInteropReadiness.GetReport().FoundationReady
+        && SigtranExternalPeerInteropCi.CreateDefault().RequiresExternalPeerRunner;
 
     /// <summary>Whether OpenSS7/IPSS7 interop has passing execution evidence.</summary>
-    public static bool Verified => FoundationReady && SigtranOpenSs7InteropReadiness.GetReport().Verified;
+    public static bool Verified => FoundationReady && SigtranExternalPeerInteropReadiness.GetReport().Verified;
 
     /// <summary>Formats a compact OpenSS7/IPSS7 execution status summary.</summary>
     /// <returns>The OpenSS7/IPSS7 execution status summary.</returns>

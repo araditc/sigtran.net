@@ -227,6 +227,15 @@ Status: Phase 24 is foundation-ready for package publication readiness. Real NuG
 
 Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM; OpenSS7/IPSS7 remains blocked on Linux 5.15 `open_softirq` compatibility until moved to a Linux 4.x-era OpenSS7-compatible environment or replaced with a maintained SIGTRAN peer.
 
+## Phase 26 - Commercial Roadmap Realignment
+
+- Replace package-specific SDK source contracts with package-neutral external SIGTRAN peer contracts.
+- Keep legacy OpenSS7/IPSS7 evidence as retained blocker evidence, not as the permanent commercial gate.
+- Add maintained peer selection, lab environment, artifact, run, comparison, and readiness contracts without naming public APIs after a peer package.
+- Document any selected peer package only in lab profile notes, configuration examples, and retained evidence.
+
+Status: Phase 26 has started with package-neutral source contract naming. Commercial release remains blocked until a maintained external SIGTRAN peer run produces passing PCAP, peer logs, SDK traces, and comparison evidence.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

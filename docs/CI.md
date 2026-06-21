@@ -76,7 +76,7 @@ The profile is opt-in, Linux-only, and enabled by `SIGTRAN_NATIVE_SCTP_LAB`. Rea
 
 ## OpenSS7/IPSS7 Interop CI
 
-Phase 18 adds `SigtranOpenSs7InteropCi.CreateDefault()` as the metadata contract for OpenSS7/IPSS7 interoperability execution.
+Phase 18 adds `SigtranExternalPeerInteropCi.CreateDefault()` as the metadata contract for OpenSS7/IPSS7 interoperability execution.
 
 The profile is opt-in and enabled by `SIGTRAN_OPENSS7_INTEROP`. Real runs require a prepared OpenSS7/IPSS7 runner and must retain artifacts under `SIGTRAN_OPENSS7_ARTIFACT_ROOT`.
 

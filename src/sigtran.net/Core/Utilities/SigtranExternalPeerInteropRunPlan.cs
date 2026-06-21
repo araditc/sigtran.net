@@ -3,18 +3,18 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Describes an OpenSS7/IPSS7 interoperability execution plan.
 /// </summary>
-public sealed class SigtranOpenSs7InteropRunPlan
+public sealed class SigtranExternalPeerInteropRunPlan
 {
     /// <summary>Creates an OpenSS7/IPSS7 interoperability execution plan.</summary>
     /// <param name="template">The interop lab template.</param>
     /// <param name="environment">The required execution environment.</param>
     /// <param name="configuration">The ASP-to-SG configuration.</param>
     /// <param name="expectations">The trace expectations.</param>
-    public SigtranOpenSs7InteropRunPlan(
+    public SigtranExternalPeerInteropRunPlan(
         SigtranInteropLabTemplate template,
-        SigtranOpenSs7InteropEnvironment environment,
-        SigtranOpenSs7InteropConfiguration configuration,
-        SigtranOpenSs7InteropTraceExpectations expectations)
+        SigtranExternalPeerInteropEnvironment environment,
+        SigtranExternalPeerInteropConfiguration configuration,
+        SigtranExternalPeerInteropTraceExpectations expectations)
     {
         Template = template ?? throw new ArgumentNullException(nameof(template));
         Environment = environment ?? throw new ArgumentNullException(nameof(environment));
@@ -26,13 +26,13 @@ public sealed class SigtranOpenSs7InteropRunPlan
     public SigtranInteropLabTemplate Template { get; }
 
     /// <summary>The required execution environment.</summary>
-    public SigtranOpenSs7InteropEnvironment Environment { get; }
+    public SigtranExternalPeerInteropEnvironment Environment { get; }
 
     /// <summary>The ASP-to-SG configuration.</summary>
-    public SigtranOpenSs7InteropConfiguration Configuration { get; }
+    public SigtranExternalPeerInteropConfiguration Configuration { get; }
 
     /// <summary>The trace expectations.</summary>
-    public SigtranOpenSs7InteropTraceExpectations Expectations { get; }
+    public SigtranExternalPeerInteropTraceExpectations Expectations { get; }
 
     /// <summary>Whether the run plan has the required execution contracts.</summary>
     public bool IsExecutable => Environment.HasMinimumLabPrerequisites
@@ -44,16 +44,16 @@ public sealed class SigtranOpenSs7InteropRunPlan
 /// <summary>
 /// Provides OpenSS7/IPSS7 interoperability execution plan helpers.
 /// </summary>
-public static class SigtranOpenSs7InteropRunPlans
+public static class SigtranExternalPeerInteropRunPlans
 {
     /// <summary>Creates the default OpenSS7/IPSS7 ASP-to-SG execution plan.</summary>
     /// <returns>The default OpenSS7/IPSS7 ASP-to-SG execution plan.</returns>
-    public static SigtranOpenSs7InteropRunPlan CreateDefaultAspToSg()
+    public static SigtranExternalPeerInteropRunPlan CreateDefaultAspToSg()
     {
         return new(
-            SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate(),
-            SigtranOpenSs7InteropEnvironments.CreateDefault(),
-            SigtranOpenSs7InteropConfigurations.CreateDefaultAspToSg(),
-            SigtranOpenSs7InteropTraceExpectationsCatalog.CreateAspToSg());
+            SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate(),
+            SigtranExternalPeerInteropEnvironments.CreateDefault(),
+            SigtranExternalPeerInteropConfigurations.CreateDefaultAspToSg(),
+            SigtranExternalPeerInteropTraceExpectationsCatalog.CreateAspToSg());
     }
 }

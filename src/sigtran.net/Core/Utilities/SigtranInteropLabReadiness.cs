@@ -91,7 +91,7 @@ public static class SigtranInteropLabReadiness
             hasScenarioCatalog: SigtranInteropLabScenarios.GetScenarios().Count > 0,
             hasArtifactManifests: true,
             hasRunReports: true,
-            hasPeerProfiles: SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate().ExpectedMessages.Count > 0,
+            hasPeerProfiles: SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate().ExpectedMessages.Count > 0,
             hasTraceComparison: true,
             hasEvidencePromotion: true,
             hasCiProfile: SigtranInteropLabCiProfiles.CreateDefault().Commands.Count > 0,

@@ -74,7 +74,7 @@ public static class SigtranCommercialReleaseExecutionReadiness
         return new(
         [
             new("linux-sctp-smoke", sctp.IsPassingSmokeEvidence, "Linux SCTP loopback smoke evidence is retained."),
-            new("open-interop", false, SigtranOpenSs7InteropBlockerEvidence.CreateCurrentBlocker().Describe()),
+            new("external-peer-interop", false, SigtranExternalPeerInteropBlockerEvidence.CreateCurrentBlocker().Describe()),
             new("artifact-dossier", dossier.IsReviewReady, "Trace and comparison artifacts are still missing."),
             new("sbom", true, "SBOM generation is executable and retained under release artifacts."),
             new("package-signing", false, "Signed package exists, but verification requires trusted timestamped production signing."),

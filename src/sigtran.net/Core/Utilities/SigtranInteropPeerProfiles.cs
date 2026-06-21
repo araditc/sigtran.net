@@ -124,34 +124,34 @@ public sealed class SigtranInteropLabTemplate
 public static class SigtranInteropPeerProfiles
 {
     /// <summary>The OpenSS7/IPSS7 manual URL used as the peer reference.</summary>
-    public const string OpenSs7IpSs7ManualUrl = "http://www.openss7.org/ipss7_man.html";
+    public const string ExternalPeerIpSs7ManualUrl = "http://www.openss7.org/ipss7_man.html";
 
     /// <summary>Creates the OpenSS7/IPSS7 Signalling Gateway peer profile.</summary>
     /// <returns>The OpenSS7/IPSS7 peer profile.</returns>
-    public static SigtranInteropPeerProfile CreateOpenSs7SignallingGateway()
+    public static SigtranInteropPeerProfile CreateExternalPeerSignallingGateway()
     {
         return new(
-            "openss7-ipss7-sg",
+            "external-sigtran-sg",
             SigtranInteropPeerRole.SignallingGateway,
             "OpenSS7/IPSS7",
-            OpenSs7IpSs7ManualUrl,
+            ExternalPeerIpSs7ManualUrl,
             "SCTP/M3UA",
             "Use as an external SG peer for ASP lifecycle and DATA validation.");
     }
 
     /// <summary>Creates the OpenSS7/IPSS7 M3UA ASP-to-SG lab template.</summary>
     /// <returns>The OpenSS7/IPSS7 lab template.</returns>
-    public static SigtranInteropLabTemplate CreateOpenSs7M3uaAspToSgTemplate()
+    public static SigtranInteropLabTemplate CreateExternalPeerM3uaAspToSgTemplate()
     {
-        if (!SigtranInteropLabScenarios.TryGet("openss7-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario))
+        if (!SigtranInteropLabScenarios.TryGet("external-peer-m3ua-asp-to-sg", out SigtranInteropLabScenario? scenario))
         {
             throw new InvalidOperationException("OpenSS7 M3UA ASP-to-SG scenario is not registered.");
         }
 
         return new(
             scenario!,
-            CreateOpenSs7SignallingGateway(),
+            CreateExternalPeerSignallingGateway(),
             ["ASPUP", "ASPUP_ACK", "ASPAC", "ASPAC_ACK", "BEAT", "BEAT_ACK", "DATA", "ASPIA", "ASPIA_ACK", "ASPDN", "ASPDN_ACK"],
-            "artifacts/openss7/m3ua-asp-to-sg");
+            "artifacts/external-peer/m3ua-asp-to-sg");
     }
 }

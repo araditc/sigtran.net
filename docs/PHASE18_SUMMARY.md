@@ -19,7 +19,7 @@ Phase 18 adds the OpenSS7/IPSS7 interoperability execution foundation for SIGTRA
 
 The OpenSS7/IPSS7 execution foundation is complete.
 
-`SigtranOpenSs7InteropStatus.FoundationReady` is expected to be true. `Verified` remains false until complete passing OpenSS7/IPSS7 evidence is captured and promoted.
+`SigtranExternalPeerInteropStatus.FoundationReady` is expected to be true. `Verified` remains false until complete passing OpenSS7/IPSS7 evidence is captured and promoted.
 
 ## Production Claim Boundary
 

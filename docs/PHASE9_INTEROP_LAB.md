@@ -9,7 +9,7 @@ Phase 9 captures real interoperability evidence from native SCTP and peer-stack 
 | Id | Peer | Purpose |
 | --- | --- | --- |
 | `linux-native-sctp-loopback` | `linux-kernel-sctp` | Validate native SCTP loopback socket, connect, accept, send, receive, and health |
-| `openss7-m3ua-asp-to-sg` | `openss7-ipss7` | Validate M3UA ASP-to-SG lifecycle and DATA against OpenSS7/IPSS7 |
+| `external-peer-m3ua-asp-to-sg` | `external-sigtran-peer` | Validate M3UA ASP-to-SG lifecycle and DATA against OpenSS7/IPSS7 |
 | `map-sms-trace-comparison` | `operator-or-simulator-peer` | Validate MAP SMS traces against a real peer or approved simulator profile |
 
 Every scenario defines required artifacts such as PCAP captures, SDK traces, peer configuration, peer logs, and comparison reports.
@@ -19,10 +19,10 @@ Every scenario defines required artifacts such as PCAP captures, SDK traces, pee
 `SigtranInteropLabArtifactManifest` records the artifacts captured for one lab scenario.
 
 ```csharp
-SigtranInteropLabArtifactManifest manifest = new("openss7-m3ua-asp-to-sg");
+SigtranInteropLabArtifactManifest manifest = new("external-peer-m3ua-asp-to-sg");
 manifest.Add(new SigtranInteropLabArtifact(
     SigtranInteropLabArtifactKind.PacketCapture,
-    "artifacts/openss7/pcap/m3ua-asp.pcapng"));
+    "artifacts/external-peer/pcap/m3ua-asp.pcapng"));
 ```
 
 A manifest satisfies a scenario only when every required artifact name is present in the captured artifact paths.
@@ -35,7 +35,7 @@ A manifest satisfies a scenario only when every required artifact name is presen
 
 ## OpenSS7/IPSS7 Template
 
-`SigtranInteropPeerProfiles.CreateOpenSs7M3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for the OpenSS7/IPSS7 peer.
+`SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for the OpenSS7/IPSS7 peer.
 
 The template references `http://www.openss7.org/ipss7_man.html`, expects SCTP/M3UA transport, and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`.
 

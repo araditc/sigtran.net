@@ -3,7 +3,7 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Identifies OpenSS7/IPSS7 interoperability execution status.
 /// </summary>
-public enum SigtranOpenSs7InteropRunStatus
+public enum SigtranExternalPeerInteropRunStatus
 {
     /// <summary>The run is pending.</summary>
     Pending,
@@ -18,7 +18,7 @@ public enum SigtranOpenSs7InteropRunStatus
 /// <summary>
 /// Describes an OpenSS7/IPSS7 interoperability execution report.
 /// </summary>
-public sealed class SigtranOpenSs7InteropRunReport
+public sealed class SigtranExternalPeerInteropRunReport
 {
     /// <summary>Creates an OpenSS7/IPSS7 interoperability execution report.</summary>
     /// <param name="plan">The execution plan.</param>
@@ -26,10 +26,10 @@ public sealed class SigtranOpenSs7InteropRunReport
     /// <param name="status">The execution status.</param>
     /// <param name="startedAt">The start time.</param>
     /// <param name="completedAt">The optional completion time.</param>
-    public SigtranOpenSs7InteropRunReport(
-        SigtranOpenSs7InteropRunPlan plan,
-        SigtranOpenSs7InteropArtifactManifest manifest,
-        SigtranOpenSs7InteropRunStatus status,
+    public SigtranExternalPeerInteropRunReport(
+        SigtranExternalPeerInteropRunPlan plan,
+        SigtranExternalPeerInteropArtifactManifest manifest,
+        SigtranExternalPeerInteropRunStatus status,
         DateTimeOffset startedAt,
         DateTimeOffset? completedAt = null)
     {
@@ -46,13 +46,13 @@ public sealed class SigtranOpenSs7InteropRunReport
     }
 
     /// <summary>The execution plan.</summary>
-    public SigtranOpenSs7InteropRunPlan Plan { get; }
+    public SigtranExternalPeerInteropRunPlan Plan { get; }
 
     /// <summary>The artifact manifest.</summary>
-    public SigtranOpenSs7InteropArtifactManifest Manifest { get; }
+    public SigtranExternalPeerInteropArtifactManifest Manifest { get; }
 
     /// <summary>The execution status.</summary>
-    public SigtranOpenSs7InteropRunStatus Status { get; }
+    public SigtranExternalPeerInteropRunStatus Status { get; }
 
     /// <summary>The start time.</summary>
     public DateTimeOffset StartedAt { get; }
@@ -61,7 +61,7 @@ public sealed class SigtranOpenSs7InteropRunReport
     public DateTimeOffset? CompletedAt { get; }
 
     /// <summary>Whether the run can be used as OpenSS7/IPSS7 passing evidence.</summary>
-    public bool HasPassingEvidence => Status == SigtranOpenSs7InteropRunStatus.Passed
+    public bool HasPassingEvidence => Status == SigtranExternalPeerInteropRunStatus.Passed
         && Plan.IsExecutable
         && Manifest.IsComplete;
 }

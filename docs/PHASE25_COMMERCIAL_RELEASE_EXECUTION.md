@@ -38,7 +38,7 @@ This is valid Linux SCTP smoke evidence, but it is not yet full external peer in
 
 ## Unit 3 - OpenSS7/IPSS7 Blocker Evidence
 
-`SigtranOpenSs7InteropBlockerEvidence` records the retained OpenSS7/IPSS7 execution blocker as structured evidence.
+`SigtranExternalPeerInteropBlockerEvidence` records the retained OpenSS7/IPSS7 execution blocker as structured evidence.
 
 Current blocker:
 

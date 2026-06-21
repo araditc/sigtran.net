@@ -3,7 +3,7 @@ namespace sigtran.net.Core.Utilities;
 /// <summary>
 /// Identifies OpenSS7/IPSS7 interoperability artifact kinds.
 /// </summary>
-public enum SigtranOpenSs7InteropArtifactKind
+public enum SigtranExternalPeerInteropArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -24,13 +24,13 @@ public enum SigtranOpenSs7InteropArtifactKind
 /// <summary>
 /// Describes one OpenSS7/IPSS7 interoperability artifact.
 /// </summary>
-public sealed class SigtranOpenSs7InteropArtifact
+public sealed class SigtranExternalPeerInteropArtifact
 {
     /// <summary>Creates an OpenSS7/IPSS7 interoperability artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
     /// <param name="path">The artifact path.</param>
     /// <param name="sha256">The optional SHA-256 digest.</param>
-    public SigtranOpenSs7InteropArtifact(SigtranOpenSs7InteropArtifactKind kind, string path, string? sha256 = null)
+    public SigtranExternalPeerInteropArtifact(SigtranExternalPeerInteropArtifactKind kind, string path, string? sha256 = null)
     {
         Kind = kind;
         Path = string.IsNullOrWhiteSpace(path) ? throw new ArgumentException("Artifact path is required.", nameof(path)) : path;
@@ -38,7 +38,7 @@ public sealed class SigtranOpenSs7InteropArtifact
     }
 
     /// <summary>The artifact kind.</summary>
-    public SigtranOpenSs7InteropArtifactKind Kind { get; }
+    public SigtranExternalPeerInteropArtifactKind Kind { get; }
 
     /// <summary>The artifact path.</summary>
     public string Path { get; }
@@ -50,13 +50,13 @@ public sealed class SigtranOpenSs7InteropArtifact
 /// <summary>
 /// Stores OpenSS7/IPSS7 interoperability artifacts.
 /// </summary>
-public sealed class SigtranOpenSs7InteropArtifactManifest
+public sealed class SigtranExternalPeerInteropArtifactManifest
 {
-    private readonly List<SigtranOpenSs7InteropArtifact> _artifacts = [];
+    private readonly List<SigtranExternalPeerInteropArtifact> _artifacts = [];
 
     /// <summary>Adds an artifact to the manifest.</summary>
     /// <param name="artifact">The artifact.</param>
-    public void Add(SigtranOpenSs7InteropArtifact artifact)
+    public void Add(SigtranExternalPeerInteropArtifact artifact)
     {
         ArgumentNullException.ThrowIfNull(artifact);
         _artifacts.Add(artifact);
@@ -64,19 +64,19 @@ public sealed class SigtranOpenSs7InteropArtifactManifest
 
     /// <summary>Returns a deterministic artifact snapshot.</summary>
     /// <returns>The artifact snapshot.</returns>
-    public IReadOnlyList<SigtranOpenSs7InteropArtifact> Snapshot()
+    public IReadOnlyList<SigtranExternalPeerInteropArtifact> Snapshot()
     {
         return _artifacts.ToArray();
     }
 
     /// <summary>Returns whether all OpenSS7/IPSS7 required artifact kinds are present.</summary>
-    public bool IsComplete => Has(SigtranOpenSs7InteropArtifactKind.PacketCapture)
-        && Has(SigtranOpenSs7InteropArtifactKind.SdkTrace)
-        && Has(SigtranOpenSs7InteropArtifactKind.PeerConfiguration)
-        && Has(SigtranOpenSs7InteropArtifactKind.PeerLog)
-        && Has(SigtranOpenSs7InteropArtifactKind.ComparisonReport);
+    public bool IsComplete => Has(SigtranExternalPeerInteropArtifactKind.PacketCapture)
+        && Has(SigtranExternalPeerInteropArtifactKind.SdkTrace)
+        && Has(SigtranExternalPeerInteropArtifactKind.PeerConfiguration)
+        && Has(SigtranExternalPeerInteropArtifactKind.PeerLog)
+        && Has(SigtranExternalPeerInteropArtifactKind.ComparisonReport);
 
-    private bool Has(SigtranOpenSs7InteropArtifactKind kind)
+    private bool Has(SigtranExternalPeerInteropArtifactKind kind)
     {
         return _artifacts.Any(artifact => artifact.Kind == kind);
     }
