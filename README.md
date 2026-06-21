@@ -73,9 +73,9 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 ## Build And Test
 
 ```powershell
-dotnet build src\sigtran.net.sln
-dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
-dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
+dotnet build src\Sigtran.NET.sln
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
 Public API XML comments are required. The library treats missing public documentation (`CS1591`) as an error so that generated NuGet packages remain usable by downstream developers.
@@ -83,7 +83,7 @@ Public API XML comments are required. The library treats missing public document
 ## M3UA Example
 
 ```csharp
-using sigtran.net.Layers.M3UA;
+using Sigtran.NET.Layers.M3UA;
 
 Span<byte> buffer = stackalloc byte[256];
 M3uaAffectedPointCode[] affected =
@@ -184,6 +184,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 25 Commercial Release Execution](docs/PHASE25_COMMERCIAL_RELEASE_EXECUTION.md)
 - [Phase 26 Commercial Roadmap Realignment](docs/PHASE26_COMMERCIAL_ROADMAP_REALIGNMENT.md)
 - [Phase 26 Summary](docs/PHASE26_SUMMARY.md)
+- [Phase 27 Sigtran.NET Branding](docs/PHASE27_SIGTRAN_NET_BRANDING.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)

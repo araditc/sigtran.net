@@ -85,7 +85,7 @@ powershell -ExecutionPolicy Bypass -File eng\generate-sbom.ps1
 
 Current generated SBOM evidence:
 
-- Output: `artifacts/sbom/sigtran.net.spdx.json`.
+- Output: `artifacts/sbom/Sigtran.NET.spdx.json`.
 - Format: SPDX 2.3 JSON.
 - Package files covered: 2 (`.nupkg` and `.snupkg`).
 - SBOM SHA-256 after the validated package build: `946700ebca962b2174a75750909e0d2dffe317fd084aa835023e9913e0559100`.
@@ -99,13 +99,13 @@ The generated SBOM is retained under `artifacts/`, which is intentionally ignore
 Validation commands:
 
 ```bash
-bash /mnt/d/MyDocuments/SourceCode/sigtran.net/eng/sign-package.sh
-dotnet nuget verify artifacts/signing/Sigtran.Net.1.0.0.nupkg --all
+bash /mnt/d/MyDocuments/SourceCode/Sigtran.NET/eng/sign-package.sh
+dotnet nuget verify artifacts/signing/Sigtran.NET.1.0.0.nupkg --all
 ```
 
 Current signing evidence:
 
-- Signed package: `artifacts/signing/Sigtran.Net.1.0.0.nupkg`.
+- Signed package: `artifacts/signing/Sigtran.NET.1.0.0.nupkg`.
 - Signed package SHA-256: `c0dfd2f262cc26f7951bf29c12c879bd873a8c64754e70a2130114d2ab3ce730`.
 - Sign log: `artifacts/signing/sign-package.log`.
 - Verify log: `artifacts/signing/verify-package.log`.
@@ -124,7 +124,7 @@ powershell -ExecutionPolicy Bypass -File eng\generate-provenance.ps1
 
 Provenance evidence fields:
 
-- Output: `artifacts/provenance/sigtran.net.provenance.json`.
+- Output: `artifacts/provenance/Sigtran.NET.provenance.json`.
 - Provenance SHA-256.
 - Source commit.
 - Signed package SHA-256.
@@ -144,7 +144,7 @@ powershell -ExecutionPolicy Bypass -File eng\run-benchmark.ps1
 
 Benchmark evidence fields:
 
-- Output: `artifacts/benchmarks/sigtran.net-smoke-benchmark.json`.
+- Output: `artifacts/benchmarks/Sigtran.NET-smoke-benchmark.json`.
 - Report SHA-256.
 - Duration in milliseconds.
 - Passed workload checks.
@@ -163,7 +163,7 @@ powershell -ExecutionPolicy Bypass -File eng\generate-public-api-baseline.ps1
 
 Baseline evidence fields:
 
-- Output: `artifacts/api/sigtran.net-public-api.txt`.
+- Output: `artifacts/api/Sigtran.NET-public-api.txt`.
 - Baseline SHA-256.
 - Documented public member count.
 

@@ -236,6 +236,15 @@ Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence i
 
 Status: Phase 26 is foundation-complete for package-neutral commercial roadmap realignment. `SigtranCommercialRoadmapRealignmentStatus` now gates source naming, public labels, external peer readiness, maintained peer selection, and commercial release gate alignment. Commercial release remains blocked until a maintained external SIGTRAN peer run produces passing PCAP, peer logs, SDK traces, configuration, comparison evidence, and digest-covered release artifacts.
 
+## Phase 27 - Maintained External Peer Lab
+
+- Canonicalize the SDK name as `Sigtran.NET` across source namespaces, project paths, package id, scripts, CI workflows, docs, and release evidence names.
+- Bind a maintained external SIGTRAN peer package through package-neutral configuration and environment variables.
+- Define host prerequisites, peer config, artifact naming, command scripts, traffic vectors, evidence promotion, readiness, and commercial gate alignment.
+- Keep selected package details outside public SDK type names.
+
+Status: Phase 27 has started with canonical `Sigtran.NET` naming across the project. Commercial release remains blocked until the maintained peer lab produces passing digest-covered evidence.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

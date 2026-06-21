@@ -7,9 +7,9 @@ This project is intended to become a commercial-grade open-source SDK. Every cha
 Run these before committing:
 
 ```powershell
-dotnet build src\sigtran.net.sln
-dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
-dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
+dotnet build src\Sigtran.NET.sln
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
 Alpha package publishing should also follow [Alpha release checklist](ALPHA_RELEASE.md).

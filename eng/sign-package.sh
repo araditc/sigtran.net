@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PACKAGE_PATH="${PACKAGE_PATH:-$REPO_ROOT/src/sigtran.net/bin/Release/Sigtran.Net.1.0.0.nupkg}"
+PACKAGE_PATH="${PACKAGE_PATH:-$REPO_ROOT/src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0.nupkg}"
 OUTPUT_DIR="${OUTPUT_DIR:-$REPO_ROOT/artifacts/signing}"
 SECRETS_FILE="${SECRETS_FILE:-$HOME/sigtran-lab/secrets/phase25-secrets.local}"
 SIGN_LOG="$OUTPUT_DIR/sign-package.log"

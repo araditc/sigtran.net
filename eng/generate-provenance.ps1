@@ -1,7 +1,7 @@
 param(
-    [string]$PackagePath = "artifacts/signing/Sigtran.Net.1.0.0.nupkg",
-    [string]$SbomPath = "artifacts/sbom/sigtran.net.spdx.json",
-    [string]$OutputPath = "artifacts/provenance/sigtran.net.provenance.json"
+    [string]$PackagePath = "artifacts/signing/Sigtran.NET.1.0.0.nupkg",
+    [string]$SbomPath = "artifacts/sbom/Sigtran.NET.spdx.json",
+    [string]$OutputPath = "artifacts/provenance/Sigtran.NET.provenance.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,12 +21,12 @@ $sbomHash = (Get-FileHash -Path $sbomFullPath -Algorithm SHA256).Hash.ToLowerInv
 
 $provenance = [ordered]@{
     subject = [ordered]@{
-        name = "Sigtran.Net.1.0.0.nupkg"
+        name = "Sigtran.NET.1.0.0.nupkg"
         sha256 = $packageHash
     }
-    buildType = "https://github.com/araditc/sigtran.net/actions/workflows/release.yml"
+    buildType = "https://github.com/araditc/Sigtran.NET/actions/workflows/release.yml"
     builder = [ordered]@{
-        id = "sigtran.net-commercial-release"
+        id = "Sigtran.NET-commercial-release"
     }
     invocation = [ordered]@{
         configSource = [ordered]@{

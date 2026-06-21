@@ -4,7 +4,7 @@ SIGTRAN.NET uses private disclosure for security issues.
 
 ## Reporting
 
-Report suspected vulnerabilities to `security@sigtran.net`.
+Report suspected vulnerabilities to `security@Sigtran.NET`.
 
 Do not publish exploit details publicly before the issue has been triaged and a coordinated fix path is available.
 

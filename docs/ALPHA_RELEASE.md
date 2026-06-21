@@ -7,9 +7,9 @@ SIGTRAN.NET alpha releases are M3UA-focused. SCCP, TCAP, and MAP remain experime
 Run the same checks used during development before publishing a package:
 
 ```powershell
-dotnet build src\sigtran.net.sln
-dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
-dotnet pack src\sigtran.net\sigtran.net.csproj -c Release
+dotnet build src\Sigtran.NET.sln
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
 `M3uaAlphaReadiness.RequiredVerificationCommandCount` is `3` and mirrors this checklist. `M3uaAlphaReadiness.ReleaseLabel` is `M3UA alpha`.

@@ -1,7 +1,7 @@
 param(
-    [string]$ProjectPath = "src/sigtran.net/sigtran.net.csproj",
-    [string]$PackageDirectory = "src/sigtran.net/bin/Release",
-    [string]$OutputPath = "artifacts/sbom/sigtran.net.spdx.json",
+    [string]$ProjectPath = "src/Sigtran.NET/Sigtran.NET.csproj",
+    [string]$PackageDirectory = "src/Sigtran.NET/bin/Release",
+    [string]$OutputPath = "artifacts/sbom/Sigtran.NET.spdx.json",
     [string]$CreatedUtc = "2026-06-20T00:00:00Z"
 )
 
@@ -50,7 +50,7 @@ if ($packageFiles.Count -eq 0) {
     throw "No NuGet package files found in $packageFullDirectory. Run dotnet pack first."
 }
 
-$documentNamespace = "https://github.com/araditc/sigtran.net/sbom/$packageId/$version"
+$documentNamespace = "https://github.com/araditc/Sigtran.NET/sbom/$packageId/$version"
 
 $fileEntries = @()
 foreach ($packageFile in $packageFiles) {
@@ -78,7 +78,7 @@ $sbom = [ordered]@{
     creationInfo = [ordered]@{
         created = $CreatedUtc
         creators = @(
-            "Tool: sigtran.net eng/generate-sbom.ps1",
+            "Tool: Sigtran.NET eng/generate-sbom.ps1",
             "Organization: SIGTRAN.NET contributors"
         )
     }

@@ -6,9 +6,9 @@ Phase 6 adds the first official CI profile for the SDK.
 
 `SigtranCiVerification.CreateDefaultProfile()` exposes the same command sequence used by local development and GitHub Actions:
 
-1. `dotnet build src/sigtran.net.sln --configuration Release`
-2. `dotnet run --project src/sigtran.net.Tests/sigtran.net.Tests.csproj --configuration Release`
-3. `dotnet pack src/sigtran.net/sigtran.net.csproj --configuration Release --no-build`
+1. `dotnet build src/Sigtran.NET.sln --configuration Release`
+2. `dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release`
+3. `dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build`
 
 The profile targets `.NET 10` through the `10.0.x` SDK band.
 

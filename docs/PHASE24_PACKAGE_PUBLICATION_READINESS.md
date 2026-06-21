@@ -30,8 +30,8 @@ The contract validates the project file text so packaging metadata remains testa
 
 `SigtranPackageLayout` defines the expected Release pack outputs:
 
-- `Sigtran.Net.1.0.0.nupkg`
-- `Sigtran.Net.1.0.0.snupkg`
+- `Sigtran.NET.1.0.0.nupkg`
+- `Sigtran.NET.1.0.0.snupkg`
 
 The layout contract gives release gates a deterministic way to find package artifacts before integrity, signing, provenance, and publish checks run.
 

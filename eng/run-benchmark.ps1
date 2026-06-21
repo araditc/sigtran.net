@@ -1,5 +1,5 @@
 param(
-    [string]$OutputPath = "artifacts/benchmarks/sigtran.net-smoke-benchmark.json"
+    [string]$OutputPath = "artifacts/benchmarks/Sigtran.NET-smoke-benchmark.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,18 +10,18 @@ $outputDirectory = Split-Path $outputFullPath -Parent
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-$testOutput = dotnet run --project (Join-Path $root "src/sigtran.net.Tests/sigtran.net.Tests.csproj") -c Release
+$testOutput = dotnet run --project (Join-Path $root "src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj") -c Release
 $exitCode = $LASTEXITCODE
 $stopwatch.Stop()
 
 if ($exitCode -ne 0) {
-    $testOutput | Set-Content -Path (Join-Path $outputDirectory "sigtran.net-smoke-benchmark.failed.log") -Encoding UTF8
+    $testOutput | Set-Content -Path (Join-Path $outputDirectory "Sigtran.NET-smoke-benchmark.failed.log") -Encoding UTF8
     throw "Benchmark workload failed with exit code $exitCode."
 }
 
 $passedChecks = ($testOutput | Where-Object { $_ -like "PASS *" }).Count
 $report = [ordered]@{
-    name = "sigtran.net smoke benchmark"
+    name = "Sigtran.NET smoke benchmark"
     workload = "Release test workload"
     durationMilliseconds = $stopwatch.ElapsedMilliseconds
     passedChecks = $passedChecks

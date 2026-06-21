@@ -80,7 +80,7 @@ Native SCTP lab tests are opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.
 
 ```powershell
 $env:SIGTRAN_NATIVE_SCTP_LAB = "1"
-dotnet run --project src\sigtran.net.Tests\sigtran.net.Tests.csproj
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 ```
 
 `NativeSctpLab.CreateFromEnvironment()` exposes the current lab profile. The default loopback endpoint is `127.0.0.1:2905`.

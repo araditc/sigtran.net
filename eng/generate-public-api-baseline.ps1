@@ -1,6 +1,6 @@
 param(
-    [string]$DocumentationPath = "src/sigtran.net/bin/Release/net10.0/sigtran.net.xml",
-    [string]$OutputPath = "artifacts/api/sigtran.net-public-api.txt"
+    [string]$DocumentationPath = "src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.xml",
+    [string]$OutputPath = "artifacts/api/Sigtran.NET-public-api.txt"
 )
 
 $ErrorActionPreference = "Stop"
