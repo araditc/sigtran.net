@@ -184,6 +184,7 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 25 Commercial Release Execution](docs/PHASE25_COMMERCIAL_RELEASE_EXECUTION.md)
 - [Phase 26 Commercial Roadmap Realignment](docs/PHASE26_COMMERCIAL_ROADMAP_REALIGNMENT.md)
 - [Phase 26 Summary](docs/PHASE26_SUMMARY.md)
+- [Phase 27 Maintained External Peer Lab](docs/PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md)
 - [Phase 27 Sigtran.NET Branding](docs/PHASE27_SIGTRAN_NET_BRANDING.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)

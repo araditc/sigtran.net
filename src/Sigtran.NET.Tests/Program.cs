@@ -36,6 +36,7 @@ Run("SIGTRAN interoperability lab run report identifies passing evidence", Sigtr
 Run("SIGTRAN external peer profile exposes M3UA ASP-to-SG template", SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate);
 Run("SIGTRAN external peer profile marks maintained commercial candidates", SigtranExternalPeerProfileMarksMaintainedCommercialCandidates);
 Run("SIGTRAN maintained peer selection policy requires package-neutral evidence criteria", SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
+Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral defaults", SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -674,6 +675,32 @@ static void SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCr
     Assert(!missing.Selected, missing.Describe());
     Assert(missing.MissingCriteria.Contains("retained-artifacts"), "selection policy should require retained artifacts");
     Assert(missing.Describe().Contains("missing=3", StringComparison.Ordinal), missing.Describe());
+}
+
+static void SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults()
+{
+    SigtranMaintainedPeerLabBinding binding = SigtranMaintainedPeerLabBindings.CreateDefault();
+    IReadOnlyList<SigtranMaintainedPeerLabBinding> catalog = SigtranMaintainedPeerLabBindings.CreateCatalog();
+    SigtranMaintainedPeerSelectionReport report = binding.EvaluateSelection(SigtranMaintainedPeerSelectionPolicy.CreateDefault());
+
+    AssertEqual("maintained-external-peer-lab", binding.Id, "maintained peer lab binding id");
+    AssertEqual("external-sigtran-sg", binding.PeerProfile.Id, "maintained peer lab binding profile");
+    AssertEqual("external-peer-package", binding.PackageId, "maintained peer lab binding package");
+    AssertEqual("configured-by-lab", binding.PackageVersion, "maintained peer lab binding package version");
+    AssertEqual("artifacts/external-peer/maintained", binding.ArtifactRoot, "maintained peer lab binding artifact root");
+    AssertEqual(1, catalog.Count, "maintained peer lab binding catalog count");
+
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PeerIdEnvironmentVariable), "binding should expose peer id environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PackageEnvironmentVariable), "binding should expose package environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PackageVersionEnvironmentVariable), "binding should expose package version environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.ArtifactRootEnvironmentVariable), "binding should expose artifact root environment variable");
+    Assert(binding.SatisfiedCriterionIds.Contains("license-isolated"), "binding should satisfy license isolation");
+    Assert(report.Selected, report.Describe());
+
+    string description = binding.Describe();
+    Assert(!description.Contains("OpenSS7", StringComparison.OrdinalIgnoreCase), description);
+    Assert(!description.Contains("Osmocom", StringComparison.OrdinalIgnoreCase), description);
+    Assert(description.Contains("packageConfigured=True", StringComparison.Ordinal), description);
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

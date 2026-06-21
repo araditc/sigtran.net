@@ -27,3 +27,7 @@ dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
 The rename must also pass a repository sweep that rejects previous non-canonical SDK spellings in tracked source, docs, scripts, and workflows.
+
+## Next Units
+
+The maintained external peer lab continues in [Phase 27 Maintained External Peer Lab](PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md).

@@ -243,7 +243,7 @@ Status: Phase 26 is foundation-complete for package-neutral commercial roadmap r
 - Define host prerequisites, peer config, artifact naming, command scripts, traffic vectors, evidence promotion, readiness, and commercial gate alignment.
 - Keep selected package details outside public SDK type names.
 
-Status: Phase 27 has started with canonical `Sigtran.NET` naming across the project. Commercial release remains blocked until the maintained peer lab produces passing digest-covered evidence.
+Status: Phase 27 has canonical `Sigtran.NET` naming and a package-neutral maintained peer lab binding catalog. Commercial release remains blocked until the maintained peer lab produces passing digest-covered evidence.
 
 ## Recommended First Deliverable
 
