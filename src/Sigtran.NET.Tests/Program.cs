@@ -49,6 +49,7 @@ Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", 
 Run("SIGTRAN maintained peer lab environment file renders manifest values", SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues);
 Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff);
 Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMaintainedPeerLabCommandScriptRendersCommandPlan);
+Run("SIGTRAN maintained peer lab comparison report renders trace outcome", SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
@@ -978,6 +979,22 @@ static void SigtranMaintainedPeerLabCommandScriptRendersCommandPlan()
     Assert(rendered.Contains("tcpdump -i lo", StringComparison.Ordinal), rendered);
     Assert(rendered.Contains("sigtran-trace-compare", StringComparison.Ordinal), rendered);
     Assert(script.CoversCommandPlan, script.Describe());
+}
+
+static void SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome()
+{
+    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit5");
+    IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
+
+    SigtranMaintainedPeerLabComparisonReport passed = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, expected);
+    Assert(passed.Passed, passed.Describe());
+    Assert(passed.ComparisonArtifactPath.EndsWith("/comparison/phase28-unit5-comparison.md", StringComparison.Ordinal), passed.ComparisonArtifactPath);
+    Assert(passed.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), passed.RenderMarkdown());
+
+    SigtranMaintainedPeerLabComparisonReport failed = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, ["ASPUP", "DATA"]);
+    Assert(!failed.Passed, failed.Describe());
+    Assert(failed.TraceComparison.Mismatches.Count > 0, failed.Describe());
+    Assert(failed.RenderMarkdown().Contains("## Mismatches", StringComparison.Ordinal), failed.RenderMarkdown());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()

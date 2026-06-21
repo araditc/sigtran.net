@@ -48,6 +48,18 @@ The manifest does not generate digests itself. Real lab automation must calculat
 
 The renderer gives operators a deterministic script body while still allowing local lab automation to map package-neutral runner commands to site-specific scripts.
 
+## Unit 5 - Comparison Report
+
+`SigtranMaintainedPeerLabComparisonReports` now compares observed lab messages against the expected traffic vectors and renders a retained Markdown report. The report records:
+
+- Run id.
+- Comparison artifact path.
+- Expected and actual message counts.
+- Pass/fail state.
+- Ordered mismatch details.
+
+This report is designed to become the retained comparison artifact referenced by the evidence promotion gate.
+
 ## Validation
 
 Each unit in this phase is validated with:
