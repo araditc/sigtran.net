@@ -85,6 +85,17 @@ The collection can convert retained artifacts into evidence artifacts, but it in
 
 The SDK still does not invent digests. A real runner must calculate them from retained files and pass the values into this contract.
 
+## Unit 8 - Comparison Handoff
+
+`SigtranMaintainedPeerLabRunnerComparisonHandoff` now bridges runner output into the maintained peer lab evidence bundle. It combines:
+
+- Runner input bundle.
+- Digest report.
+- Comparison report.
+- Run report.
+
+The handoff is ready only when run ids are consistent, digest coverage is complete, comparison passed, and the run report passed. It can then create the evidence bundle used by commercial readiness gates.
+
 ## Validation
 
 Each unit in this phase is validated with:
