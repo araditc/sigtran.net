@@ -282,6 +282,7 @@ Run("SIGTRAN commercial evidence execution run binds artifacts to target", Sigtr
 Run("SIGTRAN commercial evidence execution stage catalog covers required work", SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork);
 Run("SIGTRAN commercial evidence execution command plan covers stage work", SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork);
 Run("SIGTRAN commercial evidence execution environment contract protects run inputs", SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs);
+Run("SIGTRAN commercial evidence execution artifact manifest covers retained outputs", SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4637,6 +4638,40 @@ static void SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInpu
     Assert(mismatched.MismatchedVariables.Contains("SIGTRAN_RUN_ID"), "run id mismatch should be reported");
     Assert(!leakingSecret.IsReady, leakingSecret.Describe());
     Assert(!leakingSecret.ProtectsSecrets, "secret expected values should be rejected");
+}
+
+static void SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionArtifactManifest manifest = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranCommercialEvidenceExecutionArtifactManifest missingSbom = new(
+        catalog,
+        manifest.Artifacts
+            .Where(static artifact => artifact.Kind != SigtranCommercialEvidenceChecklistKind.Sbom)
+            .ToArray());
+    SigtranCommercialEvidenceExecutionArtifactManifest floatingArtifact = new(
+        catalog,
+        manifest.Artifacts
+            .Select(artifact => artifact.Kind == SigtranCommercialEvidenceChecklistKind.PacketCapture
+                ? new SigtranCommercialEvidenceExecutionArtifact(artifact.StageId, artifact.Kind, "artifacts/latest/packet-capture.pcapng", artifact.Required)
+                : artifact)
+            .ToArray());
+
+    Assert(manifest.IsReady, manifest.Describe());
+    Assert(manifest.CoversChecklistKinds, "artifact manifest should cover all checklist artifact kinds");
+    Assert(manifest.UsesKnownStages, "artifact manifest should use known stage identifiers");
+    Assert(manifest.UsesStageArtifactRoots, "artifact manifest should use stage-scoped roots");
+    Assert(manifest.HasUniquePaths, "artifact manifest should use unique paths");
+    Assert(!missingSbom.IsReady, missingSbom.Describe());
+    Assert(!missingSbom.CoversChecklistKinds, "missing SBOM should block artifact manifest readiness");
+    Assert(!floatingArtifact.IsReady, floatingArtifact.Describe());
+    Assert(!floatingArtifact.UsesStageArtifactRoots, "floating artifact paths should be rejected");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

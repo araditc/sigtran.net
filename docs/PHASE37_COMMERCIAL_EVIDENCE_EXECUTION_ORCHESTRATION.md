@@ -52,6 +52,20 @@ The command plan is a runbook contract. It defines what should be run and how ar
 
 The contract validates run identity values, reports missing or mismatched variables, and prevents fixed secret values from being stored in the contract.
 
+## Unit 5 - Artifact Collection Manifest
+
+`SigtranCommercialEvidenceExecutionArtifacts` defines the retained outputs expected from the run:
+
+- Packet capture.
+- Peer logs, SDK traces, and configuration.
+- Comparison report.
+- SBOM, signing verification, provenance attestation, and public API diff.
+- Benchmark report.
+- Release workflow run record.
+- Publication notes and commercial readiness report.
+
+The manifest validates checklist coverage, known stage ownership, unique paths, and stage-scoped artifact roots.
+
 ## Validation
 
 Each unit in this phase is validated with:
