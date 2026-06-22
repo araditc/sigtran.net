@@ -296,6 +296,7 @@ Run("SIGTRAN commercial evidence dossier intake report renders retained summary"
 Run("SIGTRAN commercial evidence promotion handoff includes digests and report", SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport);
 Run("SIGTRAN commercial evidence dossier intake bridge builds handoff from execution run", SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun);
 Run("SIGTRAN commercial evidence artifact intake status summarizes foundation readiness", SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness);
+Run("SIGTRAN commercial evidence retained file verifies observed digest", SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4973,6 +4974,36 @@ static void SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationRea
     Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.CommercialPublicationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
     Assert(blockers.Contains("real-artifact-file-evidence-required"), "artifact intake status should require real file evidence");
     Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
+}
+
+static void SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest()
+{
+    SigtranCommercialEvidencePromotionHandoff handoff = CreateDefaultCommercialEvidencePromotionHandoff();
+    SigtranCommercialEvidencePromotionHandoffItem item = handoff.Items[0];
+    SigtranCommercialEvidenceRetainedFile file = SigtranCommercialEvidenceRetainedFiles.CreateVerified(item, sizeBytes: 4096, DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceRetainedFile mismatch = new(
+        item.Kind,
+        item.RetainedPath,
+        item.Sha256,
+        new string('c', 64),
+        sizeBytes: 4096,
+        DateTimeOffset.UtcNow,
+        exists: true);
+
+    Assert(file.IsVerified, file.Describe());
+    Assert(file.HasContent, "retained file should have content");
+    Assert(file.HasValidDigestValues, "retained file should use SHA-256 values");
+    Assert(file.DigestMatches, "retained file digest should match expected digest");
+    Assert(!mismatch.IsVerified, "digest mismatch should block retained file verification");
+}
+
+static SigtranCommercialEvidencePromotionHandoff CreateDefaultCommercialEvidencePromotionHandoff()
+{
+    return SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+        CreateDefaultCommercialEvidenceDossierIntakeReport(),
+        new string('b', 64),
+        "release-review",
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()

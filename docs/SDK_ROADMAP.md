@@ -341,6 +341,14 @@ Status: Phase 37 is foundation-complete. Evidence execution run identity binds a
 
 Status: Phase 38 is foundation-complete. Artifact intake target identity binds a stable intake id, reviewer identity, UTC receipt time, and run-scoped dossier root to a governed commercial evidence execution run. Artifact source registration maps every required expected execution artifact to a concrete source path and unique retained dossier path while rejecting floating `artifacts/latest` aliases. Digest coverage records SHA-256 values for every retained source and blocks invalid digest values. Redaction review requires approved reviewer records for trace-bearing retained artifacts. Completeness evaluation reports explicit source, digest, and redaction blockers. Dossier reporting renders a retained Markdown summary with run, intake, reviewer, counts, completion state, and blockers. Promotion handoff includes all digest-covered retained artifacts and the dossier intake report. Execution-to-dossier bridge assembles the intake pipeline from a governed execution run. Status reporting exposes completed capabilities, foundation readiness, real artifact evidence readiness, publication readiness, and current blockers. Final validation is complete. Commercial publication remains blocked until real artifact files are retained, digest-calculated, redaction-reviewed, and approved.
 
+## Phase 39 - Commercial Evidence File Verification
+
+- Verify retained commercial evidence files against promotion handoff digests.
+- Track file existence, size, observation time, digest match, retention, integrity sealing, publication attachment, promotion gate, and operator command contracts.
+- Keep file verification separate from real lab execution: verification contracts can evaluate retained files, but publication remains blocked until real files are present and approved.
+
+Status: Phase 39 is in progress. Retained file evidence item verification now checks existence, non-empty size, SHA-256 validity, digest match, and UTC observation time. File manifest coverage, verification reporting, retention ledger, integrity seal, publication attachments, promotion gate, command plan, status reporting, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
