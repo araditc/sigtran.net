@@ -68,6 +68,16 @@ The checklist validates unique item identifiers, mandatory coverage for every re
 
 The preflight report returns stable blocker identifiers for unlocked targets, missing secrets, incomplete retention maps, target mismatches between the release lock and retention map, and incomplete checklists. A passing preflight means the execution inputs are ready; it does not mean lab evidence or publication evidence already passed.
 
+## Unit 6 - Protected Release Environment Profile
+
+`SigtranProtectedReleaseEnvironments` defines the protected release environments expected by the release workflow:
+
+- `release-dry-run` cannot publish packages.
+- `release-prerelease` can publish RC packages only from protected refs with reviewer approval.
+- `release-stable` can publish stable packages only from protected refs with stronger reviewer approval.
+
+The profile validates channel coverage, dry-run non-publication, stable publication protection, and per-channel approval strength. This keeps publish rights separated from ordinary build/test/pack execution.
+
 ## Validation
 
 Each unit in this phase is validated with:

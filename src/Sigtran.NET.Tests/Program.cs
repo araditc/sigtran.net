@@ -274,6 +274,7 @@ Run("SIGTRAN commercial release secrets gate publish and signing readiness", Sig
 Run("SIGTRAN commercial evidence retention map binds artifacts to release target", SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget);
 Run("SIGTRAN commercial evidence checklist requires essential artifacts", SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts);
 Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCommercialReleasePreflightAggregatesLockdownInputs);
+Run("SIGTRAN protected release environment profile gates publication channels", SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4391,6 +4392,32 @@ static void SigtranCommercialReleasePreflightAggregatesLockdownInputs()
     Assert(!blocked.IsReady, blocked.Describe());
     Assert(blocked.Blockers.Contains("release-secrets-missing"), "preflight should block missing secrets");
     Assert(blocked.Blockers.Contains("retention-map-target-mismatch"), "preflight should block target mismatch");
+}
+
+static void SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels()
+{
+    SigtranProtectedReleaseEnvironmentProfile profile = SigtranProtectedReleaseEnvironments.CreateDefault();
+    SigtranProtectedReleaseEnvironmentProfile weakStable = new(
+    [
+        new("release-dry-run", SigtranProtectedReleaseChannel.DryRun, requiredReviewerCount: 0, requiresProtectedRef: false, allowsPublication: false),
+        new("release-prerelease", SigtranProtectedReleaseChannel.Prerelease, requiredReviewerCount: 1, requiresProtectedRef: true, allowsPublication: true),
+        new("release-stable", SigtranProtectedReleaseChannel.Stable, requiredReviewerCount: 1, requiresProtectedRef: true, allowsPublication: true)
+    ]);
+    SigtranProtectedReleaseEnvironmentProfile publishingDryRun = new(
+    [
+        new("release-dry-run", SigtranProtectedReleaseChannel.DryRun, requiredReviewerCount: 0, requiresProtectedRef: false, allowsPublication: true),
+        new("release-prerelease", SigtranProtectedReleaseChannel.Prerelease, requiredReviewerCount: 1, requiresProtectedRef: true, allowsPublication: true),
+        new("release-stable", SigtranProtectedReleaseChannel.Stable, requiredReviewerCount: 2, requiresProtectedRef: true, allowsPublication: true)
+    ]);
+
+    Assert(profile.IsReady, profile.Describe());
+    Assert(profile.CoversReleaseChannels, "protected environment profile should cover every channel");
+    Assert(profile.ProtectsStablePublication, "stable publication should require protected ref and two reviewers");
+    Assert(profile.KeepsDryRunNonPublishing, "dry-run environment should not publish");
+    Assert(!weakStable.IsReady, weakStable.Describe());
+    Assert(!weakStable.ProtectsStablePublication, "weak stable environment should be blocked");
+    Assert(!publishingDryRun.IsReady, publishingDryRun.Describe());
+    Assert(!publishingDryRun.KeepsDryRunNonPublishing, "dry-run publication should be blocked");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

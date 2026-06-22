@@ -9,7 +9,8 @@ Phase 36 prepares the SDK for evidence-producing execution by locking the commer
 - Evidence retention map that binds commercial artifact areas to the release target root with one-year retention and digest coverage.
 - Commercial evidence checklist that requires packet capture, logs, traces, configuration, comparison, SBOM, signing, provenance, benchmark, API, workflow, publication, and readiness-report artifacts.
 - Release preflight report that aggregates target lock, secrets, retention, and checklist readiness before lab or publication execution starts.
+- Protected release environment profile for dry-run, prerelease, and stable channels with publication separation and approval rules.
 
 ## Readiness Position
 
-The phase is in progress. Evidence readiness lockdown still requires protected environment, dossier handoff, go/no-go gating, status reporting, and final validation.
+The phase is in progress. Evidence readiness lockdown still requires dossier handoff, go/no-go gating, status reporting, and final validation.
