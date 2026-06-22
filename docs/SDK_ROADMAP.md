@@ -333,6 +333,14 @@ Status: Phase 36 is foundation-complete. The release target lock binds an RC ver
 
 Status: Phase 37 is foundation-complete. Evidence execution run identity binds a locked release target to a stable run id, operator identity, UTC start time, and run-scoped artifact root. The stage catalog covers readiness preflight, native SCTP lab, external peer interoperability, protocol validation, performance benchmark, supply-chain evidence, release workflow dry-run, and dossier assembly with run-scoped artifact roots. The operator command plan maps every stage to an ordered run-id-aware command and requires protected approval for supply-chain, workflow, and dossier assembly execution. The environment contract binds run identity, lab inputs, and protected secrets while preventing fixed secret values from being stored. Artifact collection maps all checklist artifacts to known stage roots and retained output paths. Digest and redaction verification requires digest coverage for every artifact and redaction review for trace-bearing evidence. Blocker classification categorizes readiness, environment, command, native SCTP, external peer, artifact, digest, redaction, and approval failures with retryability guidance. Retry/resume applies bounded retries and manual-correction gates for non-retryable failures. Status reporting exposes completed capabilities, orchestration readiness, retained evidence readiness, publication readiness, and current blockers. Final validation is complete. Commercial publication remains blocked until real retained execution artifacts are produced, verified, redacted where needed, and approved.
 
+## Phase 38 - Commercial Evidence Artifact Intake
+
+- Receive real execution artifacts into a run-scoped commercial dossier.
+- Register artifact sources, digests, redaction reviews, completeness results, dossier reports, promotion handoff, and execution-to-dossier bridging.
+- Keep intake foundation separate from commercial publication: intake can prove that artifacts are ready for review, but publication remains blocked until all retained evidence is complete and approved.
+
+Status: Phase 38 is in progress. Artifact intake target identity now binds a stable intake id, reviewer identity, UTC receipt time, and run-scoped dossier root to a governed commercial evidence execution run. Source registration, digest generation, redaction review, completeness evaluation, dossier reporting, promotion handoff, execution bridge, status reporting, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

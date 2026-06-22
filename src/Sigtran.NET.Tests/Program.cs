@@ -287,6 +287,7 @@ Run("SIGTRAN commercial evidence execution verification requires digests and red
 Run("SIGTRAN commercial evidence execution blocker classifier categorizes failures", SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures);
 Run("SIGTRAN commercial evidence execution retry policy gates resume decisions", SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions);
 Run("SIGTRAN commercial evidence execution status summarizes orchestration readiness", SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness);
+Run("SIGTRAN commercial evidence artifact intake target binds to execution run", SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4779,6 +4780,33 @@ static void SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadi
     Assert(!SigtranCommercialEvidenceExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
     Assert(blockers.Contains("real-execution-artifacts-required"), "execution status should require real retained artifacts");
     Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
+}
+
+static void SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        new DateTimeOffset(2026, 06, 22, 12, 00, 00, TimeSpan.FromHours(3.5)));
+    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+        run,
+        "intake-20260622-001",
+        "release-review",
+        new DateTimeOffset(2026, 06, 22, 13, 00, 00, TimeSpan.FromHours(3.5)));
+    SigtranCommercialEvidenceArtifactIntakeTarget floatingTarget = new(
+        "intake-20260622-002",
+        run,
+        "release-review",
+        DateTimeOffset.UtcNow,
+        "artifacts/latest/dossier");
+
+    Assert(target.IsReady, target.Describe());
+    Assert(target.HasStableIntakeId, "intake target should use a stable id");
+    Assert(target.HasUtcReceivedTime, "intake target should normalize receive time to UTC");
+    Assert(target.HasRunScopedDossierRoot, "intake target should use a run-scoped dossier root");
+    Assert(!floatingTarget.IsReady, "floating dossier roots should not be intake-ready");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
