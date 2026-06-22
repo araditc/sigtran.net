@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceReadinessLockdownStatus
         "protected-release-environments",
         "evidence-dossier-handoff",
         "commercial-go-no-go-gate",
+        "final-validation",
         "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "commercial-release-evidence-incomplete",
-        "final-validation-pending"
+        "commercial-release-evidence-incomplete"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercial Evidence Readiness Lockdown";
 
     /// <summary>The number of completed commercial evidence readiness lockdown work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed readiness lockdown capability names.</summary>
     /// <returns>The completed capability names.</returns>

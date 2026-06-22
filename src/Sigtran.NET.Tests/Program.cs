@@ -4487,14 +4487,15 @@ static void SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGat
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceReadinessLockdownStatus.GetDefaultBlockers();
 
-    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount == 9, "status should reflect the completed readiness lockdown units");
+    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount == 10, "status should reflect the completed readiness lockdown units");
     Assert(capabilities.Count == SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount, "status capability count should match completed units");
     Assert(capabilities.Contains("commercial-go-no-go-gate"), "status should include go/no-go gate capability");
+    Assert(capabilities.Contains("final-validation"), "status should include final validation capability");
     Assert(SigtranCommercialEvidenceReadinessLockdownStatus.EvidenceExecutionReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
     Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.PublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
     Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.StablePublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
     Assert(blockers.Contains("commercial-release-evidence-incomplete"), "status should retain evidence blocker");
-    Assert(blockers.Contains("final-validation-pending"), "status should retain final validation blocker before unit 10");
+    Assert(!blockers.Contains("final-validation-pending"), "final validation should no longer be a blocker");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

@@ -114,7 +114,18 @@ This intentionally prevents the SDK from treating readiness foundation as public
 - Commercial go/no-go gate.
 - Documentation and status reporting.
 
-The current status is ready to start evidence-producing execution, but it continues to block RC and stable publication because commercial release evidence is incomplete and final validation is still pending.
+The current status is ready to start evidence-producing execution, but it continues to block RC and stable publication because commercial release evidence is incomplete.
+
+## Unit 10 - Final Validation
+
+The readiness lockdown is complete when:
+
+- Status reporting includes final validation.
+- Publication blockers no longer include validation-pending work.
+- Build, test, and package validation pass.
+- README, roadmap, phase index, and phase summary all describe the same commercial position.
+
+Phase 36 completion does not mean commercial publication is ready. It means the release target, secrets, retention, checklist, preflight, protected environments, dossier handoff, go/no-go decisioning, status reporting, and validation are all ready to support the real evidence-producing work.
 
 ## Validation
 
