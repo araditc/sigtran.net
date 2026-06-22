@@ -323,6 +323,8 @@ Run("SIGTRAN commercial evidence approved run promotion package covers required 
 Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
+Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
+Run("SIGTRAN commercial evidence approval handoff status summarizes pending final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesPendingFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5739,6 +5741,49 @@ static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceApprovalCommandPlan plan = SigtranCommercialEvidenceApprovalCommands.CreateDefaultPlan(
+            Path.Combine(tempRoot, "approval"),
+            "commercial-run-20260622-001");
+        SigtranCommercialEvidenceApprovalCommandMaterialization materialization = SigtranCommercialEvidenceApprovalCommands.WriteScript(
+            plan,
+            Path.Combine(tempRoot, "scripts", "commercial-evidence-approval.sh"),
+            DateTimeOffset.UtcNow);
+
+        Assert(materialization.IsReady, materialization.Describe());
+        Assert(materialization.ScriptExists, "approval command script should exist");
+        Assert(materialization.ScriptSizeBytes > 0, "approval command script should be non-empty");
+        Assert(materialization.IncludesRunId, "approval command script should include run id");
+        Assert(materialization.IncludesAllCommands, "approval command script should include every command");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranCommercialEvidenceApprovalHandoffStatusSummarizesPendingFinalValidation()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceApprovalHandoffStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceApprovalHandoffStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranCommercialEvidenceApprovalHandoffStatus.CompletedUnitCount, "approval handoff completed unit count");
+    AssertEqual(9, capabilities.Count, "approval handoff capability count");
+    Assert(capabilities.Contains("command-materialization"), "approval handoff status should include command materialization");
+    Assert(!capabilities.Contains("documentation"), "approval handoff status should keep documentation pending before final validation");
+    Assert(SigtranCommercialEvidenceApprovalHandoffStatus.ApprovalHandoffFoundationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
+    Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
+    Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.PackagePublicationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
+    Assert(blockers.Contains("real-approved-commercial-run-required"), "approval handoff status should require a real approved run");
+    Assert(blockers.Contains("status-final-validation-pending"), "approval handoff status should keep final validation pending");
 }
 
 static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(string tempRoot)

@@ -107,6 +107,21 @@ This unit gives release operators actionable blockers before package publication
 
 This unit gives the approval path a retained audit chain that can be reviewed before package publication proceeds.
 
+## Unit 9 - Command Materialization And Interim Status
+
+`SigtranCommercialEvidenceApprovalCommands` materializes the approval handoff workflow:
+
+- Run target creation.
+- Approval checklist generation.
+- Reviewer approval recording.
+- Approval report writing.
+- Promotion package creation.
+- Publication handoff creation.
+- Handoff gate evaluation.
+- Approval audit trail writing.
+
+`SigtranCommercialEvidenceApprovalHandoffStatus` reports the first nine completed capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
+
 ## Validation
 
 Each unit in this phase is validated with:
