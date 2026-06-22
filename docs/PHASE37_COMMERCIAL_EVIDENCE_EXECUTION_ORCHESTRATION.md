@@ -112,7 +112,18 @@ The policy prevents endless retries and keeps host capability, approval, and unk
 - Retained evidence readiness.
 - Commercial publication readiness.
 
-The status is intentionally conservative. The orchestration contracts are ready, but publication is still blocked until real retained execution artifacts exist and final validation closes the phase.
+The status is intentionally conservative. The orchestration contracts are ready, but publication is still blocked until real retained execution artifacts exist.
+
+## Unit 10 - Final Validation
+
+Final validation closes the orchestration foundation:
+
+- Build, test, and package validation are run together.
+- `final-validation` is included in the public status capability list.
+- The temporary final-validation blocker is removed.
+- The retained real execution artifact blocker remains active.
+
+This keeps the phase complete as an SDK foundation while preserving the commercial release gate until evidence is produced by real labs and release workflows.
 
 ## Validation
 

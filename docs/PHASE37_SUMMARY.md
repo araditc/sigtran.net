@@ -13,7 +13,8 @@ Phase 37 prepares the SDK to execute real commercial evidence runs after readine
 - Execution blocker classifier for readiness, environment, command, native SCTP, external peer, artifact, digest, redaction, and approval failures.
 - Retry and resume policy with bounded retries and manual-correction gates for non-retryable failures.
 - Execution orchestration status that reports completed capabilities, default blockers, orchestration readiness, retained evidence readiness, and commercial publication readiness.
+- Final validation that closes the orchestration foundation while retaining the real-evidence blocker.
 
 ## Readiness Position
 
-The phase is in progress. Execution orchestration status is now available. Final validation is still required before the phase can be closed.
+Phase 37 is foundation-complete. The SDK can describe a governed commercial evidence execution run, but commercial publication remains blocked until real retained execution artifacts are produced, verified, redacted where needed, and approved.

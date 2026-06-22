@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceExecutionStatus
         "digest-redaction-verification",
         "blocker-classification",
         "retry-resume-policy",
+        "final-validation",
         "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "real-execution-artifacts-required",
-        "status-final-validation-pending"
+        "real-execution-artifacts-required"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercial Evidence Execution Orchestration";
 
     /// <summary>The number of completed commercial evidence execution orchestration work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed execution orchestration capability names.</summary>
     /// <returns>The completed capability names.</returns>

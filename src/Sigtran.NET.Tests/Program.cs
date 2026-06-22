@@ -4769,15 +4769,16 @@ static void SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadi
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceExecutionStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranCommercialEvidenceExecutionStatus.CompletedUnitCount, "commercial evidence execution completed unit count");
-    AssertEqual(9, capabilities.Count, "commercial evidence execution capability count");
+    AssertEqual(10, SigtranCommercialEvidenceExecutionStatus.CompletedUnitCount, "commercial evidence execution completed unit count");
+    AssertEqual(10, capabilities.Count, "commercial evidence execution capability count");
     Assert(capabilities.Contains("retry-resume-policy"), "execution status should include retry and resume policy");
+    Assert(capabilities.Contains("final-validation"), "execution status should include final validation");
     Assert(capabilities.Contains("documentation"), "execution status should include documentation");
     Assert(SigtranCommercialEvidenceExecutionStatus.ExecutionOrchestrationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
     Assert(!SigtranCommercialEvidenceExecutionStatus.RetainedExecutionEvidenceReady, SigtranCommercialEvidenceExecutionStatus.Describe());
     Assert(!SigtranCommercialEvidenceExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
     Assert(blockers.Contains("real-execution-artifacts-required"), "execution status should require real retained artifacts");
-    Assert(blockers.Contains("status-final-validation-pending"), "execution status should retain final validation blocker before phase closeout");
+    Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
