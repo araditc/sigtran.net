@@ -300,6 +300,7 @@ Run("SIGTRAN commercial evidence retained file verifies observed digest", Sigtra
 Run("SIGTRAN commercial evidence retained file manifest covers handoff items", SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems);
 Run("SIGTRAN commercial evidence file verification report identifies blockers", SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers);
 Run("SIGTRAN commercial evidence retention ledger requires immutable retention", SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention);
+Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5064,6 +5065,33 @@ static void SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention()
     Assert(ledger.UsesUtcRetentionTimes, "retention ledger should use UTC timestamps");
     Assert(!shortLedger.IsReady, "short retention windows should block ledger readiness");
     Assert(!shortLedger.AllEntriesReady, "short retention windows should fail entry readiness");
+}
+
+static void SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest()
+{
+    SigtranCommercialEvidenceRetentionLedger ledger = CreateDefaultCommercialEvidenceRetentionLedger();
+    SigtranCommercialEvidenceIntegritySeal seal = CreateDefaultCommercialEvidenceIntegritySeal(ledger);
+    SigtranCommercialEvidenceIntegritySeal mismatch = new(
+        ledger,
+        seal.SealId,
+        "SHA-256",
+        new string('c', 64),
+        DateTimeOffset.UtcNow);
+
+    Assert(seal.IsReady, seal.Describe());
+    Assert(seal.HasStableSealId, "integrity seal should expose a stable id");
+    Assert(seal.UsesSha256, "integrity seal should use SHA-256");
+    Assert(seal.HasValidAggregateDigest, "integrity seal should expose a valid digest");
+    Assert(seal.MatchesLedgerDigest, "integrity seal should match the ledger digest");
+    Assert(!mismatch.IsReady, "digest mismatch should block integrity seal readiness");
+    Assert(!mismatch.MatchesLedgerDigest, "mismatched integrity seal should not match ledger digest");
+}
+
+static SigtranCommercialEvidenceIntegritySeal CreateDefaultCommercialEvidenceIntegritySeal(SigtranCommercialEvidenceRetentionLedger? ledger = null)
+{
+    return SigtranCommercialEvidenceIntegritySeals.CreateDefault(
+        ledger ?? CreateDefaultCommercialEvidenceRetentionLedger(),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceRetentionLedger CreateDefaultCommercialEvidenceRetentionLedger(SigtranCommercialEvidenceFileVerificationReport? report = null)

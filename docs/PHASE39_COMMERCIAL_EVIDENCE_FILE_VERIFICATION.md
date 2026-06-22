@@ -56,6 +56,18 @@ The report keeps verification gates auditable. A commercial release decision can
 
 The ledger is ready only when the file verification report is verified, every verified file is represented, retained paths are unique, every entry is immutable, timestamps are UTC, and every retention window meets the configured minimum duration.
 
+## Unit 5 - Integrity Seal
+
+`SigtranCommercialEvidenceIntegritySeal` creates a deterministic SHA-256 aggregate digest over the retention ledger:
+
+- Stable seal id derived from the evidence intake.
+- Required `SHA-256` algorithm label.
+- Aggregate digest computed from ledger entries.
+- UTC seal time.
+- Readiness check that recomputes the digest and compares it with the retained seal value.
+
+This is an evidence integrity seal for the retained dossier. It does not replace trusted timestamped package signing or release provenance attestation.
+
 ## Validation
 
 Each unit in this phase is validated with:

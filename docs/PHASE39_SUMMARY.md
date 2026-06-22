@@ -8,7 +8,8 @@ Phase 39 prepares the SDK to verify retained commercial evidence files after art
 - Retained file manifest that covers every promotion-required handoff item with verified unique retained files.
 - File verification report that exposes missing, empty, invalid digest, digest mismatch, non-UTC observation, duplicate path, and incomplete handoff blockers.
 - Retention ledger that binds verified retained files to reviewer identity, immutable retention, UTC retention windows, and minimum duration checks.
+- Integrity seal that computes a deterministic aggregate SHA-256 digest over the retention ledger.
 
 ## Readiness Position
 
-The phase is in progress. Retained file evidence item verification, retained file manifest coverage, blocker reporting, and retention ledger modeling are available. Integrity seal, publication attachments, promotion gate, command plan, status reporting, and final validation remain.
+The phase is in progress. Retained file evidence item verification, retained file manifest coverage, blocker reporting, retention ledger modeling, and integrity sealing are available. Publication attachments, promotion gate, command plan, status reporting, and final validation remain.
