@@ -262,6 +262,7 @@ Run("SIGTRAN supply chain release status summarizes execution blockers", Sigtran
 Run("SIGTRAN release dry-run plan rehearses without publication", SigtranReleaseDryRunPlanRehearsesWithoutPublication);
 Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads);
 Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleaseNotesArtifactRendersRcPublicationNotes);
+Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigrationNotesArtifactDocumentsRcBoundaries);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4151,6 +4152,17 @@ static void SigtranReleaseNotesArtifactRendersRcPublicationNotes()
     Assert(markdown.Contains("# Sigtran.NET 1.0.0-rc.1", StringComparison.Ordinal), "release notes should include title");
     Assert(markdown.Contains("## Migration Notes", StringComparison.Ordinal), "release notes should link migration notes");
     Assert(markdown.Contains("M3UA", StringComparison.Ordinal), "release notes should include SDK changes");
+}
+
+static void SigtranMigrationNotesArtifactDocumentsRcBoundaries()
+{
+    SigtranMigrationNotesArtifact artifact = SigtranMigrationNotesArtifacts.CreateReleaseCandidate("1.0.0-alpha.1", "1.0.0-rc.1", new string('b', 64));
+    string markdown = artifact.RenderMarkdown();
+
+    Assert(artifact.IsReviewReady, "migration notes artifact should be review-ready");
+    Assert(artifact.AllEntriesHaveCodeSamples, "migration notes should require code samples");
+    Assert(markdown.Contains("Experimental Boundaries", StringComparison.Ordinal), "migration notes should document experimental boundaries");
+    Assert(markdown.Contains("SCCP, TCAP, and MAP remain experimental", StringComparison.Ordinal), "migration notes should retain experimental API warning");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

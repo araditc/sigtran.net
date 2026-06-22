@@ -40,6 +40,19 @@ Stable versions are intentionally rejected by this gate. Stable publication rema
 
 The artifact is review-ready only when release notes are publishable, the retained file is Markdown, the path contains the release version, a digest is present, and migration notes are linked.
 
+## Unit 4 - Migration Notes Artifact
+
+`SigtranMigrationNotesArtifacts` defines retained RC migration notes:
+
+- Source and target release versions.
+- Versioned Markdown artifact path.
+- SHA-256 digest.
+- Migration guide entries.
+- Code sample requirement.
+- Experimental boundary statement for SCCP, TCAP, and MAP.
+
+The artifact is review-ready only when the notes are versioned, digest-covered, Markdown-based, code-sample aware, and explicit about experimental protocol surfaces.
+
 ## Validation
 
 Each unit in this phase is validated with:
