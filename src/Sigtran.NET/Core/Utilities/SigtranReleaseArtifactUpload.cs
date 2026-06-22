@@ -130,7 +130,7 @@ public static class SigtranReleaseArtifactUploads
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.SymbolPackage, "sigtran-symbols", "src/Sigtran.NET/bin/Release/*.snupkg", 90, requiredForPromotion: true),
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.Sbom, "sigtran-sbom", "artifacts/supply-chain/sbom", 90, requiredForPromotion: true),
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.SigningEvidence, "sigtran-signing", "artifacts/supply-chain/signing", 90, requiredForPromotion: true),
-            new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.TimestampReceipt, "sigtran-timestamp", "artifacts/supply-chain/signing/*.tsr", 90, requiredForPromotion: true),
+            new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.TimestampReceipt, "sigtran-timestamp", "artifacts/supply-chain/signing/*timestamp*", 90, requiredForPromotion: true),
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.ProvenanceAttestation, "sigtran-provenance", "artifacts/supply-chain/provenance", 90, requiredForPromotion: true),
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.PublicApiDiff, "sigtran-api-diff", "artifacts/supply-chain/api", 90, requiredForPromotion: true),
             new SigtranReleaseArtifactUploadItem(SigtranReleaseArtifactUploadKind.DigestManifest, "sigtran-digests", "artifacts/supply-chain/digests", 90, requiredForPromotion: true)

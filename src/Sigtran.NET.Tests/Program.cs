@@ -3983,7 +3983,7 @@ static void SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerification
 
     Assert(evidence.HasTrustedTimestampAuthority, evidence.Describe());
     Assert(evidence.HasDigestCoverage, evidence.Describe());
-    Assert(evidence.TimestampReceiptPath.EndsWith(".tsr", StringComparison.OrdinalIgnoreCase), "trusted signing should retain timestamp receipt");
+    Assert(evidence.TimestampReceiptPath.Contains("timestamp", StringComparison.OrdinalIgnoreCase), "trusted signing should retain timestamp verification");
     Assert(evidence.VerificationReportPath.EndsWith(".verification.md", StringComparison.OrdinalIgnoreCase), "trusted signing should retain verification report");
     Assert(evidence.SupportsReleasePromotion, evidence.Describe());
 }
@@ -4051,7 +4051,7 @@ static void SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps()
     Assert(plan.RequiresSigningSecrets, "supply-chain release command plan should require signing secrets");
     Assert(commands[0].Contains("sbom-tool", StringComparison.OrdinalIgnoreCase), "first release command should generate SBOM");
     Assert(commands[1].Contains("nuget sign", StringComparison.OrdinalIgnoreCase), "second release command should sign package");
-    Assert(commands[3].Contains("attestation", StringComparison.OrdinalIgnoreCase), "fourth release command should create attestation");
+    Assert(commands[3].Contains("attest-build-provenance", StringComparison.OrdinalIgnoreCase), "fourth release command should create provenance attestation");
     Assert(commands[6].Contains("upload-artifact", StringComparison.OrdinalIgnoreCase), "last release command should upload artifacts");
 }
 

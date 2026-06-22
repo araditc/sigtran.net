@@ -99,6 +99,21 @@ The command plan records which command requires signing secrets and keeps upload
 
 The gate keeps supply-chain completeness separate from commercial release readiness. Even complete SBOM, signing, provenance, API diff, and upload evidence cannot be promoted unless commercial evidence is also ready.
 
+## Unit 8 - Release Workflow Execution
+
+`.github/workflows/release.yml` now contains the concrete supply-chain release execution path:
+
+- Resolve release version from workflow input or version tag.
+- Pack the SDK with the release version.
+- Generate the final SBOM with `sbom-tool generate`.
+- Sign the NuGet package with `dotnet nuget sign`.
+- Verify package signature and timestamp with `dotnet nuget verify --all`.
+- Create GitHub provenance and SBOM attestations with `actions/attest-build-provenance` and `actions/attest-sbom`.
+- Retain provenance marker, public API diff, and digest manifest artifacts.
+- Upload package, symbols, and supply-chain evidence with `actions/upload-artifact@v4`.
+
+`SigtranReleaseWorkflowValidation` now requires these workflow fragments, including SBOM generation, signing, verification, attestation, artifact upload, and final SBOM/API diff environment outputs.
+
 ## Validation
 
 Each unit in this phase is validated with:

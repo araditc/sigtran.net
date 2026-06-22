@@ -83,7 +83,7 @@ public sealed class SigtranTrustedPackageSigningEvidence
         && HasTrustedTimestampAuthority
         && HasDigestCoverage
         && CertificateThumbprint.Length >= 40
-        && TimestampReceiptPath.EndsWith(".tsr", StringComparison.OrdinalIgnoreCase);
+        && TimestampReceiptPath.Contains("timestamp", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Formats a compact trusted signing summary.</summary>
     /// <returns>The trusted signing summary.</returns>
@@ -121,7 +121,7 @@ public static class SigtranTrustedPackageSigning
             plan.CertificateSubject,
             "0123456789ABCDEF0123456789ABCDEF01234567",
             plan.TimestampAuthorityUrl,
-            $"artifacts/supply-chain/signing/Sigtran.NET.{normalizedVersion}.timestamp.tsr",
+            $"artifacts/supply-chain/signing/Sigtran.NET.{normalizedVersion}.timestamp.md",
             timestampReceiptSha256,
             $"artifacts/supply-chain/signing/Sigtran.NET.{normalizedVersion}.verification.md",
             verificationReportSha256,

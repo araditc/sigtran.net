@@ -45,6 +45,14 @@ public static class SigtranReleaseWorkflowValidation
         "secrets.SIGNING_CERTIFICATE",
         "secrets.SIGNING_CERTIFICATE_PASSWORD",
         "secrets.NUGET_API_KEY",
+        "sbom-tool generate",
+        "dotnet nuget sign",
+        "dotnet nuget verify",
+        "actions/attest-build-provenance",
+        "actions/attest-sbom",
+        "actions/upload-artifact@v4",
+        "SIGTRAN_FINAL_SBOM_PATH",
+        "SIGTRAN_PUBLIC_API_DIFF_PATH",
         "inputs.publish == true"
     ];
 

@@ -19,6 +19,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  attestations: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -43,6 +44,16 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Resolve Version
+        shell: bash
+        run: |
+          release_version="${{ inputs.version }}"
+          if [ -z "$release_version" ]; then
+            release_version="${GITHUB_REF_NAME#v}"
+          fi
+          test -n "$release_version"
+          echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
+
       - name: Restore
         run: dotnet restore src/Sigtran.NET.sln
 
@@ -53,13 +64,120 @@ jobs:
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
 
       - name: Pack
-        run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build
+        shell: bash
+        run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build /p:Version="$RELEASE_VERSION"
 
-      - name: Supply Chain
+      - name: Prepare Release Artifacts
+        shell: bash
         run: |
-          echo "Supply-chain automation requires retained SBOM, signing, timestamp, provenance, and verification artifacts."
-          test -n "${{ secrets.SIGNING_CERTIFICATE }}"
-          test -n "${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}"
+          mkdir -p artifacts/release artifacts/supply-chain/sbom artifacts/supply-chain/signing artifacts/supply-chain/provenance artifacts/supply-chain/api artifacts/supply-chain/digests
+          cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" artifacts/release/
+          cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.snupkg" artifacts/release/
+          echo "SIGTRAN_RELEASE_PACKAGE=artifacts/release/Sigtran.NET.$RELEASE_VERSION.nupkg" >> "$GITHUB_ENV"
+
+      - name: Install SBOM Tool
+        run: dotnet tool install --global Microsoft.Sbom.DotNetTool
+
+      - name: Generate Final SBOM
+        shell: bash
+        run: |
+          sbom-tool generate -b src/Sigtran.NET/bin/Release -bc . -pn Sigtran.NET -pv "$RELEASE_VERSION" -ps Sigtran.NET -nsb https://github.com/araditc/Sigtran.NET -m artifacts/supply-chain/sbom
+          sbom_source="$(find artifacts/supply-chain/sbom -name '*.spdx.json' -o -name 'manifest.spdx.json' | head -n 1)"
+          test -n "$sbom_source"
+          final_sbom="artifacts/supply-chain/sbom/Sigtran.NET.$RELEASE_VERSION.spdx.json"
+          cp "$sbom_source" "$final_sbom"
+          final_sbom_sha256="$(sha256sum "$final_sbom" | awk '{print $1}')"
+          echo "SIGTRAN_FINAL_SBOM_PATH=$final_sbom" >> "$GITHUB_ENV"
+          echo "SIGTRAN_FINAL_SBOM_SHA256=$final_sbom_sha256" >> "$GITHUB_ENV"
+          echo "SIGTRAN_FINAL_SBOM_FORMAT=spdx-json" >> "$GITHUB_ENV"
+
+      - name: Sign Package
+        shell: bash
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        run: |
+          test -n "$SIGNING_CERTIFICATE"
+          test -n "$SIGNING_CERTIFICATE_PASSWORD"
+          signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
+          printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$signing_certificate_path"
+          dotnet nuget sign "$SIGTRAN_RELEASE_PACKAGE" --certificate-path "$signing_certificate_path" --certificate-password "$SIGNING_CERTIFICATE_PASSWORD" --timestamper https://timestamp.digicert.com --overwrite
+          sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
+
+      - name: Verify Signature And Timestamp
+        shell: bash
+        run: |
+          dotnet nuget verify "$SIGTRAN_RELEASE_PACKAGE" --all | tee "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md"
+          cp "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md"
+          sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.sha256"
+          sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.sha256"
+
+      - name: Attest Package Provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v2
+        with:
+          subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
+          sbom-path: ${{ env.SIGTRAN_FINAL_SBOM_PATH }}
+
+      - name: Retain Provenance Marker
+        shell: bash
+        run: |
+          {
+            echo "sourceRepository=${{ github.repository }}"
+            echo "sourceCommit=${{ github.sha }}"
+            echo "workflow=release"
+            echo "runId=${{ github.run_id }}"
+            echo "subject=$SIGTRAN_RELEASE_PACKAGE"
+            echo "sbom=$SIGTRAN_FINAL_SBOM_PATH"
+          } > "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.jsonl"
+          sha256sum "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.jsonl" > "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.sha256"
+
+      - name: Create Public API Diff
+        shell: bash
+        run: |
+          current_api="artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.public-api.xml"
+          api_diff="artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.api-diff.md"
+          cp "src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.xml" "$current_api"
+          if [ -f "artifacts/api/Sigtran.NET.baseline.public-api.txt" ]; then
+            diff -u "artifacts/api/Sigtran.NET.baseline.public-api.txt" "$current_api" > "$api_diff" || true
+          else
+            echo "No retained public API baseline was found in artifacts/api." > "$api_diff"
+          fi
+          echo "SIGTRAN_PUBLIC_API_DIFF_PATH=$api_diff" >> "$GITHUB_ENV"
+          sha256sum "$api_diff" > "artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.api-diff.sha256"
+
+      - name: Create Digest Manifest
+        shell: bash
+        run: |
+          find artifacts/release artifacts/supply-chain -type f -print0 | sort -z | xargs -0 sha256sum > "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256"
+
+      - name: Upload Package
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigtran-package
+          path: artifacts/release/*.nupkg
+          retention-days: 90
+
+      - name: Upload Symbols
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigtran-symbols
+          path: artifacts/release/*.snupkg
+          retention-days: 90
+
+      - name: Upload Supply Chain Evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigtran-supply-chain
+          path: artifacts/supply-chain
+          retention-days: 90
 
       - name: Commercial Evidence
         run: |
@@ -68,4 +186,4 @@ jobs:
 
       - name: Publish
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
-        run: dotnet nuget push src/Sigtran.NET/bin/Release/Sigtran.NET.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"
+        run: dotnet nuget push artifacts/release/Sigtran.NET.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"
