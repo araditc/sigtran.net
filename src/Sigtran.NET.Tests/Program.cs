@@ -272,6 +272,7 @@ Run("SIGTRAN commercial release execution readiness reports remaining blockers",
 Run("SIGTRAN commercial release target lock binds evidence to version and commit", SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit);
 Run("SIGTRAN commercial release secrets gate publish and signing readiness", SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness);
 Run("SIGTRAN commercial evidence retention map binds artifacts to release target", SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget);
+Run("SIGTRAN commercial evidence checklist requires essential artifacts", SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4333,6 +4334,32 @@ static void SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget()
     Assert(map.Rules.All(static rule => rule.RequiresDigest), "commercial retention should require digest coverage");
     Assert(!floatingPathMap.IsReady, floatingPathMap.Describe());
     Assert(!floatingPathMap.UsesTargetArtifactRoot, "floating paths must not satisfy target-bound retention");
+}
+
+static void SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts()
+{
+    SigtranCommercialEvidenceChecklist checklist = SigtranCommercialEvidenceChecklists.CreateDefault();
+    SigtranCommercialEvidenceChecklist missingComparison = new(
+        checklist.Items
+            .Where(static item => item.Kind != SigtranCommercialEvidenceChecklistKind.ComparisonReport)
+            .ToArray());
+    SigtranCommercialEvidenceChecklist duplicateId = new(
+        checklist.Items
+            .Append(new SigtranCommercialEvidenceChecklistItem(
+                "native-sctp-pcap",
+                SigtranCommercialEvidenceRetentionArea.NativeSctp,
+                SigtranCommercialEvidenceChecklistKind.PacketCapture,
+                true,
+                "Duplicate item used to verify identifier validation."))
+            .ToArray());
+
+    Assert(checklist.IsReady, checklist.Describe());
+    Assert(checklist.CoversRetentionAreas, "checklist should cover every retention area");
+    Assert(checklist.ContainsEssentialArtifacts, "checklist should contain every essential artifact kind");
+    Assert(!missingComparison.IsReady, missingComparison.Describe());
+    Assert(!missingComparison.ContainsEssentialArtifacts, "comparison report should be mandatory");
+    Assert(!duplicateId.IsReady, duplicateId.Describe());
+    Assert(!duplicateId.HasUniqueIds, "checklist item identifiers should be unique");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

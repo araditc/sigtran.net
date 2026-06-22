@@ -42,6 +42,21 @@ The readiness evaluator accepts only secret names and reports missing requiremen
 
 Every path must live under the release target artifact root, keep artifacts for at least one year, and require digest coverage. Floating paths such as `artifacts/latest/...` are intentionally rejected because they cannot prove which release target produced the evidence.
 
+## Unit 4 - Commercial Evidence Checklist
+
+`SigtranCommercialEvidenceChecklists` defines the mandatory checklist for evidence-producing execution:
+
+- Native SCTP packet capture.
+- External peer log, SDK trace, and configuration.
+- Protocol comparison report.
+- Final SBOM, signing verification, and provenance attestation.
+- Peer benchmark report.
+- Public API diff.
+- Release workflow run evidence.
+- Release notes, migration notes, and final commercial readiness report.
+
+The checklist validates unique item identifiers, mandatory coverage for every retention area, and mandatory coverage for every essential artifact kind. This is a pre-execution checklist, not a claim that the artifacts already exist.
+
 ## Validation
 
 Each unit in this phase is validated with:
