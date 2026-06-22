@@ -16,6 +16,17 @@ Public APIs use domain names such as `SigtranCommercialEvidenceArtifactIntakes`;
 
 Floating dossier roots such as `artifacts/latest/...` are rejected because commercial evidence must prove exactly which execution run produced the retained artifacts.
 
+## Unit 2 - Artifact Source Manifest
+
+`SigtranCommercialEvidenceArtifactSources` registers received artifacts against the expected execution artifact manifest:
+
+- Every required expected artifact must have a source entry.
+- Source paths must be concrete and must not use floating `artifacts/latest` aliases.
+- Retained paths must be unique.
+- Retained paths must live under the intake dossier root.
+
+The source manifest is the handoff from execution outputs into dossier intake. It prepares the next step, digest generation, without claiming that files are already verified.
+
 ## Validation
 
 Each unit in this phase is validated with:

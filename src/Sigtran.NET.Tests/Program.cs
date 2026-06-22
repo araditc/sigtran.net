@@ -288,6 +288,7 @@ Run("SIGTRAN commercial evidence execution blocker classifier categorizes failur
 Run("SIGTRAN commercial evidence execution retry policy gates resume decisions", SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions);
 Run("SIGTRAN commercial evidence execution status summarizes orchestration readiness", SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness);
 Run("SIGTRAN commercial evidence artifact intake target binds to execution run", SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun);
+Run("SIGTRAN commercial evidence artifact sources cover expected execution artifacts", SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4807,6 +4808,40 @@ static void SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun()
     Assert(target.HasUtcReceivedTime, "intake target should normalize receive time to UTC");
     Assert(target.HasRunScopedDossierRoot, "intake target should use a run-scoped dossier root");
     Assert(!floatingTarget.IsReady, "floating dossier roots should not be intake-ready");
+}
+
+static void SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionArtifactManifest expected = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+        run,
+        "intake-20260622-001",
+        "release-review",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceArtifactSourceManifest manifest = SigtranCommercialEvidenceArtifactSources.CreateDefault(
+        target,
+        expected,
+        $"{run.RunArtifactRoot}/incoming/intake-20260622-001");
+    SigtranCommercialEvidenceArtifactSourceManifest floatingManifest = new(
+        target,
+        expected,
+        [
+            new("native-sctp-lab", SigtranCommercialEvidenceChecklistKind.PacketCapture, "artifacts/latest/packet-capture.pcapng", $"{target.DossierRoot}/native-sctp-lab/packet-capture.pcapng", true)
+        ]);
+
+    AssertEqual(expected.Artifacts.Count, manifest.Sources.Count, "artifact source count");
+    Assert(manifest.IsReady, manifest.Describe());
+    Assert(manifest.CoversRequiredArtifacts, "artifact sources should cover required expected artifacts");
+    Assert(manifest.UsesConcreteSourcePaths, "artifact sources should reject floating latest aliases");
+    Assert(manifest.UsesDossierRetainedPaths, "artifact sources should retain under dossier root");
+    Assert(!floatingManifest.IsReady, "floating source paths should not be source-manifest ready");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
