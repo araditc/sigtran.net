@@ -251,6 +251,7 @@ Run("SIGTRAN package signing execution evidence records verification blocker", S
 Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
 Run("SIGTRAN benchmark execution evidence records smoke workload limits", SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits);
 Run("SIGTRAN public API baseline evidence records generated member baseline", SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline);
+Run("SIGTRAN final SBOM artifact records versioned release output", SigtranFinalSbomArtifactRecordsVersionedReleaseOutput);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -3951,6 +3952,18 @@ static void SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline()
     Assert(evidence.IsReviewReady, "public API baseline evidence should be review-ready");
     AssertEqual(300, evidence.MemberCount, "public API baseline member count");
     Assert(evidence.BaselinePath.EndsWith("-public-api.txt", StringComparison.OrdinalIgnoreCase), "public API baseline should use a text artifact");
+}
+
+static void SigtranFinalSbomArtifactRecordsVersionedReleaseOutput()
+{
+    SigtranFinalSbomArtifact artifact = SigtranFinalSbom.CreateDefault("1.0.0", "SHA256-SBOM");
+    IReadOnlyList<string> outputs = SigtranFinalSbom.GetRequiredWorkflowOutputs();
+
+    AssertEqual("Sigtran.NET", artifact.PackageId, "final SBOM package id");
+    AssertEqual(SigtranSbomFormat.SpdxJson, artifact.Format, "final SBOM format");
+    Assert(artifact.OutputPath.EndsWith("Sigtran.NET.1.0.0.spdx.json", StringComparison.Ordinal), "final SBOM output should be versioned");
+    Assert(artifact.IsFinalReleaseArtifact, artifact.Describe());
+    Assert(outputs.Contains("SIGTRAN_FINAL_SBOM_SHA256"), "final SBOM workflow outputs should expose digest");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

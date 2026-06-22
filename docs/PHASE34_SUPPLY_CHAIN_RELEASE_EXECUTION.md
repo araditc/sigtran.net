@@ -1,0 +1,28 @@
+# Phase 34 Supply Chain Release Execution
+
+Phase 34 turns the supply-chain foundation into release execution contracts for final SBOM, trusted timestamped signing, provenance attestation, public API diff artifacts, and workflow artifact upload.
+
+The public APIs use domain names such as `SigtranFinalSbom`; phase numbers are intentionally kept out of source type names.
+
+## Unit 1 - Final SBOM Artifact
+
+`SigtranFinalSbom` defines the final SBOM artifact retained for a release:
+
+- Package id and version.
+- Release package path covered by the SBOM.
+- Versioned SPDX JSON output path.
+- SBOM generation tool identity.
+- Retained SHA-256 digest.
+- Workflow output names for SBOM path, digest, and format.
+
+The final SBOM contract does not manufacture evidence. A release is considered complete only when the retained SBOM is versioned, SPDX JSON, package-aligned, and digest-covered.
+
+## Validation
+
+Each unit in this phase is validated with:
+
+```powershell
+dotnet build src\Sigtran.NET.sln
+dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
+```

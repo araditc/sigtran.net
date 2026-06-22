@@ -295,6 +295,16 @@ Status: Phase 32 is complete for SDK evidence-backed behavior. The shared protoc
 
 Status: Phase 33 is foundation-complete. Peer-traffic benchmark workload evidence maps the commercial load-test plan into warmup, sustained, and peak stages with target/actual message-rate checks and message-loss validation. Retained artifact manifests and run plans require digest-covered PCAP, SDK trace, peer logs/configuration, metrics, latency profile, resource profile, resilience log, and benchmark report artifacts. Latency percentile evidence evaluates P95/P99 measurements against SDK latency budgets, resource evidence evaluates CPU, working set, and allocation measurements against commercial resource budgets, resilience evidence gates failover on event coverage, recovery time, and zero message loss, publishable Markdown reports aggregate all gates, production performance evidence gates connect publishable reports to wider commercial readiness, manual self-hosted runner/CI handoff metadata defines real execution commands and artifact upload patterns, status reporting documents current blockers, and final sweeps validated naming/package-neutrality. Production performance claims remain blocked until retained real peer benchmark evidence and commercial readiness are complete.
 
+## Phase 34 - Supply Chain Release Execution
+
+- Generate and retain the final versioned SBOM artifact.
+- Require trusted timestamped package signing and verification evidence.
+- Produce provenance attestation evidence for package, SBOM, source, and workflow identity.
+- Retain public API diff artifacts before publication.
+- Upload release artifacts from the workflow with digest coverage and promotion gates.
+
+Status: Phase 34 is in progress. The final SBOM artifact contract is available and requires SPDX JSON, package/version alignment, workflow outputs, and digest coverage. Trusted timestamped signing, provenance attestation, public API diff artifacts, workflow upload, and final release execution gating remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

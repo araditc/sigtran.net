@@ -69,6 +69,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Native SCTP production hardening | Phase 31 foundation-complete: outbound stream/PPID framing, association lifecycle journal, reconnect schedule, send backpressure, cancellation/timeout, multi-homing readiness, fault recovery, transport diagnostics, production hardening readiness gate, and status reporting are available; production readiness still requires retained Linux SCTP and external peer evidence |
 | SCCP/TCAP/MAP evidence upgrade | Phase 32 SDK evidence-backed: shared protocol evidence vectors, SCCP/TCAP/MAP SMS evidence suites, cross-layer evidence bundle, ordered trace validation, actionable mismatch classification, SDK evidence-backed readiness gates, status reporting, and final validation are available; production evidence remains blocked until retained external interoperability artifacts exist |
 | Performance and resilience evidence | Phase 33 foundation-complete: peer-traffic workload evidence, digest-covered artifacts, latency P95/P99, CPU/memory/allocation, failover recovery, publishable Markdown report, production performance evidence gates, manual self-hosted runner/CI handoff, status reporting, and final validation are available; production claims still require retained real peer benchmark evidence and commercial readiness |
+| Supply-chain release execution | Phase 34 in progress: final versioned SBOM artifact contract is available; trusted timestamped signing, provenance attestation, public API diff artifact, workflow upload, and final promotion gating are still being implemented |
 
 ## Requirements
 
@@ -205,6 +206,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 32 Summary](docs/PHASE32_SUMMARY.md)
 - [Phase 33 Performance Resilience Evidence](docs/PHASE33_PERFORMANCE_RESILIENCE_EVIDENCE.md)
 - [Phase 33 Summary](docs/PHASE33_SUMMARY.md)
+- [Phase 34 Supply Chain Release Execution](docs/PHASE34_SUPPLY_CHAIN_RELEASE_EXECUTION.md)
+- [Phase 34 Summary](docs/PHASE34_SUMMARY.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)
