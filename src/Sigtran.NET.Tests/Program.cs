@@ -314,7 +314,7 @@ Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", Sigt
 Run("SIGTRAN commercial evidence filesystem publication attachments protect trace evidence", SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
 Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval);
 Run("SIGTRAN commercial evidence filesystem command materializer writes execution script", SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript);
-Run("SIGTRAN commercial evidence filesystem execution status summarizes pending final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesPendingFinalValidation);
+Run("SIGTRAN commercial evidence filesystem execution status summarizes final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5447,20 +5447,20 @@ static void SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutio
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesPendingFinalValidation()
+static void SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation()
 {
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileSystemExecutionStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranCommercialEvidenceFileSystemExecutionStatus.CompletedUnitCount, "filesystem execution completed unit count");
-    AssertEqual(9, capabilities.Count, "filesystem execution capability count");
+    AssertEqual(10, SigtranCommercialEvidenceFileSystemExecutionStatus.CompletedUnitCount, "filesystem execution completed unit count");
+    AssertEqual(10, capabilities.Count, "filesystem execution capability count");
     Assert(capabilities.Contains("command-materialization"), "filesystem execution status should include command materialization");
-    Assert(!capabilities.Contains("documentation"), "filesystem execution status should keep documentation pending before final validation");
+    Assert(capabilities.Contains("documentation"), "filesystem execution status should include documentation");
     Assert(SigtranCommercialEvidenceFileSystemExecutionStatus.ExecutionFoundationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
     Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
     Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
     Assert(blockers.Contains("real-approved-commercial-run-required"), "filesystem execution status should require a real approved run");
-    Assert(blockers.Contains("status-final-validation-pending"), "filesystem execution status should keep final validation pending");
+    Assert(!blockers.Contains("status-final-validation-pending"), "filesystem execution status should clear final validation blocker");
 }
 
 static SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)
@@ -5693,7 +5693,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

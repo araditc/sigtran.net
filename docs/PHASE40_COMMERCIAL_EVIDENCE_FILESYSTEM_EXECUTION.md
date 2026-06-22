@@ -109,6 +109,18 @@ This unit makes the filesystem-backed evidence path promotion-aware while preser
 
 `SigtranCommercialEvidenceFileSystemExecutionStatus` reports the first nine completed filesystem execution capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
 
+## Unit 10 - Final Validation And Documentation
+
+The final unit completes the filesystem execution foundation:
+
+- Adds documentation as the tenth completed status capability.
+- Removes the final-validation blocker from filesystem execution status.
+- Keeps `real-approved-commercial-run-required` as the remaining publication blocker.
+- Aligns README, phase index, roadmap, and phase summary.
+- Validates the full solution with build, tests, and package generation.
+
+Commercial publication remains blocked until a real approved commercial run provides retained evidence files and release approval.
+
 ## Validation
 
 Each unit in this phase is validated with:

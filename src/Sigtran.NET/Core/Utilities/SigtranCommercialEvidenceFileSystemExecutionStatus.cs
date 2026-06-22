@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceFileSystemExecutionStatus
         "filesystem-integrity-seal",
         "filesystem-publication-attachments",
         "filesystem-promotion-gate",
-        "command-materialization"
+        "command-materialization",
+        "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "real-approved-commercial-run-required",
-        "status-final-validation-pending"
+        "real-approved-commercial-run-required"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercial Evidence Filesystem Execution";
 
     /// <summary>The number of completed filesystem execution work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed filesystem execution capability names.</summary>
     /// <returns>The completed capability names.</returns>
