@@ -281,6 +281,7 @@ Run("SIGTRAN commercial evidence readiness lockdown status summarizes current ga
 Run("SIGTRAN commercial evidence execution run binds artifacts to target", SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget);
 Run("SIGTRAN commercial evidence execution stage catalog covers required work", SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork);
 Run("SIGTRAN commercial evidence execution command plan covers stage work", SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork);
+Run("SIGTRAN commercial evidence execution environment contract protects run inputs", SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4589,6 +4590,53 @@ static void SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork()
     Assert(!missingRunId.ReferencesRunId, "commands without run id should be rejected");
     Assert(!weakApproval.IsReady, weakApproval.Describe());
     Assert(!weakApproval.RequiresProtectedApproval, "supply-chain command should require approval");
+}
+
+static void SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionEnvironmentContract contract = SigtranCommercialEvidenceExecutionEnvironments.CreateDefault(run);
+    Dictionary<string, string> completeValues = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["SIGTRAN_RUN_ID"] = run.RunId,
+        ["SIGTRAN_ARTIFACT_ROOT"] = run.RunArtifactRoot,
+        ["SIGTRAN_RELEASE_VERSION"] = run.Target.Version,
+        ["SIGTRAN_SOURCE_COMMIT"] = run.Target.SourceCommit,
+        ["SIGTRAN_PEER_CONFIG"] = "artifacts/config/peer.env",
+        ["SIGTRAN_CAPTURE_INTERFACE"] = "eth0",
+        ["NUGET_API_KEY"] = "present",
+        ["SIGNING_CERTIFICATE"] = "present",
+        ["SIGNING_CERTIFICATE_PASSWORD"] = "present",
+        ["PROVENANCE_ATTESTATION_TOKEN"] = "present"
+    };
+    SigtranCommercialEvidenceExecutionEnvironmentReadiness ready = contract.Evaluate(completeValues);
+    Dictionary<string, string> mismatchedValues = new(completeValues, StringComparer.OrdinalIgnoreCase)
+    {
+        ["SIGTRAN_RUN_ID"] = "run-floating"
+    };
+    SigtranCommercialEvidenceExecutionEnvironmentReadiness mismatched = contract.Evaluate(mismatchedValues);
+    SigtranCommercialEvidenceExecutionEnvironmentContract leakingSecret = new(
+        run,
+        contract.Variables
+            .Select(variable => variable.Name == "NUGET_API_KEY"
+                ? new SigtranCommercialEvidenceExecutionEnvironmentVariable(variable.Name, variable.Required, variable.Secret, "secret-value", variable.Summary)
+                : variable)
+            .ToArray());
+
+    Assert(contract.IsReady, contract.Describe());
+    Assert(contract.BindsRunIdentity, "environment contract should bind run identity");
+    Assert(contract.ProtectsSecrets, "environment contract should avoid storing secret values");
+    Assert(contract.IncludesLabVariables, "environment contract should include peer config and capture interface");
+    Assert(ready.IsReady, ready.Describe());
+    Assert(!mismatched.IsReady, mismatched.Describe());
+    Assert(mismatched.MismatchedVariables.Contains("SIGTRAN_RUN_ID"), "run id mismatch should be reported");
+    Assert(!leakingSecret.IsReady, leakingSecret.Describe());
+    Assert(!leakingSecret.ProtectsSecrets, "secret expected values should be rejected");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

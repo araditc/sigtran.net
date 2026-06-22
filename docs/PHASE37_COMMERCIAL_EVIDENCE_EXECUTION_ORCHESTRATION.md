@@ -42,6 +42,16 @@ The stage catalog validates required stage coverage, unique stage identifiers an
 
 The command plan is a runbook contract. It defines what should be run and how artifacts stay tied to the run; it does not execute the commands by itself.
 
+## Unit 4 - Execution Environment Contract
+
+`SigtranCommercialEvidenceExecutionEnvironments` defines the variables required by a governed evidence execution:
+
+- Run identity: `SIGTRAN_RUN_ID`, `SIGTRAN_ARTIFACT_ROOT`, `SIGTRAN_RELEASE_VERSION`, and `SIGTRAN_SOURCE_COMMIT`.
+- Lab inputs: `SIGTRAN_PEER_CONFIG` and `SIGTRAN_CAPTURE_INTERFACE`.
+- Protected secrets: `NUGET_API_KEY`, `SIGNING_CERTIFICATE`, `SIGNING_CERTIFICATE_PASSWORD`, and `PROVENANCE_ATTESTATION_TOKEN`.
+
+The contract validates run identity values, reports missing or mismatched variables, and prevents fixed secret values from being stored in the contract.
+
 ## Validation
 
 Each unit in this phase is validated with:
