@@ -306,6 +306,7 @@ Run("SIGTRAN commercial evidence verified promotion gate requires approval", Sig
 Run("SIGTRAN commercial evidence file verification command plan orders execution", SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution);
 Run("SIGTRAN commercial evidence file verification status summarizes readiness", SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness);
 Run("SIGTRAN commercial evidence filesystem observer computes retained file digest", SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest);
+Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff files", SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5196,10 +5197,92 @@ static void SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDiges
     }
     finally
     {
-        if (tempRoot.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase) && Directory.Exists(tempRoot))
-        {
-            Directory.Delete(tempRoot, recursive: true);
-        }
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        byte[] artifactContent = "verified commercial artifact"u8.ToArray();
+        byte[] reportContent = "verified commercial readiness report"u8.ToArray();
+        SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+            ComputeSha256Hex(artifactContent),
+            ComputeSha256Hex(reportContent));
+        IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
+
+        SigtranCommercialEvidenceFileSystemManifestExecution execution = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+            handoff,
+            pathOverrides,
+            DateTimeOffset.UtcNow);
+
+        Assert(execution.IsReady, execution.Describe());
+        AssertEqual(handoff.Items.Count, execution.Observations.Count, "filesystem manifest observation count");
+        Assert(execution.CoversHandoffItems, "filesystem manifest should cover handoff items");
+        Assert(execution.AllObservedFilesExist, "filesystem manifest should observe existing files");
+        Assert(execution.AllObservedDigestsMatch, "filesystem manifest should match handoff digests");
+        Assert(execution.Manifest.IsReady, "filesystem retained manifest should be ready");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static IReadOnlyDictionary<string, string> MaterializeHandoffFiles(
+    string tempRoot,
+    SigtranCommercialEvidencePromotionHandoff handoff,
+    byte[] artifactContent,
+    byte[] reportContent)
+{
+    Dictionary<string, string> paths = new(StringComparer.OrdinalIgnoreCase);
+
+    for (int i = 0; i < handoff.Items.Count; i++)
+    {
+        SigtranCommercialEvidencePromotionHandoffItem item = handoff.Items[i];
+        string path = Path.Combine(tempRoot, $"retained-{i:D2}.bin");
+        File.WriteAllBytes(path, item.RetainedPath == handoff.Report.ReportPath ? reportContent : artifactContent);
+        paths[item.RetainedPath] = path;
+    }
+
+    return paths;
+}
+
+static SigtranCommercialEvidencePromotionHandoff CreateCommercialEvidencePromotionHandoffWithDigests(
+    string artifactSha256,
+    string reportSha256)
+{
+    SigtranCommercialEvidenceArtifactDigestManifest digests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(
+        CreateDefaultCommercialEvidenceArtifactSourceManifest(),
+        artifactSha256);
+    SigtranCommercialEvidenceRedactionReviewManifest reviews = SigtranCommercialEvidenceRedactionReviews.CreateApproved(
+        digests,
+        "release-review",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceArtifactCompletenessResult completeness = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(reviews);
+    SigtranCommercialEvidenceDossierIntakeReport report = SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(completeness);
+
+    return SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+        report,
+        reportSha256,
+        "release-review",
+        DateTimeOffset.UtcNow);
+}
+
+static string ComputeSha256Hex(byte[] content)
+{
+    return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(content)).ToLowerInvariant();
+}
+
+static void DeleteTempEvidenceRoot(string tempRoot)
+{
+    if (tempRoot.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase) && Directory.Exists(tempRoot))
+    {
+        Directory.Delete(tempRoot, recursive: true);
     }
 }
 

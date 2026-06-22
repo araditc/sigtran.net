@@ -16,6 +16,18 @@ Public APIs use domain names such as `SigtranCommercialEvidenceFileSystemObserve
 
 The observer is the first executable bridge from retained dossier paths to real file verification.
 
+## Unit 2 - Filesystem Manifest Execution
+
+`SigtranCommercialEvidenceFileSystemManifestBuilder` observes every promotion handoff item and creates a retained file manifest from real filesystem observations:
+
+- Observes every handoff item.
+- Supports local filesystem path overrides keyed by retained dossier path.
+- Preserves retained path identity while reading from mounted or copied local files.
+- Builds `SigtranCommercialEvidenceRetainedFileManifest` from observed files.
+- Reports whether all handoff items were covered, all files existed, and all digests matched.
+
+This unit lets the verification pipeline evaluate a complete retained handoff using real files rather than synthetic in-memory retained file entries.
+
 ## Validation
 
 Each unit in this phase is validated with:

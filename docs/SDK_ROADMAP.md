@@ -355,7 +355,7 @@ Status: Phase 39 is foundation-complete. Retained file evidence item verificatio
 - Build verification manifests, reports, retained artifacts, ledger, seal, attachments, promotion gate, and command materialization from observed files.
 - Keep filesystem execution separate from commercial publication: helpers can verify real files, but publication remains blocked until retained evidence comes from an approved commercial run.
 
-Status: Phase 40 is in progress. Filesystem observation now reads retained files from disk, computes real SHA-256 digests, records file existence and size, and maps observations into the retained file verification model. Manifest execution, report execution, retained artifact writing, ledger execution, seal execution, attachment execution, promotion execution, command materialization, status reporting, and final validation remain in progress.
+Status: Phase 40 is in progress. Filesystem observation now reads retained files from disk, computes real SHA-256 digests, records file existence and size, and maps observations into the retained file verification model. Filesystem manifest execution now observes every promotion handoff item, supports retained-path-to-local-path overrides, and builds retained file manifests from real observations. Report execution, retained artifact writing, ledger execution, seal execution, attachment execution, promotion execution, command materialization, status reporting, and final validation remain in progress.
 
 ## Recommended First Deliverable
 
