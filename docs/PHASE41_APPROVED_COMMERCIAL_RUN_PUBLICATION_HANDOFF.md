@@ -44,6 +44,18 @@ This unit turns commercial run approval into an explicit checklist with blocker 
 
 This unit makes commercial approval auditable and role-aware before any publication handoff is created.
 
+## Unit 4 - Approval Report Writer
+
+`SigtranCommercialEvidenceRunApprovalReportWriters` renders and retains a Markdown approval report:
+
+- Run id, package version, source commit, and artifact root.
+- Checklist digest and manifest readiness.
+- Reviewer approval roles.
+- UTC write time.
+- SHA-256 digest for the retained report.
+
+This unit turns approval data into a retained report artifact that later promotion packages and publication handoffs can reference.
+
 ## Validation
 
 Each unit in this phase is validated with:

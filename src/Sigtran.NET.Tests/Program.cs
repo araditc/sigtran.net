@@ -318,6 +318,7 @@ Run("SIGTRAN commercial evidence filesystem execution status summarizes final va
 Run("SIGTRAN commercial evidence approved run target binds filesystem promotion", SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion);
 Run("SIGTRAN commercial evidence run approval checklist requires reviewer approval", SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval);
 Run("SIGTRAN commercial evidence run approval manifest requires required roles", SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles);
+Run("SIGTRAN commercial evidence run approval report writer retains markdown", SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5565,6 +5566,41 @@ static void SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceRunApprovalManifest manifest = CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot);
+
+        SigtranCommercialEvidenceRunApprovalReportWriteResult result = SigtranCommercialEvidenceRunApprovalReportWriters.WriteReport(
+            manifest,
+            Path.Combine(tempRoot, "approval"),
+            DateTimeOffset.UtcNow);
+        string report = File.ReadAllText(result.ReportPath);
+
+        Assert(result.IsReady, result.Describe());
+        Assert(result.ReportExists, "approval report should exist");
+        Assert(result.ReportSizeBytes > 0, "approval report should be non-empty");
+        Assert(result.HasValidReportDigest, "approval report should have a valid digest");
+        Assert(report.Contains(manifest.Checklist.Target.RunId, StringComparison.Ordinal), "approval report should include run id");
+        Assert(report.Contains(manifest.ChecklistSha256, StringComparison.Ordinal), "approval report should include checklist digest");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceRunApprovalManifest CreateReadyCommercialEvidenceRunApprovalManifest(string tempRoot)
+{
+    return SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
+        CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceRunApprovalChecklist CreateReadyCommercialEvidenceRunApprovalChecklist(string tempRoot)
