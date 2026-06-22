@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceFileVerificationStatus
         "publication-attachments",
         "verified-promotion-gate",
         "file-verification-command-plan",
-        "status-reporting"
+        "status-reporting",
+        "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "real-retained-file-evidence-required",
-        "status-final-validation-pending"
+        "real-retained-file-evidence-required"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercial Evidence File Verification";
 
     /// <summary>The number of completed commercial evidence file verification work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed file verification capability names.</summary>
     /// <returns>The completed capability names.</returns>

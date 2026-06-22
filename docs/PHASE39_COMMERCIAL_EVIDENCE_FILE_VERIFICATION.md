@@ -118,7 +118,18 @@ The plan is package-neutral and shell-neutral. It describes the expected workflo
 - Explicit separation between foundation readiness and real retained file evidence.
 - Commercial publication remains blocked until real retained file evidence and final validation are complete.
 
-At this point the status intentionally keeps `status-final-validation-pending` as a blocker.
+During Unit 9 the status intentionally kept `status-final-validation-pending` as a blocker until final validation completed.
+
+## Unit 10 - Final Validation
+
+Final validation closes the file verification foundation:
+
+- Completed unit count is aligned to 10.
+- Documentation is represented in the status capabilities.
+- The temporary final-validation blocker is removed.
+- Real retained file evidence remains a blocker until actual files are observed, digest-checked, retained, sealed, and attached from a real commercial evidence run.
+
+Phase 39 is foundation-complete after this unit. It does not claim that commercial publication is ready without real retained evidence.
 
 ## Validation
 

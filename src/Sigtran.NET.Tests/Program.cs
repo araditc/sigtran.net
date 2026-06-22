@@ -5144,16 +5144,17 @@ static void SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness()
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileVerificationStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranCommercialEvidenceFileVerificationStatus.CompletedUnitCount, "file verification completed unit count");
-    AssertEqual(9, capabilities.Count, "file verification capability count");
+    AssertEqual(10, SigtranCommercialEvidenceFileVerificationStatus.CompletedUnitCount, "file verification completed unit count");
+    AssertEqual(10, capabilities.Count, "file verification capability count");
     Assert(capabilities.Contains("verified-promotion-gate"), "file verification status should include promotion gate");
     Assert(capabilities.Contains("file-verification-command-plan"), "file verification status should include command plan");
     Assert(capabilities.Contains("status-reporting"), "file verification status should include status reporting");
+    Assert(capabilities.Contains("documentation"), "file verification status should include documentation");
     Assert(SigtranCommercialEvidenceFileVerificationStatus.FileVerificationFoundationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
     Assert(!SigtranCommercialEvidenceFileVerificationStatus.RealRetainedFileEvidenceReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
     Assert(!SigtranCommercialEvidenceFileVerificationStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
     Assert(blockers.Contains("real-retained-file-evidence-required"), "file verification status should require real retained file evidence");
-    Assert(blockers.Contains("status-final-validation-pending"), "file verification status should keep final validation blocker before Unit 10");
+    Assert(!blockers.Contains("status-final-validation-pending"), "file verification status should clear final validation blocker");
 }
 
 static SigtranCommercialEvidenceFileVerificationCommandPlan CreateDefaultCommercialEvidenceFileVerificationCommandPlan()
@@ -5285,7 +5286,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)
