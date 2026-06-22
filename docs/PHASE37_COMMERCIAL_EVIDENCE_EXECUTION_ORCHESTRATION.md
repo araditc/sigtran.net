@@ -92,6 +92,16 @@ This plan keeps evidence review auditable and prevents sensitive telecom traces 
 
 Each blocker declares whether it is retryable after correction. Unknown blockers are not retried automatically and require manual triage.
 
+## Unit 8 - Retry And Resume Policy
+
+`SigtranCommercialEvidenceExecutionRetryPolicies` maps blocker kinds to retry decisions:
+
+- Environment, command, external peer, artifact, digest, and redaction blockers can be retried within bounded attempt counts.
+- Native SCTP host blockers, protected approval blockers, unknown blockers, and failed preflight blockers require manual correction.
+- Retry decisions include the stage identifier where execution should resume.
+
+The policy prevents endless retries and keeps host capability, approval, and unknown failures under operator control.
+
 ## Validation
 
 Each unit in this phase is validated with:

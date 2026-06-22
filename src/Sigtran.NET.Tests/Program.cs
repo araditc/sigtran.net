@@ -285,6 +285,7 @@ Run("SIGTRAN commercial evidence execution environment contract protects run inp
 Run("SIGTRAN commercial evidence execution artifact manifest covers retained outputs", SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs);
 Run("SIGTRAN commercial evidence execution verification requires digests and redaction", SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction);
 Run("SIGTRAN commercial evidence execution blocker classifier categorizes failures", SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures);
+Run("SIGTRAN commercial evidence execution retry policy gates resume decisions", SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4731,6 +4732,35 @@ static void SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailur
     Assert(!nativeSctpUnavailable.Retryable, "native SCTP host capability should require host correction");
     Assert(unknown.Kind == SigtranCommercialEvidenceExecutionBlockerKind.Unknown, "unknown blocker should require manual triage");
     Assert(!unknown.Retryable, "unknown blocker should not be automatically retried");
+}
+
+static void SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionRetryPolicy policy = SigtranCommercialEvidenceExecutionRetryPolicies.CreateDefault(catalog);
+    SigtranCommercialEvidenceExecutionBlockerClassifier classifier = SigtranCommercialEvidenceExecutionBlockers.CreateDefault();
+    SigtranCommercialEvidenceExecutionRetryDecision peerRetry = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 1);
+    SigtranCommercialEvidenceExecutionRetryDecision peerExhausted = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 3);
+    SigtranCommercialEvidenceExecutionRetryDecision nativeSctp = policy.Decide(classifier.Classify("native-sctp-unavailable"), attemptCount: 0);
+    SigtranCommercialEvidenceExecutionRetryDecision unknown = policy.Decide(classifier.Classify("operator-note-required"), attemptCount: 0);
+
+    Assert(policy.IsReady, policy.Describe());
+    Assert(policy.CoversKnownBlockers, "retry policy should cover known blocker kinds");
+    Assert(policy.UsesKnownResumeStages, "retry policy should resume from known stages");
+    Assert(policy.ProtectsNonRetryableFailures, "retry policy should protect non-retryable failures");
+    Assert(peerRetry.CanRetry, "external peer blocker should be retryable before exhaustion");
+    Assert(peerRetry.ResumeStageId == "external-peer-interop", "external peer retry should resume from peer stage");
+    Assert(!peerExhausted.CanRetry, "external peer retry should stop after max attempts");
+    Assert(peerExhausted.RequiresManualCorrection, "exhausted retry should require manual correction");
+    Assert(!nativeSctp.CanRetry, "native SCTP host blocker should not retry automatically");
+    Assert(nativeSctp.RequiresManualCorrection, "native SCTP blocker should require host correction");
+    Assert(!unknown.CanRetry, "unknown blockers should not retry automatically");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

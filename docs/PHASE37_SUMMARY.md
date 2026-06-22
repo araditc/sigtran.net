@@ -11,7 +11,8 @@ Phase 37 prepares the SDK to execute real commercial evidence runs after readine
 - Artifact collection manifest that maps checklist artifacts to known stage roots and retained output paths.
 - Digest and redaction verification plan for every retained execution artifact.
 - Execution blocker classifier for readiness, environment, command, native SCTP, external peer, artifact, digest, redaction, and approval failures.
+- Retry and resume policy with bounded retries and manual-correction gates for non-retryable failures.
 
 ## Readiness Position
 
-The phase is in progress. Execution orchestration still requires retry/resume policy, status reporting, and final validation.
+The phase is in progress. Execution orchestration still requires status reporting and final validation.
