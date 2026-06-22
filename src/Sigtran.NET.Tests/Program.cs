@@ -276,6 +276,7 @@ Run("SIGTRAN commercial evidence checklist requires essential artifacts", Sigtra
 Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCommercialReleasePreflightAggregatesLockdownInputs);
 Run("SIGTRAN protected release environment profile gates publication channels", SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels);
 Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers);
+Run("SIGTRAN commercial go no-go gate separates evidence execution from publication", SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4454,6 +4455,30 @@ static void SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers()
     Assert(!missingDigestManifest.IsReady, missingDigestManifest.Describe());
     Assert(!floatingHandoff.IsReady, floatingHandoff.Describe());
     Assert(!floatingHandoff.UsesTargetArtifactRoot, "handoff paths should remain target-bound");
+}
+
+static void SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication()
+{
+    string[] allSecretNames =
+    [
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD",
+        "PROVENANCE_ATTESTATION_TOKEN"
+    ];
+
+    SigtranCommercialGoNoGoReport current = SigtranCommercialGoNoGoGates.Evaluate(
+        SigtranCommercialGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", allSecretNames));
+    SigtranCommercialGoNoGoReport missingSecrets = SigtranCommercialGoNoGoGates.Evaluate(
+        SigtranCommercialGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", ["NUGET_API_KEY"]));
+
+    Assert(current.Decision == SigtranCommercialGoNoGoDecision.EvidenceExecutionOnly, current.Describe());
+    Assert(current.CanStartEvidenceExecution, "complete lockdown inputs should allow evidence-producing execution");
+    Assert(!current.CanPublishPackage, "current evidence blockers should prevent RC publication");
+    Assert(!current.CanPublishStablePackage, "current evidence blockers should prevent stable publication");
+    Assert(current.Blockers.Contains("commercial-release-evidence-incomplete"), "current gate should name incomplete commercial evidence");
+    Assert(missingSecrets.Decision == SigtranCommercialGoNoGoDecision.NoGo, missingSecrets.Describe());
+    Assert(missingSecrets.Blockers.Contains("release-preflight-not-ready"), "missing secrets should block preflight");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

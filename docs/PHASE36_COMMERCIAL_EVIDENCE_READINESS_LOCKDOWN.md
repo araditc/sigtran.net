@@ -90,6 +90,16 @@ The profile validates channel coverage, dry-run non-publication, stable publicat
 
 The handoff plan is still a readiness artifact. It defines how the evidence will be reviewed once real retained artifacts exist.
 
+## Unit 8 - Commercial Go/No-Go Gate
+
+`SigtranCommercialGoNoGoGates` separates three decisions:
+
+- `NoGo` when lockdown inputs are incomplete.
+- `EvidenceExecutionOnly` when lockdown inputs are ready but real commercial evidence is still incomplete.
+- `ReleaseCandidate` or `Stable` only when retained commercial release evidence is complete.
+
+This intentionally prevents the SDK from treating readiness foundation as publication evidence. With the current retained evidence state, the gate can allow evidence-producing execution but continues to block RC and stable publication until the commercial evidence dossier is complete.
+
 ## Validation
 
 Each unit in this phase is validated with:

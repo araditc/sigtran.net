@@ -11,7 +11,8 @@ Phase 36 prepares the SDK for evidence-producing execution by locking the commer
 - Release preflight report that aggregates target lock, secrets, retention, and checklist readiness before lab or publication execution starts.
 - Protected release environment profile for dry-run, prerelease, and stable channels with publication separation and approval rules.
 - Evidence dossier handoff plan that maps checklist items to retained paths, reviewer roles, digest verification, and redaction review.
+- Commercial go/no-go gate that separates no-go, evidence execution, release-candidate publication, and stable publication decisions.
 
 ## Readiness Position
 
-The phase is in progress. Evidence readiness lockdown still requires go/no-go gating, status reporting, and final validation.
+The phase is in progress. Evidence readiness lockdown still requires status reporting and final validation.
