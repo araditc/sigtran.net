@@ -76,6 +76,22 @@ The manifest validates checklist coverage, known stage ownership, unique paths, 
 
 This plan keeps evidence review auditable and prevents sensitive telecom traces from entering the public dossier without redaction review.
 
+## Unit 7 - Execution Blocker Classifier
+
+`SigtranCommercialEvidenceExecutionBlockers` classifies execution failures into stable categories:
+
+- Readiness preflight.
+- Environment.
+- Command failure.
+- Native SCTP.
+- External peer.
+- Artifact retention.
+- Digest verification.
+- Redaction review.
+- Protected approval.
+
+Each blocker declares whether it is retryable after correction. Unknown blockers are not retried automatically and require manual triage.
+
 ## Validation
 
 Each unit in this phase is validated with:

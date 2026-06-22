@@ -284,6 +284,7 @@ Run("SIGTRAN commercial evidence execution command plan covers stage work", Sigt
 Run("SIGTRAN commercial evidence execution environment contract protects run inputs", SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs);
 Run("SIGTRAN commercial evidence execution artifact manifest covers retained outputs", SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs);
 Run("SIGTRAN commercial evidence execution verification requires digests and redaction", SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction);
+Run("SIGTRAN commercial evidence execution blocker classifier categorizes failures", SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4709,6 +4710,27 @@ static void SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndReda
     Assert(!missingDigest.RequiresDigestForAllArtifacts, "missing digest requirement should block verification");
     Assert(!missingRedaction.IsReady, missingRedaction.Describe());
     Assert(!missingRedaction.RequiresRedactionForTraceArtifacts, "missing redaction review should block trace evidence");
+}
+
+static void SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures()
+{
+    SigtranCommercialEvidenceExecutionBlockerClassifier classifier = SigtranCommercialEvidenceExecutionBlockers.CreateDefault();
+    SigtranCommercialEvidenceExecutionBlocker missingEnvironment = classifier.Classify("environment-missing");
+    SigtranCommercialEvidenceExecutionBlocker peerUnavailable = classifier.Classify("external-peer-unavailable");
+    SigtranCommercialEvidenceExecutionBlocker nativeSctpUnavailable = classifier.Classify("native-sctp-unavailable");
+    SigtranCommercialEvidenceExecutionBlocker unknown = classifier.Classify("operator-note-required");
+
+    Assert(classifier.IsReady, classifier.Describe());
+    Assert(classifier.HasUniqueCodes, "blocker classifier should use unique codes");
+    Assert(classifier.CoversOperationalKinds, "blocker classifier should cover operational blocker kinds");
+    Assert(missingEnvironment.Kind == SigtranCommercialEvidenceExecutionBlockerKind.Environment, "environment blocker should be classified");
+    Assert(missingEnvironment.Retryable, "missing environment can be retried after correction");
+    Assert(peerUnavailable.Kind == SigtranCommercialEvidenceExecutionBlockerKind.ExternalPeer, "external peer blocker should be classified");
+    Assert(peerUnavailable.Retryable, "external peer availability can be retried");
+    Assert(nativeSctpUnavailable.Kind == SigtranCommercialEvidenceExecutionBlockerKind.NativeSctp, "native SCTP blocker should be classified");
+    Assert(!nativeSctpUnavailable.Retryable, "native SCTP host capability should require host correction");
+    Assert(unknown.Kind == SigtranCommercialEvidenceExecutionBlockerKind.Unknown, "unknown blocker should require manual triage");
+    Assert(!unknown.Retryable, "unknown blocker should not be automatically retried");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
