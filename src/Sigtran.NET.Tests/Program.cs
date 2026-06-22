@@ -315,6 +315,7 @@ Run("SIGTRAN commercial evidence filesystem publication attachments protect trac
 Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval);
 Run("SIGTRAN commercial evidence filesystem command materializer writes execution script", SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript);
 Run("SIGTRAN commercial evidence filesystem execution status summarizes final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
+Run("SIGTRAN commercial evidence approved run target binds filesystem promotion", SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5461,6 +5462,56 @@ static void SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalVal
     Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
     Assert(blockers.Contains("real-approved-commercial-run-required"), "filesystem execution status should require a real approved run");
     Assert(!blockers.Contains("status-final-validation-pending"), "filesystem execution status should clear final validation blocker");
+}
+
+static void SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemPromotionExecution promotionExecution = CreateReadyCommercialEvidenceFileSystemPromotionExecution(tempRoot);
+        DateTimeOffset startedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+        SigtranCommercialEvidenceApprovedRunTarget target = SigtranCommercialEvidenceApprovedRunTargets.Create(
+            "commercial-run-20260622-001",
+            "1.0.0-rc.1",
+            "abcdef123456",
+            tempRoot,
+            "release-operator",
+            startedAt,
+            DateTimeOffset.UtcNow,
+            promotionExecution);
+        SigtranCommercialEvidenceApprovedRunTarget invalidCommit = SigtranCommercialEvidenceApprovedRunTargets.Create(
+            "commercial-run-20260622-002",
+            "1.0.0-rc.1",
+            "not-a-commit",
+            tempRoot,
+            "release-operator",
+            startedAt,
+            DateTimeOffset.UtcNow,
+            promotionExecution);
+
+        Assert(target.IsReadyForApproval, target.Describe());
+        Assert(target.HasStableRunId, "approved run target should have a stable run id");
+        Assert(target.HasSourceCommit, "approved run target should have a source commit");
+        Assert(target.UsesUtcTimes, "approved run target should use UTC times");
+        Assert(target.CompletedAfterStart, "approved run target should complete after start");
+        Assert(target.PromotionReady, "approved run target should require ready filesystem promotion");
+        Assert(!invalidCommit.IsReadyForApproval, "invalid source commit should block approval target readiness");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemPromotionExecution CreateReadyCommercialEvidenceFileSystemPromotionExecution(string tempRoot)
+{
+    return SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
+        CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(tempRoot),
+        "release-review",
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)
