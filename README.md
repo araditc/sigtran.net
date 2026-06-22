@@ -132,9 +132,18 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 
 ## Documentation
 
+Start here:
+
 - [SDK roadmap](docs/SDK_ROADMAP.md)
+- [Complete phase index](docs/PHASE_INDEX.md)
+- [Commercial readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
+- [Phase 35 commercial gate report](docs/PHASE35_COMMERCIAL_GATE_REPORT.md)
 - [Alpha release checklist](docs/ALPHA_RELEASE.md)
+
+Architecture and protocol docs:
+
 - [Architecture](docs/ARCHITECTURE.md)
+- [Phases 0 to 5 foundation map](docs/PHASE0_TO_5_FOUNDATION.md)
 - [M3UA implementation notes](docs/M3UA.md)
 - [M3UA typed dispatcher](docs/DISPATCHER.md)
 - [M3UA Payload Data](docs/DATA.md)
@@ -147,74 +156,17 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [M3UA Management Messages](docs/MANAGEMENT.md)
 - [M3UA Signalling Network Management](docs/SSNM.md)
 - [M3UA Routing Key Management](docs/RKM.md)
+- [SCTP Transport](docs/SCTP_TRANSPORT.md)
 - [MTP3 Routing](docs/MTP3.md)
 - [SCCP](docs/SCCP.md)
 - [TCAP](docs/TCAP.md)
 - [MAP SMS Profile](docs/MAP.md)
-- [Interoperability and Tooling](docs/INTEROPERABILITY.md)
-- [Phase 6 Summary](docs/PHASE6_SUMMARY.md)
-- [Phase 7 Commercialization](docs/PHASE7_COMMERCIALIZATION.md)
-- [Phase 7 Summary](docs/PHASE7_SUMMARY.md)
-- [Phase 8 Native SCTP](docs/PHASE8_NATIVE_SCTP.md)
-- [Phase 8 Summary](docs/PHASE8_SUMMARY.md)
-- [Phase 9 Interoperability Lab](docs/PHASE9_INTEROP_LAB.md)
-- [Phase 9 Summary](docs/PHASE9_SUMMARY.md)
-- [Phase 10 Release Automation](docs/PHASE10_RELEASE_AUTOMATION.md)
-- [Phase 10 Summary](docs/PHASE10_SUMMARY.md)
-- [Phase 11 Developer Experience](docs/PHASE11_DEVELOPER_EXPERIENCE.md)
-- [Phase 11 Summary](docs/PHASE11_SUMMARY.md)
-- [Phase 12 Operations](docs/PHASE12_OPERATIONS.md)
-- [Phase 12 Summary](docs/PHASE12_SUMMARY.md)
-- [Phase 13 Compliance](docs/PHASE13_COMPLIANCE.md)
-- [Phase 13 Summary](docs/PHASE13_SUMMARY.md)
-- [Phase 14 Performance](docs/PHASE14_PERFORMANCE.md)
-- [Phase 14 Summary](docs/PHASE14_SUMMARY.md)
-- [Phase 15 API Lifecycle](docs/PHASE15_API_LIFECYCLE.md)
-- [Phase 15 Summary](docs/PHASE15_SUMMARY.md)
-- [Phase 16 Configuration](docs/PHASE16_CONFIGURATION.md)
-- [Phase 16 Summary](docs/PHASE16_SUMMARY.md)
-- [Phase 17 Native SCTP Lab Verification](docs/PHASE17_NATIVE_SCTP_LAB_VERIFICATION.md)
-- [Phase 17 Summary](docs/PHASE17_SUMMARY.md)
-- [Phase 18 External Peer Interop Execution](docs/PHASE18_EXTERNAL_PEER_INTEROP_EXECUTION.md)
-- [Phase 18 Summary](docs/PHASE18_SUMMARY.md)
-- [Phase 19 Protocol Interop Vectors](docs/PHASE19_PROTOCOL_INTEROP_VECTORS.md)
-- [Phase 19 Summary](docs/PHASE19_SUMMARY.md)
-- [Phase 20 Commercial Evidence Dossier](docs/PHASE20_COMMERCIAL_EVIDENCE_DOSSIER.md)
-- [Phase 20 Summary](docs/PHASE20_SUMMARY.md)
-- [Phase 21 Supply Chain Automation](docs/PHASE21_SUPPLY_CHAIN_AUTOMATION.md)
-- [Phase 21 Summary](docs/PHASE21_SUMMARY.md)
-- [Phase 22 Release Workflow Orchestration](docs/PHASE22_RELEASE_WORKFLOW_ORCHESTRATION.md)
-- [Phase 22 Summary](docs/PHASE22_SUMMARY.md)
-- [Phase 23 Release Workflow Completion](docs/PHASE23_RELEASE_WORKFLOW_COMPLETION.md)
-- [Phase 23 Summary](docs/PHASE23_SUMMARY.md)
-- [Phase 24 Package Publication Readiness](docs/PHASE24_PACKAGE_PUBLICATION_READINESS.md)
-- [Phase 24 Summary](docs/PHASE24_SUMMARY.md)
-- [Phase 25 Commercial Release Execution](docs/PHASE25_COMMERCIAL_RELEASE_EXECUTION.md)
-- [Phase 26 Commercial Roadmap Realignment](docs/PHASE26_COMMERCIAL_ROADMAP_REALIGNMENT.md)
-- [Phase 26 Summary](docs/PHASE26_SUMMARY.md)
-- [Phase 27 Maintained External Peer Lab](docs/PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md)
-- [Phase 27 Sigtran.NET Branding](docs/PHASE27_SIGTRAN_NET_BRANDING.md)
-- [Phase 27 Summary](docs/PHASE27_SUMMARY.md)
-- [Phase 28 Maintained Peer Lab Automation](docs/PHASE28_MAINTAINED_PEER_LAB_AUTOMATION.md)
-- [Phase 28 Summary](docs/PHASE28_SUMMARY.md)
-- [Phase 29 Maintained Peer Lab Runner](docs/PHASE29_MAINTAINED_PEER_LAB_RUNNER.md)
-- [Phase 29 Summary](docs/PHASE29_SUMMARY.md)
-- [Phase 30 Maintained Peer Lab Runner Operationalization](docs/PHASE30_MAINTAINED_PEER_LAB_RUNNER_OPERATIONALIZATION.md)
-- [Phase 30 Summary](docs/PHASE30_SUMMARY.md)
-- [Phase 31 Native SCTP Production Hardening](docs/PHASE31_NATIVE_SCTP_PRODUCTION_HARDENING.md)
-- [Phase 31 Summary](docs/PHASE31_SUMMARY.md)
-- [Phase 32 SCCP TCAP MAP Evidence Upgrade](docs/PHASE32_SCCP_TCAP_MAP_EVIDENCE_UPGRADE.md)
-- [Phase 32 Summary](docs/PHASE32_SUMMARY.md)
-- [Phase 33 Performance Resilience Evidence](docs/PHASE33_PERFORMANCE_RESILIENCE_EVIDENCE.md)
-- [Phase 33 Summary](docs/PHASE33_SUMMARY.md)
-- [Phase 34 Supply Chain Release Execution](docs/PHASE34_SUPPLY_CHAIN_RELEASE_EXECUTION.md)
-- [Phase 34 Summary](docs/PHASE34_SUMMARY.md)
-- [Phase 35 RC Publish And Commercial Gate](docs/PHASE35_RC_PUBLISH_COMMERCIAL_GATE.md)
-- [Phase 35 Summary](docs/PHASE35_SUMMARY.md)
-- [Phase 35 Commercial Gate Report](docs/PHASE35_COMMERCIAL_GATE_REPORT.md)
-- [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
-- [Continuous Integration](docs/CI.md)
-- [SCTP Transport](docs/SCTP_TRANSPORT.md)
+
+Release, operations, and governance docs:
+
+- [Interoperability and tooling](docs/INTEROPERABILITY.md)
+- [External peer interop migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
+- [Continuous integration](docs/CI.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Observability](docs/OBSERVABILITY.md)
 - [Deployment profiles](docs/DEPLOYMENT.md)
@@ -224,43 +176,18 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 
 ## Project Direction
 
-The roadmap is intentionally conservative:
+The roadmap is intentionally conservative. The SDK can move toward a governed RC, but stable commercial publication remains blocked until retained evidence is complete.
 
-1. Finish remaining M3UA protocol coverage and API polish.
-2. Add a production SCTP transport story.
-3. Harden SCCP with external interoperability vectors and trace validation.
-4. Harden TCAP with external interoperability vectors and MAP profile validation.
-
-Phase 27 completed the maintained external peer lab foundation, including package-neutral binding, host prerequisites, validated lab configuration, deterministic artifact planning, command planning, traffic vectors, manual self-hosted CI policy, digest-covered retained evidence gates, and status reporting.
-Phase 28 completed the automation and evidence handoff layer above that foundation, including a single run manifest, deterministic environment file rendering, command script rendering, comparison reporting, run reporting, digest manifests, an evidence bundle, a manual self-hosted workflow template, a commercial readiness bridge, and automation status reporting for retained lab artifact handoff.
-Phase 29 completed the maintained peer lab runner materialization layer, including deterministic runner workspace paths, execution input bundles, output artifact mapping, preflight checks, command manifests, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting for real lab execution.
-Phase 30 completed the maintained peer lab runner operationalization layer, including reviewable file materialization, structured execution logs, command outcomes, artifact verification, runner provenance, failure classification, retry policy, evidence package manifests, operator handoff reports, and operations status reporting for real lab execution.
-Phase 31 completed the native SCTP production hardening foundation, including outbound stream and PPID framing, association lifecycle journaling, reconnect scheduling, send backpressure, cancellation/timeout policy, multi-homing readiness, deterministic fault recovery, transport diagnostics snapshots, production hardening readiness gates, and status reporting.
-Phase 32 completed the SCCP, TCAP, and MAP SMS SDK evidence-backed upgrade, with shared byte-level evidence vector validation, SCCP/TCAP/MAP SMS evidence vectors, a cross-layer evidence bundle, ordered trace validation, mismatch classification, an SDK evidence-backed readiness gate, status reporting, and final validation in place while production claims remain tied to retained external interoperability artifacts.
-Phase 33 completed the performance and resilience evidence foundation, with peer-traffic workload, retained artifact run plan, latency P95/P99, CPU/memory/allocation evidence, failover recovery evidence, publishable Markdown report gates, production performance evidence gating, manual self-hosted runner/CI handoff, status reporting, and final validation in place while production performance claims remain tied to retained real peer benchmark evidence.
-5. Harden MAP SMS with external interoperability vectors and operator-profile validation.
-6. Use completed interoperability tooling to run external lab validation, native SCTP verification, and release automation hardening.
-7. Complete commercial readiness gates and publish governed release candidates.
-8. Complete Linux native SCTP transport and verification.
-9. Capture real interoperability lab evidence and promote passing artifacts into commercial readiness.
-10. Complete release automation and supply-chain hardening for governed package publication.
-11. Complete developer experience and enterprise adoption guidance.
-12. Keep external peer interoperability package-neutral in SDK source while executing maintained peer labs as retained release evidence.
-12. Complete production operations and support readiness.
-13. Complete compliance and audit readiness foundations.
-14. Complete performance, capacity, and benchmark readiness foundations.
-15. Complete API stability, deprecation, and migration readiness foundations.
-16. Complete configuration, policy, and environment readiness foundations.
-17. Complete native SCTP lab verification framework and capture Linux SCTP evidence.
-18. Complete external peer interop execution framework and capture peer evidence.
-19. Complete SCCP, TCAP, and MAP SMS protocol vector framework and capture external vector evidence.
-20. Complete commercial evidence dossier framework and retain release-ready evidence artifacts.
-21. Complete supply-chain automation framework and retain signed release-security artifacts.
-22. Complete release workflow orchestration in smaller committed parts and validate publish workflow behavior.
-23. Complete release workflow foundation and keep promotion blocked on real evidence.
-24. Complete package publication readiness and keep NuGet publication blocked until all commercial gates pass.
-25. Execute commercial release evidence capture and keep promotion blocked until retained artifacts are complete and unblocked.
-26. Realign commercial interoperability around package-neutral external SIGTRAN peer evidence and select maintained peer packages only in lab profiles.
+1. Run the `dry-run` release workflow for the intended RC version and review uploaded artifacts.
+2. Execute the maintained external peer lab against real peer traffic and retain PCAP, peer logs, SDK traces, configuration, comparison report, run report, and digests.
+3. Re-run native SCTP verification on Linux with retained peer traffic evidence covering stream/PPID, lifecycle, reconnect, backpressure, cancellation, multi-homing readiness, and fault recovery.
+4. Promote SCCP, TCAP, and MAP from SDK evidence-backed status to production evidence-backed status using retained external interoperability artifacts.
+5. Replace smoke performance evidence with retained peer/load benchmarks covering warmup, sustained, peak, latency P95/P99, CPU, memory, allocation, and failover behavior.
+6. Execute release supply-chain automation for the final release commit: SBOM, trusted timestamped signing, signature verification, provenance, public API diff, digest manifest, and artifact upload.
+7. Publish a gated NuGet prerelease only after the RC decision report, release notes, migration notes, package artifacts, dry-run evidence, and digests are retained.
+8. Keep stable publication blocked until the commercial evidence dossier passes without blockers.
+9. After the RC soak period, review API lifecycle, migration notes, operational readiness, compliance posture, and support expectations.
+10. Promote to stable only when commercial evidence, release evidence, performance evidence, and supply-chain evidence are complete and reviewable.
 
 ## License
 

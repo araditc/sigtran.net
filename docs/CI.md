@@ -102,6 +102,6 @@ The profile is opt-in and enabled by `SIGTRAN_SUPPLY_CHAIN`. Real runs require r
 
 Phase 22 Part 1 adds `SigtranReleaseWorkflows.CreateCommercialReleasePlan()` as the metadata contract for the commercial release workflow.
 
-The contract requires manual dispatch and version tag triggers, restore/build/test/pack stages, supply-chain automation, commercial evidence verification, and package publishing with required signing and NuGet secrets. The concrete release workflow file is intentionally left for a later part.
+The contract requires manual dispatch and version tag triggers, restore/build/test/pack stages, supply-chain automation, commercial evidence verification, and package publishing with required signing and NuGet secrets. The concrete release workflow now lives in `.github/workflows/release.yml` and is validated by the release workflow tests.
 
 Phase 23 adds the concrete `.github/workflows/release.yml` file and validates release workflow YAML, publish guard behavior, artifact retention, permissions, concurrency, environment variables, and promotion gates.

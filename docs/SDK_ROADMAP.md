@@ -10,7 +10,9 @@ This roadmap is based on the current repository and the supplied SIGTRAN referen
 
 ## Current Assessment
 
-The current repository is a useful proof of concept, but it is not yet an interoperable SDK. SCCP and TCAP use simplified internal encodings, SCTP is represented by a TCP framing adapter, and the M3UA layer only supports a narrow Payload Data path. The first production milestone should therefore focus on binary correctness, role/session state, and testable public APIs before adding more telecom features.
+The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, and RC publication gates. Stable commercial publication is still blocked until retained external peer evidence, trusted timestamped signing, production benchmark evidence, and real release-run artifacts are complete.
+
+For a concise map of every phase and its primary documents, see [Phase Index](PHASE_INDEX.md).
 
 ## Phase 0 - SDK Foundation
 
@@ -80,7 +82,7 @@ Status: SDK foundation is complete for trace formatting, conformance vector inve
 
 Status: SDK foundation is complete for commercial readiness gates, native SCTP support matrix, external interoperability evidence tracking, release candidate manifests, package governance, security policy, compatibility policy, observability profile, deployment profiles, and Phase 7 status reporting. Internal release readiness is available; commercial production readiness remains blocked until native SCTP verification, external interoperability evidence, package signing, and SBOM automation are complete.
 
-## Native SCTP Production Transport
+## Phase 8 - Native SCTP Production Transport
 
 - Probe Linux native SCTP socket creation using `SocketType.Seqpacket` and IP protocol number `132`.
 - Add native SCTP socket factory, connector, listener, send/receive path, lifecycle events, health snapshots, and reconnect integration.
@@ -89,7 +91,7 @@ Status: SDK foundation is complete for commercial readiness gates, native SCTP s
 
 Status: SDK foundation is complete for Linux native SCTP platform probing, socket creation, endpoint planning, socket adaptation, client connect, server listen/accept, lab profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until Linux SCTP lab verification passes with real kernel SCTP support and peer traffic.
 
-## Real Interoperability Lab
+## Phase 9 - Real Interoperability Lab
 
 - Define required lab scenarios for Linux native SCTP, external peer M3UA ASP-to-SG, and MAP SMS trace comparison.
 - Capture PCAPs, SDK traces, peer configuration, peer logs, and comparison reports.
@@ -98,7 +100,7 @@ Status: SDK foundation is complete for Linux native SCTP platform probing, socke
 
 Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, external peer lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
 
-## Release Automation And Supply Chain
+## Phase 10 - Release Automation And Supply Chain
 
 - Define deterministic release automation steps for restore, build, test, pack, validation, and publish.
 - Track package artifacts, checksums, SBOM requirements, signing requirements, and provenance.
@@ -107,7 +109,7 @@ Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, ru
 
 Status: Phase 10 is foundation-ready for release automation plan, artifact manifest, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluation, release CI profile, and phase documentation. Stable commercial publication remains blocked until real signing, SBOM generation, native SCTP verification, and external interoperability evidence are complete.
 
-## Developer Experience And Adoption
+## Phase 11 - Developer Experience And Adoption
 
 - Add quickstarts, sample inventories, configuration profiles, troubleshooting guidance, and adoption gates.
 - Make the shortest M3UA ASP-to-SG path clear for new users.
@@ -115,7 +117,7 @@ Status: Phase 10 is foundation-ready for release automation plan, artifact manif
 
 Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness, developer experience CI profile, and phase documentation. Enterprise production adoption remains blocked until commercial readiness is complete.
 
-## Production Operations And Support
+## Phase 12 - Production Operations And Support
 
 - Add operational runbook, incident, health, recovery, and support foundations.
 - Keep operations readiness separate from commercial production readiness.
@@ -123,7 +125,7 @@ Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sa
 
 Status: Phase 12 is foundation-ready for operations capability catalog, runbook catalog, incident response targets, health check matrix, rollback plan, maintenance policy, support handbook, operations readiness, operations CI profile, and phase documentation. Production operations remain blocked until commercial readiness is complete.
 
-## Compliance And Audit Readiness
+## Phase 13 - Compliance And Audit Readiness
 
 - Add compliance capability, audit-event, evidence-retention, license, data-handling, and lawful-use foundations.
 - Keep compliance foundation readiness separate from enterprise production compliance claims.
@@ -131,7 +133,7 @@ Status: Phase 12 is foundation-ready for operations capability catalog, runbook 
 
 Status: Phase 13 is foundation-ready for compliance capability catalog, audit event catalog, evidence retention policy, license compliance policy, data handling classification, export-control policy, compliance readiness, compliance CI profile, commercial compliance gate, and phase documentation. Enterprise compliance claims remain blocked until commercial readiness is complete and adopters complete their own legal, regulatory, export-control, privacy, and operator-authorization reviews.
 
-## Performance Capacity And Benchmark Readiness
+## Phase 14 - Performance Capacity And Benchmark Readiness
 
 - Add performance capability, benchmark-scenario, capacity, throughput, latency, load-test, and resource-budget foundations.
 - Keep performance foundation readiness separate from production throughput, latency, and capacity claims.
@@ -139,7 +141,7 @@ Status: Phase 13 is foundation-ready for compliance capability catalog, audit ev
 
 Status: Phase 14 is foundation-ready for performance capability catalog, benchmark scenario catalog, capacity profile, throughput targets, latency budgets, load-test plan, resource budget, performance readiness, performance CI profile, and phase documentation. Production performance claims remain blocked until representative native SCTP and external-peer benchmark evidence is captured and retained.
 
-## API Stability Deprecation And Migration Readiness
+## Phase 15 - API Stability Deprecation And Migration Readiness
 
 - Add public API surface catalog, stability contracts, version-line matrix, deprecation policy, migration guide catalog, breaking-change review, and API baseline foundations.
 - Keep API lifecycle foundation readiness separate from stable API lifecycle claims.
@@ -147,7 +149,7 @@ Status: Phase 14 is foundation-ready for performance capability catalog, benchma
 
 Status: Phase 15 is foundation-ready for API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, API lifecycle readiness, API lifecycle CI profile, and phase documentation. Stable API lifecycle claims remain blocked until wider commercial readiness is complete and protocol surfaces have the required validation evidence.
 
-## Configuration Policy And Environment Readiness
+## Phase 16 - Configuration Policy And Environment Readiness
 
 - Add configuration schema, validation, environment matrix, secret policy, transport configuration, routing configuration, readiness, and CI foundations.
 - Keep configuration foundation readiness separate from production configuration claims.
@@ -155,7 +157,7 @@ Status: Phase 15 is foundation-ready for API surface catalog, stability contract
 
 Status: Phase 16 is foundation-ready for configuration schema, validation helpers, environment matrix, secret policy, transport configuration, routing configuration, configuration readiness, configuration CI profile, commercial configuration gate, and phase documentation. Production configuration claims remain blocked until wider commercial readiness is complete and deployment-specific review is performed.
 
-## Native SCTP Lab Verification
+## Phase 17 - Native SCTP Lab Verification
 
 - Add native SCTP lab scenarios, artifact manifests, run plan, command set, run reports, evidence registry, readiness, and CI profile.
 - Keep lab framework readiness separate from native SCTP production verification.
