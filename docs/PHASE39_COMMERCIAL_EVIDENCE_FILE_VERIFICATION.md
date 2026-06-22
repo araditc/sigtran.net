@@ -68,6 +68,18 @@ The ledger is ready only when the file verification report is verified, every ve
 
 This is an evidence integrity seal for the retained dossier. It does not replace trusted timestamped package signing or release provenance attestation.
 
+## Unit 6 - Publication Attachments
+
+`SigtranCommercialEvidencePublicationAttachmentManifest` prepares verified retained files for release dossier publication:
+
+- Every sealed ledger entry must have a publication attachment.
+- Attachment digests must remain valid SHA-256 values.
+- Trace-bearing artifacts must require and carry redaction approval.
+- Retained attachment paths must be unique.
+- The final commercial readiness report must be included.
+
+Publication attachment readiness does not publish anything. It only proves that the retained evidence set can be safely attached to a gated release decision.
+
 ## Validation
 
 Each unit in this phase is validated with:

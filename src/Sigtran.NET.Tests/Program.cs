@@ -301,6 +301,7 @@ Run("SIGTRAN commercial evidence retained file manifest covers handoff items", S
 Run("SIGTRAN commercial evidence file verification report identifies blockers", SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers);
 Run("SIGTRAN commercial evidence retention ledger requires immutable retention", SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention);
 Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest);
+Run("SIGTRAN commercial evidence publication attachments protect trace artifacts", SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5085,6 +5086,30 @@ static void SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest()
     Assert(seal.MatchesLedgerDigest, "integrity seal should match the ledger digest");
     Assert(!mismatch.IsReady, "digest mismatch should block integrity seal readiness");
     Assert(!mismatch.MatchesLedgerDigest, "mismatched integrity seal should not match ledger digest");
+}
+
+static void SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts()
+{
+    SigtranCommercialEvidenceIntegritySeal seal = CreateDefaultCommercialEvidenceIntegritySeal();
+    SigtranCommercialEvidencePublicationAttachmentManifest manifest = CreateDefaultCommercialEvidencePublicationAttachmentManifest(seal);
+    SigtranCommercialEvidencePublicationAttachmentManifest blocked = SigtranCommercialEvidencePublicationAttachments.CreateDefault(
+        seal,
+        publishable: true,
+        redactionApproved: false);
+
+    Assert(manifest.IsReady, manifest.Describe());
+    AssertEqual(seal.Ledger.Entries.Count, manifest.Attachments.Count, "publication attachment count");
+    Assert(manifest.CoversSealedLedgerEntries, "publication attachments should cover sealed ledger entries");
+    Assert(manifest.ProtectsTraceBearingArtifacts, "publication attachments should protect trace-bearing artifacts");
+    Assert(manifest.IncludesCommercialReadinessReport, "publication attachments should include commercial readiness report");
+    Assert(!blocked.IsReady, "missing redaction approval should block publication attachment readiness");
+    Assert(!blocked.ProtectsTraceBearingArtifacts, "blocked attachments should expose trace protection failure");
+}
+
+static SigtranCommercialEvidencePublicationAttachmentManifest CreateDefaultCommercialEvidencePublicationAttachmentManifest(SigtranCommercialEvidenceIntegritySeal? seal = null)
+{
+    return SigtranCommercialEvidencePublicationAttachments.CreateDefault(
+        seal ?? CreateDefaultCommercialEvidenceIntegritySeal());
 }
 
 static SigtranCommercialEvidenceIntegritySeal CreateDefaultCommercialEvidenceIntegritySeal(SigtranCommercialEvidenceRetentionLedger? ledger = null)
