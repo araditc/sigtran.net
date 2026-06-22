@@ -291,6 +291,7 @@ Run("SIGTRAN commercial evidence artifact intake target binds to execution run",
 Run("SIGTRAN commercial evidence artifact sources cover expected execution artifacts", SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
 Run("SIGTRAN commercial evidence artifact digests cover retained sources", SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources);
 Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifacts", SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts);
+Run("SIGTRAN commercial evidence artifact completeness reports blockers", SigtranCommercialEvidenceArtifactCompletenessReportsBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4863,10 +4864,7 @@ static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
 static void SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts()
 {
     SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
-    SigtranCommercialEvidenceRedactionReviewManifest reviews = SigtranCommercialEvidenceRedactionReviews.CreateApproved(
-        digests,
-        "release-review",
-        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceRedactionReviewManifest reviews = CreateDefaultCommercialEvidenceRedactionReviewManifest();
     SigtranCommercialEvidenceRedactionReview firstReview = reviews.Reviews[0];
     SigtranCommercialEvidenceRedactionReviewManifest rejectedReviews = new(
         digests,
@@ -4879,6 +4877,33 @@ static void SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifact
     Assert(reviews.ApprovesTraceBearingArtifacts, "redaction reviews should approve trace-bearing artifacts");
     Assert(reviews.UsesUniqueReviewPaths, "redaction review paths should be unique");
     Assert(!rejectedReviews.IsReady, "rejected redaction review should block readiness");
+}
+
+static void SigtranCommercialEvidenceArtifactCompletenessReportsBlockers()
+{
+    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
+    SigtranCommercialEvidenceRedactionReviewManifest reviews = CreateDefaultCommercialEvidenceRedactionReviewManifest();
+    SigtranCommercialEvidenceArtifactCompletenessResult complete = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(reviews);
+    SigtranCommercialEvidenceRedactionReview firstReview = reviews.Reviews[0];
+    SigtranCommercialEvidenceRedactionReviewManifest rejectedReviews = new(
+        digests,
+        [
+            new(firstReview.RetainedPath, firstReview.Kind, "release-review", DateTimeOffset.UtcNow, approved: false, "Sensitive data still present.")
+        ]);
+    SigtranCommercialEvidenceArtifactCompletenessResult blocked = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(rejectedReviews);
+
+    Assert(complete.IsComplete, complete.Describe());
+    AssertEqual(0, complete.Blockers.Count, "complete artifact intake blockers");
+    Assert(!blocked.IsComplete, blocked.Describe());
+    Assert(blocked.Blockers.Contains("redaction-review-incomplete"), "blocked completeness should report redaction review");
+}
+
+static SigtranCommercialEvidenceRedactionReviewManifest CreateDefaultCommercialEvidenceRedactionReviewManifest()
+{
+    return SigtranCommercialEvidenceRedactionReviews.CreateApproved(
+        CreateDefaultCommercialEvidenceArtifactDigestManifest(),
+        "release-review",
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceArtifactDigestManifest CreateDefaultCommercialEvidenceArtifactDigestManifest()

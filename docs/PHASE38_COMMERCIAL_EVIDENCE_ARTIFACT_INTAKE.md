@@ -51,6 +51,16 @@ The digest manifest is required before redaction review and promotion handoff be
 
 Each required review records the retained path, artifact kind, reviewer identity, UTC review time, approval state, and notes. Rejected or missing reviews block the intake from moving into completeness evaluation.
 
+## Unit 5 - Artifact Completeness Evaluation
+
+`SigtranCommercialEvidenceArtifactCompleteness` evaluates whether intake can move into dossier reporting:
+
+- Source registration must be complete.
+- Digest coverage must be complete.
+- Redaction review must be complete.
+
+The evaluator returns explicit blocker codes such as `artifact-source-registration-incomplete`, `artifact-digest-coverage-incomplete`, and `redaction-review-incomplete` so release operators can correct the right evidence area without guessing.
+
 ## Validation
 
 Each unit in this phase is validated with:
