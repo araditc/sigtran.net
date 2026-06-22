@@ -71,6 +71,20 @@ The artifact supports release promotion when it is digest-covered and either has
 
 Promotion-required artifacts must be present and retained for at least 90 days so operators can review the exact package, signing, provenance, API, and digest evidence that backed a release decision.
 
+## Unit 6 - Supply Chain Release Command Plan
+
+`SigtranSupplyChainReleaseCommands` defines the ordered command plan used by the release workflow:
+
+- Generate final SBOM.
+- Sign the NuGet package.
+- Verify the package signature.
+- Create provenance attestation.
+- Create public API diff.
+- Create digest manifest.
+- Upload release artifacts.
+
+The command plan records which command requires signing secrets and keeps upload as the final step so incomplete SBOM, signing, provenance, API diff, or digest artifacts cannot be promoted as a finished release bundle.
+
 ## Validation
 
 Each unit in this phase is validated with:

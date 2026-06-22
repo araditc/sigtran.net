@@ -256,6 +256,7 @@ Run("SIGTRAN trusted package signing evidence requires timestamp and verificatio
 Run("SIGTRAN provenance attestation links package SBOM source and workflow", SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow);
 Run("SIGTRAN public API diff artifact gates breaking changes", SigtranPublicApiDiffArtifactGatesBreakingChanges);
 Run("SIGTRAN release artifact upload manifest retains supply chain evidence", SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence);
+Run("SIGTRAN supply chain release command plan orders execution steps", SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4037,6 +4038,20 @@ static void SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence()
     Assert(names.Contains("sigtran-package"), "release upload manifest should include package upload");
     Assert(names.Contains("sigtran-provenance"), "release upload manifest should include provenance upload");
     Assert(names.Contains("sigtran-api-diff"), "release upload manifest should include API diff upload");
+}
+
+static void SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps()
+{
+    SigtranSupplyChainReleaseCommandPlan plan = SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0");
+    IReadOnlyList<string> commands = plan.GetCommandTexts();
+
+    AssertEqual(7, plan.Commands.Count, "supply-chain release command count");
+    Assert(plan.IsComplete, "supply-chain release command plan should be complete");
+    Assert(plan.RequiresSigningSecrets, "supply-chain release command plan should require signing secrets");
+    Assert(commands[0].Contains("sbom-tool", StringComparison.OrdinalIgnoreCase), "first release command should generate SBOM");
+    Assert(commands[1].Contains("nuget sign", StringComparison.OrdinalIgnoreCase), "second release command should sign package");
+    Assert(commands[3].Contains("attestation", StringComparison.OrdinalIgnoreCase), "fourth release command should create attestation");
+    Assert(commands[6].Contains("upload-artifact", StringComparison.OrdinalIgnoreCase), "last release command should upload artifacts");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
