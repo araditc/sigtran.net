@@ -61,6 +61,19 @@ Each required review records the retained path, artifact kind, reviewer identity
 
 The evaluator returns explicit blocker codes such as `artifact-source-registration-incomplete`, `artifact-digest-coverage-incomplete`, and `redaction-review-incomplete` so release operators can correct the right evidence area without guessing.
 
+## Unit 6 - Dossier Intake Report
+
+`SigtranCommercialEvidenceDossierIntakeReports` creates a retained Markdown report for the intake:
+
+- Execution run identifier.
+- Intake identifier.
+- Reviewer identity.
+- Dossier root.
+- Source, digest, and redaction review counts.
+- Completion state and blocker count.
+
+The report path must be under the intake dossier root. This gives release operators a single retained summary before promotion handoff.
+
 ## Validation
 
 Each unit in this phase is validated with:

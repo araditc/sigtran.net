@@ -292,6 +292,7 @@ Run("SIGTRAN commercial evidence artifact sources cover expected execution artif
 Run("SIGTRAN commercial evidence artifact digests cover retained sources", SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources);
 Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifacts", SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts);
 Run("SIGTRAN commercial evidence artifact completeness reports blockers", SigtranCommercialEvidenceArtifactCompletenessReportsBlockers);
+Run("SIGTRAN commercial evidence dossier intake report renders retained summary", SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4896,6 +4897,24 @@ static void SigtranCommercialEvidenceArtifactCompletenessReportsBlockers()
     AssertEqual(0, complete.Blockers.Count, "complete artifact intake blockers");
     Assert(!blocked.IsComplete, blocked.Describe());
     Assert(blocked.Blockers.Contains("redaction-review-incomplete"), "blocked completeness should report redaction review");
+}
+
+static void SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary()
+{
+    SigtranCommercialEvidenceArtifactCompletenessResult completeness = CreateDefaultCommercialEvidenceArtifactCompletenessResult();
+    SigtranCommercialEvidenceDossierIntakeReport report = SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(completeness);
+    string markdown = report.RenderMarkdown();
+
+    Assert(report.IsReady, markdown);
+    Assert(report.UsesDossierReportPath, "dossier intake report should be retained under dossier root");
+    Assert(markdown.Contains("run-20260622-001", StringComparison.Ordinal), "dossier intake report should include run id");
+    Assert(markdown.Contains("intake-20260622-001", StringComparison.Ordinal), "dossier intake report should include intake id");
+    Assert(markdown.Contains("Complete: `True`", StringComparison.Ordinal), "dossier intake report should include completion state");
+}
+
+static SigtranCommercialEvidenceArtifactCompletenessResult CreateDefaultCommercialEvidenceArtifactCompletenessResult()
+{
+    return SigtranCommercialEvidenceArtifactCompleteness.Evaluate(CreateDefaultCommercialEvidenceRedactionReviewManifest());
 }
 
 static SigtranCommercialEvidenceRedactionReviewManifest CreateDefaultCommercialEvidenceRedactionReviewManifest()
