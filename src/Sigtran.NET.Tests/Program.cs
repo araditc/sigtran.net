@@ -4086,9 +4086,10 @@ static void SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers()
     IReadOnlyList<string> capabilities = SigtranSupplyChainReleaseStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranSupplyChainReleaseStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranSupplyChainReleaseStatus.CompletedUnitCount, "supply-chain release completed unit count");
-    AssertEqual(9, capabilities.Count, "supply-chain release capability count");
+    AssertEqual(10, SigtranSupplyChainReleaseStatus.CompletedUnitCount, "supply-chain release completed unit count");
+    AssertEqual(10, capabilities.Count, "supply-chain release capability count");
     Assert(capabilities.Contains("workflow-execution"), "supply-chain release status should include workflow execution");
+    Assert(capabilities.Contains("final-sweep-validation"), "supply-chain release status should include final validation");
     Assert(capabilities.Contains("documentation"), "supply-chain release status should include documentation");
     Assert(SigtranSupplyChainReleaseStatus.ExecutionFoundationReady, SigtranSupplyChainReleaseStatus.Describe());
     Assert(!SigtranSupplyChainReleaseStatus.CommercialReleaseReady, SigtranSupplyChainReleaseStatus.Describe());

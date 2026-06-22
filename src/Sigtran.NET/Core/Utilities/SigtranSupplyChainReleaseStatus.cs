@@ -15,6 +15,7 @@ public static class SigtranSupplyChainReleaseStatus
         "supply-chain-release-command-plan",
         "supply-chain-release-gate",
         "workflow-execution",
+        "final-sweep-validation",
         "documentation"
     ];
 
@@ -28,7 +29,7 @@ public static class SigtranSupplyChainReleaseStatus
     public const string StatusLabel = "Supply Chain Release Execution";
 
     /// <summary>The number of completed supply-chain release execution work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed supply-chain release capability names.</summary>
     /// <returns>The completed capability names.</returns>
