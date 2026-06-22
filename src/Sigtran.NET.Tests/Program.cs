@@ -263,6 +263,7 @@ Run("SIGTRAN release dry-run plan rehearses without publication", SigtranRelease
 Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads);
 Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleaseNotesArtifactRendersRcPublicationNotes);
 Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigrationNotesArtifactDocumentsRcBoundaries);
+Run("SIGTRAN final commercial readiness report separates RC and stable gates", SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4163,6 +4164,22 @@ static void SigtranMigrationNotesArtifactDocumentsRcBoundaries()
     Assert(artifact.AllEntriesHaveCodeSamples, "migration notes should require code samples");
     Assert(markdown.Contains("Experimental Boundaries", StringComparison.Ordinal), "migration notes should document experimental boundaries");
     Assert(markdown.Contains("SCCP, TCAP, and MAP remain experimental", StringComparison.Ordinal), "migration notes should retain experimental API warning");
+}
+
+static void SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates()
+{
+    SigtranFinalCommercialReadinessReport report = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+        "1.0.0-rc.1",
+        new string('c', 64),
+        new string('d', 64),
+        hasNuGetApiKey: true);
+    string markdown = report.RenderMarkdown();
+
+    Assert(report.ReleaseCandidateReady, report.Describe());
+    Assert(!report.StableReleaseReady, report.Describe());
+    Assert(report.CommercialBlockers.Contains("external-peer-interop"), "final readiness should retain external peer commercial blocker");
+    Assert(markdown.Contains("## Stable Gate", StringComparison.Ordinal), "final readiness report should render stable gate");
+    Assert(markdown.Contains("Commercial Blockers", StringComparison.Ordinal), "final readiness report should render blockers");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

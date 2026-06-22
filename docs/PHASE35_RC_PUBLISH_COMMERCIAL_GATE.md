@@ -53,6 +53,19 @@ The artifact is review-ready only when release notes are publishable, the retain
 
 The artifact is review-ready only when the notes are versioned, digest-covered, Markdown-based, code-sample aware, and explicit about experimental protocol surfaces.
 
+## Unit 5 - Final Commercial Readiness Report
+
+`SigtranFinalCommercialReadinessReports` aggregates the RC and stable gates into one retained commercial readiness report:
+
+- Dry-run release rehearsal readiness.
+- Gated NuGet prerelease publication readiness.
+- Release notes and migration notes artifact readiness.
+- Supply-chain release execution foundation readiness.
+- Stable commercial release readiness.
+- Retained commercial blockers such as external peer interop, package signing verification, and production performance evidence.
+
+The report intentionally separates `ReleaseCandidateReady` from `StableReleaseReady`. A release candidate can pass the prerelease gate while stable publication remains blocked until commercial evidence is complete.
+
 ## Validation
 
 Each unit in this phase is validated with:
