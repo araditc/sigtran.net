@@ -114,6 +114,17 @@ The gate keeps supply-chain completeness separate from commercial release readin
 
 `SigtranReleaseWorkflowValidation` now requires these workflow fragments, including SBOM generation, signing, verification, attestation, artifact upload, and final SBOM/API diff environment outputs.
 
+## Unit 9 - Status And Readiness Summary
+
+`SigtranSupplyChainReleaseStatus` summarizes supply-chain release execution:
+
+- Completed execution capabilities.
+- Foundation readiness.
+- Commercial release readiness.
+- Default blockers.
+
+The status is foundation-ready after the workflow execution contract is present, but commercial release readiness remains false until a real release run retains digest-covered SBOM, signing, timestamp, provenance, API diff, digest, package, symbol, upload, and commercial evidence artifacts.
+
 ## Validation
 
 Each unit in this phase is validated with:

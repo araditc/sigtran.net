@@ -258,6 +258,7 @@ Run("SIGTRAN public API diff artifact gates breaking changes", SigtranPublicApiD
 Run("SIGTRAN release artifact upload manifest retains supply chain evidence", SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence);
 Run("SIGTRAN supply chain release command plan orders execution steps", SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps);
 Run("SIGTRAN supply chain release gate aggregates promotion evidence", SigtranSupplyChainReleaseGateAggregatesPromotionEvidence);
+Run("SIGTRAN supply chain release status summarizes execution blockers", SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4080,6 +4081,20 @@ static void SigtranSupplyChainReleaseGateAggregatesPromotionEvidence()
     Assert(blocked.Reasons.Contains("commercial-evidence-required"), "supply-chain release gate should require commercial evidence");
 }
 
+static void SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers()
+{
+    IReadOnlyList<string> capabilities = SigtranSupplyChainReleaseStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranSupplyChainReleaseStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranSupplyChainReleaseStatus.CompletedUnitCount, "supply-chain release completed unit count");
+    AssertEqual(9, capabilities.Count, "supply-chain release capability count");
+    Assert(capabilities.Contains("workflow-execution"), "supply-chain release status should include workflow execution");
+    Assert(capabilities.Contains("documentation"), "supply-chain release status should include documentation");
+    Assert(SigtranSupplyChainReleaseStatus.ExecutionFoundationReady, SigtranSupplyChainReleaseStatus.Describe());
+    Assert(!SigtranSupplyChainReleaseStatus.CommercialReleaseReady, SigtranSupplyChainReleaseStatus.Describe());
+    Assert(blockers.Contains("retained-release-run-artifacts-required"), "supply-chain release status should require retained release artifacts");
+}
+
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
 {
     SigtranCommercialReleaseExecutionReadinessReport report = SigtranCommercialReleaseExecutionReadiness.CreateCurrent();
@@ -4112,7 +4127,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranCommercialEvidenceStatus.GetCompletedCapabilities(),
         SigtranSupplyChainStatus.GetCompletedCapabilities(),
         SigtranReleaseWorkflowStatus.GetCompletedCapabilities(),
-        SigtranPackagePublicationStatus.GetCompletedCapabilities()
+        SigtranPackagePublicationStatus.GetCompletedCapabilities(),
+        SigtranSupplyChainReleaseStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)
