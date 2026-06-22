@@ -5,7 +5,8 @@ Phase 34 upgrades supply-chain release execution with concrete contracts for fin
 ## Completed Execution Capabilities
 
 - Final versioned SBOM artifact contract with SPDX JSON format, package alignment, workflow outputs, and digest requirement.
+- Trusted timestamped package signing evidence contract with certificate identity, timestamp receipt, verification report, and digest coverage.
 
 ## Readiness Position
 
-The phase is in progress. The release execution foundation now has a final SBOM contract, but commercial release execution still requires signing, timestamping, provenance attestation, public API diff evidence, artifact upload, workflow wiring, and a final release execution gate.
+The phase is in progress. The release execution foundation now has final SBOM and trusted timestamped signing contracts, but commercial release execution still requires provenance attestation, public API diff evidence, artifact upload, workflow wiring, and a final release execution gate.

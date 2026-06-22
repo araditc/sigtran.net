@@ -252,6 +252,7 @@ Run("SIGTRAN provenance execution evidence records package and SBOM digests", Si
 Run("SIGTRAN benchmark execution evidence records smoke workload limits", SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits);
 Run("SIGTRAN public API baseline evidence records generated member baseline", SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline);
 Run("SIGTRAN final SBOM artifact records versioned release output", SigtranFinalSbomArtifactRecordsVersionedReleaseOutput);
+Run("SIGTRAN trusted package signing evidence requires timestamp and verification digests", SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerificationDigests);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -3964,6 +3965,22 @@ static void SigtranFinalSbomArtifactRecordsVersionedReleaseOutput()
     Assert(artifact.OutputPath.EndsWith("Sigtran.NET.1.0.0.spdx.json", StringComparison.Ordinal), "final SBOM output should be versioned");
     Assert(artifact.IsFinalReleaseArtifact, artifact.Describe());
     Assert(outputs.Contains("SIGTRAN_FINAL_SBOM_SHA256"), "final SBOM workflow outputs should expose digest");
+}
+
+static void SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerificationDigests()
+{
+    string digest = new('a', 64);
+    SigtranTrustedPackageSigningEvidence evidence = SigtranTrustedPackageSigning.CreateReleaseReady(
+        "1.0.0",
+        digest,
+        new string('b', 64),
+        new string('c', 64));
+
+    Assert(evidence.HasTrustedTimestampAuthority, evidence.Describe());
+    Assert(evidence.HasDigestCoverage, evidence.Describe());
+    Assert(evidence.TimestampReceiptPath.EndsWith(".tsr", StringComparison.OrdinalIgnoreCase), "trusted signing should retain timestamp receipt");
+    Assert(evidence.VerificationReportPath.EndsWith(".verification.md", StringComparison.OrdinalIgnoreCase), "trusted signing should retain verification report");
+    Assert(evidence.SupportsReleasePromotion, evidence.Describe());
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

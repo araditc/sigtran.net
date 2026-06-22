@@ -17,6 +17,19 @@ The public APIs use domain names such as `SigtranFinalSbom`; phase numbers are i
 
 The final SBOM contract does not manufacture evidence. A release is considered complete only when the retained SBOM is versioned, SPDX JSON, package-aligned, and digest-covered.
 
+## Unit 2 - Trusted Timestamped Signing
+
+`SigtranTrustedPackageSigning` defines the release signing evidence required for commercial promotion:
+
+- Signed package path and SHA-256 digest.
+- Signing certificate subject and thumbprint.
+- HTTPS timestamp authority URL.
+- Retained timestamp receipt artifact.
+- Retained package verification report.
+- Digest coverage for package, timestamp receipt, and verification report.
+
+The evidence only supports release promotion when verification passes, timestamping is retained as a `.tsr` artifact, the timestamp authority uses HTTPS, the certificate thumbprint is present, and all required artifacts have SHA-256 digests.
+
 ## Validation
 
 Each unit in this phase is validated with:
