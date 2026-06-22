@@ -27,6 +27,17 @@ Floating dossier roots such as `artifacts/latest/...` are rejected because comme
 
 The source manifest is the handoff from execution outputs into dossier intake. It prepares the next step, digest generation, without claiming that files are already verified.
 
+## Unit 3 - Artifact Digest Manifest
+
+`SigtranCommercialEvidenceArtifactDigests` records SHA-256 coverage for retained sources:
+
+- Every registered source must have a digest entry.
+- Each digest entry keeps the stage id, artifact kind, source path, retained path, and SHA-256 value together.
+- SHA-256 values must be 64-character hexadecimal values.
+- Retained paths must remain unique.
+
+The digest manifest is required before redaction review and promotion handoff because commercial evidence must remain tamper-evident after intake.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -289,6 +289,7 @@ Run("SIGTRAN commercial evidence execution retry policy gates resume decisions",
 Run("SIGTRAN commercial evidence execution status summarizes orchestration readiness", SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness);
 Run("SIGTRAN commercial evidence artifact intake target binds to execution run", SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun);
 Run("SIGTRAN commercial evidence artifact sources cover expected execution artifacts", SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
+Run("SIGTRAN commercial evidence artifact digests cover retained sources", SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4842,6 +4843,42 @@ static void SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifa
     Assert(manifest.UsesConcreteSourcePaths, "artifact sources should reject floating latest aliases");
     Assert(manifest.UsesDossierRetainedPaths, "artifact sources should retain under dossier root");
     Assert(!floatingManifest.IsReady, "floating source paths should not be source-manifest ready");
+}
+
+static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
+{
+    SigtranCommercialEvidenceArtifactSourceManifest sources = CreateDefaultCommercialEvidenceArtifactSourceManifest();
+    SigtranCommercialEvidenceArtifactDigestManifest digests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(sources, new string('a', 64));
+    SigtranCommercialEvidenceArtifactDigestManifest invalidDigests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(sources, "abc");
+
+    AssertEqual(sources.Sources.Count, digests.Digests.Count, "artifact digest count");
+    Assert(digests.IsReady, digests.Describe());
+    Assert(digests.CoversSources, "artifact digests should cover every retained source");
+    Assert(digests.HasValidDigests, "artifact digests should use SHA-256 values");
+    Assert(digests.UsesUniqueRetainedPaths, "artifact digest retained paths should be unique");
+    Assert(!invalidDigests.IsReady, "invalid SHA-256 values should block digest readiness");
+}
+
+static SigtranCommercialEvidenceArtifactSourceManifest CreateDefaultCommercialEvidenceArtifactSourceManifest()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionArtifactManifest expected = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+        run,
+        "intake-20260622-001",
+        "release-review",
+        DateTimeOffset.UtcNow);
+
+    return SigtranCommercialEvidenceArtifactSources.CreateDefault(
+        target,
+        expected,
+        $"{run.RunArtifactRoot}/incoming/intake-20260622-001");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
