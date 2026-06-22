@@ -255,6 +255,7 @@ Run("SIGTRAN final SBOM artifact records versioned release output", SigtranFinal
 Run("SIGTRAN trusted package signing evidence requires timestamp and verification digests", SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerificationDigests);
 Run("SIGTRAN provenance attestation links package SBOM source and workflow", SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow);
 Run("SIGTRAN public API diff artifact gates breaking changes", SigtranPublicApiDiffArtifactGatesBreakingChanges);
+Run("SIGTRAN release artifact upload manifest retains supply chain evidence", SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4023,6 +4024,19 @@ static void SigtranPublicApiDiffArtifactGatesBreakingChanges()
     Assert(!compatible.HasBreakingChanges, "added-only API diff should not be breaking");
     Assert(breakingDiff.HasBreakingChanges, "removed member should be breaking");
     Assert(!breakingDiff.SupportsReleasePromotion, breakingDiff.Describe());
+}
+
+static void SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence()
+{
+    SigtranReleaseArtifactUploadManifest manifest = SigtranReleaseArtifactUploads.CreateDefault();
+    IReadOnlyList<string> names = manifest.GetUploadNames();
+
+    AssertEqual(8, manifest.Items.Count, "release upload item count");
+    Assert(manifest.HasPromotionArtifacts, "release upload manifest should include promotion artifacts");
+    Assert(manifest.RetainsPromotionArtifacts, "release upload manifest should retain promotion artifacts for audit");
+    Assert(names.Contains("sigtran-package"), "release upload manifest should include package upload");
+    Assert(names.Contains("sigtran-provenance"), "release upload manifest should include provenance upload");
+    Assert(names.Contains("sigtran-api-diff"), "release upload manifest should include API diff upload");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

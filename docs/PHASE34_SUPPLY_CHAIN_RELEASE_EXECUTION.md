@@ -56,6 +56,21 @@ The attestation can support release promotion only when it links package and SBO
 
 The artifact supports release promotion when it is digest-covered and either has no breaking changes or has explicit breaking-change approval. Removed or changed public members without approval remain a release blocker.
 
+## Unit 5 - Release Artifact Upload Manifest
+
+`SigtranReleaseArtifactUploads` defines the artifact upload manifest for the release workflow:
+
+- NuGet package.
+- NuGet symbol package.
+- Final SBOM.
+- Signing evidence.
+- Timestamp receipt.
+- Provenance attestation.
+- Public API diff.
+- Digest manifest.
+
+Promotion-required artifacts must be present and retained for at least 90 days so operators can review the exact package, signing, provenance, API, and digest evidence that backed a release decision.
+
 ## Validation
 
 Each unit in this phase is validated with:
