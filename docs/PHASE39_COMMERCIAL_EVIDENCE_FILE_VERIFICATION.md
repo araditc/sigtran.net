@@ -29,6 +29,20 @@ A retained file is verified only when the file exists, is non-empty, carries val
 
 The manifest is the first aggregate proof that retained file observations match the digest-covered handoff from artifact intake.
 
+## Unit 3 - File Verification Report
+
+`SigtranCommercialEvidenceFileVerificationReport` evaluates the retained file manifest and produces explicit blocker reasons:
+
+- Missing retained files.
+- Empty retained files.
+- Invalid SHA-256 values.
+- Digest mismatches.
+- Non-UTC observation times.
+- Duplicate retained paths.
+- Incomplete promotion handoff coverage.
+
+The report keeps verification gates auditable. A commercial release decision can now distinguish "not verified" from the specific retained file condition that blocked promotion.
+
 ## Validation
 
 Each unit in this phase is validated with:

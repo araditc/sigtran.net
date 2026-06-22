@@ -137,6 +137,114 @@ public sealed class SigtranCommercialEvidenceRetainedFileManifest
 }
 
 /// <summary>
+/// Describes the retained commercial evidence file verification report.
+/// </summary>
+public sealed class SigtranCommercialEvidenceFileVerificationReport
+{
+    /// <summary>Creates a retained commercial evidence file verification report.</summary>
+    /// <param name="manifest">The retained file manifest under verification.</param>
+    /// <param name="blockers">The verification blockers discovered from the manifest.</param>
+    public SigtranCommercialEvidenceFileVerificationReport(
+        SigtranCommercialEvidenceRetainedFileManifest manifest,
+        IReadOnlyList<string> blockers)
+    {
+        Manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
+        ArgumentNullException.ThrowIfNull(blockers);
+        Blockers = blockers.ToArray();
+    }
+
+    /// <summary>The retained file manifest under verification.</summary>
+    public SigtranCommercialEvidenceRetainedFileManifest Manifest { get; }
+
+    /// <summary>The verification blockers discovered from the manifest.</summary>
+    public IReadOnlyList<string> Blockers { get; }
+
+    /// <summary>The number of observed files that do not exist.</summary>
+    public int MissingFileCount => Manifest.Files.Count(static file => !file.Exists);
+
+    /// <summary>The number of observed files that exist but are empty.</summary>
+    public int EmptyFileCount => Manifest.Files.Count(static file => file.Exists && !file.HasContent);
+
+    /// <summary>The number of observed files with invalid SHA-256 values.</summary>
+    public int InvalidDigestCount => Manifest.Files.Count(static file => !file.HasValidDigestValues);
+
+    /// <summary>The number of observed files whose valid digest does not match the expected digest.</summary>
+    public int DigestMismatchCount => Manifest.Files.Count(static file => file.HasValidDigestValues && !file.DigestMatches);
+
+    /// <summary>The number of observed files whose observation time is not normalized to UTC.</summary>
+    public int NonUtcObservationCount => Manifest.Files.Count(static file => !file.HasUtcObservationTime);
+
+    /// <summary>Whether the retained file verification report is complete and unblocked.</summary>
+    public bool IsVerified => Manifest.IsReady
+        && Blockers.Count == 0;
+
+    /// <summary>Formats a compact retained file verification summary.</summary>
+    /// <returns>The retained file verification summary.</returns>
+    public string Describe()
+    {
+        return $"commercialEvidenceFilesVerified={IsVerified} blockers={Blockers.Count} files={Manifest.Files.Count}";
+    }
+}
+
+/// <summary>
+/// Provides commercial evidence file verification report helpers.
+/// </summary>
+public static class SigtranCommercialEvidenceFileVerificationReports
+{
+    /// <summary>Evaluates a retained file manifest and returns a verification report.</summary>
+    /// <param name="manifest">The retained file manifest to evaluate.</param>
+    /// <returns>The retained file verification report.</returns>
+    public static SigtranCommercialEvidenceFileVerificationReport Evaluate(SigtranCommercialEvidenceRetainedFileManifest manifest)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+
+        List<string> blockers = [];
+
+        if (!manifest.Handoff.IsReady)
+        {
+            blockers.Add("promotion-handoff-not-ready");
+        }
+
+        if (!manifest.CoversRequiredHandoffItems)
+        {
+            blockers.Add("retained-file-manifest-incomplete");
+        }
+
+        if (!manifest.UsesUniqueRetainedPaths)
+        {
+            blockers.Add("retained-file-path-duplicate");
+        }
+
+        if (manifest.Files.Any(static file => !file.Exists))
+        {
+            blockers.Add("retained-file-missing");
+        }
+
+        if (manifest.Files.Any(static file => file.Exists && !file.HasContent))
+        {
+            blockers.Add("retained-file-empty");
+        }
+
+        if (manifest.Files.Any(static file => !file.HasValidDigestValues))
+        {
+            blockers.Add("retained-file-digest-invalid");
+        }
+
+        if (manifest.Files.Any(static file => file.HasValidDigestValues && !file.DigestMatches))
+        {
+            blockers.Add("retained-file-digest-mismatch");
+        }
+
+        if (manifest.Files.Any(static file => !file.HasUtcObservationTime))
+        {
+            blockers.Add("retained-file-observation-not-utc");
+        }
+
+        return new(manifest, blockers);
+    }
+}
+
+/// <summary>
 /// Provides commercial evidence retained file helpers.
 /// </summary>
 public static class SigtranCommercialEvidenceRetainedFiles

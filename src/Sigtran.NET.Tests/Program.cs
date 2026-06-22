@@ -298,6 +298,7 @@ Run("SIGTRAN commercial evidence dossier intake bridge builds handoff from execu
 Run("SIGTRAN commercial evidence artifact intake status summarizes foundation readiness", SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness);
 Run("SIGTRAN commercial evidence retained file verifies observed digest", SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest);
 Run("SIGTRAN commercial evidence retained file manifest covers handoff items", SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems);
+Run("SIGTRAN commercial evidence file verification report identifies blockers", SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5012,6 +5013,31 @@ static void SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems()
     Assert(manifest.UsesUniqueRetainedPaths, "retained file manifest should use unique paths");
     Assert(manifest.AllFilesVerified, "retained file manifest should verify all files");
     Assert(!incomplete.IsReady, "missing retained files should block manifest readiness");
+}
+
+static void SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers()
+{
+    SigtranCommercialEvidenceRetainedFileManifest verifiedManifest = CreateDefaultCommercialEvidenceRetainedFileManifest();
+    SigtranCommercialEvidencePromotionHandoff handoff = verifiedManifest.Handoff;
+    SigtranCommercialEvidenceFileVerificationReport verifiedReport = SigtranCommercialEvidenceFileVerificationReports.Evaluate(verifiedManifest);
+
+    SigtranCommercialEvidenceRetainedFile[] mismatchFiles = verifiedManifest.Files.ToArray();
+    SigtranCommercialEvidencePromotionHandoffItem firstItem = handoff.Items[0];
+    mismatchFiles[0] = new(
+        firstItem.Kind,
+        firstItem.RetainedPath,
+        firstItem.Sha256,
+        new string('c', 64),
+        sizeBytes: 4096,
+        DateTimeOffset.UtcNow,
+        exists: true);
+    SigtranCommercialEvidenceFileVerificationReport mismatchReport = SigtranCommercialEvidenceFileVerificationReports.Evaluate(new(handoff, mismatchFiles));
+
+    Assert(verifiedReport.IsVerified, verifiedReport.Describe());
+    AssertEqual(0, verifiedReport.Blockers.Count, "verified retained file report blocker count");
+    Assert(!mismatchReport.IsVerified, "digest mismatch should block retained file report verification");
+    AssertEqual(1, mismatchReport.DigestMismatchCount, "retained file digest mismatch count");
+    Assert(mismatchReport.Blockers.Contains("retained-file-digest-mismatch"), "retained file report should expose digest mismatch blocker");
 }
 
 static SigtranCommercialEvidenceRetainedFileManifest CreateDefaultCommercialEvidenceRetainedFileManifest()
