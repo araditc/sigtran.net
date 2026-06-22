@@ -80,6 +80,19 @@ This is an evidence integrity seal for the retained dossier. It does not replace
 
 Publication attachment readiness does not publish anything. It only proves that the retained evidence set can be safely attached to a gated release decision.
 
+## Unit 7 - Verified Promotion Gate
+
+`SigtranCommercialEvidenceVerifiedPromotionGateResult` decides whether retained commercial evidence can move into the release publication decision:
+
+- Publication attachments must be ready.
+- Integrity seal must be ready.
+- Retention ledger must be ready.
+- File verification report must be verified.
+- Commercial readiness report must be present.
+- Explicit commercial evidence approval must be present.
+
+The gate returns concrete blocker labels. It does not publish a package; it only allows the release workflow to consider the verified evidence set.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -43,7 +43,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 36 | Commercial evidence readiness lockdown | [Phase 36 Commercial Evidence Readiness Lockdown](PHASE36_COMMERCIAL_EVIDENCE_READINESS_LOCKDOWN.md), [Phase 36 Summary](PHASE36_SUMMARY.md) | Foundation complete; real commercial evidence still required |
 | 37 | Commercial evidence execution orchestration | [Phase 37 Commercial Evidence Execution Orchestration](PHASE37_COMMERCIAL_EVIDENCE_EXECUTION_ORCHESTRATION.md), [Phase 37 Summary](PHASE37_SUMMARY.md) | Foundation complete; real execution artifacts still required |
 | 38 | Commercial evidence artifact intake | [Phase 38 Commercial Evidence Artifact Intake](PHASE38_COMMERCIAL_EVIDENCE_ARTIFACT_INTAKE.md), [Phase 38 Summary](PHASE38_SUMMARY.md) | Foundation complete; real artifact files still required |
-| 39 | Commercial evidence file verification | [Phase 39 Commercial Evidence File Verification](PHASE39_COMMERCIAL_EVIDENCE_FILE_VERIFICATION.md), [Phase 39 Summary](PHASE39_SUMMARY.md) | In progress; publication attachments complete |
+| 39 | Commercial evidence file verification | [Phase 39 Commercial Evidence File Verification](PHASE39_COMMERCIAL_EVIDENCE_FILE_VERIFICATION.md), [Phase 39 Summary](PHASE39_SUMMARY.md) | In progress; promotion gate complete |
 
 ## Current Commercial Gate
 

@@ -302,6 +302,7 @@ Run("SIGTRAN commercial evidence file verification report identifies blockers", 
 Run("SIGTRAN commercial evidence retention ledger requires immutable retention", SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention);
 Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest);
 Run("SIGTRAN commercial evidence publication attachments protect trace artifacts", SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts);
+Run("SIGTRAN commercial evidence verified promotion gate requires approval", SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5104,6 +5105,32 @@ static void SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts
     Assert(manifest.IncludesCommercialReadinessReport, "publication attachments should include commercial readiness report");
     Assert(!blocked.IsReady, "missing redaction approval should block publication attachment readiness");
     Assert(!blocked.ProtectsTraceBearingArtifacts, "blocked attachments should expose trace protection failure");
+}
+
+static void SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval()
+{
+    SigtranCommercialEvidencePublicationAttachmentManifest attachmentManifest = CreateDefaultCommercialEvidencePublicationAttachmentManifest();
+    SigtranCommercialEvidenceVerifiedPromotionGateResult approved = CreateDefaultCommercialEvidenceVerifiedPromotionGate(attachmentManifest);
+    SigtranCommercialEvidenceVerifiedPromotionGateResult blocked = SigtranCommercialEvidenceVerifiedPromotionGates.Evaluate(
+        attachmentManifest,
+        "release-review",
+        DateTimeOffset.UtcNow,
+        evidenceApproved: false);
+
+    Assert(approved.CanPromoteEvidence, approved.Describe());
+    Assert(approved.CanProceedToReleasePublication, "approved evidence should proceed to release publication decision");
+    AssertEqual(0, approved.Blockers.Count, "approved promotion blocker count");
+    Assert(!blocked.CanPromoteEvidence, "missing approval should block evidence promotion");
+    Assert(blocked.Blockers.Contains("commercial-evidence-approval-missing"), "promotion gate should expose approval blocker");
+}
+
+static SigtranCommercialEvidenceVerifiedPromotionGateResult CreateDefaultCommercialEvidenceVerifiedPromotionGate(SigtranCommercialEvidencePublicationAttachmentManifest? attachmentManifest = null)
+{
+    return SigtranCommercialEvidenceVerifiedPromotionGates.Evaluate(
+        attachmentManifest ?? CreateDefaultCommercialEvidencePublicationAttachmentManifest(),
+        "release-review",
+        DateTimeOffset.UtcNow,
+        evidenceApproved: true);
 }
 
 static SigtranCommercialEvidencePublicationAttachmentManifest CreateDefaultCommercialEvidencePublicationAttachmentManifest(SigtranCommercialEvidenceIntegritySeal? seal = null)
