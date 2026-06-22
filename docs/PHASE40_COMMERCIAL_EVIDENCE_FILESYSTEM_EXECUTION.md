@@ -28,6 +28,17 @@ The observer is the first executable bridge from retained dossier paths to real 
 
 This unit lets the verification pipeline evaluate a complete retained handoff using real files rather than synthetic in-memory retained file entries.
 
+## Unit 3 - Filesystem Verification Report Execution
+
+`SigtranCommercialEvidenceFileSystemVerificationReports` evaluates a filesystem-built retained file manifest and returns a verification execution result:
+
+- Keeps the original filesystem observation set.
+- Reuses the retained file verification report from Phase 39.
+- Reports missing, digest mismatch, empty, invalid digest, duplicate path, and handoff coverage blockers from real files.
+- Separates filesystem evidence presence from overall report readiness.
+
+This unit is the first end-to-end filesystem verification pass: observe files, build the manifest, and produce a blocker-aware report.
+
 ## Validation
 
 Each unit in this phase is validated with:

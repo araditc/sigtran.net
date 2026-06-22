@@ -307,6 +307,7 @@ Run("SIGTRAN commercial evidence file verification command plan orders execution
 Run("SIGTRAN commercial evidence file verification status summarizes readiness", SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness);
 Run("SIGTRAN commercial evidence filesystem observer computes retained file digest", SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest);
 Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff files", SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles);
+Run("SIGTRAN commercial evidence filesystem verification report identifies missing files", SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5226,6 +5227,46 @@ static void SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFil
         Assert(execution.AllObservedFilesExist, "filesystem manifest should observe existing files");
         Assert(execution.AllObservedDigestsMatch, "filesystem manifest should match handoff digests");
         Assert(execution.Manifest.IsReady, "filesystem retained manifest should be ready");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        byte[] artifactContent = "verified commercial artifact"u8.ToArray();
+        byte[] reportContent = "verified commercial readiness report"u8.ToArray();
+        SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+            ComputeSha256Hex(artifactContent),
+            ComputeSha256Hex(reportContent));
+        IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
+        SigtranCommercialEvidenceFileSystemManifestExecution readyManifest = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+            handoff,
+            pathOverrides,
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceFileSystemVerificationExecution readyReport = SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(readyManifest);
+
+        File.Delete(pathOverrides.First().Value);
+        SigtranCommercialEvidenceFileSystemManifestExecution missingManifest = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+            handoff,
+            pathOverrides,
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceFileSystemVerificationExecution missingReport = SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(missingManifest);
+
+        Assert(readyReport.IsReady, readyReport.Describe());
+        AssertEqual(handoff.Items.Count, readyReport.ObservationCount, "filesystem verification report observation count");
+        Assert(readyReport.HasFilesystemEvidence, "ready filesystem verification report should have filesystem evidence");
+        Assert(!readyReport.HasBlockers, "ready filesystem verification report should not have blockers");
+        Assert(!missingReport.IsReady, "missing filesystem evidence should block verification execution");
+        Assert(missingReport.HasBlockers, "missing filesystem evidence should create report blockers");
+        Assert(missingReport.Report.Blockers.Contains("retained-file-missing"), "filesystem verification report should expose missing file blocker");
     }
     finally
     {
