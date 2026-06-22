@@ -319,6 +319,7 @@ Run("SIGTRAN commercial evidence approved run target binds filesystem promotion"
 Run("SIGTRAN commercial evidence run approval checklist requires reviewer approval", SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval);
 Run("SIGTRAN commercial evidence run approval manifest requires required roles", SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles);
 Run("SIGTRAN commercial evidence run approval report writer retains markdown", SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown);
+Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5594,6 +5595,49 @@ static void SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceRunApprovalReportWriteResult report = CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot);
+
+        SigtranCommercialEvidenceApprovedRunPromotionPackage package = SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
+            report,
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceApprovedRunPromotionArtifact firstArtifact = package.Artifacts[0];
+        SigtranCommercialEvidenceApprovedRunPromotionPackage blocked = new(
+            package.PackageId,
+            report,
+            [new(firstArtifact.Id, firstArtifact.RetainedPath, "not-a-digest", required: true), .. package.Artifacts.Skip(1)],
+            DateTimeOffset.UtcNow);
+
+        Assert(package.IsReady, package.Describe());
+        Assert(package.HasStablePackageId, "promotion package should have a stable id");
+        Assert(package.RequiredArtifactsDigestCovered, "promotion package should cover required artifact digests");
+        Assert(package.IncludesApprovalReport, "promotion package should include approval report");
+        Assert(package.IncludesIntegritySeal, "promotion package should include integrity seal");
+        Assert(package.IncludesPublicationAttachments, "promotion package should include publication attachments");
+        Assert(package.IncludesPromotionGate, "promotion package should include promotion gate");
+        Assert(!blocked.IsReady, "invalid artifact digest should block promotion package readiness");
+        Assert(!blocked.RequiredArtifactsDigestCovered, "blocked promotion package should expose digest failure");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceRunApprovalReportWriteResult CreateReadyCommercialEvidenceRunApprovalReportWriteResult(string tempRoot)
+{
+    return SigtranCommercialEvidenceRunApprovalReportWriters.WriteReport(
+        CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot),
+        Path.Combine(tempRoot, "approval"),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceRunApprovalManifest CreateReadyCommercialEvidenceRunApprovalManifest(string tempRoot)

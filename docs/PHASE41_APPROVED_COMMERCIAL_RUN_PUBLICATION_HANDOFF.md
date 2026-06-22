@@ -56,6 +56,18 @@ This unit makes commercial approval auditable and role-aware before any publicat
 
 This unit turns approval data into a retained report artifact that later promotion packages and publication handoffs can reference.
 
+## Unit 5 - Evidence Promotion Package
+
+`SigtranCommercialEvidenceApprovedRunPromotionPackage` collects the approved run artifacts required for publication handoff:
+
+- Retained approval report.
+- Integrity seal artifact reference.
+- Publication attachment artifact reference.
+- Promotion gate artifact reference.
+- SHA-256 digest coverage for every required artifact.
+
+This unit gives the publication handoff a single approved package contract instead of relying on loose references.
+
 ## Validation
 
 Each unit in this phase is validated with:
