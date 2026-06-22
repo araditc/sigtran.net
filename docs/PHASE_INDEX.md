@@ -42,7 +42,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 35 | RC publish and commercial gate | [Phase 35 RC Publish And Commercial Gate](PHASE35_RC_PUBLISH_COMMERCIAL_GATE.md), [Phase 35 Summary](PHASE35_SUMMARY.md), [Phase 35 Commercial Gate Report](PHASE35_COMMERCIAL_GATE_REPORT.md) | RC gate foundation complete; stable publication blocked |
 | 36 | Commercial evidence readiness lockdown | [Phase 36 Commercial Evidence Readiness Lockdown](PHASE36_COMMERCIAL_EVIDENCE_READINESS_LOCKDOWN.md), [Phase 36 Summary](PHASE36_SUMMARY.md) | Foundation complete; real commercial evidence still required |
 | 37 | Commercial evidence execution orchestration | [Phase 37 Commercial Evidence Execution Orchestration](PHASE37_COMMERCIAL_EVIDENCE_EXECUTION_ORCHESTRATION.md), [Phase 37 Summary](PHASE37_SUMMARY.md) | Foundation complete; real execution artifacts still required |
-| 38 | Commercial evidence artifact intake | [Phase 38 Commercial Evidence Artifact Intake](PHASE38_COMMERCIAL_EVIDENCE_ARTIFACT_INTAKE.md), [Phase 38 Summary](PHASE38_SUMMARY.md) | In progress; promotion handoff complete |
+| 38 | Commercial evidence artifact intake | [Phase 38 Commercial Evidence Artifact Intake](PHASE38_COMMERCIAL_EVIDENCE_ARTIFACT_INTAKE.md), [Phase 38 Summary](PHASE38_SUMMARY.md) | In progress; execution bridge complete |
 
 ## Current Commercial Gate
 

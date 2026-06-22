@@ -85,6 +85,21 @@ The report path must be under the intake dossier root. This gives release operat
 
 The handoff does not publish a package. It creates a verified package of intake evidence for the existing commercial evidence and release gates to evaluate.
 
+## Unit 8 - Execution-To-Dossier Bridge
+
+`SigtranCommercialEvidenceDossierIntakeBridge` assembles the default intake pipeline from a governed execution run:
+
+- Expected execution artifact manifest.
+- Intake target.
+- Source manifest.
+- Digest manifest.
+- Redaction review manifest.
+- Completeness result.
+- Dossier intake report.
+- Promotion handoff.
+
+The bridge is intentionally a contract builder, not a file executor. Real artifact copying, digest calculation, and redaction review still happen in the lab or release workflow and provide the values passed into the bridge.
+
 ## Validation
 
 Each unit in this phase is validated with:

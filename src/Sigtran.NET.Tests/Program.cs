@@ -294,6 +294,7 @@ Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifac
 Run("SIGTRAN commercial evidence artifact completeness reports blockers", SigtranCommercialEvidenceArtifactCompletenessReportsBlockers);
 Run("SIGTRAN commercial evidence dossier intake report renders retained summary", SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary);
 Run("SIGTRAN commercial evidence promotion handoff includes digests and report", SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport);
+Run("SIGTRAN commercial evidence dossier intake bridge builds handoff from execution run", SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4931,6 +4932,29 @@ static void SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport()
     Assert(handoff.IncludesIntakeReport, "promotion handoff should include intake report");
     Assert(handoff.HasDigestCoverage, "promotion handoff should include valid digests");
     Assert(!invalidHandoff.IsReady, "invalid report digest should block promotion handoff readiness");
+}
+
+static void SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceDossierIntakeBridgeResult result = SigtranCommercialEvidenceDossierIntakeBridge.BuildDefault(
+        run,
+        "intake-20260622-001",
+        "release-review",
+        $"{run.RunArtifactRoot}/incoming/intake-20260622-001",
+        new string('a', 64),
+        new string('b', 64),
+        DateTimeOffset.UtcNow);
+
+    Assert(result.IsReady, result.Describe());
+    Assert(result.Target.ExecutionRun == run, "bridge should keep the source execution run");
+    Assert(result.Handoff.IncludesIntakeReport, "bridge handoff should include the intake report");
+    Assert(result.Report.ReportPath.StartsWith(result.Target.DossierRoot, StringComparison.Ordinal), "bridge report should stay under dossier root");
 }
 
 static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()
