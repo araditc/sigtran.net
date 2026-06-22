@@ -100,6 +100,18 @@ The handoff does not publish a package. It creates a verified package of intake 
 
 The bridge is intentionally a contract builder, not a file executor. Real artifact copying, digest calculation, and redaction review still happen in the lab or release workflow and provide the values passed into the bridge.
 
+## Unit 9 - Artifact Intake Status
+
+`SigtranCommercialEvidenceArtifactIntakeStatus` exposes the current artifact intake state:
+
+- Completed intake capabilities.
+- Default commercial publication blockers.
+- Artifact intake foundation readiness.
+- Real artifact evidence readiness.
+- Commercial publication readiness.
+
+The status keeps foundation readiness separate from commercial publication readiness. Real file evidence and final validation remain blockers until the phase is closed and real retained artifacts are reviewed.
+
 ## Validation
 
 Each unit in this phase is validated with:

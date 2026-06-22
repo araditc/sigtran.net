@@ -295,6 +295,7 @@ Run("SIGTRAN commercial evidence artifact completeness reports blockers", Sigtra
 Run("SIGTRAN commercial evidence dossier intake report renders retained summary", SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary);
 Run("SIGTRAN commercial evidence promotion handoff includes digests and report", SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport);
 Run("SIGTRAN commercial evidence dossier intake bridge builds handoff from execution run", SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun);
+Run("SIGTRAN commercial evidence artifact intake status summarizes foundation readiness", SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4957,6 +4958,22 @@ static void SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecuti
     Assert(result.Report.ReportPath.StartsWith(result.Target.DossierRoot, StringComparison.Ordinal), "bridge report should stay under dossier root");
 }
 
+static void SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceArtifactIntakeStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranCommercialEvidenceArtifactIntakeStatus.CompletedUnitCount, "artifact intake completed unit count");
+    AssertEqual(9, capabilities.Count, "artifact intake capability count");
+    Assert(capabilities.Contains("execution-dossier-bridge"), "artifact intake status should include execution bridge");
+    Assert(capabilities.Contains("documentation"), "artifact intake status should include documentation");
+    Assert(SigtranCommercialEvidenceArtifactIntakeStatus.ArtifactIntakeFoundationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
+    Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.RealArtifactEvidenceReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
+    Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.CommercialPublicationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
+    Assert(blockers.Contains("real-artifact-file-evidence-required"), "artifact intake status should require real file evidence");
+    Assert(blockers.Contains("status-final-validation-pending"), "artifact intake status should retain final validation blocker before closeout");
+}
+
 static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()
 {
     return SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(CreateDefaultCommercialEvidenceArtifactCompletenessResult());
@@ -5028,7 +5045,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranSupplyChainReleaseStatus.GetCompletedCapabilities(),
         SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)
