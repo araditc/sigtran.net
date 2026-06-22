@@ -269,6 +269,7 @@ Run("SIGTRAN release decision recommends RC before stable commercial evidence", 
 Run("SIGTRAN release candidate publication evidence gates RC upload", SigtranReleaseCandidatePublicationEvidenceGatesRcUpload);
 Run("SIGTRAN release candidate publication status summarizes RC gate", SigtranReleaseCandidatePublicationStatusSummarizesRcGate);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
+Run("SIGTRAN commercial release target lock binds evidence to version and commit", SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4268,6 +4269,19 @@ static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
     Assert(report.Items.Any(static item => item.Name == "external-peer-interop" && !item.Passed), "commercial release execution readiness should block external peer interop");
     Assert(report.Items.Any(static item => item.Name == "package-signing" && !item.Passed), "commercial release execution readiness should block incomplete signing verification");
     Assert(report.Items.Any(static item => item.Name == "performance" && !item.Passed), "commercial release execution readiness should block smoke-only performance evidence");
+}
+
+static void SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit()
+{
+    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
+    SigtranCommercialReleaseTargetLock symbolic = new("1.0.0-rc.1", "main", "main", "prerelease", "artifacts/commercial-readiness/1.0.0-rc.1");
+
+    Assert(target.IsLocked, target.Describe());
+    Assert(target.IsReleaseCandidate, "target should be a release candidate");
+    Assert(target.HasPinnedCommit, "target should require a pinned commit");
+    Assert(target.HasVersionedArtifactRoot, "target should use a versioned artifact root");
+    Assert(!symbolic.IsLocked, symbolic.Describe());
+    Assert(!symbolic.HasPinnedCommit, "symbolic branch names must not satisfy commit pinning");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

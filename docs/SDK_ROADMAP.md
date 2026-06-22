@@ -316,6 +316,15 @@ Status: Phase 34 is foundation-complete. The final SBOM artifact contract is ava
 
 Status: Phase 35 is foundation-complete. The dry-run release rehearsal plan is available and requires package creation, package verification, retained evidence, and no NuGet upload command. Gated prerelease publication now requires an RC/prerelease version, explicit publish request, NuGet API key availability, dry-run success, and supply-chain release readiness; stable versions are rejected by this gate. Retained release notes artifacts now require versioned Markdown, digest coverage, publishable content, breaking-change section, and migration notes link. Retained migration notes artifacts now require versioned Markdown, digest coverage, migration entries, code-sample requirement, and experimental SCCP/TCAP/MAP boundary statements. Final commercial readiness reporting now separates RC prerelease readiness from stable commercial readiness and retains current blockers. RC/stable decisioning now recommends `Blocked`, `ReleaseCandidate`, or `Stable` from retained readiness evidence. RC publication evidence now requires package, symbols, dry-run, notes, migration, readiness, decision, and digest artifacts before upload. The release workflow now has explicit `dry-run`, `prerelease`, and `stable` channel wiring with retained dry-run evidence and RC publication gating. RC publication status now separates gate foundation readiness from real publication execution and stable commercial readiness. The final commercial gate report is retained in docs. A real RC publish still requires a retained workflow run with production secrets, and stable publication remains blocked until commercial evidence is complete.
 
+## Phase 36 - Commercial Evidence Readiness Lockdown
+
+- Lock the release-candidate target before evidence-producing work starts.
+- Validate required secrets, artifact roots, evidence checklists, preflight inputs, protected environments, and dossier handoff.
+- Produce a go/no-go decision that blocks lab execution and RC publication when readiness prerequisites are missing.
+- Keep stable publication blocked until commercial evidence is complete.
+
+Status: Phase 36 is in progress. The release target lock now binds an RC version to a pinned source commit, release channel, and versioned artifact root. Secrets, artifact retention, evidence checklist, preflight, protected environment, dossier handoff, go/no-go gating, status reporting, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
