@@ -85,6 +85,18 @@ This unit gives filesystem-backed evidence the same integrity seal contract used
 
 This unit connects sealed filesystem evidence to release dossier attachment planning without bypassing trace protection.
 
+## Unit 8 - Promotion Gate Execution
+
+`SigtranCommercialEvidenceFileSystemPromotions` evaluates filesystem-backed publication attachments against the verified promotion gate:
+
+- Requires publication attachment execution to be ready.
+- Evaluates the current attachment manifest and seal digest.
+- Records reviewer identity and UTC evaluation time.
+- Requires explicit evidence approval before promotion.
+- Carries gate blockers such as `commercial-evidence-approval-missing`.
+
+This unit makes the filesystem-backed evidence path promotion-aware while preserving the existing commercial approval gate.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -312,6 +312,7 @@ Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", Si
 Run("SIGTRAN commercial evidence filesystem retention ledger covers verified files", SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
 Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger);
 Run("SIGTRAN commercial evidence filesystem publication attachments protect trace evidence", SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
+Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5381,6 +5382,44 @@ static void SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTrac
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution attachmentExecution = CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(tempRoot);
+
+        SigtranCommercialEvidenceFileSystemPromotionExecution approved = SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
+            attachmentExecution,
+            "release-review",
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceFileSystemPromotionExecution blocked = SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
+            attachmentExecution,
+            "release-review",
+            DateTimeOffset.UtcNow,
+            evidenceApproved: false);
+
+        Assert(approved.IsReady, approved.Describe());
+        Assert(approved.AttachmentsReady, "filesystem promotion should require ready attachments");
+        Assert(approved.UsesCurrentAttachmentManifest, "filesystem promotion should evaluate the current attachment manifest");
+        Assert(approved.CanPromoteEvidence, "approved filesystem evidence should promote");
+        Assert(!blocked.IsReady, "missing approval should block filesystem promotion");
+        Assert(blocked.PromotionGate.Blockers.Contains("commercial-evidence-approval-missing"), "filesystem promotion should expose approval blocker");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)
+{
+    return SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(
+        CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(tempRoot));
 }
 
 static SigtranCommercialEvidenceFileSystemIntegritySealExecution CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(string tempRoot)
