@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceArtifactIntakeStatus
         "dossier-intake-report",
         "promotion-handoff",
         "execution-dossier-bridge",
+        "final-validation",
         "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "real-artifact-file-evidence-required",
-        "status-final-validation-pending"
+        "real-artifact-file-evidence-required"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Commercial Evidence Artifact Intake";
 
     /// <summary>The number of completed commercial evidence artifact intake work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed artifact intake capability names.</summary>
     /// <returns>The completed capability names.</returns>

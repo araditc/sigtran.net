@@ -4963,15 +4963,16 @@ static void SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationRea
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceArtifactIntakeStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranCommercialEvidenceArtifactIntakeStatus.CompletedUnitCount, "artifact intake completed unit count");
-    AssertEqual(9, capabilities.Count, "artifact intake capability count");
+    AssertEqual(10, SigtranCommercialEvidenceArtifactIntakeStatus.CompletedUnitCount, "artifact intake completed unit count");
+    AssertEqual(10, capabilities.Count, "artifact intake capability count");
     Assert(capabilities.Contains("execution-dossier-bridge"), "artifact intake status should include execution bridge");
+    Assert(capabilities.Contains("final-validation"), "artifact intake status should include final validation");
     Assert(capabilities.Contains("documentation"), "artifact intake status should include documentation");
     Assert(SigtranCommercialEvidenceArtifactIntakeStatus.ArtifactIntakeFoundationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
     Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.RealArtifactEvidenceReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
     Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.CommercialPublicationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
     Assert(blockers.Contains("real-artifact-file-evidence-required"), "artifact intake status should require real file evidence");
-    Assert(blockers.Contains("status-final-validation-pending"), "artifact intake status should retain final validation blocker before closeout");
+    Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
 }
 
 static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()

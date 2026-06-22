@@ -110,7 +110,18 @@ The bridge is intentionally a contract builder, not a file executor. Real artifa
 - Real artifact evidence readiness.
 - Commercial publication readiness.
 
-The status keeps foundation readiness separate from commercial publication readiness. Real file evidence and final validation remain blockers until the phase is closed and real retained artifacts are reviewed.
+The status keeps foundation readiness separate from commercial publication readiness. Real file evidence remains a blocker until retained artifacts are captured, reviewed, and approved.
+
+## Unit 10 - Final Validation
+
+Final validation closes the artifact intake foundation:
+
+- Build, test, and package validation are run together.
+- `final-validation` is included in the public status capability list.
+- The temporary final-validation blocker is removed.
+- The real artifact file evidence blocker remains active.
+
+This keeps the phase complete as an SDK foundation while preserving the commercial release gate until real artifact files are retained and reviewed.
 
 ## Validation
 
