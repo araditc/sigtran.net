@@ -43,6 +43,19 @@ The manifest is the first aggregate proof that retained file observations match 
 
 The report keeps verification gates auditable. A commercial release decision can now distinguish "not verified" from the specific retained file condition that blocked promotion.
 
+## Unit 4 - Retention Ledger
+
+`SigtranCommercialEvidenceRetentionLedger` records how verified retained files are retained for commercial release evidence:
+
+- One ledger entry per verified retained file.
+- Reviewer identity.
+- UTC retention start and expiry times.
+- Minimum retention duration.
+- Immutable retention marker.
+- Digest coverage back to the verified retained file.
+
+The ledger is ready only when the file verification report is verified, every verified file is represented, retained paths are unique, every entry is immutable, timestamps are UTC, and every retention window meets the configured minimum duration.
+
 ## Validation
 
 Each unit in this phase is validated with:

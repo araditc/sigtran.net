@@ -299,6 +299,7 @@ Run("SIGTRAN commercial evidence artifact intake status summarizes foundation re
 Run("SIGTRAN commercial evidence retained file verifies observed digest", SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest);
 Run("SIGTRAN commercial evidence retained file manifest covers handoff items", SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems);
 Run("SIGTRAN commercial evidence file verification report identifies blockers", SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers);
+Run("SIGTRAN commercial evidence retention ledger requires immutable retention", SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5038,6 +5039,44 @@ static void SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers()
     Assert(!mismatchReport.IsVerified, "digest mismatch should block retained file report verification");
     AssertEqual(1, mismatchReport.DigestMismatchCount, "retained file digest mismatch count");
     Assert(mismatchReport.Blockers.Contains("retained-file-digest-mismatch"), "retained file report should expose digest mismatch blocker");
+}
+
+static void SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention()
+{
+    SigtranCommercialEvidenceFileVerificationReport report = CreateDefaultCommercialEvidenceFileVerificationReport();
+    SigtranCommercialEvidenceRetentionLedger ledger = CreateDefaultCommercialEvidenceRetentionLedger(report);
+    SigtranCommercialEvidenceRetentionLedgerEntry[] shortEntries = ledger.Entries.ToArray();
+    SigtranCommercialEvidenceRetentionLedgerEntry first = shortEntries[0];
+    shortEntries[0] = new(
+        first.Kind,
+        first.RetainedPath,
+        first.Sha256,
+        first.RetainedAtUtc,
+        first.RetainedAtUtc.AddDays(30),
+        first.Reviewer,
+        immutableRetention: true);
+    SigtranCommercialEvidenceRetentionLedger shortLedger = new(report, shortEntries, minimumRetentionDays: 365);
+
+    Assert(ledger.IsReady, ledger.Describe());
+    AssertEqual(report.Manifest.Files.Count, ledger.Entries.Count, "retention ledger entry count");
+    Assert(ledger.CoversVerifiedFiles, "retention ledger should cover verified files");
+    Assert(ledger.AllEntriesImmutable, "retention ledger should require immutable entries");
+    Assert(ledger.UsesUtcRetentionTimes, "retention ledger should use UTC timestamps");
+    Assert(!shortLedger.IsReady, "short retention windows should block ledger readiness");
+    Assert(!shortLedger.AllEntriesReady, "short retention windows should fail entry readiness");
+}
+
+static SigtranCommercialEvidenceRetentionLedger CreateDefaultCommercialEvidenceRetentionLedger(SigtranCommercialEvidenceFileVerificationReport? report = null)
+{
+    return SigtranCommercialEvidenceRetentionLedgers.CreateDefault(
+        report ?? CreateDefaultCommercialEvidenceFileVerificationReport(),
+        "release-review",
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranCommercialEvidenceFileVerificationReport CreateDefaultCommercialEvidenceFileVerificationReport()
+{
+    return SigtranCommercialEvidenceFileVerificationReports.Evaluate(CreateDefaultCommercialEvidenceRetainedFileManifest());
 }
 
 static SigtranCommercialEvidenceRetainedFileManifest CreateDefaultCommercialEvidenceRetainedFileManifest()
