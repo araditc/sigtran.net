@@ -73,6 +73,18 @@ This unit connects real file verification output to the commercial evidence rete
 
 This unit gives filesystem-backed evidence the same integrity seal contract used by the retained commercial evidence dossier.
 
+## Unit 7 - Publication Attachment Execution
+
+`SigtranCommercialEvidenceFileSystemPublicationAttachments` creates release dossier attachments from the filesystem-backed integrity seal:
+
+- Requires the filesystem-backed integrity seal execution to be ready.
+- Creates publication attachments from sealed ledger entries.
+- Confirms attachments reference the current seal id and aggregate digest.
+- Requires trace-bearing artifacts to carry redaction approval.
+- Keeps publication attachment execution blocked when redaction approval is absent.
+
+This unit connects sealed filesystem evidence to release dossier attachment planning without bypassing trace protection.
+
 ## Validation
 
 Each unit in this phase is validated with:

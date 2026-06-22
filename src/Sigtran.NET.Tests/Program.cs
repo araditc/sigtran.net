@@ -311,6 +311,7 @@ Run("SIGTRAN commercial evidence filesystem verification report identifies missi
 Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports);
 Run("SIGTRAN commercial evidence filesystem retention ledger covers verified files", SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
 Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger);
+Run("SIGTRAN commercial evidence filesystem publication attachments protect trace evidence", SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5351,6 +5352,42 @@ static void SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemIntegritySealExecution sealExecution = CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(tempRoot);
+
+        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution execution = SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(sealExecution);
+        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution blocked = SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(
+            sealExecution,
+            publishable: true,
+            redactionApproved: false);
+
+        Assert(execution.IsReady, execution.Describe());
+        Assert(execution.SealReady, "filesystem publication attachments should require a ready seal");
+        Assert(execution.UsesCurrentIntegritySeal, "filesystem publication attachments should use the current seal");
+        Assert(execution.CoversSealedLedgerEntries, "filesystem publication attachments should cover sealed ledger entries");
+        Assert(execution.ProtectsTraceBearingArtifacts, "filesystem publication attachments should protect trace-bearing evidence");
+        Assert(!blocked.IsReady, "missing redaction approval should block filesystem publication attachments");
+        Assert(!blocked.ProtectsTraceBearingArtifacts, "blocked filesystem publication attachments should expose trace protection failure");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemIntegritySealExecution CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(string tempRoot)
+{
+    return SigtranCommercialEvidenceFileSystemIntegritySeals.Create(
+        CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(tempRoot),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceFileSystemRetentionLedgerExecution CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(string tempRoot)
