@@ -261,6 +261,7 @@ Run("SIGTRAN supply chain release gate aggregates promotion evidence", SigtranSu
 Run("SIGTRAN supply chain release status summarizes execution blockers", SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers);
 Run("SIGTRAN release dry-run plan rehearses without publication", SigtranReleaseDryRunPlanRehearsesWithoutPublication);
 Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads);
+Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleaseNotesArtifactRendersRcPublicationNotes);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4138,6 +4139,18 @@ static void SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads()
     Assert(stable.Reasons.Contains("prerelease-version-required"), "stable version should not pass prerelease gate");
     Assert(!missingKey.CanPublishPrerelease, missingKey.Describe());
     Assert(missingKey.Reasons.Contains("nuget-api-key-required"), "prerelease gate should require NuGet key");
+}
+
+static void SigtranReleaseNotesArtifactRendersRcPublicationNotes()
+{
+    SigtranReleaseNotesArtifact artifact = SigtranReleaseNotesArtifacts.CreateReleaseCandidate("1.0.0-rc.1", new string('a', 64));
+    string markdown = artifact.RenderMarkdown();
+
+    Assert(artifact.IsReviewReady, "release notes artifact should be review-ready");
+    Assert(artifact.Path.EndsWith(".release-notes.md", StringComparison.OrdinalIgnoreCase), "release notes artifact should be Markdown");
+    Assert(markdown.Contains("# Sigtran.NET 1.0.0-rc.1", StringComparison.Ordinal), "release notes should include title");
+    Assert(markdown.Contains("## Migration Notes", StringComparison.Ordinal), "release notes should link migration notes");
+    Assert(markdown.Contains("M3UA", StringComparison.Ordinal), "release notes should include SDK changes");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

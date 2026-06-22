@@ -28,6 +28,18 @@ The dry-run plan is release-rehearsal ready only when it includes package creati
 
 Stable versions are intentionally rejected by this gate. Stable publication remains controlled by the commercial release gate.
 
+## Unit 3 - Release Notes Artifact
+
+`SigtranReleaseNotesArtifacts` defines retained RC release notes:
+
+- Versioned Markdown artifact path.
+- SHA-256 digest.
+- Publishable release notes content.
+- Migration notes link.
+- Rendered Markdown sections for changes and breaking changes.
+
+The artifact is review-ready only when release notes are publishable, the retained file is Markdown, the path contains the release version, a digest is present, and migration notes are linked.
+
 ## Validation
 
 Each unit in this phase is validated with:

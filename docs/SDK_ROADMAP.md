@@ -312,7 +312,7 @@ Status: Phase 34 is foundation-complete. The final SBOM artifact contract is ava
 - Produce final commercial readiness, release notes, and migration notes artifacts.
 - Decide RC versus stable based on retained release evidence and commercial readiness.
 
-Status: Phase 35 is in progress. The dry-run release rehearsal plan is available and requires package creation, package verification, retained evidence, and no NuGet upload command. Gated prerelease publication now requires an RC/prerelease version, explicit publish request, NuGet API key availability, dry-run success, and supply-chain release readiness; stable versions are rejected by this gate. Final commercial readiness reporting, release notes, migration notes, RC/stable decisioning, workflow wiring, and final validation remain in progress.
+Status: Phase 35 is in progress. The dry-run release rehearsal plan is available and requires package creation, package verification, retained evidence, and no NuGet upload command. Gated prerelease publication now requires an RC/prerelease version, explicit publish request, NuGet API key availability, dry-run success, and supply-chain release readiness; stable versions are rejected by this gate. Retained release notes artifacts now require versioned Markdown, digest coverage, publishable content, breaking-change section, and migration notes link. Final commercial readiness reporting, migration notes, RC/stable decisioning, workflow wiring, and final validation remain in progress.
 
 ## Recommended First Deliverable
 
