@@ -12,6 +12,15 @@ on:
         required: true
         type: boolean
         default: false
+      channel:
+        description: Release channel to evaluate
+        required: true
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - prerelease
+          - stable
   push:
     tags:
       - 'v*'
@@ -34,6 +43,7 @@ jobs:
       SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT: artifacts/supply-chain
       SIGTRAN_COMMERCIAL_EVIDENCE: true
       SIGTRAN_COMMERCIAL_EVIDENCE_ROOT: artifacts/commercial-evidence
+      SIGTRAN_DRY_RUN_ARTIFACT_ROOT: artifacts/release-dry-run
 
     steps:
       - name: Checkout
@@ -51,8 +61,13 @@ jobs:
           if [ -z "$release_version" ]; then
             release_version="${GITHUB_REF_NAME#v}"
           fi
+          release_channel="${{ inputs.channel }}"
+          if [ -z "$release_channel" ]; then
+            release_channel="stable"
+          fi
           test -n "$release_version"
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
+          echo "SIGTRAN_RELEASE_CHANNEL=$release_channel" >> "$GITHUB_ENV"
 
       - name: Restore
         run: dotnet restore src/Sigtran.NET.sln
@@ -66,6 +81,21 @@ jobs:
       - name: Pack
         shell: bash
         run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build /p:Version="$RELEASE_VERSION"
+
+      - name: Dry-Run Release Evidence
+        shell: bash
+        run: |
+          dry_run_dir="$SIGTRAN_DRY_RUN_ARTIFACT_ROOT/$RELEASE_VERSION"
+          mkdir -p "$dry_run_dir"
+          dotnet nuget verify "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" --all | tee "$dry_run_dir/package-verification.md"
+          {
+            echo "version=$RELEASE_VERSION"
+            echo "channel=$SIGTRAN_RELEASE_CHANNEL"
+            echo "package=src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg"
+            echo "symbols=src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.snupkg"
+            echo "publication=disabled-during-dry-run"
+          } > "$dry_run_dir/release-dry-run.md"
+          sha256sum "$dry_run_dir/package-verification.md" "$dry_run_dir/release-dry-run.md" > "$dry_run_dir/Sigtran.NET.$RELEASE_VERSION.dry-run.sha256"
 
       - name: Prepare Release Artifacts
         shell: bash
@@ -153,7 +183,7 @@ jobs:
       - name: Create Digest Manifest
         shell: bash
         run: |
-          find artifacts/release artifacts/supply-chain -type f -print0 | sort -z | xargs -0 sha256sum > "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256"
+          find artifacts/release artifacts/supply-chain artifacts/release-dry-run -type f -print0 | sort -z | xargs -0 sha256sum > "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256"
 
       - name: Upload Package
         if: ${{ always() }}
@@ -179,11 +209,46 @@ jobs:
           path: artifacts/supply-chain
           retention-days: 90
 
+      - name: Upload Dry-Run Evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigtran-release-dry-run
+          path: artifacts/release-dry-run
+          retention-days: 90
+
+      - name: Evaluate RC Publication Gate
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel == 'prerelease' }}
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          test "${{ inputs.publish }}" = "true"
+          test -n "$NUGET_API_KEY"
+          case "$RELEASE_VERSION" in
+            *-*) ;;
+            *) echo "Prerelease channel requires a prerelease version."; exit 1 ;;
+          esac
+          test -f "$SIGTRAN_DRY_RUN_ARTIFACT_ROOT/$RELEASE_VERSION/release-dry-run.md"
+
       - name: Commercial Evidence
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         run: |
           echo "Commercial evidence verification requires retained native SCTP, external peer, protocol vector, provenance, and package artifacts."
           test -d "$SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"
 
       - name: Publish
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true }}
-        run: dotnet nuget push artifacts/release/Sigtran.NET.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel != 'dry-run' && inputs.publish == true }}
+        shell: bash
+        run: |
+          if [ "$SIGTRAN_RELEASE_CHANNEL" = "stable" ]; then
+            case "$RELEASE_VERSION" in
+              *-*) echo "Stable channel requires a stable version."; exit 1 ;;
+            esac
+          else
+            case "$RELEASE_VERSION" in
+              *-*) ;;
+              *) echo "Prerelease channel requires a prerelease version."; exit 1 ;;
+            esac
+          fi
+          dotnet nuget push artifacts/release/Sigtran.NET.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"

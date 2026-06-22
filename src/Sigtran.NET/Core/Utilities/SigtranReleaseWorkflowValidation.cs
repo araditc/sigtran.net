@@ -38,13 +38,21 @@ public static class SigtranReleaseWorkflowValidation
     [
         "name: release",
         "workflow_dispatch:",
+        "channel:",
+        "dry-run",
+        "prerelease",
         "tags:",
         "dotnet-version: 10.0.x",
         "SIGTRAN_SUPPLY_CHAIN: true",
         "SIGTRAN_COMMERCIAL_EVIDENCE: true",
+        "SIGTRAN_DRY_RUN_ARTIFACT_ROOT",
+        "SIGTRAN_RELEASE_CHANNEL",
         "secrets.SIGNING_CERTIFICATE",
         "secrets.SIGNING_CERTIFICATE_PASSWORD",
         "secrets.NUGET_API_KEY",
+        "Dry-Run Release Evidence",
+        "Evaluate RC Publication Gate",
+        "Upload Dry-Run Evidence",
         "sbom-tool generate",
         "dotnet nuget sign",
         "dotnet nuget verify",
@@ -53,6 +61,7 @@ public static class SigtranReleaseWorkflowValidation
         "actions/upload-artifact@v4",
         "SIGTRAN_FINAL_SBOM_PATH",
         "SIGTRAN_PUBLIC_API_DIFF_PATH",
+        "inputs.channel != 'dry-run'",
         "inputs.publish == true"
     ];
 

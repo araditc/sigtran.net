@@ -223,6 +223,7 @@ Run("SIGTRAN release workflow readiness reports concrete workflow file", Sigtran
 Run("SIGTRAN release workflow status summarizes orchestration foundation", SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation);
 Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
 Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
+Run("SIGTRAN release workflow validation requires RC dry-run wiring", SigtranReleaseWorkflowValidationRequiresRcDryRunWiring);
 Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleasePublishGuardBlocksAccidentalPublication);
 Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
@@ -3608,6 +3609,16 @@ static void SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml()
 
     Assert(result.IsValid, result.Describe());
     AssertEqual(0, result.MissingItems.Count, "release workflow validation missing item count");
+}
+
+static void SigtranReleaseWorkflowValidationRequiresRcDryRunWiring()
+{
+    string yaml = File.ReadAllText(Path.Combine(".github", "workflows", "release.yml"));
+
+    Assert(yaml.Contains("Dry-Run Release Evidence", StringComparison.Ordinal), "release workflow should retain dry-run evidence");
+    Assert(yaml.Contains("Evaluate RC Publication Gate", StringComparison.Ordinal), "release workflow should evaluate the RC gate");
+    Assert(yaml.Contains("Upload Dry-Run Evidence", StringComparison.Ordinal), "release workflow should upload dry-run evidence");
+    Assert(yaml.Contains("inputs.channel != 'dry-run'", StringComparison.Ordinal), "release workflow should block publication from dry-run channel");
 }
 
 static void SigtranReleasePublishGuardBlocksAccidentalPublication()

@@ -89,6 +89,16 @@ The default current decision is `ReleaseCandidate` when the NuGet prerelease sec
 
 The manifest allows RC publication only when the release decision is `ReleaseCandidate`, every required artifact kind is present, and every required artifact has SHA-256 digest coverage. It does not allow stable publication unless the decision is `Stable`.
 
+## Unit 8 - Release Workflow Dry-Run And Prerelease Wiring
+
+`.github/workflows/release.yml` now exposes an explicit release `channel`:
+
+- `dry-run` builds, tests, packs, verifies, and uploads retained dry-run evidence without allowing NuGet publication.
+- `prerelease` requires a prerelease version, explicit `publish=true`, a NuGet API key, and retained dry-run evidence before upload.
+- `stable` keeps the commercial evidence gate in the publication path.
+
+The workflow uploads package, symbols, supply-chain evidence, and dry-run evidence artifacts with audit-friendly retention. The validator requires the dry-run evidence step, RC publication gate, dry-run evidence upload, and dry-run publish block.
+
 ## Validation
 
 Each unit in this phase is validated with:
