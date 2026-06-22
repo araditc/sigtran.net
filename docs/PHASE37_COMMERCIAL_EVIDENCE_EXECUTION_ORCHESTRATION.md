@@ -31,6 +31,17 @@ Floating roots such as `artifacts/latest/...` are rejected because retained evid
 
 The stage catalog validates required stage coverage, unique stage identifiers and order values, and run-scoped artifact roots for every stage.
 
+## Unit 3 - Operator Command Plan
+
+`SigtranCommercialEvidenceExecutionCommands` maps each execution stage to one operator-facing command:
+
+- Commands follow the deterministic stage order.
+- Every command carries the execution run identifier.
+- Evidence-producing stages are marked as artifact-producing.
+- Supply-chain, release workflow, and dossier assembly commands require protected approval.
+
+The command plan is a runbook contract. It defines what should be run and how artifacts stay tied to the run; it does not execute the commands by itself.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -280,6 +280,7 @@ Run("SIGTRAN commercial go no-go gate separates evidence execution from publicat
 Run("SIGTRAN commercial evidence readiness lockdown status summarizes current gate", SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate);
 Run("SIGTRAN commercial evidence execution run binds artifacts to target", SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget);
 Run("SIGTRAN commercial evidence execution stage catalog covers required work", SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork);
+Run("SIGTRAN commercial evidence execution command plan covers stage work", SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4550,6 +4551,44 @@ static void SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork()
     Assert(catalog.Stages.First().Kind == SigtranCommercialEvidenceExecutionStageKind.ReadinessPreflight, "preflight should be the first stage");
     Assert(!floatingCatalog.IsReady, floatingCatalog.Describe());
     Assert(!floatingCatalog.UsesRunArtifactRoot, "floating stage roots should be rejected");
+}
+
+static void SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionCommandPlan plan = SigtranCommercialEvidenceExecutionCommands.CreateDefault(catalog);
+    SigtranCommercialEvidenceExecutionCommandPlan missingRunId = new(
+        catalog,
+        plan.Commands
+            .Select(command => command.StageId == "native-sctp-lab"
+                ? new SigtranCommercialEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, "scripts/run-native-sctp-lab.sh", command.ProducesArtifacts, command.RequiresApproval)
+                : command)
+            .ToArray());
+    SigtranCommercialEvidenceExecutionCommandPlan weakApproval = new(
+        catalog,
+        plan.Commands
+            .Select(command => command.StageId == "supply-chain-evidence"
+                ? new SigtranCommercialEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, command.CommandLine, command.ProducesArtifacts, requiresApproval: false)
+                : command)
+            .ToArray());
+
+    Assert(plan.IsReady, plan.Describe());
+    Assert(plan.Commands.Count == catalog.Stages.Count, "command plan should have one command per stage");
+    Assert(plan.CoversRequiredStages, "command plan should cover every required stage");
+    Assert(plan.UsesDeterministicOrder, "command plan should follow stage order");
+    Assert(plan.ReferencesRunId, "command plan should carry run id in every command");
+    Assert(plan.MarksArtifactProducingStages, "artifact-producing stages should be marked");
+    Assert(plan.RequiresProtectedApproval, "sensitive commands should require approval");
+    Assert(!missingRunId.IsReady, missingRunId.Describe());
+    Assert(!missingRunId.ReferencesRunId, "commands without run id should be rejected");
+    Assert(!weakApproval.IsReady, weakApproval.Describe());
+    Assert(!weakApproval.RequiresProtectedApproval, "supply-chain command should require approval");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
