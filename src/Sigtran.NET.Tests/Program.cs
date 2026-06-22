@@ -322,6 +322,7 @@ Run("SIGTRAN commercial evidence run approval report writer retains markdown", S
 Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
 Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
+Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5708,6 +5709,47 @@ static void SigtranCommercialEvidencePublicationHandoffGateReportsBlockers()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidencePublicationHandoffGateResult gate = CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot);
+
+        SigtranCommercialEvidenceApprovalAuditTrail trail = SigtranCommercialEvidenceApprovalAuditTrails.CreateDefault(
+            gate,
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceApprovalAuditEvent firstEvent = trail.Events[0];
+        SigtranCommercialEvidenceApprovalAuditTrail blocked = new(
+            gate,
+            [new(firstEvent.Id, firstEvent.Kind, firstEvent.Actor, firstEvent.OccurredAtUtc, "not-a-digest", firstEvent.Description), .. trail.Events.Skip(1)]);
+
+        Assert(trail.IsReady, trail.Describe());
+        Assert(trail.UsesUniqueEventIds, "approval audit trail should use unique event ids");
+        Assert(trail.AllEventsReady, "approval audit trail events should be ready");
+        Assert(trail.CoversApprovalLifecycle, "approval audit trail should cover approval lifecycle");
+        Assert(!blocked.IsReady, "invalid audit event digest should block audit trail readiness");
+        Assert(!blocked.AllEventsReady, "blocked audit trail should expose event readiness failure");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(string tempRoot)
+{
+    return SigtranCommercialEvidencePublicationHandoffGates.Evaluate(
+        SigtranCommercialEvidencePublicationHandoffs.Create(
+            CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot),
+            SigtranPublishChannelKind.Beta,
+            "release-manager",
+            DateTimeOffset.UtcNow),
+        commercialReadinessApproved: false);
 }
 
 static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(string tempRoot)

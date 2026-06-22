@@ -93,6 +93,20 @@ This unit keeps RC and stable publication boundaries explicit before a final pub
 
 This unit gives release operators actionable blockers before package publication workflows are allowed to proceed.
 
+## Unit 8 - Approval Audit Trail
+
+`SigtranCommercialEvidenceApprovalAuditTrail` records digest-covered lifecycle events:
+
+- Run target.
+- Approval checklist.
+- Reviewer approval manifest.
+- Approval report.
+- Promotion package.
+- Publication handoff.
+- Handoff gate.
+
+This unit gives the approval path a retained audit chain that can be reviewed before package publication proceeds.
+
 ## Validation
 
 Each unit in this phase is validated with:
