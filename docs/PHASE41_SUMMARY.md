@@ -9,7 +9,8 @@ Phase 41 prepares the SDK to move from filesystem-backed evidence verification i
 - Reviewer approval manifest that records release, security, and operations approvals with UTC timestamps and a deterministic checklist digest.
 - Approval report writer that renders retained Markdown approval reports with SHA-256 digest coverage.
 - Approved run promotion package that collects approval report, integrity seal, publication attachments, and promotion gate artifact references with required digest coverage.
+- Publication handoff that connects an approved promotion package to channel policy, requester identity, UTC handoff time, and explicit publish intent.
 
 ## Readiness Position
 
-The phase is in progress. Approved run target identity, approval checklist, reviewer approval manifest, approval report writing, and promotion package are available. Publication handoff, blocker gate, audit trail, command materialization, status reporting, documentation, and final validation remain.
+The phase is in progress. Approved run target identity, approval checklist, reviewer approval manifest, approval report writing, promotion package, and publication handoff are available. Blocker gate, audit trail, command materialization, status reporting, documentation, and final validation remain.

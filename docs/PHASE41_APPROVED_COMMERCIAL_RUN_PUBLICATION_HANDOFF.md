@@ -68,6 +68,19 @@ This unit turns approval data into a retained report artifact that later promoti
 
 This unit gives the publication handoff a single approved package contract instead of relying on loose references.
 
+## Unit 6 - Publication Handoff
+
+`SigtranCommercialEvidencePublicationHandoff` connects an approved run promotion package to publication channel intent:
+
+- Requested publication channel.
+- Requester identity.
+- UTC handoff creation time.
+- Explicit publish request flag.
+- Channel acceptance of package version.
+- Commercial readiness requirement visibility.
+
+This unit keeps RC and stable publication boundaries explicit before a final publication gate evaluates the handoff.
+
 ## Validation
 
 Each unit in this phase is validated with:

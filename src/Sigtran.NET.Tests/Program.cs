@@ -320,6 +320,7 @@ Run("SIGTRAN commercial evidence run approval checklist requires reviewer approv
 Run("SIGTRAN commercial evidence run approval manifest requires required roles", SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles);
 Run("SIGTRAN commercial evidence run approval report writer retains markdown", SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown);
 Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
+Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5630,6 +5631,46 @@ static void SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredAr
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceApprovedRunPromotionPackage package = CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot);
+
+        SigtranCommercialEvidencePublicationHandoff beta = SigtranCommercialEvidencePublicationHandoffs.Create(
+            package,
+            SigtranPublishChannelKind.Beta,
+            "release-manager",
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidencePublicationHandoff stable = SigtranCommercialEvidencePublicationHandoffs.Create(
+            package,
+            SigtranPublishChannelKind.Stable,
+            "release-manager",
+            DateTimeOffset.UtcNow);
+
+        Assert(beta.IsReadyForPublicationGate, beta.Describe());
+        Assert(beta.ChannelAcceptsPackageVersion, "beta channel should accept prerelease version");
+        Assert(!beta.RequiresCommercialReadiness, "beta channel should not require stable commercial readiness");
+        Assert(!stable.IsReadyForPublicationGate, "stable handoff should reject prerelease version");
+        Assert(!stable.ChannelAcceptsPackageVersion, "stable channel should not accept prerelease version");
+        Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(string tempRoot)
+{
+    return SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
+        CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceRunApprovalReportWriteResult CreateReadyCommercialEvidenceRunApprovalReportWriteResult(string tempRoot)
