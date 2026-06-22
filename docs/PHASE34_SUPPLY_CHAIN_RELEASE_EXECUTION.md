@@ -30,6 +30,19 @@ The final SBOM contract does not manufacture evidence. A release is considered c
 
 The evidence only supports release promotion when verification passes, timestamping is retained as a `.tsr` artifact, the timestamp authority uses HTTPS, the certificate thumbprint is present, and all required artifacts have SHA-256 digests.
 
+## Unit 3 - Provenance Attestation
+
+`SigtranProvenanceAttestations` defines the retained release provenance attestation:
+
+- Versioned `.intoto.jsonl` attestation artifact.
+- Attestation digest.
+- Source repository and source commit.
+- Release workflow name and workflow run identity.
+- OIDC issuer used by the workflow.
+- Package and SBOM subjects with SHA-256 digests.
+
+The attestation can support release promotion only when it links package and SBOM subjects to a GitHub source repository, records a release workflow identity, uses an HTTPS OIDC issuer, and all retained subjects have complete digests.
+
 ## Validation
 
 Each unit in this phase is validated with:

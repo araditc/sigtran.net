@@ -303,7 +303,7 @@ Status: Phase 33 is foundation-complete. Peer-traffic benchmark workload evidenc
 - Retain public API diff artifacts before publication.
 - Upload release artifacts from the workflow with digest coverage and promotion gates.
 
-Status: Phase 34 is in progress. The final SBOM artifact contract is available and requires SPDX JSON, package/version alignment, workflow outputs, and digest coverage. Trusted timestamped signing evidence now requires certificate identity, HTTPS timestamp authority, retained timestamp receipt, verification report, and digest coverage. Provenance attestation, public API diff artifacts, workflow upload, and final release execution gating remain in progress.
+Status: Phase 34 is in progress. The final SBOM artifact contract is available and requires SPDX JSON, package/version alignment, workflow outputs, and digest coverage. Trusted timestamped signing evidence now requires certificate identity, HTTPS timestamp authority, retained timestamp receipt, verification report, and digest coverage. Provenance attestation now links package and SBOM subjects to source commit, release workflow identity, OIDC issuer, and retained digests. Public API diff artifacts, workflow upload, and final release execution gating remain in progress.
 
 ## Recommended First Deliverable
 

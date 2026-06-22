@@ -253,6 +253,7 @@ Run("SIGTRAN benchmark execution evidence records smoke workload limits", Sigtra
 Run("SIGTRAN public API baseline evidence records generated member baseline", SigtranPublicApiBaselineEvidenceRecordsGeneratedMemberBaseline);
 Run("SIGTRAN final SBOM artifact records versioned release output", SigtranFinalSbomArtifactRecordsVersionedReleaseOutput);
 Run("SIGTRAN trusted package signing evidence requires timestamp and verification digests", SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerificationDigests);
+Run("SIGTRAN provenance attestation links package SBOM source and workflow", SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -3981,6 +3982,23 @@ static void SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerification
     Assert(evidence.TimestampReceiptPath.EndsWith(".tsr", StringComparison.OrdinalIgnoreCase), "trusted signing should retain timestamp receipt");
     Assert(evidence.VerificationReportPath.EndsWith(".verification.md", StringComparison.OrdinalIgnoreCase), "trusted signing should retain verification report");
     Assert(evidence.SupportsReleasePromotion, evidence.Describe());
+}
+
+static void SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow()
+{
+    SigtranProvenanceAttestation attestation = SigtranProvenanceAttestations.CreateReleaseAttestation(
+        "1.0.0",
+        new string('d', 64),
+        "abcdef0123456789",
+        new string('e', 64),
+        new string('f', 64));
+
+    AssertEqual("release", attestation.WorkflowName, "provenance workflow name");
+    AssertEqual(2, attestation.Subjects.Count, "provenance subject count");
+    Assert(attestation.Subjects.Any(static subject => subject.Name == "package"), "provenance should include package subject");
+    Assert(attestation.Subjects.Any(static subject => subject.Name == "sbom"), "provenance should include SBOM subject");
+    Assert(attestation.AllSubjectsHaveDigests, attestation.Describe());
+    Assert(attestation.SupportsReleasePromotion, attestation.Describe());
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
