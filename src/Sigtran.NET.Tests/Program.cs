@@ -265,6 +265,7 @@ Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleas
 Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigrationNotesArtifactDocumentsRcBoundaries);
 Run("SIGTRAN final commercial readiness report separates RC and stable gates", SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates);
 Run("SIGTRAN release decision recommends RC before stable commercial evidence", SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence);
+Run("SIGTRAN release candidate publication evidence gates RC upload", SigtranReleaseCandidatePublicationEvidenceGatesRcUpload);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4207,6 +4208,27 @@ static void SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence()
 
     AssertEqual(SigtranReleaseDecisionKind.Blocked, blocked.Kind, "blocked release decision kind");
     Assert(blocked.Reasons.Contains("prerelease-publication-gate-required"), "blocked decision should explain missing prerelease gate");
+}
+
+static void SigtranReleaseCandidatePublicationEvidenceGatesRcUpload()
+{
+    SigtranReleaseCandidatePublicationEvidenceManifest manifest = SigtranReleaseCandidatePublicationEvidence.CreateReleaseCandidate(
+        "1.0.0-rc.1",
+        new string('1', 64),
+        new string('2', 64),
+        new string('3', 64),
+        new string('4', 64),
+        new string('5', 64),
+        new string('6', 64),
+        new string('7', 64),
+        new string('8', 64),
+        hasNuGetApiKey: true);
+
+    Assert(manifest.HasRequiredArtifacts, "RC publication evidence should include all required artifact kinds");
+    Assert(manifest.HasDigestCoverage, "RC publication evidence should have digest coverage");
+    Assert(manifest.CanPublishReleaseCandidate, "RC publication evidence should allow RC publication");
+    Assert(!manifest.CanPublishStable, "RC publication evidence must not allow stable publication");
+    Assert(manifest.Items.Any(static item => item.Kind == SigtranReleaseCandidatePublicationEvidenceKind.DryRunEvidence), "RC evidence should retain dry-run output");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

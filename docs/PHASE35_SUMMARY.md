@@ -10,7 +10,8 @@ Phase 35 builds the SDK contracts needed to rehearse and gate RC publication wit
 - Retained migration notes artifact with versioned Markdown path, digest coverage, migration entries, code-sample requirement, and experimental SCCP/TCAP/MAP boundary statement.
 - Final commercial readiness report that separates RC prerelease readiness from stable commercial release readiness and retains current commercial blockers.
 - RC versus stable decision model that recommends `ReleaseCandidate`, `Stable`, or `Blocked` from retained readiness evidence.
+- RC publication evidence manifest that requires package, symbols, dry-run, notes, migration, readiness, decision, and digest artifacts before upload.
 
 ## Readiness Position
 
-The phase is in progress. RC publication now has a consolidated readiness report and decision model, while stable publication remains blocked by retained commercial blockers. Workflow wiring and final validation remain in progress.
+The phase is in progress. RC publication now has a consolidated readiness report, decision model, and evidence manifest, while stable publication remains blocked by retained commercial blockers. Workflow wiring and final validation remain in progress.

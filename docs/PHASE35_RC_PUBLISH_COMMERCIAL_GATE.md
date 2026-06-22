@@ -76,6 +76,19 @@ The report intentionally separates `ReleaseCandidateReady` from `StableReleaseRe
 
 The default current decision is `ReleaseCandidate` when the NuGet prerelease secret is available, because the dry-run, prerelease, release notes, migration notes, and supply-chain foundations are present while commercial blockers remain retained. This prevents accidental stable publication.
 
+## Unit 7 - RC Publication Evidence Manifest
+
+`SigtranReleaseCandidatePublicationEvidence` defines the retained evidence manifest for RC upload review:
+
+- Package and symbol package artifacts.
+- Dry-run release evidence.
+- Release notes and migration notes artifacts.
+- Final commercial readiness report artifact.
+- Release decision record.
+- Digest manifest.
+
+The manifest allows RC publication only when the release decision is `ReleaseCandidate`, every required artifact kind is present, and every required artifact has SHA-256 digest coverage. It does not allow stable publication unless the decision is `Stable`.
+
 ## Validation
 
 Each unit in this phase is validated with:
