@@ -260,6 +260,7 @@ Run("SIGTRAN supply chain release command plan orders execution steps", SigtranS
 Run("SIGTRAN supply chain release gate aggregates promotion evidence", SigtranSupplyChainReleaseGateAggregatesPromotionEvidence);
 Run("SIGTRAN supply chain release status summarizes execution blockers", SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers);
 Run("SIGTRAN release dry-run plan rehearses without publication", SigtranReleaseDryRunPlanRehearsesWithoutPublication);
+Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4109,6 +4110,34 @@ static void SigtranReleaseDryRunPlanRehearsesWithoutPublication()
     Assert(plan.IsReleaseRehearsalReady, "dry-run release should be rehearsal-ready");
     Assert(commands.Any(command => command.Contains("dotnet pack", StringComparison.OrdinalIgnoreCase)), "dry-run should pack");
     Assert(commands.All(command => !command.Contains("nuget push", StringComparison.OrdinalIgnoreCase)), "dry-run should not push");
+}
+
+static void SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads()
+{
+    SigtranPrereleasePublicationGateResult prerelease = SigtranPrereleasePublicationGate.Evaluate(new(
+        "1.0.0-rc.1",
+        publishRequested: true,
+        hasNuGetApiKey: true,
+        dryRunPassed: true,
+        supplyChainReleaseReady: true));
+    SigtranPrereleasePublicationGateResult stable = SigtranPrereleasePublicationGate.Evaluate(new(
+        "1.0.0",
+        publishRequested: true,
+        hasNuGetApiKey: true,
+        dryRunPassed: true,
+        supplyChainReleaseReady: true));
+    SigtranPrereleasePublicationGateResult missingKey = SigtranPrereleasePublicationGate.Evaluate(new(
+        "1.0.0-rc.1",
+        publishRequested: true,
+        hasNuGetApiKey: false,
+        dryRunPassed: true,
+        supplyChainReleaseReady: true));
+
+    Assert(prerelease.CanPublishPrerelease, prerelease.Describe());
+    Assert(!stable.CanPublishPrerelease, stable.Describe());
+    Assert(stable.Reasons.Contains("prerelease-version-required"), "stable version should not pass prerelease gate");
+    Assert(!missingKey.CanPublishPrerelease, missingKey.Describe());
+    Assert(missingKey.Reasons.Contains("nuget-api-key-required"), "prerelease gate should require NuGet key");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

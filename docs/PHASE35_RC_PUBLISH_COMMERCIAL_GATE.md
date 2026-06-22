@@ -16,6 +16,18 @@ The public APIs use domain names such as `SigtranReleaseDryRuns`; phase numbers 
 
 The dry-run plan is release-rehearsal ready only when it includes package creation, package verification, retained evidence, and no `nuget push` command.
 
+## Unit 2 - Gated NuGet Prerelease
+
+`SigtranPrereleasePublicationGate` defines the NuGet prerelease publication gate:
+
+- The package version must be a prerelease version such as `1.0.0-rc.1`.
+- Publication must be explicitly requested.
+- `NUGET_API_KEY` must be available.
+- The dry-run release must have passed.
+- The supply-chain release execution foundation must be ready.
+
+Stable versions are intentionally rejected by this gate. Stable publication remains controlled by the commercial release gate.
+
 ## Validation
 
 Each unit in this phase is validated with:
