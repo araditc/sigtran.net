@@ -50,6 +50,18 @@ This unit is the first end-to-end filesystem verification pass: observe files, b
 
 This unit gives release operators retained files they can attach to the commercial evidence dossier after filesystem verification succeeds.
 
+## Unit 5 - Retention Ledger Execution
+
+`SigtranCommercialEvidenceFileSystemRetentionLedgers` creates a retention ledger from filesystem verification output:
+
+- Requires written verification artifacts.
+- Uses the filesystem-backed verification report.
+- Creates ledger entries for verified retained files.
+- Preserves reviewer identity, UTC retention start time, and retention duration.
+- Keeps the ledger ready only when it covers verified filesystem files.
+
+This unit connects real file verification output to the commercial evidence retention ledger.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -309,6 +309,7 @@ Run("SIGTRAN commercial evidence filesystem observer computes retained file dige
 Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff files", SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles);
 Run("SIGTRAN commercial evidence filesystem verification report identifies missing files", SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
 Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports);
+Run("SIGTRAN commercial evidence filesystem retention ledger covers verified files", SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5300,6 +5301,41 @@ static void SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemArtifactWriteResult writeResult = CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(tempRoot);
+
+        SigtranCommercialEvidenceFileSystemRetentionLedgerExecution ledgerExecution = SigtranCommercialEvidenceFileSystemRetentionLedgers.Create(
+            writeResult,
+            "release-review",
+            DateTimeOffset.UtcNow);
+
+        Assert(ledgerExecution.IsReady, ledgerExecution.Describe());
+        Assert(ledgerExecution.ArtifactsReady, "filesystem retention ledger should require written verification artifacts");
+        Assert(ledgerExecution.CoversVerifiedFilesystemFiles, "filesystem retention ledger should cover verified files");
+        AssertEqual(writeResult.VerificationExecution.Report.Manifest.Files.Count, ledgerExecution.Ledger.Entries.Count, "filesystem retention ledger entry count");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemArtifactWriteResult CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(string tempRoot)
+{
+    SigtranCommercialEvidenceFileSystemVerificationExecution execution = CreateReadyCommercialEvidenceFileSystemVerificationExecution(tempRoot);
+
+    return SigtranCommercialEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
+        execution,
+        Path.Combine(tempRoot, "verification-output"),
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceFileSystemVerificationExecution CreateReadyCommercialEvidenceFileSystemVerificationExecution(string tempRoot)
