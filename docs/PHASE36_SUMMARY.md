@@ -5,7 +5,8 @@ Phase 36 prepares the SDK for evidence-producing execution by locking the commer
 ## Completed Capabilities
 
 - Release target lock that binds a release-candidate version to a pinned source commit, release channel, and versioned artifact root.
+- Secret readiness contract that names publish, signing, and provenance requirements without exposing secret values.
 
 ## Readiness Position
 
-The phase is in progress. Evidence readiness lockdown still requires secrets, artifact retention, evidence checklist, preflight, protected environment, dossier handoff, go/no-go gating, status reporting, and final validation.
+The phase is in progress. Evidence readiness lockdown still requires artifact retention, evidence checklist, preflight, protected environment, dossier handoff, go/no-go gating, status reporting, and final validation.

@@ -16,6 +16,17 @@ The public APIs use domain names such as `SigtranCommercialReleaseTargetLocks`; 
 
 The target is locked only when it is a release candidate, the commit is pinned, the channel is supported, and the artifact root is retained under `artifacts/` with the version in its path.
 
+## Unit 2 - Required Secrets Readiness
+
+`SigtranCommercialReleaseSecrets` defines the protected secret contract without exposing secret values:
+
+- `NUGET_API_KEY` for package publication.
+- `SIGNING_CERTIFICATE` for trusted package signing material.
+- `SIGNING_CERTIFICATE_PASSWORD` for signing material unlock.
+- `PROVENANCE_ATTESTATION_TOKEN` for provenance attestation upload when OIDC is not used.
+
+The readiness evaluator accepts only secret names and reports missing requirements. This keeps release checks auditable while avoiding secret-value logging in build, test, and release output.
+
 ## Validation
 
 Each unit in this phase is validated with:

@@ -270,6 +270,7 @@ Run("SIGTRAN release candidate publication evidence gates RC upload", SigtranRel
 Run("SIGTRAN release candidate publication status summarizes RC gate", SigtranReleaseCandidatePublicationStatusSummarizesRcGate);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN commercial release target lock binds evidence to version and commit", SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit);
+Run("SIGTRAN commercial release secrets gate publish and signing readiness", SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4282,6 +4283,30 @@ static void SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit()
     Assert(target.HasVersionedArtifactRoot, "target should use a versioned artifact root");
     Assert(!symbolic.IsLocked, symbolic.Describe());
     Assert(!symbolic.HasPinnedCommit, "symbolic branch names must not satisfy commit pinning");
+}
+
+static void SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness()
+{
+    SigtranCommercialReleaseSecretReadiness ready = SigtranCommercialReleaseSecrets.Evaluate(
+    [
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD",
+        "PROVENANCE_ATTESTATION_TOKEN"
+    ]);
+
+    SigtranCommercialReleaseSecretReadiness missingSigning = SigtranCommercialReleaseSecrets.Evaluate(
+    [
+        "NUGET_API_KEY",
+        "PROVENANCE_ATTESTATION_TOKEN"
+    ]);
+
+    Assert(ready.IsReady, ready.Describe());
+    Assert(ready.Requirements.Any(static requirement => requirement.Purpose == SigtranCommercialReleaseSecretPurpose.PackagePublication), "publish secret should be declared");
+    Assert(ready.Requirements.Count(static requirement => requirement.Purpose == SigtranCommercialReleaseSecretPurpose.PackageSigning) == 2, "signing secrets should be explicit");
+    Assert(!missingSigning.IsReady, missingSigning.Describe());
+    Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE"), "signing certificate should be required");
+    Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE_PASSWORD"), "signing password should be required");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
