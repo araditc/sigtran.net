@@ -7,7 +7,8 @@ Phase 38 prepares the SDK to receive real execution artifacts and convert them i
 - Artifact intake target that binds a stable intake id, reviewer identity, UTC receipt time, and dossier root to a governed execution run.
 - Artifact source manifest that maps every required expected execution artifact to a concrete source path and a unique retained dossier path.
 - Artifact digest manifest that requires SHA-256 coverage for every retained source.
+- Redaction review manifest that requires approved review for trace-bearing retained artifacts.
 
 ## Readiness Position
 
-The phase is in progress. Artifact intake identity, source registration, and digest coverage are available. Redaction review, completeness evaluation, dossier reporting, promotion handoff, execution bridge, status reporting, and final validation remain.
+The phase is in progress. Artifact intake identity, source registration, digest coverage, and redaction review are available. Completeness evaluation, dossier reporting, promotion handoff, execution bridge, status reporting, and final validation remain.

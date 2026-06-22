@@ -38,6 +38,19 @@ The source manifest is the handoff from execution outputs into dossier intake. I
 
 The digest manifest is required before redaction review and promotion handoff because commercial evidence must remain tamper-evident after intake.
 
+## Unit 4 - Redaction Review Manifest
+
+`SigtranCommercialEvidenceRedactionReviews` records reviewer approval for trace-bearing artifacts:
+
+- Packet captures.
+- Peer logs.
+- SDK traces.
+- Configuration.
+- Comparison reports.
+- Benchmark reports.
+
+Each required review records the retained path, artifact kind, reviewer identity, UTC review time, approval state, and notes. Rejected or missing reviews block the intake from moving into completeness evaluation.
+
 ## Validation
 
 Each unit in this phase is validated with:

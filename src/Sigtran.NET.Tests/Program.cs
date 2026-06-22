@@ -290,6 +290,7 @@ Run("SIGTRAN commercial evidence execution status summarizes orchestration readi
 Run("SIGTRAN commercial evidence artifact intake target binds to execution run", SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun);
 Run("SIGTRAN commercial evidence artifact sources cover expected execution artifacts", SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
 Run("SIGTRAN commercial evidence artifact digests cover retained sources", SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources);
+Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifacts", SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4848,7 +4849,7 @@ static void SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifa
 static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
 {
     SigtranCommercialEvidenceArtifactSourceManifest sources = CreateDefaultCommercialEvidenceArtifactSourceManifest();
-    SigtranCommercialEvidenceArtifactDigestManifest digests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(sources, new string('a', 64));
+    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
     SigtranCommercialEvidenceArtifactDigestManifest invalidDigests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(sources, "abc");
 
     AssertEqual(sources.Sources.Count, digests.Digests.Count, "artifact digest count");
@@ -4857,6 +4858,34 @@ static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
     Assert(digests.HasValidDigests, "artifact digests should use SHA-256 values");
     Assert(digests.UsesUniqueRetainedPaths, "artifact digest retained paths should be unique");
     Assert(!invalidDigests.IsReady, "invalid SHA-256 values should block digest readiness");
+}
+
+static void SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts()
+{
+    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
+    SigtranCommercialEvidenceRedactionReviewManifest reviews = SigtranCommercialEvidenceRedactionReviews.CreateApproved(
+        digests,
+        "release-review",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceRedactionReview firstReview = reviews.Reviews[0];
+    SigtranCommercialEvidenceRedactionReviewManifest rejectedReviews = new(
+        digests,
+        [
+            new(firstReview.RetainedPath, firstReview.Kind, "release-review", DateTimeOffset.UtcNow, approved: false, "Sensitive data still present.")
+        ]);
+
+    Assert(reviews.IsReady, reviews.Describe());
+    Assert(reviews.CoversTraceBearingArtifacts, "redaction reviews should cover trace-bearing artifacts");
+    Assert(reviews.ApprovesTraceBearingArtifacts, "redaction reviews should approve trace-bearing artifacts");
+    Assert(reviews.UsesUniqueReviewPaths, "redaction review paths should be unique");
+    Assert(!rejectedReviews.IsReady, "rejected redaction review should block readiness");
+}
+
+static SigtranCommercialEvidenceArtifactDigestManifest CreateDefaultCommercialEvidenceArtifactDigestManifest()
+{
+    return SigtranCommercialEvidenceArtifactDigests.CreateCovered(
+        CreateDefaultCommercialEvidenceArtifactSourceManifest(),
+        new string('a', 64));
 }
 
 static SigtranCommercialEvidenceArtifactSourceManifest CreateDefaultCommercialEvidenceArtifactSourceManifest()
