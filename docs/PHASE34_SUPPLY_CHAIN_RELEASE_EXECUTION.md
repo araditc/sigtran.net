@@ -43,6 +43,19 @@ The evidence only supports release promotion when verification passes, timestamp
 
 The attestation can support release promotion only when it links package and SBOM subjects to a GitHub source repository, records a release workflow identity, uses an HTTPS OIDC issuer, and all retained subjects have complete digests.
 
+## Unit 4 - Public API Diff Artifact
+
+`SigtranPublicApiDiff` defines the retained public API diff artifact:
+
+- Baseline API path.
+- Current release API path.
+- Versioned Markdown diff path.
+- Diff SHA-256 digest.
+- Added, removed, and changed public member counts.
+- Explicit approval flag for breaking changes.
+
+The artifact supports release promotion when it is digest-covered and either has no breaking changes or has explicit breaking-change approval. Removed or changed public members without approval remain a release blocker.
+
 ## Validation
 
 Each unit in this phase is validated with:

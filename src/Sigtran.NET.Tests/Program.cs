@@ -254,6 +254,7 @@ Run("SIGTRAN public API baseline evidence records generated member baseline", Si
 Run("SIGTRAN final SBOM artifact records versioned release output", SigtranFinalSbomArtifactRecordsVersionedReleaseOutput);
 Run("SIGTRAN trusted package signing evidence requires timestamp and verification digests", SigtranTrustedPackageSigningEvidenceRequiresTimestampAndVerificationDigests);
 Run("SIGTRAN provenance attestation links package SBOM source and workflow", SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow);
+Run("SIGTRAN public API diff artifact gates breaking changes", SigtranPublicApiDiffArtifactGatesBreakingChanges);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -3999,6 +4000,29 @@ static void SigtranProvenanceAttestationLinksPackageSbomSourceAndWorkflow()
     Assert(attestation.Subjects.Any(static subject => subject.Name == "sbom"), "provenance should include SBOM subject");
     Assert(attestation.AllSubjectsHaveDigests, attestation.Describe());
     Assert(attestation.SupportsReleasePromotion, attestation.Describe());
+}
+
+static void SigtranPublicApiDiffArtifactGatesBreakingChanges()
+{
+    SigtranPublicApiDiffArtifact compatible = SigtranPublicApiDiff.CreateReleaseDiff(
+        "1.0.0",
+        new string('1', 64),
+        addedMembers: 3,
+        removedMembers: 0,
+        changedMembers: 0,
+        breakingChangesApproved: false);
+    SigtranPublicApiDiffArtifact breakingDiff = SigtranPublicApiDiff.CreateReleaseDiff(
+        "1.0.0",
+        new string('2', 64),
+        addedMembers: 0,
+        removedMembers: 1,
+        changedMembers: 0,
+        breakingChangesApproved: false);
+
+    Assert(compatible.SupportsReleasePromotion, compatible.Describe());
+    Assert(!compatible.HasBreakingChanges, "added-only API diff should not be breaking");
+    Assert(breakingDiff.HasBreakingChanges, "removed member should be breaking");
+    Assert(!breakingDiff.SupportsReleasePromotion, breakingDiff.Describe());
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
