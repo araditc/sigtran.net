@@ -349,6 +349,14 @@ Status: Phase 38 is foundation-complete. Artifact intake target identity binds a
 
 Status: Phase 39 is foundation-complete. Retained file evidence item verification checks existence, non-empty size, SHA-256 validity, digest match, and UTC observation time. Retained file manifest coverage verifies that every promotion-required handoff item has a unique verified retained file. File verification reporting exposes missing, empty, invalid digest, digest mismatch, non-UTC observation, duplicate path, and incomplete handoff blockers. Retention ledger modeling binds verified files to reviewer identity, immutable retention, UTC retention windows, and minimum duration checks. Integrity sealing computes and validates a deterministic aggregate SHA-256 digest over the ledger. Publication attachment planning covers sealed ledger entries, validates attachment digests, includes the commercial readiness report, and blocks trace-bearing attachments without redaction approval. Verified promotion gating requires ready attachments, ready integrity seal, ready retention ledger, verified file report, commercial readiness report presence, and explicit approval before evidence can move into release publication decisions. Command planning orders observation, digest computation, comparison, report, ledger, seal, attachment, and promotion-gate work for workflow materialization. Status reporting separates foundation readiness from real retained file evidence and commercial publication readiness. Commercial publication remains blocked until real retained file evidence is captured and approved.
 
+## Phase 40 - Commercial Evidence Filesystem Execution
+
+- Execute retained evidence file observation against the local filesystem.
+- Build verification manifests, reports, retained artifacts, ledger, seal, attachments, promotion gate, and command materialization from observed files.
+- Keep filesystem execution separate from commercial publication: helpers can verify real files, but publication remains blocked until retained evidence comes from an approved commercial run.
+
+Status: Phase 40 is in progress. Filesystem observation now reads retained files from disk, computes real SHA-256 digests, records file existence and size, and maps observations into the retained file verification model. Manifest execution, report execution, retained artifact writing, ledger execution, seal execution, attachment execution, promotion execution, command materialization, status reporting, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

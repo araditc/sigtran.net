@@ -305,6 +305,7 @@ Run("SIGTRAN commercial evidence publication attachments protect trace artifacts
 Run("SIGTRAN commercial evidence verified promotion gate requires approval", SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval);
 Run("SIGTRAN commercial evidence file verification command plan orders execution", SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution);
 Run("SIGTRAN commercial evidence file verification status summarizes readiness", SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness);
+Run("SIGTRAN commercial evidence filesystem observer computes retained file digest", SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5155,6 +5156,51 @@ static void SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness()
     Assert(!SigtranCommercialEvidenceFileVerificationStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
     Assert(blockers.Contains("real-retained-file-evidence-required"), "file verification status should require real retained file evidence");
     Assert(!blockers.Contains("status-final-validation-pending"), "file verification status should clear final validation blocker");
+}
+
+static void SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        string retainedPath = Path.Combine(tempRoot, "sbom.spdx.json");
+        byte[] content = "sigtran commercial evidence"u8.ToArray();
+        File.WriteAllBytes(retainedPath, content);
+        string expectedSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(content)).ToLowerInvariant();
+        SigtranCommercialEvidencePromotionHandoffItem item = new(
+            SigtranCommercialEvidenceChecklistKind.Sbom,
+            retainedPath,
+            expectedSha256,
+            requiredForPromotion: true);
+
+        SigtranCommercialEvidenceFileSystemObservation observation = SigtranCommercialEvidenceFileSystemObserver.Observe(
+            item,
+            observedAtUtc: DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceFileSystemObservation missing = SigtranCommercialEvidenceFileSystemObserver.Observe(
+            new SigtranCommercialEvidencePromotionHandoffItem(
+                SigtranCommercialEvidenceChecklistKind.Sbom,
+                Path.Combine(tempRoot, "missing.spdx.json"),
+                expectedSha256,
+                requiredForPromotion: true),
+            observedAtUtc: DateTimeOffset.UtcNow);
+
+        Assert(observation.IsVerified, observation.Describe());
+        Assert(observation.FileSystemPathMatchesRetainedPath, "filesystem observation should preserve retained path identity");
+        AssertEqual(expectedSha256, observation.RetainedFile.ActualSha256, "filesystem observation digest");
+        AssertEqual(content.Length, (int)observation.RetainedFile.SizeBytes, "filesystem observation size");
+        Assert(!missing.IsVerified, "missing filesystem evidence should not verify");
+        Assert(!missing.Exists, "missing filesystem evidence should report missing file");
+        AssertEqual(SigtranCommercialEvidenceFileSystemObserver.MissingFileSha256, missing.RetainedFile.ActualSha256, "missing file digest marker");
+    }
+    finally
+    {
+        if (tempRoot.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase) && Directory.Exists(tempRoot))
+        {
+            Directory.Delete(tempRoot, recursive: true);
+        }
+    }
 }
 
 static SigtranCommercialEvidenceFileVerificationCommandPlan CreateDefaultCommercialEvidenceFileVerificationCommandPlan()
