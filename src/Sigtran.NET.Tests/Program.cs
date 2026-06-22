@@ -275,6 +275,7 @@ Run("SIGTRAN commercial evidence retention map binds artifacts to release target
 Run("SIGTRAN commercial evidence checklist requires essential artifacts", SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts);
 Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCommercialReleasePreflightAggregatesLockdownInputs);
 Run("SIGTRAN protected release environment profile gates publication channels", SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels);
+Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4418,6 +4419,41 @@ static void SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels()
     Assert(!weakStable.ProtectsStablePublication, "weak stable environment should be blocked");
     Assert(!publishingDryRun.IsReady, publishingDryRun.Describe());
     Assert(!publishingDryRun.KeepsDryRunNonPublishing, "dry-run publication should be blocked");
+}
+
+static void SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers()
+{
+    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
+    SigtranCommercialEvidenceRetentionMap retentionMap = SigtranCommercialEvidenceRetentionMaps.CreateDefault(target);
+    SigtranCommercialEvidenceChecklist checklist = SigtranCommercialEvidenceChecklists.CreateDefault();
+    SigtranEvidenceDossierHandoffPlan plan = SigtranEvidenceDossierHandoffs.CreateDefault(target, retentionMap, checklist);
+    SigtranEvidenceDossierHandoffPlan missingDigestManifest = new(
+        target,
+        plan.Items,
+        requiresDigestManifest: false,
+        requiresComparisonSummary: true);
+    SigtranEvidenceDossierHandoffPlan floatingHandoff = new(
+        target,
+        [
+            new(
+                "floating-native-sctp",
+                SigtranCommercialEvidenceRetentionArea.NativeSctp,
+                SigtranEvidenceDossierReviewerRole.ProtocolReviewer,
+                "artifacts/latest/native-sctp/floating-native-sctp",
+                requiresDigest: true,
+                requiresRedactionReview: true)
+        ],
+        requiresDigestManifest: true,
+        requiresComparisonSummary: true);
+
+    Assert(plan.IsReady, plan.Describe());
+    Assert(plan.Items.Count == checklist.Items.Count, "handoff should map every checklist item");
+    Assert(plan.CoversReviewerRoles, "handoff should cover every reviewer role");
+    Assert(plan.RequiresDigestVerification, "handoff should require digest verification");
+    Assert(plan.RequiresTraceRedactionReview, "trace-bearing handoff items should require redaction review");
+    Assert(!missingDigestManifest.IsReady, missingDigestManifest.Describe());
+    Assert(!floatingHandoff.IsReady, floatingHandoff.Describe());
+    Assert(!floatingHandoff.UsesTargetArtifactRoot, "handoff paths should remain target-bound");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

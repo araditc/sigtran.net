@@ -78,6 +78,18 @@ The preflight report returns stable blocker identifiers for unlocked targets, mi
 
 The profile validates channel coverage, dry-run non-publication, stable publication protection, and per-channel approval strength. This keeps publish rights separated from ordinary build/test/pack execution.
 
+## Unit 7 - Evidence Dossier Handoff Plan
+
+`SigtranEvidenceDossierHandoffs` maps checklist items into a reviewer-ready dossier:
+
+- Every checklist item receives an expected retained path under the release target root.
+- Telecom protocol, supply-chain, performance, release management, and security reviewer roles are represented.
+- Every item requires digest verification.
+- Trace-bearing evidence requires redaction review.
+- The handoff requires a digest manifest and comparison summary.
+
+The handoff plan is still a readiness artifact. It defines how the evidence will be reviewed once real retained artifacts exist.
+
 ## Validation
 
 Each unit in this phase is validated with:
