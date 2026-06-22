@@ -293,6 +293,7 @@ Run("SIGTRAN commercial evidence artifact digests cover retained sources", Sigtr
 Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifacts", SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts);
 Run("SIGTRAN commercial evidence artifact completeness reports blockers", SigtranCommercialEvidenceArtifactCompletenessReportsBlockers);
 Run("SIGTRAN commercial evidence dossier intake report renders retained summary", SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary);
+Run("SIGTRAN commercial evidence promotion handoff includes digests and report", SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4901,8 +4902,7 @@ static void SigtranCommercialEvidenceArtifactCompletenessReportsBlockers()
 
 static void SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary()
 {
-    SigtranCommercialEvidenceArtifactCompletenessResult completeness = CreateDefaultCommercialEvidenceArtifactCompletenessResult();
-    SigtranCommercialEvidenceDossierIntakeReport report = SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(completeness);
+    SigtranCommercialEvidenceDossierIntakeReport report = CreateDefaultCommercialEvidenceDossierIntakeReport();
     string markdown = report.RenderMarkdown();
 
     Assert(report.IsReady, markdown);
@@ -4910,6 +4910,32 @@ static void SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary()
     Assert(markdown.Contains("run-20260622-001", StringComparison.Ordinal), "dossier intake report should include run id");
     Assert(markdown.Contains("intake-20260622-001", StringComparison.Ordinal), "dossier intake report should include intake id");
     Assert(markdown.Contains("Complete: `True`", StringComparison.Ordinal), "dossier intake report should include completion state");
+}
+
+static void SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport()
+{
+    SigtranCommercialEvidenceDossierIntakeReport report = CreateDefaultCommercialEvidenceDossierIntakeReport();
+    SigtranCommercialEvidencePromotionHandoff handoff = SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+        report,
+        new string('b', 64),
+        "release-review",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidencePromotionHandoff invalidHandoff = SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+        report,
+        "invalid",
+        "release-review",
+        DateTimeOffset.UtcNow);
+
+    Assert(handoff.IsReady, handoff.Describe());
+    Assert(handoff.IncludesAllDigestArtifacts, "promotion handoff should include all digest artifacts");
+    Assert(handoff.IncludesIntakeReport, "promotion handoff should include intake report");
+    Assert(handoff.HasDigestCoverage, "promotion handoff should include valid digests");
+    Assert(!invalidHandoff.IsReady, "invalid report digest should block promotion handoff readiness");
+}
+
+static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()
+{
+    return SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(CreateDefaultCommercialEvidenceArtifactCompletenessResult());
 }
 
 static SigtranCommercialEvidenceArtifactCompletenessResult CreateDefaultCommercialEvidenceArtifactCompletenessResult()

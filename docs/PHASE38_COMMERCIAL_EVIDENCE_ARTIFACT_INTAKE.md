@@ -74,6 +74,17 @@ The evaluator returns explicit blocker codes such as `artifact-source-registrati
 
 The report path must be under the intake dossier root. This gives release operators a single retained summary before promotion handoff.
 
+## Unit 7 - Promotion Handoff
+
+`SigtranCommercialEvidencePromotionHandoffs` prepares intake output for commercial evidence promotion:
+
+- Every digest-covered retained artifact is included.
+- The dossier intake report is included.
+- Every handoff item requires a valid SHA-256 digest.
+- Handoff creation time is normalized to UTC.
+
+The handoff does not publish a package. It creates a verified package of intake evidence for the existing commercial evidence and release gates to evaluate.
+
 ## Validation
 
 Each unit in this phase is validated with:

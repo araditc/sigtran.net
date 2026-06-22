@@ -10,7 +10,8 @@ Phase 38 prepares the SDK to receive real execution artifacts and convert them i
 - Redaction review manifest that requires approved review for trace-bearing retained artifacts.
 - Artifact completeness evaluator that reports explicit source, digest, and redaction blockers.
 - Dossier intake report that renders a retained Markdown summary for the execution run, intake id, reviewer, counts, completion state, and blockers.
+- Promotion handoff that includes all digest-covered retained artifacts and the dossier intake report.
 
 ## Readiness Position
 
-The phase is in progress. Artifact intake identity, source registration, digest coverage, redaction review, completeness evaluation, and dossier reporting are available. Promotion handoff, execution bridge, status reporting, and final validation remain.
+The phase is in progress. Artifact intake identity, source registration, digest coverage, redaction review, completeness evaluation, dossier reporting, and promotion handoff are available. Execution bridge, status reporting, and final validation remain.
