@@ -15,20 +15,20 @@ public static class SigtranCommercialEvidenceApprovalHandoffStatus
         "publication-handoff",
         "handoff-gate",
         "approval-audit-trail",
-        "command-materialization"
+        "command-materialization",
+        "documentation"
     ];
 
     private static readonly string[] DefaultBlockers =
     [
-        "real-approved-commercial-run-required",
-        "status-final-validation-pending"
+        "real-approved-commercial-run-required"
     ];
 
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Approved Commercial Run Publication Handoff";
 
     /// <summary>The number of completed approval handoff work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns completed approval handoff capability names.</summary>
     /// <returns>The completed capability names.</returns>

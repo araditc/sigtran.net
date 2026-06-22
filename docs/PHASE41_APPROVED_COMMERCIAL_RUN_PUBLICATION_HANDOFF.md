@@ -122,6 +122,18 @@ This unit gives the approval path a retained audit chain that can be reviewed be
 
 `SigtranCommercialEvidenceApprovalHandoffStatus` reports the first nine completed capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
 
+## Unit 10 - Final Validation And Documentation
+
+The final unit completes the approval handoff foundation:
+
+- Adds documentation as the tenth completed status capability.
+- Removes the final-validation blocker.
+- Keeps `real-approved-commercial-run-required` as the remaining publication blocker.
+- Aligns README, roadmap, phase index, and phase summary.
+- Validates the full solution with build, tests, and package generation.
+
+Package publication still requires a real approved commercial run with retained evidence artifacts and protected release approval.
+
 ## Validation
 
 Each unit in this phase is validated with:

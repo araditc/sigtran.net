@@ -324,7 +324,7 @@ Run("SIGTRAN commercial evidence publication handoff enforces channel version po
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
-Run("SIGTRAN commercial evidence approval handoff status summarizes pending final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesPendingFinalValidation);
+Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5770,20 +5770,20 @@ static void SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript()
     }
 }
 
-static void SigtranCommercialEvidenceApprovalHandoffStatusSummarizesPendingFinalValidation()
+static void SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation()
 {
     IReadOnlyList<string> capabilities = SigtranCommercialEvidenceApprovalHandoffStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranCommercialEvidenceApprovalHandoffStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranCommercialEvidenceApprovalHandoffStatus.CompletedUnitCount, "approval handoff completed unit count");
-    AssertEqual(9, capabilities.Count, "approval handoff capability count");
+    AssertEqual(10, SigtranCommercialEvidenceApprovalHandoffStatus.CompletedUnitCount, "approval handoff completed unit count");
+    AssertEqual(10, capabilities.Count, "approval handoff capability count");
     Assert(capabilities.Contains("command-materialization"), "approval handoff status should include command materialization");
-    Assert(!capabilities.Contains("documentation"), "approval handoff status should keep documentation pending before final validation");
+    Assert(capabilities.Contains("documentation"), "approval handoff status should include documentation");
     Assert(SigtranCommercialEvidenceApprovalHandoffStatus.ApprovalHandoffFoundationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
     Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
     Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.PackagePublicationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
     Assert(blockers.Contains("real-approved-commercial-run-required"), "approval handoff status should require a real approved run");
-    Assert(blockers.Contains("status-final-validation-pending"), "approval handoff status should keep final validation pending");
+    Assert(!blockers.Contains("status-final-validation-pending"), "approval handoff status should clear final validation blocker");
 }
 
 static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(string tempRoot)
@@ -6078,7 +6078,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities(),
         SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceApprovalHandoffStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

@@ -13,8 +13,8 @@ Phase 41 prepares the SDK to move from filesystem-backed evidence verification i
 - Publication handoff gate that reports blockers for package readiness, publish intent, UTC timing, channel/version policy, and stable commercial readiness approval.
 - Approval audit trail that records digest-covered run target, checklist, manifest, report, package, handoff, and gate lifecycle events.
 - Approval command materialization that writes the ordered approval handoff workflow to a retained shell script.
-- Interim status reporting for nine completed approval handoff units, with final validation still pending.
+- Final status reporting for ten completed approval handoff units, with documentation included and final validation cleared.
 
 ## Readiness Position
 
-The phase is in progress. Approved run target identity, approval checklist, reviewer approval manifest, approval report writing, promotion package, publication handoff, handoff gate, approval audit trail, command materialization, and interim status reporting are available. Documentation and final validation remain.
+The phase foundation is complete. Approved run target identity, approval checklist, reviewer approval manifest, approval report writing, promotion package, publication handoff, handoff gate, approval audit trail, command materialization, status reporting, documentation, and final validation are complete. Package publication remains blocked until a real approved commercial run is retained and approved.
