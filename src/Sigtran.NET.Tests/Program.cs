@@ -308,6 +308,7 @@ Run("SIGTRAN commercial evidence file verification status summarizes readiness",
 Run("SIGTRAN commercial evidence filesystem observer computes retained file digest", SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest);
 Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff files", SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles);
 Run("SIGTRAN commercial evidence filesystem verification report identifies missing files", SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
+Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5272,6 +5273,49 @@ static void SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissi
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemVerificationExecution execution = CreateReadyCommercialEvidenceFileSystemVerificationExecution(tempRoot);
+        string outputDirectory = Path.Combine(tempRoot, "verification-output");
+
+        SigtranCommercialEvidenceFileSystemArtifactWriteResult writeResult = SigtranCommercialEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
+            execution,
+            outputDirectory,
+            DateTimeOffset.UtcNow);
+
+        Assert(writeResult.IsReady, writeResult.Describe());
+        Assert(writeResult.AllArtifactsExist, "filesystem artifact writer should create expected artifacts");
+        Assert(writeResult.AllArtifactsHaveContent, "filesystem artifact writer should write non-empty artifacts");
+        Assert(File.ReadAllText(writeResult.ReportPath).Contains("Verified: `True`", StringComparison.Ordinal), "filesystem report should render verification state");
+        Assert(File.ReadAllText(writeResult.ObservationManifestPath).Contains("actualSha256", StringComparison.Ordinal), "filesystem observations should include digest column");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemVerificationExecution CreateReadyCommercialEvidenceFileSystemVerificationExecution(string tempRoot)
+{
+    byte[] artifactContent = "verified commercial artifact"u8.ToArray();
+    byte[] reportContent = "verified commercial readiness report"u8.ToArray();
+    SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+        ComputeSha256Hex(artifactContent),
+        ComputeSha256Hex(reportContent));
+    IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
+    SigtranCommercialEvidenceFileSystemManifestExecution manifestExecution = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+        handoff,
+        pathOverrides,
+        DateTimeOffset.UtcNow);
+
+    return SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(manifestExecution);
 }
 
 static IReadOnlyDictionary<string, string> MaterializeHandoffFiles(

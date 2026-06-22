@@ -39,6 +39,17 @@ This unit lets the verification pipeline evaluate a complete retained handoff us
 
 This unit is the first end-to-end filesystem verification pass: observe files, build the manifest, and produce a blocker-aware report.
 
+## Unit 4 - Verification Artifact Writing
+
+`SigtranCommercialEvidenceFileSystemArtifactWriters` writes filesystem verification artifacts to disk:
+
+- Markdown verification report.
+- Tab-separated observation manifest.
+- UTC write timestamp.
+- Existence and non-empty content checks for the written artifacts.
+
+This unit gives release operators retained files they can attach to the commercial evidence dossier after filesystem verification succeeds.
+
 ## Validation
 
 Each unit in this phase is validated with:

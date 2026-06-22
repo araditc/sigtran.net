@@ -44,7 +44,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 37 | Commercial evidence execution orchestration | [Phase 37 Commercial Evidence Execution Orchestration](PHASE37_COMMERCIAL_EVIDENCE_EXECUTION_ORCHESTRATION.md), [Phase 37 Summary](PHASE37_SUMMARY.md) | Foundation complete; real execution artifacts still required |
 | 38 | Commercial evidence artifact intake | [Phase 38 Commercial Evidence Artifact Intake](PHASE38_COMMERCIAL_EVIDENCE_ARTIFACT_INTAKE.md), [Phase 38 Summary](PHASE38_SUMMARY.md) | Foundation complete; real artifact files still required |
 | 39 | Commercial evidence file verification | [Phase 39 Commercial Evidence File Verification](PHASE39_COMMERCIAL_EVIDENCE_FILE_VERIFICATION.md), [Phase 39 Summary](PHASE39_SUMMARY.md) | Foundation complete; real retained file evidence required |
-| 40 | Commercial evidence filesystem execution | [Phase 40 Commercial Evidence Filesystem Execution](PHASE40_COMMERCIAL_EVIDENCE_FILESYSTEM_EXECUTION.md), [Phase 40 Summary](PHASE40_SUMMARY.md) | In progress; filesystem report execution complete |
+| 40 | Commercial evidence filesystem execution | [Phase 40 Commercial Evidence Filesystem Execution](PHASE40_COMMERCIAL_EVIDENCE_FILESYSTEM_EXECUTION.md), [Phase 40 Summary](PHASE40_SUMMARY.md) | In progress; filesystem artifact writing complete |
 
 ## Current Commercial Gate
 
