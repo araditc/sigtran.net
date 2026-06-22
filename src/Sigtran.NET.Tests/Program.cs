@@ -257,6 +257,7 @@ Run("SIGTRAN provenance attestation links package SBOM source and workflow", Sig
 Run("SIGTRAN public API diff artifact gates breaking changes", SigtranPublicApiDiffArtifactGatesBreakingChanges);
 Run("SIGTRAN release artifact upload manifest retains supply chain evidence", SigtranReleaseArtifactUploadManifestRetainsSupplyChainEvidence);
 Run("SIGTRAN supply chain release command plan orders execution steps", SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps);
+Run("SIGTRAN supply chain release gate aggregates promotion evidence", SigtranSupplyChainReleaseGateAggregatesPromotionEvidence);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4052,6 +4053,31 @@ static void SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps()
     Assert(commands[1].Contains("nuget sign", StringComparison.OrdinalIgnoreCase), "second release command should sign package");
     Assert(commands[3].Contains("attestation", StringComparison.OrdinalIgnoreCase), "fourth release command should create attestation");
     Assert(commands[6].Contains("upload-artifact", StringComparison.OrdinalIgnoreCase), "last release command should upload artifacts");
+}
+
+static void SigtranSupplyChainReleaseGateAggregatesPromotionEvidence()
+{
+    SigtranSupplyChainReleaseGateResult ready = SigtranSupplyChainReleaseGate.Evaluate(
+        SigtranFinalSbom.CreateDefault("1.0.0", new string('a', 64)),
+        SigtranTrustedPackageSigning.CreateReleaseReady("1.0.0", new string('b', 64), new string('c', 64), new string('d', 64)),
+        SigtranProvenanceAttestations.CreateReleaseAttestation("1.0.0", new string('e', 64), "abcdef0123456789", new string('f', 64), new string('1', 64)),
+        SigtranPublicApiDiff.CreateReleaseDiff("1.0.0", new string('2', 64), addedMembers: 1, removedMembers: 0, changedMembers: 0, breakingChangesApproved: false),
+        SigtranReleaseArtifactUploads.CreateDefault(),
+        SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0"),
+        commercialEvidenceReady: true);
+    SigtranSupplyChainReleaseGateResult blocked = SigtranSupplyChainReleaseGate.Evaluate(
+        SigtranFinalSbom.CreateDefault("1.0.0", new string('a', 64)),
+        SigtranTrustedPackageSigning.CreateReleaseReady("1.0.0", new string('b', 64), new string('c', 64), new string('d', 64)),
+        SigtranProvenanceAttestations.CreateReleaseAttestation("1.0.0", new string('e', 64), "abcdef0123456789", new string('f', 64), new string('1', 64)),
+        SigtranPublicApiDiff.CreateReleaseDiff("1.0.0", new string('2', 64), addedMembers: 1, removedMembers: 0, changedMembers: 0, breakingChangesApproved: false),
+        SigtranReleaseArtifactUploads.CreateDefault(),
+        SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0"),
+        commercialEvidenceReady: false);
+
+    Assert(ready.CanPromote, ready.Describe());
+    AssertEqual(0, ready.Reasons.Count, "ready supply-chain release gate reasons");
+    Assert(!blocked.CanPromote, blocked.Describe());
+    Assert(blocked.Reasons.Contains("commercial-evidence-required"), "supply-chain release gate should require commercial evidence");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

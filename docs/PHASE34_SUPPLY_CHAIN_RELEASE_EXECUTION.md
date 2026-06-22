@@ -85,6 +85,20 @@ Promotion-required artifacts must be present and retained for at least 90 days s
 
 The command plan records which command requires signing secrets and keeps upload as the final step so incomplete SBOM, signing, provenance, API diff, or digest artifacts cannot be promoted as a finished release bundle.
 
+## Unit 7 - Supply Chain Release Gate
+
+`SigtranSupplyChainReleaseGate` aggregates the release execution evidence into one promotion decision:
+
+- Final SBOM artifact.
+- Trusted timestamped signing evidence.
+- Provenance attestation.
+- Public API diff artifact.
+- Release artifact upload manifest.
+- Supply-chain release command plan.
+- Commercial evidence readiness.
+
+The gate keeps supply-chain completeness separate from commercial release readiness. Even complete SBOM, signing, provenance, API diff, and upload evidence cannot be promoted unless commercial evidence is also ready.
+
 ## Validation
 
 Each unit in this phase is validated with:
