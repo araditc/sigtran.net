@@ -11,7 +11,8 @@ Phase 39 prepares the SDK to verify retained commercial evidence files after art
 - Integrity seal that computes a deterministic aggregate SHA-256 digest over the retention ledger.
 - Publication attachment manifest that covers sealed ledger entries and protects trace-bearing artifacts through redaction approval.
 - Verified promotion gate that requires ready attachments, ready integrity seal, ready retention ledger, verified file report, commercial readiness report, and explicit approval.
+- File verification command plan that orders observation, digest computation, comparison, report, ledger, seal, attachment, and promotion-gate steps.
 
 ## Readiness Position
 
-The phase is in progress. Retained file evidence item verification, retained file manifest coverage, blocker reporting, retention ledger modeling, integrity sealing, publication attachment planning, and verified promotion gating are available. Command plan, status reporting, and final validation remain.
+The phase is in progress. Retained file evidence item verification, retained file manifest coverage, blocker reporting, retention ledger modeling, integrity sealing, publication attachment planning, verified promotion gating, and command planning are available. Status reporting and final validation remain.

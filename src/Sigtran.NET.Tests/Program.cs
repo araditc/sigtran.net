@@ -303,6 +303,7 @@ Run("SIGTRAN commercial evidence retention ledger requires immutable retention",
 Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest);
 Run("SIGTRAN commercial evidence publication attachments protect trace artifacts", SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts);
 Run("SIGTRAN commercial evidence verified promotion gate requires approval", SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval);
+Run("SIGTRAN commercial evidence file verification command plan orders execution", SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5122,6 +5123,24 @@ static void SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval()
     AssertEqual(0, approved.Blockers.Count, "approved promotion blocker count");
     Assert(!blocked.CanPromoteEvidence, "missing approval should block evidence promotion");
     Assert(blocked.Blockers.Contains("commercial-evidence-approval-missing"), "promotion gate should expose approval blocker");
+}
+
+static void SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution()
+{
+    SigtranCommercialEvidenceFileVerificationCommandPlan plan = CreateDefaultCommercialEvidenceFileVerificationCommandPlan();
+
+    Assert(plan.IsReady, plan.Describe());
+    AssertEqual(Enum.GetValues<SigtranCommercialEvidenceFileVerificationCommandKind>().Length, plan.Commands.Count, "file verification command count");
+    Assert(plan.UsesDeterministicOrder, "file verification commands should use deterministic order");
+    Assert(plan.CoversRequiredCommandKinds, "file verification commands should cover every required command kind");
+    Assert(plan.ProducesRequiredArtifacts, "file verification commands should produce required artifacts");
+    Assert(plan.ApprovalReservedForPromotionGate, "file verification commands should reserve approval for promotion gate");
+    Assert(plan.Commands[^1].RequiresApproval, "last file verification command should require approval");
+}
+
+static SigtranCommercialEvidenceFileVerificationCommandPlan CreateDefaultCommercialEvidenceFileVerificationCommandPlan()
+{
+    return SigtranCommercialEvidenceFileVerificationCommands.CreateDefault("artifacts/commercial-evidence");
 }
 
 static SigtranCommercialEvidenceVerifiedPromotionGateResult CreateDefaultCommercialEvidenceVerifiedPromotionGate(SigtranCommercialEvidencePublicationAttachmentManifest? attachmentManifest = null)

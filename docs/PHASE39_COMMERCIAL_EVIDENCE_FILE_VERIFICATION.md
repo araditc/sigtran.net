@@ -93,6 +93,21 @@ Publication attachment readiness does not publish anything. It only proves that 
 
 The gate returns concrete blocker labels. It does not publish a package; it only allows the release workflow to consider the verified evidence set.
 
+## Unit 8 - File Verification Command Plan
+
+`SigtranCommercialEvidenceFileVerificationCommandPlan` defines the workflow-ready execution order:
+
+1. Observe retained files.
+2. Compute retained file digests.
+3. Compare observed digests with promotion handoff digests.
+4. Write the file verification report.
+5. Write the retention ledger.
+6. Create the integrity seal.
+7. Create the publication attachment manifest.
+8. Evaluate the promotion gate.
+
+The plan is package-neutral and shell-neutral. It describes the expected workflow contract so CI, a CLI, or a release operator can materialize equivalent commands without changing SDK domain APIs.
+
 ## Validation
 
 Each unit in this phase is validated with:
