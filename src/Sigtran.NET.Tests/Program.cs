@@ -317,6 +317,7 @@ Run("SIGTRAN commercial evidence filesystem command materializer writes executio
 Run("SIGTRAN commercial evidence filesystem execution status summarizes final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
 Run("SIGTRAN commercial evidence approved run target binds filesystem promotion", SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion);
 Run("SIGTRAN commercial evidence run approval checklist requires reviewer approval", SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval);
+Run("SIGTRAN commercial evidence run approval manifest requires required roles", SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5533,6 +5534,42 @@ static void SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApprova
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceRunApprovalChecklist checklist = CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot);
+
+        SigtranCommercialEvidenceRunApprovalManifest manifest = SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
+            checklist,
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidenceRunApprovalManifest blocked = SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
+            checklist,
+            DateTimeOffset.UtcNow,
+            securityApproved: false);
+
+        Assert(manifest.IsReady, manifest.Describe());
+        Assert(manifest.HasValidChecklistDigest, "approval manifest should keep a valid checklist digest");
+        Assert(manifest.ChecklistDigestMatches, "approval manifest checklist digest should match");
+        Assert(manifest.UsesUniqueRoles, "approval manifest should use unique roles");
+        Assert(manifest.HasRequiredRoleApprovals, "approval manifest should include required role approvals");
+        Assert(!blocked.IsReady, "missing security approval should block approval manifest");
+        Assert(!blocked.HasRequiredRoleApprovals, "blocked manifest should expose missing required approval");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceRunApprovalChecklist CreateReadyCommercialEvidenceRunApprovalChecklist(string tempRoot)
+{
+    return SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot));
 }
 
 static SigtranCommercialEvidenceApprovedRunTarget CreateReadyCommercialEvidenceApprovedRunTarget(string tempRoot)

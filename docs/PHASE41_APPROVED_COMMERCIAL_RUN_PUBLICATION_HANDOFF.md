@@ -31,6 +31,19 @@ This unit establishes the identity that later approval, audit, and publication h
 
 This unit turns commercial run approval into an explicit checklist with blocker identifiers rather than an implicit yes/no flag.
 
+## Unit 3 - Reviewer Approval Manifest
+
+`SigtranCommercialEvidenceRunApprovalManifest` records reviewer approval for a ready checklist:
+
+- Deterministic checklist SHA-256 digest.
+- Release reviewer approval.
+- Security reviewer approval.
+- Operations reviewer approval.
+- UTC approval timestamps.
+- Unique reviewer roles.
+
+This unit makes commercial approval auditable and role-aware before any publication handoff is created.
+
 ## Validation
 
 Each unit in this phase is validated with:
