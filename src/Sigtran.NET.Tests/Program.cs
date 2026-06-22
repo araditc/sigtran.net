@@ -321,6 +321,7 @@ Run("SIGTRAN commercial evidence run approval manifest requires required roles",
 Run("SIGTRAN commercial evidence run approval report writer retains markdown", SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown);
 Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
 Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
+Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5659,6 +5660,49 @@ static void SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPol
         Assert(!stable.IsReadyForPublicationGate, "stable handoff should reject prerelease version");
         Assert(!stable.ChannelAcceptsPackageVersion, "stable channel should not accept prerelease version");
         Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranCommercialEvidencePublicationHandoffGateReportsBlockers()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceApprovedRunPromotionPackage package = CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot);
+        SigtranCommercialEvidencePublicationHandoff beta = SigtranCommercialEvidencePublicationHandoffs.Create(
+            package,
+            SigtranPublishChannelKind.Beta,
+            "release-manager",
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidencePublicationHandoff stable = SigtranCommercialEvidencePublicationHandoffs.Create(
+            package,
+            SigtranPublishChannelKind.Stable,
+            "release-manager",
+            DateTimeOffset.UtcNow);
+        SigtranCommercialEvidencePublicationHandoff noPublish = SigtranCommercialEvidencePublicationHandoffs.Create(
+            package,
+            SigtranPublishChannelKind.Beta,
+            "release-manager",
+            DateTimeOffset.UtcNow,
+            publishRequested: false);
+
+        SigtranCommercialEvidencePublicationHandoffGateResult approved = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(beta, commercialReadinessApproved: false);
+        SigtranCommercialEvidencePublicationHandoffGateResult stableBlocked = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(stable, commercialReadinessApproved: false);
+        SigtranCommercialEvidencePublicationHandoffGateResult noPublishBlocked = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(noPublish, commercialReadinessApproved: false);
+
+        Assert(approved.CanProceedToPackagePublicationGate, approved.Describe());
+        AssertEqual(0, approved.Blockers.Count, "approved handoff blocker count");
+        Assert(!stableBlocked.CanProceedToPackagePublicationGate, "stable handoff should be blocked for prerelease version and readiness");
+        Assert(stableBlocked.Blockers.Contains("channel-version-rejected"), "stable handoff should expose channel version blocker");
+        Assert(stableBlocked.Blockers.Contains("stable-commercial-readiness-required"), "stable handoff should expose commercial readiness blocker");
+        Assert(!noPublishBlocked.CanProceedToPackagePublicationGate, "missing publish request should block handoff");
+        Assert(noPublishBlocked.Blockers.Contains("publish-not-requested"), "handoff gate should expose publish intent blocker");
     }
     finally
     {

@@ -81,6 +81,18 @@ This unit gives the publication handoff a single approved package contract inste
 
 This unit keeps RC and stable publication boundaries explicit before a final publication gate evaluates the handoff.
 
+## Unit 7 - Publication Handoff Gate
+
+`SigtranCommercialEvidencePublicationHandoffGates` evaluates handoff blockers:
+
+- Promotion package readiness.
+- Explicit publish request.
+- UTC handoff time.
+- Channel acceptance of package version.
+- Stable commercial readiness approval when required.
+
+This unit gives release operators actionable blockers before package publication workflows are allowed to proceed.
+
 ## Validation
 
 Each unit in this phase is validated with:
