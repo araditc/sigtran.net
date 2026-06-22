@@ -4248,9 +4248,10 @@ static void SigtranReleaseCandidatePublicationStatusSummarizesRcGate()
     IReadOnlyList<string> capabilities = SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities();
     IReadOnlyList<string> blockers = SigtranReleaseCandidatePublicationStatus.GetDefaultBlockers();
 
-    AssertEqual(9, SigtranReleaseCandidatePublicationStatus.CompletedUnitCount, "RC publication completed unit count");
-    AssertEqual(9, capabilities.Count, "RC publication capability count");
+    AssertEqual(10, SigtranReleaseCandidatePublicationStatus.CompletedUnitCount, "RC publication completed unit count");
+    AssertEqual(10, capabilities.Count, "RC publication capability count");
     Assert(capabilities.Contains("workflow-wiring"), "RC publication status should include workflow wiring");
+    Assert(capabilities.Contains("final-validation"), "RC publication status should include final validation");
     Assert(blockers.Contains("real-release-workflow-run-artifacts-required"), "RC publication status should retain real workflow artifact blocker");
     Assert(SigtranReleaseCandidatePublicationStatus.GateFoundationReady, SigtranReleaseCandidatePublicationStatus.Describe());
     Assert(!SigtranReleaseCandidatePublicationStatus.RealPublicationReady, SigtranReleaseCandidatePublicationStatus.Describe());

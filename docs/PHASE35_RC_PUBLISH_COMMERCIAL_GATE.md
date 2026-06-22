@@ -111,6 +111,18 @@ The workflow uploads package, symbols, supply-chain evidence, and dry-run eviden
 
 The current status marks the RC gate foundation as ready, but keeps real publication blocked until a real release workflow run produces retained artifacts and the NuGet prerelease secret is available at publish time. Stable publication remains blocked by commercial evidence requirements.
 
+## Unit 10 - Final Validation And Commercial Gate Report
+
+The final unit closes the phase with:
+
+- Completed RC publication status count.
+- Final commercial gate report in `docs/PHASE35_COMMERCIAL_GATE_REPORT.md`.
+- README and roadmap alignment.
+- Full `dotnet build`, SDK test run, and `dotnet pack` validation.
+- Source naming sweep to keep phase numbers out of public API names.
+
+Phase 35 is complete as an RC publication and commercial gate foundation. A real RC publish still requires a retained workflow run with production secrets, and stable publication still requires complete commercial evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:

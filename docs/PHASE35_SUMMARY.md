@@ -13,7 +13,8 @@ Phase 35 builds the SDK contracts needed to rehearse and gate RC publication wit
 - RC publication evidence manifest that requires package, symbols, dry-run, notes, migration, readiness, decision, and digest artifacts before upload.
 - Release workflow channel wiring for `dry-run`, `prerelease`, and `stable`, including retained dry-run evidence and an explicit RC publication gate.
 - RC publication status summary that separates gate foundation readiness from real publication execution and stable commercial readiness.
+- Final commercial gate report and full validation sweep.
 
 ## Readiness Position
 
-The phase is in progress. RC publication now has a consolidated readiness report, decision model, evidence manifest, workflow wiring, and status summary, while stable publication remains blocked by retained commercial blockers. Final validation remains in progress.
+Phase 35 is complete as an RC publication and commercial gate foundation. RC publication can be attempted only through the gated workflow with retained artifacts and a NuGet prerelease secret at publish time. Stable publication remains blocked by retained commercial blockers until full commercial evidence is complete.

@@ -15,6 +15,7 @@ public static class SigtranReleaseCandidatePublicationStatus
         "release-decision",
         "publication-evidence-manifest",
         "workflow-wiring",
+        "final-validation",
         "documentation"
     ];
 
@@ -29,7 +30,7 @@ public static class SigtranReleaseCandidatePublicationStatus
     public const string StatusLabel = "Release Candidate Publication Gate";
 
     /// <summary>The number of completed release candidate publication gate work units.</summary>
-    public const int CompletedUnitCount = 9;
+    public const int CompletedUnitCount = 10;
 
     /// <summary>Returns the completed release candidate publication capability names.</summary>
     /// <returns>The completed capability names.</returns>
