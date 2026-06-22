@@ -264,6 +264,7 @@ Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", Sig
 Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleaseNotesArtifactRendersRcPublicationNotes);
 Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigrationNotesArtifactDocumentsRcBoundaries);
 Run("SIGTRAN final commercial readiness report separates RC and stable gates", SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates);
+Run("SIGTRAN release decision recommends RC before stable commercial evidence", SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4180,6 +4181,32 @@ static void SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates()
     Assert(report.CommercialBlockers.Contains("external-peer-interop"), "final readiness should retain external peer commercial blocker");
     Assert(markdown.Contains("## Stable Gate", StringComparison.Ordinal), "final readiness report should render stable gate");
     Assert(markdown.Contains("Commercial Blockers", StringComparison.Ordinal), "final readiness report should render blockers");
+}
+
+static void SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence()
+{
+    SigtranFinalCommercialReadinessReport report = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+        "1.0.0-rc.1",
+        new string('e', 64),
+        new string('f', 64),
+        hasNuGetApiKey: true);
+
+    SigtranReleaseDecision decision = SigtranReleaseDecisions.Decide(report);
+
+    AssertEqual(SigtranReleaseDecisionKind.ReleaseCandidate, decision.Kind, "release decision kind");
+    Assert(decision.AllowsPublication, decision.Describe());
+    Assert(!decision.AllowsStablePublication, decision.Describe());
+    Assert(decision.Reasons.Contains("stable-commercial-blockers-retained"), "release decision should retain stable commercial blocker reason");
+
+    SigtranFinalCommercialReadinessReport blockedReport = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+        "1.0.0-rc.1",
+        new string('e', 64),
+        new string('f', 64),
+        hasNuGetApiKey: false);
+    SigtranReleaseDecision blocked = SigtranReleaseDecisions.Decide(blockedReport);
+
+    AssertEqual(SigtranReleaseDecisionKind.Blocked, blocked.Kind, "blocked release decision kind");
+    Assert(blocked.Reasons.Contains("prerelease-publication-gate-required"), "blocked decision should explain missing prerelease gate");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()

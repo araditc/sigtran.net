@@ -66,6 +66,16 @@ The artifact is review-ready only when the notes are versioned, digest-covered, 
 
 The report intentionally separates `ReleaseCandidateReady` from `StableReleaseReady`. A release candidate can pass the prerelease gate while stable publication remains blocked until commercial evidence is complete.
 
+## Unit 6 - RC Versus Stable Decision
+
+`SigtranReleaseDecisions` evaluates the final readiness report and returns one of three outcomes:
+
+- `Blocked` when the RC gate itself is incomplete.
+- `ReleaseCandidate` when prerelease publication is allowed but stable commercial evidence is still incomplete.
+- `Stable` when both RC and stable commercial gates are ready.
+
+The default current decision is `ReleaseCandidate` when the NuGet prerelease secret is available, because the dry-run, prerelease, release notes, migration notes, and supply-chain foundations are present while commercial blockers remain retained. This prevents accidental stable publication.
+
 ## Validation
 
 Each unit in this phase is validated with:
