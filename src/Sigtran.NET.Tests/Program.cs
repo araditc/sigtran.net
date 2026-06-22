@@ -304,6 +304,7 @@ Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", Sigtran
 Run("SIGTRAN commercial evidence publication attachments protect trace artifacts", SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts);
 Run("SIGTRAN commercial evidence verified promotion gate requires approval", SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval);
 Run("SIGTRAN commercial evidence file verification command plan orders execution", SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution);
+Run("SIGTRAN commercial evidence file verification status summarizes readiness", SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5136,6 +5137,23 @@ static void SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution(
     Assert(plan.ProducesRequiredArtifacts, "file verification commands should produce required artifacts");
     Assert(plan.ApprovalReservedForPromotionGate, "file verification commands should reserve approval for promotion gate");
     Assert(plan.Commands[^1].RequiresApproval, "last file verification command should require approval");
+}
+
+static void SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileVerificationStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranCommercialEvidenceFileVerificationStatus.CompletedUnitCount, "file verification completed unit count");
+    AssertEqual(9, capabilities.Count, "file verification capability count");
+    Assert(capabilities.Contains("verified-promotion-gate"), "file verification status should include promotion gate");
+    Assert(capabilities.Contains("file-verification-command-plan"), "file verification status should include command plan");
+    Assert(capabilities.Contains("status-reporting"), "file verification status should include status reporting");
+    Assert(SigtranCommercialEvidenceFileVerificationStatus.FileVerificationFoundationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
+    Assert(!SigtranCommercialEvidenceFileVerificationStatus.RealRetainedFileEvidenceReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
+    Assert(!SigtranCommercialEvidenceFileVerificationStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
+    Assert(blockers.Contains("real-retained-file-evidence-required"), "file verification status should require real retained file evidence");
+    Assert(blockers.Contains("status-final-validation-pending"), "file verification status should keep final validation blocker before Unit 10");
 }
 
 static SigtranCommercialEvidenceFileVerificationCommandPlan CreateDefaultCommercialEvidenceFileVerificationCommandPlan()

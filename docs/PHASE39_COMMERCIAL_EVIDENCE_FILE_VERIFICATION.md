@@ -108,6 +108,18 @@ The gate returns concrete blocker labels. It does not publish a package; it only
 
 The plan is package-neutral and shell-neutral. It describes the expected workflow contract so CI, a CLI, or a release operator can materialize equivalent commands without changing SDK domain APIs.
 
+## Unit 9 - File Verification Status
+
+`SigtranCommercialEvidenceFileVerificationStatus` reports the current phase readiness:
+
+- Completed file verification capabilities.
+- Default commercial publication blockers.
+- Foundation readiness from the default verification chain.
+- Explicit separation between foundation readiness and real retained file evidence.
+- Commercial publication remains blocked until real retained file evidence and final validation are complete.
+
+At this point the status intentionally keeps `status-final-validation-pending` as a blocker.
+
 ## Validation
 
 Each unit in this phase is validated with:
