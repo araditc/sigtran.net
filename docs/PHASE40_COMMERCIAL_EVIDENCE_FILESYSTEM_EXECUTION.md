@@ -97,6 +97,18 @@ This unit connects sealed filesystem evidence to release dossier attachment plan
 
 This unit makes the filesystem-backed evidence path promotion-aware while preserving the existing commercial approval gate.
 
+## Unit 9 - Command Materialization And Interim Status
+
+`SigtranCommercialEvidenceFileSystemCommandMaterializer` writes a retained shell script from the commercial evidence file verification command plan:
+
+- Preserves deterministic command order.
+- Writes the script to a retained filesystem path.
+- Includes the configured artifact root.
+- Includes every command from the command plan.
+- Keeps the promotion gate command visible as the explicit approval step.
+
+`SigtranCommercialEvidenceFileSystemExecutionStatus` reports the first nine completed filesystem execution capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
+
 ## Validation
 
 Each unit in this phase is validated with:

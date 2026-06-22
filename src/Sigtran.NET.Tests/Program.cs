@@ -313,6 +313,8 @@ Run("SIGTRAN commercial evidence filesystem retention ledger covers verified fil
 Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger);
 Run("SIGTRAN commercial evidence filesystem publication attachments protect trace evidence", SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
 Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval);
+Run("SIGTRAN commercial evidence filesystem command materializer writes execution script", SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript);
+Run("SIGTRAN commercial evidence filesystem execution status summarizes pending final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesPendingFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5414,6 +5416,51 @@ static void SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileVerificationCommandPlan plan = SigtranCommercialEvidenceFileVerificationCommands.CreateDefault(
+            Path.Combine(tempRoot, "artifacts"));
+        string scriptPath = Path.Combine(tempRoot, "scripts", "commercial-evidence.sh");
+
+        SigtranCommercialEvidenceFileSystemCommandMaterialization materialization = SigtranCommercialEvidenceFileSystemCommandMaterializer.WriteScript(
+            plan,
+            scriptPath,
+            DateTimeOffset.UtcNow);
+
+        Assert(materialization.IsReady, materialization.Describe());
+        Assert(materialization.ScriptExists, "materialized command script should exist");
+        Assert(materialization.ScriptSizeBytes > 0, "materialized command script should be non-empty");
+        Assert(materialization.IncludesArtifactRoot, "materialized command script should include artifact root");
+        Assert(materialization.IncludesAllCommands, "materialized command script should include all commands");
+        Assert(materialization.IncludesPromotionGate, "materialized command script should include promotion gate");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesPendingFinalValidation()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileSystemExecutionStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranCommercialEvidenceFileSystemExecutionStatus.CompletedUnitCount, "filesystem execution completed unit count");
+    AssertEqual(9, capabilities.Count, "filesystem execution capability count");
+    Assert(capabilities.Contains("command-materialization"), "filesystem execution status should include command materialization");
+    Assert(!capabilities.Contains("documentation"), "filesystem execution status should keep documentation pending before final validation");
+    Assert(SigtranCommercialEvidenceFileSystemExecutionStatus.ExecutionFoundationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
+    Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
+    Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
+    Assert(blockers.Contains("real-approved-commercial-run-required"), "filesystem execution status should require a real approved run");
+    Assert(blockers.Contains("status-final-validation-pending"), "filesystem execution status should keep final validation pending");
 }
 
 static SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)

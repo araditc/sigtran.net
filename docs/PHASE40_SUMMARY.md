@@ -12,7 +12,9 @@ Phase 40 prepares the SDK to run commercial evidence file verification against r
 - Integrity seal execution that signs the filesystem-backed ledger with a deterministic aggregate SHA-256 seal.
 - Publication attachment execution that creates release dossier attachments from the filesystem-backed seal and requires redaction approval for trace-bearing artifacts.
 - Promotion gate execution that evaluates filesystem-backed attachments with reviewer identity, UTC evaluation time, and explicit approval blockers.
+- Command materialization that writes the ordered commercial evidence file verification plan to a retained shell script.
+- Interim status reporting for nine completed filesystem execution units, with final validation still pending.
 
 ## Readiness Position
 
-The phase is in progress. Filesystem observation, manifest execution, report execution, artifact writing, ledger execution, seal execution, publication attachment execution, and promotion execution are available. Command materialization, status reporting, and final validation remain.
+The phase is in progress. Filesystem observation, manifest execution, report execution, artifact writing, ledger execution, seal execution, publication attachment execution, promotion execution, command materialization, and interim status reporting are available. Final validation remains.
