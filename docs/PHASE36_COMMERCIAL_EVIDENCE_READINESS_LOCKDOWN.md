@@ -27,6 +27,21 @@ The target is locked only when it is a release candidate, the commit is pinned, 
 
 The readiness evaluator accepts only secret names and reports missing requirements. This keeps release checks auditable while avoiding secret-value logging in build, test, and release output.
 
+## Unit 3 - Evidence Artifact Retention Map
+
+`SigtranCommercialEvidenceRetentionMaps` defines the retained artifact roots required for commercial evidence capture:
+
+- Native SCTP evidence.
+- External peer interoperability evidence.
+- Protocol interoperability evidence.
+- Performance and resilience evidence.
+- Supply-chain evidence.
+- Public API evidence.
+- Release workflow evidence.
+- Publication dossier evidence.
+
+Every path must live under the release target artifact root, keep artifacts for at least one year, and require digest coverage. Floating paths such as `artifacts/latest/...` are intentionally rejected because they cannot prove which release target produced the evidence.
+
 ## Validation
 
 Each unit in this phase is validated with:

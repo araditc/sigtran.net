@@ -40,7 +40,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 33 | Performance and resilience evidence | [Phase 33 Performance Resilience Evidence](PHASE33_PERFORMANCE_RESILIENCE_EVIDENCE.md), [Phase 33 Summary](PHASE33_SUMMARY.md) | Foundation complete; real benchmark evidence pending |
 | 34 | Supply-chain release execution | [Phase 34 Supply Chain Release Execution](PHASE34_SUPPLY_CHAIN_RELEASE_EXECUTION.md), [Phase 34 Summary](PHASE34_SUMMARY.md) | Foundation complete; retained release run pending |
 | 35 | RC publish and commercial gate | [Phase 35 RC Publish And Commercial Gate](PHASE35_RC_PUBLISH_COMMERCIAL_GATE.md), [Phase 35 Summary](PHASE35_SUMMARY.md), [Phase 35 Commercial Gate Report](PHASE35_COMMERCIAL_GATE_REPORT.md) | RC gate foundation complete; stable publication blocked |
-| 36 | Commercial evidence readiness lockdown | [Phase 36 Commercial Evidence Readiness Lockdown](PHASE36_COMMERCIAL_EVIDENCE_READINESS_LOCKDOWN.md), [Phase 36 Summary](PHASE36_SUMMARY.md) | In progress; release target lock and secret readiness complete |
+| 36 | Commercial evidence readiness lockdown | [Phase 36 Commercial Evidence Readiness Lockdown](PHASE36_COMMERCIAL_EVIDENCE_READINESS_LOCKDOWN.md), [Phase 36 Summary](PHASE36_SUMMARY.md) | In progress; release target, secrets, and retention map complete |
 
 ## Current Commercial Gate
 

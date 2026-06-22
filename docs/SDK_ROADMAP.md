@@ -323,7 +323,7 @@ Status: Phase 35 is foundation-complete. The dry-run release rehearsal plan is a
 - Produce a go/no-go decision that blocks lab execution and RC publication when readiness prerequisites are missing.
 - Keep stable publication blocked until commercial evidence is complete.
 
-Status: Phase 36 is in progress. The release target lock now binds an RC version to a pinned source commit, release channel, and versioned artifact root. Secret readiness now defines publish, signing, and provenance requirements without exposing secret values. Artifact retention, evidence checklist, preflight, protected environment, dossier handoff, go/no-go gating, status reporting, and final validation remain in progress.
+Status: Phase 36 is in progress. The release target lock now binds an RC version to a pinned source commit, release channel, and versioned artifact root. Secret readiness now defines publish, signing, and provenance requirements without exposing secret values. Evidence retention mapping now binds all commercial artifact areas to the target artifact root with one-year retention and digest coverage. Evidence checklist, preflight, protected environment, dossier handoff, go/no-go gating, status reporting, and final validation remain in progress.
 
 ## Recommended First Deliverable
 

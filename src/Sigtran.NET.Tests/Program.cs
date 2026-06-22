@@ -271,6 +271,7 @@ Run("SIGTRAN release candidate publication status summarizes RC gate", SigtranRe
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN commercial release target lock binds evidence to version and commit", SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit);
 Run("SIGTRAN commercial release secrets gate publish and signing readiness", SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness);
+Run("SIGTRAN commercial evidence retention map binds artifacts to release target", SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4307,6 +4308,31 @@ static void SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness()
     Assert(!missingSigning.IsReady, missingSigning.Describe());
     Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE"), "signing certificate should be required");
     Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE_PASSWORD"), "signing password should be required");
+}
+
+static void SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget()
+{
+    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
+    SigtranCommercialEvidenceRetentionMap map = SigtranCommercialEvidenceRetentionMaps.CreateDefault(target);
+    SigtranCommercialEvidenceRetentionMap floatingPathMap = new(
+        target,
+        [
+            new(SigtranCommercialEvidenceRetentionArea.NativeSctp, "artifacts/latest/native-sctp", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.ExternalPeerInterop, $"{target.ArtifactRoot}/external-peer-interop", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.ProtocolInterop, $"{target.ArtifactRoot}/protocol-interop", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.Performance, $"{target.ArtifactRoot}/performance", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.SupplyChain, $"{target.ArtifactRoot}/supply-chain", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.PublicApi, $"{target.ArtifactRoot}/public-api", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.ReleaseWorkflow, $"{target.ArtifactRoot}/release-workflow", 365, true),
+            new(SigtranCommercialEvidenceRetentionArea.PublicationDossier, $"{target.ArtifactRoot}/publication-dossier", 365, true)
+        ]);
+
+    Assert(map.IsReady, map.Describe());
+    Assert(map.Rules.Count == Enum.GetValues<SigtranCommercialEvidenceRetentionArea>().Length, "retention map should cover every area");
+    Assert(map.Rules.All(static rule => rule.RetentionDays >= 365), "commercial retention should keep evidence for at least one year");
+    Assert(map.Rules.All(static rule => rule.RequiresDigest), "commercial retention should require digest coverage");
+    Assert(!floatingPathMap.IsReady, floatingPathMap.Describe());
+    Assert(!floatingPathMap.UsesTargetArtifactRoot, "floating paths must not satisfy target-bound retention");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
