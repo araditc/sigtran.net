@@ -57,6 +57,17 @@ Every path must live under the release target artifact root, keep artifacts for 
 
 The checklist validates unique item identifiers, mandatory coverage for every retention area, and mandatory coverage for every essential artifact kind. This is a pre-execution checklist, not a claim that the artifacts already exist.
 
+## Unit 5 - Release Preflight Inputs
+
+`SigtranCommercialReleasePreflightChecks` aggregates the lockdown inputs before evidence-producing work starts:
+
+- Release target lock.
+- Protected release secret readiness.
+- Evidence retention map.
+- Commercial evidence checklist.
+
+The preflight report returns stable blocker identifiers for unlocked targets, missing secrets, incomplete retention maps, target mismatches between the release lock and retention map, and incomplete checklists. A passing preflight means the execution inputs are ready; it does not mean lab evidence or publication evidence already passed.
+
 ## Validation
 
 Each unit in this phase is validated with:

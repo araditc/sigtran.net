@@ -273,6 +273,7 @@ Run("SIGTRAN commercial release target lock binds evidence to version and commit
 Run("SIGTRAN commercial release secrets gate publish and signing readiness", SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness);
 Run("SIGTRAN commercial evidence retention map binds artifacts to release target", SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget);
 Run("SIGTRAN commercial evidence checklist requires essential artifacts", SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts);
+Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCommercialReleasePreflightAggregatesLockdownInputs);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4360,6 +4361,36 @@ static void SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts()
     Assert(!missingComparison.ContainsEssentialArtifacts, "comparison report should be mandatory");
     Assert(!duplicateId.IsReady, duplicateId.Describe());
     Assert(!duplicateId.HasUniqueIds, "checklist item identifiers should be unique");
+}
+
+static void SigtranCommercialReleasePreflightAggregatesLockdownInputs()
+{
+    string[] allSecretNames =
+    [
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD",
+        "PROVENANCE_ATTESTATION_TOKEN"
+    ];
+
+    SigtranCommercialReleasePreflightInput readyInput = SigtranCommercialReleasePreflightChecks.CreateReleaseCandidateInput(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        allSecretNames);
+    SigtranCommercialReleasePreflightReport ready = SigtranCommercialReleasePreflightChecks.Evaluate(readyInput);
+
+    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
+    SigtranCommercialReleaseTargetLock mismatchedRetentionTarget = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.2", "abcdef123456");
+    SigtranCommercialReleasePreflightReport blocked = SigtranCommercialReleasePreflightChecks.Evaluate(new(
+        target,
+        SigtranCommercialReleaseSecrets.Evaluate(["NUGET_API_KEY"]),
+        SigtranCommercialEvidenceRetentionMaps.CreateDefault(mismatchedRetentionTarget),
+        SigtranCommercialEvidenceChecklists.CreateDefault()));
+
+    Assert(ready.IsReady, ready.Describe());
+    Assert(!blocked.IsReady, blocked.Describe());
+    Assert(blocked.Blockers.Contains("release-secrets-missing"), "preflight should block missing secrets");
+    Assert(blocked.Blockers.Contains("retention-map-target-mismatch"), "preflight should block target mismatch");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
