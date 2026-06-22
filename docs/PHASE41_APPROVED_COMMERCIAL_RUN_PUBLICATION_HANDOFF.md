@@ -17,6 +17,20 @@ Public APIs use domain names such as `SigtranCommercialEvidenceApprovedRunTarget
 
 This unit establishes the identity that later approval, audit, and publication handoff artifacts reference.
 
+## Unit 2 - Approval Checklist
+
+`SigtranCommercialEvidenceRunApprovalChecklist` records required approval criteria before reviewer manifest creation:
+
+- Run target identity is ready.
+- Filesystem-backed promotion execution is ready.
+- File verification report is verified.
+- Retention ledger and integrity seal are ready.
+- Publication attachments are ready.
+- Trace-bearing artifacts have approved redaction state.
+- Promotion gate and reviewer approval are present.
+
+This unit turns commercial run approval into an explicit checklist with blocker identifiers rather than an implicit yes/no flag.
+
 ## Validation
 
 Each unit in this phase is validated with:

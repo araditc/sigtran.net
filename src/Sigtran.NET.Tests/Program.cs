@@ -316,6 +316,7 @@ Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", S
 Run("SIGTRAN commercial evidence filesystem command materializer writes execution script", SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript);
 Run("SIGTRAN commercial evidence filesystem execution status summarizes final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
 Run("SIGTRAN commercial evidence approved run target binds filesystem promotion", SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion);
+Run("SIGTRAN commercial evidence run approval checklist requires reviewer approval", SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5504,6 +5505,49 @@ static void SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceApprovedRunTarget target = CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot);
+
+        SigtranCommercialEvidenceRunApprovalChecklist checklist = SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(target);
+        SigtranCommercialEvidenceRunApprovalChecklist blocked = SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(
+            target,
+            reviewerApprovalRecorded: false);
+
+        Assert(checklist.IsReady, checklist.Describe());
+        Assert(checklist.AllRequiredItemsSatisfied, "approval checklist should satisfy all required items");
+        Assert(checklist.UsesUniqueItemIds, "approval checklist should use unique item ids");
+        Assert(checklist.IncludesReviewerApproval, "approval checklist should include reviewer approval");
+        Assert(checklist.IncludesRedactionProtection, "approval checklist should include redaction protection");
+        Assert(!blocked.IsReady, "missing reviewer approval should block checklist readiness");
+        Assert(blocked.GetUnsatisfiedRequiredItemIds().Contains("reviewer-approval-recorded"), "approval checklist should expose missing reviewer approval");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceApprovedRunTarget CreateReadyCommercialEvidenceApprovedRunTarget(string tempRoot)
+{
+    DateTimeOffset startedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+
+    return SigtranCommercialEvidenceApprovedRunTargets.Create(
+        "commercial-run-20260622-001",
+        "1.0.0-rc.1",
+        "abcdef123456",
+        tempRoot,
+        "release-operator",
+        startedAt,
+        DateTimeOffset.UtcNow,
+        CreateReadyCommercialEvidenceFileSystemPromotionExecution(tempRoot));
 }
 
 static SigtranCommercialEvidenceFileSystemPromotionExecution CreateReadyCommercialEvidenceFileSystemPromotionExecution(string tempRoot)

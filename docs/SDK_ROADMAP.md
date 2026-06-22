@@ -363,7 +363,7 @@ Status: Phase 40 is foundation-complete. Filesystem observation reads retained f
 - Record approval checklist, reviewer approvals, retained reports, promotion package, publication handoff, blocker gates, and audit trail.
 - Keep approval handoff separate from commercial publication: the SDK can prepare approval records, but publication remains blocked until a real approved run is retained.
 
-Status: Phase 41 is in progress. Approved run target identity now binds package version, source commit, operator identity, UTC run timing, retained artifact root, and filesystem-backed promotion execution. Approval checklist, reviewer manifest, report writing, promotion package, publication handoff, blocker gate, audit trail, command materialization, status reporting, and final validation remain in progress.
+Status: Phase 41 is in progress. Approved run target identity now binds package version, source commit, operator identity, UTC run timing, retained artifact root, and filesystem-backed promotion execution. Approval checklist now requires verified filesystem promotion, ready report/ledger/seal/attachments, approved trace redaction, promotion approval, and reviewer approval records. Reviewer manifest, report writing, promotion package, publication handoff, blocker gate, audit trail, command materialization, status reporting, and final validation remain in progress.
 
 ## Recommended First Deliverable
 
