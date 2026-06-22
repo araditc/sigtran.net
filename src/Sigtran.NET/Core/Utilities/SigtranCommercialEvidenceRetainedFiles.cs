@@ -87,6 +87,56 @@ public sealed class SigtranCommercialEvidenceRetainedFile
 }
 
 /// <summary>
+/// Describes the retained commercial evidence file manifest.
+/// </summary>
+public sealed class SigtranCommercialEvidenceRetainedFileManifest
+{
+    /// <summary>Creates a retained commercial evidence file manifest.</summary>
+    /// <param name="handoff">The promotion handoff that declares expected retained files.</param>
+    /// <param name="files">The observed retained files.</param>
+    public SigtranCommercialEvidenceRetainedFileManifest(
+        SigtranCommercialEvidencePromotionHandoff handoff,
+        IReadOnlyList<SigtranCommercialEvidenceRetainedFile> files)
+    {
+        Handoff = handoff ?? throw new ArgumentNullException(nameof(handoff));
+        ArgumentNullException.ThrowIfNull(files);
+        Files = files.Count == 0 ? throw new ArgumentException("At least one retained file is required.", nameof(files)) : files.ToArray();
+    }
+
+    /// <summary>The promotion handoff that declares expected retained files.</summary>
+    public SigtranCommercialEvidencePromotionHandoff Handoff { get; }
+
+    /// <summary>The observed retained files.</summary>
+    public IReadOnlyList<SigtranCommercialEvidenceRetainedFile> Files { get; }
+
+    /// <summary>Whether every required handoff item has an observed file.</summary>
+    public bool CoversRequiredHandoffItems => Handoff.Items
+        .Where(static item => item.RequiredForPromotion)
+        .All(item => Files.Any(file => file.Kind == item.Kind
+            && file.RetainedPath == item.RetainedPath
+            && string.Equals(file.ExpectedSha256, item.Sha256, StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Whether retained file paths are unique.</summary>
+    public bool UsesUniqueRetainedPaths => Files.Select(static file => file.RetainedPath).Distinct(StringComparer.OrdinalIgnoreCase).Count() == Files.Count;
+
+    /// <summary>Whether every observed file is verified.</summary>
+    public bool AllFilesVerified => Files.All(static file => file.IsVerified);
+
+    /// <summary>Whether the retained file manifest is ready for verification reporting.</summary>
+    public bool IsReady => Handoff.IsReady
+        && CoversRequiredHandoffItems
+        && UsesUniqueRetainedPaths
+        && AllFilesVerified;
+
+    /// <summary>Formats a compact retained file manifest summary.</summary>
+    /// <returns>The retained file manifest summary.</returns>
+    public string Describe()
+    {
+        return $"commercialEvidenceRetainedFilesReady={IsReady} files={Files.Count} intake={Handoff.Report.Target.IntakeId}";
+    }
+}
+
+/// <summary>
 /// Provides commercial evidence retained file helpers.
 /// </summary>
 public static class SigtranCommercialEvidenceRetainedFiles
@@ -111,5 +161,24 @@ public static class SigtranCommercialEvidenceRetainedFiles
             sizeBytes,
             observedAtUtc,
             exists: true);
+    }
+
+    /// <summary>Creates a verified retained file manifest from a promotion handoff.</summary>
+    /// <param name="handoff">The promotion handoff.</param>
+    /// <param name="sizeBytes">The observed file size assigned to every item.</param>
+    /// <param name="observedAtUtc">The UTC observation time.</param>
+    /// <returns>The retained file manifest.</returns>
+    public static SigtranCommercialEvidenceRetainedFileManifest CreateVerifiedManifest(
+        SigtranCommercialEvidencePromotionHandoff handoff,
+        long sizeBytes,
+        DateTimeOffset observedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(handoff);
+
+        return new(
+            handoff,
+            handoff.Items
+                .Select(item => CreateVerified(item, sizeBytes, observedAtUtc))
+                .ToArray());
     }
 }

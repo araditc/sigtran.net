@@ -18,6 +18,17 @@ Public APIs use domain names such as `SigtranCommercialEvidenceRetainedFiles`; p
 
 A retained file is verified only when the file exists, is non-empty, carries valid SHA-256 values, has matching expected and actual digests, and uses a UTC observation time.
 
+## Unit 2 - Retained File Manifest
+
+`SigtranCommercialEvidenceRetainedFileManifest` groups observed retained files against a promotion handoff:
+
+- Every promotion-required handoff item must have an observed file.
+- Retained paths must be unique.
+- Every observed file must be verified.
+- The handoff itself must be ready.
+
+The manifest is the first aggregate proof that retained file observations match the digest-covered handoff from artifact intake.
+
 ## Validation
 
 Each unit in this phase is validated with:
