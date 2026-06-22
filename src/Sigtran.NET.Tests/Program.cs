@@ -283,6 +283,7 @@ Run("SIGTRAN commercial evidence execution stage catalog covers required work", 
 Run("SIGTRAN commercial evidence execution command plan covers stage work", SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork);
 Run("SIGTRAN commercial evidence execution environment contract protects run inputs", SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs);
 Run("SIGTRAN commercial evidence execution artifact manifest covers retained outputs", SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs);
+Run("SIGTRAN commercial evidence execution verification requires digests and redaction", SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4672,6 +4673,42 @@ static void SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutp
     Assert(!missingSbom.CoversChecklistKinds, "missing SBOM should block artifact manifest readiness");
     Assert(!floatingArtifact.IsReady, floatingArtifact.Describe());
     Assert(!floatingArtifact.UsesStageArtifactRoots, "floating artifact paths should be rejected");
+}
+
+static void SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionArtifactManifest manifest = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranCommercialEvidenceExecutionVerificationPlan plan = SigtranCommercialEvidenceExecutionVerifications.CreateDefault(manifest);
+    SigtranCommercialEvidenceExecutionVerificationPlan missingDigest = new(
+        manifest,
+        plan.Items
+            .Select(item => item.Kind == SigtranCommercialEvidenceChecklistKind.Sbom
+                ? new SigtranCommercialEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, requiresDigest: false, item.RequiresRedactionReview)
+                : item)
+            .ToArray());
+    SigtranCommercialEvidenceExecutionVerificationPlan missingRedaction = new(
+        manifest,
+        plan.Items
+            .Select(item => item.Kind == SigtranCommercialEvidenceChecklistKind.PacketCapture
+                ? new SigtranCommercialEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, item.RequiresDigest, requiresRedactionReview: false)
+                : item)
+            .ToArray());
+
+    Assert(plan.IsReady, plan.Describe());
+    Assert(plan.CoversArtifacts, "verification plan should cover all artifacts");
+    Assert(plan.RequiresDigestForAllArtifacts, "verification plan should require digests for all artifacts");
+    Assert(plan.RequiresRedactionForTraceArtifacts, "verification plan should require redaction for trace-bearing artifacts");
+    Assert(!missingDigest.IsReady, missingDigest.Describe());
+    Assert(!missingDigest.RequiresDigestForAllArtifacts, "missing digest requirement should block verification");
+    Assert(!missingRedaction.IsReady, missingRedaction.Describe());
+    Assert(!missingRedaction.RequiresRedactionForTraceArtifacts, "missing redaction review should block trace evidence");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

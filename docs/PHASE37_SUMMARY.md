@@ -9,7 +9,8 @@ Phase 37 prepares the SDK to execute real commercial evidence runs after readine
 - Operator command plan that maps each stage to an ordered run-id-aware command with approval flags for sensitive execution.
 - Execution environment contract that binds run identity, lab inputs, and protected secrets without storing secret values.
 - Artifact collection manifest that maps checklist artifacts to known stage roots and retained output paths.
+- Digest and redaction verification plan for every retained execution artifact.
 
 ## Readiness Position
 
-The phase is in progress. Execution orchestration still requires digest/redaction verification, blocker classification, retry/resume policy, status reporting, and final validation.
+The phase is in progress. Execution orchestration still requires blocker classification, retry/resume policy, status reporting, and final validation.

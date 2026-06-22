@@ -66,6 +66,16 @@ The contract validates run identity values, reports missing or mismatched variab
 
 The manifest validates checklist coverage, known stage ownership, unique paths, and stage-scoped artifact roots.
 
+## Unit 6 - Digest And Redaction Verification Plan
+
+`SigtranCommercialEvidenceExecutionVerifications` defines review requirements for each retained artifact:
+
+- Every artifact requires digest verification.
+- Packet captures, logs, SDK traces, configurations, comparison reports, and benchmark reports require redaction review.
+- Every verification item must map back to an artifact manifest path.
+
+This plan keeps evidence review auditable and prevents sensitive telecom traces from entering the public dossier without redaction review.
+
 ## Validation
 
 Each unit in this phase is validated with:
