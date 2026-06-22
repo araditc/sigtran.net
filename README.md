@@ -70,6 +70,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | SCCP/TCAP/MAP evidence upgrade | Phase 32 SDK evidence-backed: shared protocol evidence vectors, SCCP/TCAP/MAP SMS evidence suites, cross-layer evidence bundle, ordered trace validation, actionable mismatch classification, SDK evidence-backed readiness gates, status reporting, and final validation are available; production evidence remains blocked until retained external interoperability artifacts exist |
 | Performance and resilience evidence | Phase 33 foundation-complete: peer-traffic workload evidence, digest-covered artifacts, latency P95/P99, CPU/memory/allocation, failover recovery, publishable Markdown report, production performance evidence gates, manual self-hosted runner/CI handoff, status reporting, and final validation are available; production claims still require retained real peer benchmark evidence and commercial readiness |
 | Supply-chain release execution | Phase 34 foundation-complete: final versioned SBOM, trusted timestamped package signing, provenance attestation, public API diff, artifact upload, ordered command-plan, release promotion gate, concrete workflow execution, status reporting, and final validation are available; retained release-run artifacts and commercial evidence are still required |
+| RC publish and commercial gate | Phase 35 in progress: dry-run release rehearsal is available; gated prerelease publish, final commercial readiness report, release notes, migration notes, and RC/stable decisioning are still being implemented |
 
 ## Requirements
 
@@ -208,6 +209,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 - [Phase 33 Summary](docs/PHASE33_SUMMARY.md)
 - [Phase 34 Supply Chain Release Execution](docs/PHASE34_SUPPLY_CHAIN_RELEASE_EXECUTION.md)
 - [Phase 34 Summary](docs/PHASE34_SUMMARY.md)
+- [Phase 35 RC Publish And Commercial Gate](docs/PHASE35_RC_PUBLISH_COMMERCIAL_GATE.md)
+- [Phase 35 Summary](docs/PHASE35_SUMMARY.md)
 - [External Peer Interop Migration](docs/EXTERNAL_PEER_INTEROP_MIGRATION.md)
 - [Continuous Integration](docs/CI.md)
 - [SCTP Transport](docs/SCTP_TRANSPORT.md)

@@ -305,6 +305,15 @@ Status: Phase 33 is foundation-complete. Peer-traffic benchmark workload evidenc
 
 Status: Phase 34 is foundation-complete. The final SBOM artifact contract is available and requires SPDX JSON, package/version alignment, workflow outputs, and digest coverage. Trusted timestamped signing evidence now requires certificate identity, HTTPS timestamp authority, retained timestamp receipt, verification report, and digest coverage. Provenance attestation now links package and SBOM subjects to source commit, release workflow identity, OIDC issuer, and retained digests. Public API diff artifacts now retain baseline/current paths, diff digest, member change counts, and breaking-change approval state. Release artifact upload now covers package, symbols, SBOM, signing, timestamp, provenance, API diff, and digest artifacts with 90-day retention. The ordered command plan defines SBOM, signing, verification, provenance, API diff, digest, and upload execution. The release gate aggregates those contracts with commercial evidence readiness. The concrete GitHub Actions release workflow now performs SBOM generation, signing, verification, GitHub attestations, public API diff retention, digest creation, and artifact upload. Status reporting and final validation keep promotion blocked until retained release-run artifacts and commercial evidence are available.
 
+## Phase 35 - RC Publish And Commercial Gate
+
+- Rehearse releases with a dry-run plan that cannot upload to NuGet.
+- Gate NuGet prerelease publication separately from stable publication.
+- Produce final commercial readiness, release notes, and migration notes artifacts.
+- Decide RC versus stable based on retained release evidence and commercial readiness.
+
+Status: Phase 35 is in progress. The dry-run release rehearsal plan is available and requires package creation, package verification, retained evidence, and no NuGet upload command. Gated prerelease publication, final commercial readiness reporting, release notes, migration notes, RC/stable decisioning, workflow wiring, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

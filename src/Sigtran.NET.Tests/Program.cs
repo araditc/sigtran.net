@@ -259,6 +259,7 @@ Run("SIGTRAN release artifact upload manifest retains supply chain evidence", Si
 Run("SIGTRAN supply chain release command plan orders execution steps", SigtranSupplyChainReleaseCommandPlanOrdersExecutionSteps);
 Run("SIGTRAN supply chain release gate aggregates promotion evidence", SigtranSupplyChainReleaseGateAggregatesPromotionEvidence);
 Run("SIGTRAN supply chain release status summarizes execution blockers", SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers);
+Run("SIGTRAN release dry-run plan rehearses without publication", SigtranReleaseDryRunPlanRehearsesWithoutPublication);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4094,6 +4095,20 @@ static void SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers()
     Assert(SigtranSupplyChainReleaseStatus.ExecutionFoundationReady, SigtranSupplyChainReleaseStatus.Describe());
     Assert(!SigtranSupplyChainReleaseStatus.CommercialReleaseReady, SigtranSupplyChainReleaseStatus.Describe());
     Assert(blockers.Contains("retained-release-run-artifacts-required"), "supply-chain release status should require retained release artifacts");
+}
+
+static void SigtranReleaseDryRunPlanRehearsesWithoutPublication()
+{
+    SigtranReleaseDryRunPlan plan = SigtranReleaseDryRuns.CreateDefault("1.0.0-rc.1");
+    IReadOnlyList<string> commands = plan.GetCommandTexts();
+
+    AssertEqual("1.0.0-rc.1", plan.Version, "dry-run release version");
+    AssertEqual(3, commands.Count, "dry-run command count");
+    Assert(plan.PreventsPublication, "dry-run release should not publish");
+    Assert(plan.CreatesEvidence, "dry-run release should create retained evidence");
+    Assert(plan.IsReleaseRehearsalReady, "dry-run release should be rehearsal-ready");
+    Assert(commands.Any(command => command.Contains("dotnet pack", StringComparison.OrdinalIgnoreCase)), "dry-run should pack");
+    Assert(commands.All(command => !command.Contains("nuget push", StringComparison.OrdinalIgnoreCase)), "dry-run should not push");
 }
 
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
