@@ -16,6 +16,21 @@ Public APIs use domain names such as `SigtranCommercialEvidenceExecutionRuns`; p
 
 Floating roots such as `artifacts/latest/...` are rejected because retained evidence must prove exactly which package version, source commit, and run produced it.
 
+## Unit 2 - Evidence Execution Stage Catalog
+
+`SigtranCommercialEvidenceExecutionStages` defines the required execution stages:
+
+- Readiness preflight.
+- Native SCTP lab.
+- External peer interoperability.
+- Protocol validation.
+- Performance benchmark.
+- Supply-chain evidence.
+- Release workflow dry-run.
+- Dossier assembly.
+
+The stage catalog validates required stage coverage, unique stage identifiers and order values, and run-scoped artifact roots for every stage.
+
 ## Validation
 
 Each unit in this phase is validated with:

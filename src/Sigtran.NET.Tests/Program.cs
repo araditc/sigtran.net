@@ -279,6 +279,7 @@ Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", Sigtra
 Run("SIGTRAN commercial go no-go gate separates evidence execution from publication", SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication);
 Run("SIGTRAN commercial evidence readiness lockdown status summarizes current gate", SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate);
 Run("SIGTRAN commercial evidence execution run binds artifacts to target", SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget);
+Run("SIGTRAN commercial evidence execution stage catalog covers required work", SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4522,6 +4523,33 @@ static void SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget()
     Assert(run.StartedAtUtc.Offset == TimeSpan.Zero, "execution run start time should be stored as UTC");
     Assert(!floatingRun.IsReady, floatingRun.Describe());
     Assert(!floatingRun.HasRunScopedArtifactRoot, "floating execution artifact roots should be rejected");
+}
+
+static void SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork()
+{
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        DateTimeOffset.UtcNow);
+    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
+    SigtranCommercialEvidenceExecutionStageCatalog floatingCatalog = new(
+        run,
+        catalog.Stages
+            .Select(stage => stage.Kind == SigtranCommercialEvidenceExecutionStageKind.NativeSctpLab
+                ? new SigtranCommercialEvidenceExecutionStage(stage.Id, stage.Kind, stage.Order, "artifacts/latest/native-sctp-lab", stage.Required)
+                : stage)
+            .ToArray());
+
+    Assert(catalog.IsReady, catalog.Describe());
+    Assert(catalog.Stages.Count == Enum.GetValues<SigtranCommercialEvidenceExecutionStageKind>().Length, "stage catalog should cover every stage kind");
+    Assert(catalog.HasRequiredStageKinds, "stage catalog should include every required stage");
+    Assert(catalog.HasUniqueStages, "stage catalog should use unique ids and orders");
+    Assert(catalog.UsesRunArtifactRoot, "stage catalog should use run-scoped artifact roots");
+    Assert(catalog.Stages.First().Kind == SigtranCommercialEvidenceExecutionStageKind.ReadinessPreflight, "preflight should be the first stage");
+    Assert(!floatingCatalog.IsReady, floatingCatalog.Describe());
+    Assert(!floatingCatalog.UsesRunArtifactRoot, "floating stage roots should be rejected");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

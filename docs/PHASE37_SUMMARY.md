@@ -5,7 +5,8 @@ Phase 37 prepares the SDK to execute real commercial evidence runs after readine
 ## Completed Capabilities
 
 - Evidence execution run identity that binds artifacts to a locked release target, stable run id, UTC start time, and run-scoped artifact root.
+- Evidence execution stage catalog that covers preflight, native SCTP, external peer, protocol validation, performance, supply-chain, workflow dry-run, and dossier assembly stages.
 
 ## Readiness Position
 
-The phase is in progress. Execution orchestration still requires stage catalog, command plan, environment contract, artifact collection, digest/redaction verification, blocker classification, retry/resume policy, status reporting, and final validation.
+The phase is in progress. Execution orchestration still requires command plan, environment contract, artifact collection, digest/redaction verification, blocker classification, retry/resume policy, status reporting, and final validation.
