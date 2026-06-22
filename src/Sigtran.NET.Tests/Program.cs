@@ -286,6 +286,7 @@ Run("SIGTRAN commercial evidence execution artifact manifest covers retained out
 Run("SIGTRAN commercial evidence execution verification requires digests and redaction", SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction);
 Run("SIGTRAN commercial evidence execution blocker classifier categorizes failures", SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures);
 Run("SIGTRAN commercial evidence execution retry policy gates resume decisions", SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions);
+Run("SIGTRAN commercial evidence execution status summarizes orchestration readiness", SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4763,6 +4764,22 @@ static void SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions()
     Assert(!unknown.CanRetry, "unknown blockers should not retry automatically");
 }
 
+static void SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceExecutionStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranCommercialEvidenceExecutionStatus.CompletedUnitCount, "commercial evidence execution completed unit count");
+    AssertEqual(9, capabilities.Count, "commercial evidence execution capability count");
+    Assert(capabilities.Contains("retry-resume-policy"), "execution status should include retry and resume policy");
+    Assert(capabilities.Contains("documentation"), "execution status should include documentation");
+    Assert(SigtranCommercialEvidenceExecutionStatus.ExecutionOrchestrationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
+    Assert(!SigtranCommercialEvidenceExecutionStatus.RetainedExecutionEvidenceReady, SigtranCommercialEvidenceExecutionStatus.Describe());
+    Assert(!SigtranCommercialEvidenceExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
+    Assert(blockers.Contains("real-execution-artifacts-required"), "execution status should require real retained artifacts");
+    Assert(blockers.Contains("status-final-validation-pending"), "execution status should retain final validation blocker before phase closeout");
+}
+
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
 {
     IReadOnlyList<string>[] statusCapabilities =
@@ -4786,7 +4803,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranPackagePublicationStatus.GetCompletedCapabilities(),
         SigtranSupplyChainReleaseStatus.GetCompletedCapabilities(),
         SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities()
+        SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

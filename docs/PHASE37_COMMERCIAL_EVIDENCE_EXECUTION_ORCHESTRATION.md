@@ -102,6 +102,18 @@ Each blocker declares whether it is retryable after correction. Unknown blockers
 
 The policy prevents endless retries and keeps host capability, approval, and unknown failures under operator control.
 
+## Unit 9 - Execution Orchestration Status
+
+`SigtranCommercialEvidenceExecutionStatus` exposes the current orchestration state:
+
+- Completed orchestration capabilities.
+- Default publication blockers.
+- Execution orchestration readiness.
+- Retained evidence readiness.
+- Commercial publication readiness.
+
+The status is intentionally conservative. The orchestration contracts are ready, but publication is still blocked until real retained execution artifacts exist and final validation closes the phase.
+
 ## Validation
 
 Each unit in this phase is validated with:
