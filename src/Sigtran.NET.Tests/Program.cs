@@ -278,6 +278,7 @@ Run("SIGTRAN protected release environment profile gates publication channels", 
 Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers);
 Run("SIGTRAN commercial go no-go gate separates evidence execution from publication", SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication);
 Run("SIGTRAN commercial evidence readiness lockdown status summarizes current gate", SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate);
+Run("SIGTRAN commercial evidence execution run binds artifacts to target", SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4496,6 +4497,31 @@ static void SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGat
     Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.StablePublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
     Assert(blockers.Contains("commercial-release-evidence-incomplete"), "status should retain evidence blocker");
     Assert(!blockers.Contains("final-validation-pending"), "final validation should no longer be a blocker");
+}
+
+static void SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget()
+{
+    DateTimeOffset started = new(2026, 06, 22, 10, 30, 00, TimeSpan.FromHours(3.5));
+    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "run-20260622-001",
+        "release-automation",
+        started);
+    SigtranCommercialEvidenceExecutionRun floatingRun = new(
+        "run-20260622-001",
+        run.Target,
+        "release-automation",
+        started,
+        "artifacts/latest/run-20260622-001");
+
+    Assert(run.IsReady, run.Describe());
+    Assert(run.HasStableRunId, "execution run should have a stable path-safe identifier");
+    Assert(run.HasRunScopedArtifactRoot, "execution run should use a target-scoped artifact root");
+    Assert(run.HasUtcStartTime, "execution run should normalize start time to UTC");
+    Assert(run.StartedAtUtc.Offset == TimeSpan.Zero, "execution run start time should be stored as UTC");
+    Assert(!floatingRun.IsReady, floatingRun.Describe());
+    Assert(!floatingRun.HasRunScopedArtifactRoot, "floating execution artifact roots should be rejected");
 }
 
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()

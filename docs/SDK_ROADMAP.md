@@ -325,6 +325,14 @@ Status: Phase 35 is foundation-complete. The dry-run release rehearsal plan is a
 
 Status: Phase 36 is foundation-complete. The release target lock binds an RC version to a pinned source commit, release channel, and versioned artifact root. Secret readiness defines publish, signing, and provenance requirements without exposing secret values. Evidence retention mapping binds all commercial artifact areas to the target artifact root with one-year retention and digest coverage. The commercial evidence checklist requires packet capture, logs, traces, configuration, comparison, SBOM, signing, provenance, benchmark, API, workflow, publication, and readiness-report artifacts. Release preflight aggregates target, secrets, retention, and checklist blockers before execution starts. Protected release environments separate dry-run, prerelease, and stable publication with approval and protected-ref rules. Evidence dossier handoff maps checklist items to retained paths, reviewer roles, digest verification, and redaction review. The go/no-go gate separates no-go, evidence execution, RC publication, and stable publication decisions. Status reporting exposes completed capabilities and keeps publication blockers explicit. Final validation is complete. RC and stable publication remain blocked until retained commercial release evidence is complete.
 
+## Phase 37 - Commercial Evidence Execution Orchestration
+
+- Create a governed execution run identity for evidence-producing work.
+- Define execution stages, operator commands, environment contracts, artifact collection, digest and redaction verification, blocker handling, retry/resume behavior, and execution status.
+- Keep the phase separate from real passing evidence: orchestration can prepare a run, but publication remains blocked until retained artifacts prove execution success.
+
+Status: Phase 37 is in progress. Evidence execution run identity now binds a locked release target to a stable run id, operator identity, UTC start time, and run-scoped artifact root. Stage catalog, command plan, environment contract, artifact collection, verification, blocker handling, retry/resume, status reporting, and final validation remain in progress.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
