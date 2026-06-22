@@ -100,6 +100,22 @@ The handoff plan is still a readiness artifact. It defines how the evidence will
 
 This intentionally prevents the SDK from treating readiness foundation as publication evidence. With the current retained evidence state, the gate can allow evidence-producing execution but continues to block RC and stable publication until the commercial evidence dossier is complete.
 
+## Unit 9 - Readiness Lockdown Status
+
+`SigtranCommercialEvidenceReadinessLockdownStatus` exposes domain-based status reporting for the completed readiness-lockdown capabilities:
+
+- Release target lock.
+- Release secret readiness.
+- Evidence retention map.
+- Commercial evidence checklist.
+- Release preflight.
+- Protected release environments.
+- Evidence dossier handoff.
+- Commercial go/no-go gate.
+- Documentation and status reporting.
+
+The current status is ready to start evidence-producing execution, but it continues to block RC and stable publication because commercial release evidence is incomplete and final validation is still pending.
+
 ## Validation
 
 Each unit in this phase is validated with:

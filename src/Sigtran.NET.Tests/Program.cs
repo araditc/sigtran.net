@@ -277,6 +277,7 @@ Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCo
 Run("SIGTRAN protected release environment profile gates publication channels", SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels);
 Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers);
 Run("SIGTRAN commercial go no-go gate separates evidence execution from publication", SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication);
+Run("SIGTRAN commercial evidence readiness lockdown status summarizes current gate", SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -4481,6 +4482,21 @@ static void SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication
     Assert(missingSecrets.Blockers.Contains("release-preflight-not-ready"), "missing secrets should block preflight");
 }
 
+static void SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate()
+{
+    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranCommercialEvidenceReadinessLockdownStatus.GetDefaultBlockers();
+
+    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount == 9, "status should reflect the completed readiness lockdown units");
+    Assert(capabilities.Count == SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount, "status capability count should match completed units");
+    Assert(capabilities.Contains("commercial-go-no-go-gate"), "status should include go/no-go gate capability");
+    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.EvidenceExecutionReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
+    Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.PublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
+    Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.StablePublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
+    Assert(blockers.Contains("commercial-release-evidence-incomplete"), "status should retain evidence blocker");
+    Assert(blockers.Contains("final-validation-pending"), "status should retain final validation blocker before unit 10");
+}
+
 static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
 {
     IReadOnlyList<string>[] statusCapabilities =
@@ -4503,7 +4519,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranReleaseWorkflowStatus.GetCompletedCapabilities(),
         SigtranPackagePublicationStatus.GetCompletedCapabilities(),
         SigtranSupplyChainReleaseStatus.GetCompletedCapabilities(),
-        SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities()
+        SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities(),
+        SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

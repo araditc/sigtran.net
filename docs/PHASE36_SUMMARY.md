@@ -12,7 +12,8 @@ Phase 36 prepares the SDK for evidence-producing execution by locking the commer
 - Protected release environment profile for dry-run, prerelease, and stable channels with publication separation and approval rules.
 - Evidence dossier handoff plan that maps checklist items to retained paths, reviewer roles, digest verification, and redaction review.
 - Commercial go/no-go gate that separates no-go, evidence execution, release-candidate publication, and stable publication decisions.
+- Readiness lockdown status reporting that exposes completed capabilities and current evidence/publication blockers.
 
 ## Readiness Position
 
-The phase is in progress. Evidence readiness lockdown still requires status reporting and final validation.
+The phase is in progress. Evidence readiness lockdown still requires final validation.
