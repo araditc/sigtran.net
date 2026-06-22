@@ -310,6 +310,7 @@ Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff fi
 Run("SIGTRAN commercial evidence filesystem verification report identifies missing files", SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
 Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports);
 Run("SIGTRAN commercial evidence filesystem retention ledger covers verified files", SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
+Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -5326,6 +5327,38 @@ static void SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFile
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidenceFileSystemRetentionLedgerExecution ledgerExecution = CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(tempRoot);
+
+        SigtranCommercialEvidenceFileSystemIntegritySealExecution sealExecution = SigtranCommercialEvidenceFileSystemIntegritySeals.Create(
+            ledgerExecution,
+            DateTimeOffset.UtcNow);
+
+        Assert(sealExecution.IsReady, sealExecution.Describe());
+        Assert(sealExecution.LedgerReady, "filesystem integrity seal should require ready ledger execution");
+        Assert(sealExecution.SealMatchesLedger, "filesystem integrity seal should match ledger digest");
+        Assert(sealExecution.Seal.HasValidAggregateDigest, "filesystem integrity seal should keep aggregate digest");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranCommercialEvidenceFileSystemRetentionLedgerExecution CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(string tempRoot)
+{
+    return SigtranCommercialEvidenceFileSystemRetentionLedgers.Create(
+        CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(tempRoot),
+        "release-review",
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceFileSystemArtifactWriteResult CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(string tempRoot)

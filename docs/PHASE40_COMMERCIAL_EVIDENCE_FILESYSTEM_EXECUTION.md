@@ -62,6 +62,17 @@ This unit gives release operators retained files they can attach to the commerci
 
 This unit connects real file verification output to the commercial evidence retention ledger.
 
+## Unit 6 - Integrity Seal Execution
+
+`SigtranCommercialEvidenceFileSystemIntegritySeals` creates an integrity seal from the filesystem-backed retention ledger:
+
+- Requires ready retention ledger execution.
+- Computes the deterministic aggregate SHA-256 ledger digest.
+- Verifies that the retained seal matches the current ledger.
+- Carries the seal id forward for attachment and promotion execution.
+
+This unit gives filesystem-backed evidence the same integrity seal contract used by the retained commercial evidence dossier.
+
 ## Validation
 
 Each unit in this phase is validated with:
