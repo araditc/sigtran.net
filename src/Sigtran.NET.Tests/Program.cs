@@ -267,6 +267,7 @@ Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigration
 Run("SIGTRAN final commercial readiness report separates RC and stable gates", SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates);
 Run("SIGTRAN release decision recommends RC before stable commercial evidence", SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence);
 Run("SIGTRAN release candidate publication evidence gates RC upload", SigtranReleaseCandidatePublicationEvidenceGatesRcUpload);
+Run("SIGTRAN release candidate publication status summarizes RC gate", SigtranReleaseCandidatePublicationStatusSummarizesRcGate);
 Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
@@ -4242,6 +4243,20 @@ static void SigtranReleaseCandidatePublicationEvidenceGatesRcUpload()
     Assert(manifest.Items.Any(static item => item.Kind == SigtranReleaseCandidatePublicationEvidenceKind.DryRunEvidence), "RC evidence should retain dry-run output");
 }
 
+static void SigtranReleaseCandidatePublicationStatusSummarizesRcGate()
+{
+    IReadOnlyList<string> capabilities = SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseCandidatePublicationStatus.GetDefaultBlockers();
+
+    AssertEqual(9, SigtranReleaseCandidatePublicationStatus.CompletedUnitCount, "RC publication completed unit count");
+    AssertEqual(9, capabilities.Count, "RC publication capability count");
+    Assert(capabilities.Contains("workflow-wiring"), "RC publication status should include workflow wiring");
+    Assert(blockers.Contains("real-release-workflow-run-artifacts-required"), "RC publication status should retain real workflow artifact blocker");
+    Assert(SigtranReleaseCandidatePublicationStatus.GateFoundationReady, SigtranReleaseCandidatePublicationStatus.Describe());
+    Assert(!SigtranReleaseCandidatePublicationStatus.RealPublicationReady, SigtranReleaseCandidatePublicationStatus.Describe());
+    Assert(!SigtranReleaseCandidatePublicationStatus.StableCommercialPublicationReady, SigtranReleaseCandidatePublicationStatus.Describe());
+}
+
 static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
 {
     SigtranCommercialReleaseExecutionReadinessReport report = SigtranCommercialReleaseExecutionReadiness.CreateCurrent();
@@ -4275,7 +4290,8 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranSupplyChainStatus.GetCompletedCapabilities(),
         SigtranReleaseWorkflowStatus.GetCompletedCapabilities(),
         SigtranPackagePublicationStatus.GetCompletedCapabilities(),
-        SigtranSupplyChainReleaseStatus.GetCompletedCapabilities()
+        SigtranSupplyChainReleaseStatus.GetCompletedCapabilities(),
+        SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)

@@ -99,6 +99,18 @@ The manifest allows RC publication only when the release decision is `ReleaseCan
 
 The workflow uploads package, symbols, supply-chain evidence, and dry-run evidence artifacts with audit-friendly retention. The validator requires the dry-run evidence step, RC publication gate, dry-run evidence upload, and dry-run publish block.
 
+## Unit 9 - RC Publication Status Summary
+
+`SigtranReleaseCandidatePublicationStatus` summarizes the RC publication gate:
+
+- Completed RC gate capabilities.
+- Default blockers that remain for real publication and stable promotion.
+- RC gate foundation readiness.
+- Real publication readiness.
+- Stable commercial publication readiness.
+
+The current status marks the RC gate foundation as ready, but keeps real publication blocked until a real release workflow run produces retained artifacts and the NuGet prerelease secret is available at publish time. Stable publication remains blocked by commercial evidence requirements.
+
 ## Validation
 
 Each unit in this phase is validated with:
