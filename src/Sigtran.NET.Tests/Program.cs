@@ -340,6 +340,7 @@ Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTa
 Run("SIGTRAN stable publication authorization requires protected approval", SigtranStablePublicationAuthorizationRequiresProtectedApproval);
 Run("SIGTRAN stable publish execution plan dispatches guarded stable workflow", SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow);
 Run("SIGTRAN stable commercial report writer retains final report", SigtranStableCommercialReportWriterRetainsFinalReport);
+Run("SIGTRAN stable release audit trail covers final gate lifecycle", SigtranStableReleaseAuditTrailCoversFinalGateLifecycle);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6488,6 +6489,54 @@ static SigtranStablePublishExecutionPlan CreateReadyStablePublishExecutionPlan()
         DateTimeOffset.UtcNow);
 
     return SigtranStablePublishExecutionPlans.Create(authorization);
+}
+
+static void SigtranStableReleaseAuditTrailCoversFinalGateLifecycle()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-audit-" + Guid.NewGuid().ToString("N"));
+    SigtranStablePublishExecutionPlan plan = CreateReadyStablePublishExecutionPlan();
+
+    try
+    {
+        SigtranStableCommercialReportWriteResult report = SigtranStableCommercialReportWriters.WriteReport(
+            plan,
+            tempRoot,
+            DateTimeOffset.UtcNow,
+            stableTagCreated: true,
+            stablePackagePublished: true,
+            publicationEvidenceRetained: true);
+        SigtranStableReleaseAuditTrail trail = SigtranStableReleaseAuditTrails.CreateDefault(report, DateTimeOffset.UtcNow);
+        SigtranStableReleaseAuditEvent firstEvent = trail.Events[0];
+        SigtranStableReleaseAuditTrail invalidDigest = new(
+            report,
+            [new(
+                firstEvent.Id,
+                firstEvent.Kind,
+                firstEvent.Actor,
+                firstEvent.OccurredAtUtc,
+                "not-a-digest",
+                firstEvent.Description), .. trail.Events.Skip(1)]);
+        SigtranStableReleaseAuditTrail missingEvent = new(
+            report,
+            trail.Events
+                .Where(static item => item.Kind != SigtranStableReleaseAuditEventKind.StableCompletionEvaluated)
+                .ToArray());
+
+        Assert(trail.IsReadyForFinalStatus, trail.Describe());
+        Assert(trail.StableCommercialReleaseComplete, "stable audit trail should expose report completion");
+        Assert(trail.HasUniqueEventIds, "stable audit trail should use unique event ids");
+        Assert(trail.CoversRequiredEvents, "stable audit trail should cover required events");
+        Assert(trail.AllEventsReady, "stable audit trail events should be ready");
+        Assert(trail.Events.Any(static item => item.Kind == SigtranStableReleaseAuditEventKind.CommercialReportRetained), "stable audit trail should retain report event");
+        Assert(!invalidDigest.IsReadyForFinalStatus, "invalid audit digest should block final status readiness");
+        Assert(invalidDigest.GetBlockers().Contains("stable-audit-events-not-ready"), "invalid audit digest blocker should be reported");
+        Assert(!missingEvent.IsReadyForFinalStatus, "missing audit event should block final status readiness");
+        Assert(missingEvent.GetBlockers().Contains("stable-audit-required-events-missing"), "missing audit event blocker should be reported");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()

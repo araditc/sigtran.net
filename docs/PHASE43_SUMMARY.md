@@ -12,7 +12,8 @@ Phase 43 is in progress. It creates the final stable commercial release gate wit
 - Protected stable publication authorization that requires ready tag gate, protected stable environment, publish intent, release/security/operations approvals, required publication secret names, and UTC authorization time.
 - Stable publish execution plan that dispatches the stable release workflow, watches and downloads artifacts, verifies the package, uses a guarded NuGet API key environment reference, and retains publication evidence.
 - Final stable commercial report writer that retains Markdown, computes a real report SHA-256 digest, and keeps auditable report readiness separate from actual stable publication completion.
+- Stable release audit trail that records digest-backed lifecycle events for target, dossier, checklist, decision, tag gate, authorization, publish plan, report retention, and completion evaluation.
 
 ## Readiness Position
 
-Units 1 through 8 are complete. Stable publication still requires audit trail, status reporting, retained release evidence, and a protected approved publication run.
+Units 1 through 9 are complete. Stable publication still requires final status reporting, retained release evidence, and a protected approved publication run.
