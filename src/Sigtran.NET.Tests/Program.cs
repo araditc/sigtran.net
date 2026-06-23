@@ -335,6 +335,7 @@ Run("SIGTRAN package publication integration status summarizes final validation"
 Run("SIGTRAN stable release target requires stable version and matching tag", SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag);
 Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts);
 Run("SIGTRAN stable commercial readiness checklist requires approved areas", SigtranStableCommercialReadinessChecklistRequiresApprovedAreas);
+Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranStableCommercialReleaseDecisionGatesTagReadiness);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6177,6 +6178,50 @@ static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
     Assert(rejectedChecklist.GetBlockers().Contains("stable-readiness-StableReleaseTarget-not-approved"), "rejected readiness item should be reported");
     Assert(!missingArea.IsReadyForDecision, "missing readiness area should block stable decision readiness");
     Assert(missingArea.GetBlockers().Contains("stable-readiness-required-areas-missing"), "missing readiness area should be reported");
+}
+
+static void SigtranStableCommercialReleaseDecisionGatesTagReadiness()
+{
+    const string digest = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReadinessChecklist blockedChecklist = new(
+        map,
+        [new(
+            checklist.Items[0].Area,
+            approved: false,
+            checklist.Items[0].EvidencePath,
+            checklist.Items[0].Reviewer,
+            checklist.Items[0].ReviewedAtUtc,
+            checklist.Items[0].Notes), .. checklist.Items.Skip(1)]);
+
+    SigtranStableCommercialReleaseDecision approved = SigtranStableCommercialReleaseDecisions.Decide(
+        checklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReleaseDecision blocked = SigtranStableCommercialReleaseDecisions.Decide(
+        blockedChecklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+
+    AssertEqual(SigtranStableCommercialReleaseDecisionKind.Approved, approved.Kind, "stable decision approved kind");
+    Assert(approved.ApprovesStablePublication, approved.Describe());
+    Assert(approved.IsReadyForTagGate, approved.Describe());
+    Assert(approved.HasUtcDecisionTime, "stable decision should use UTC time");
+    Assert(approved.Reasons.Contains("stable-commercial-readiness-approved"), "approved stable decision should retain reason");
+    AssertEqual(SigtranStableCommercialReleaseDecisionKind.Blocked, blocked.Kind, "stable decision blocked kind");
+    Assert(!blocked.ApprovesStablePublication, "blocked stable decision should not approve publication");
+    Assert(!blocked.IsReadyForTagGate, "blocked stable decision should not enter tag gate");
+    Assert(blocked.Reasons.Contains("stable-readiness-StableReleaseTarget-not-approved"), "blocked stable decision should retain checklist blocker");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
