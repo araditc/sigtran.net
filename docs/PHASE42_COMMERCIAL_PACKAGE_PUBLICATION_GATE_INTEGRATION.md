@@ -10,7 +10,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | 2 | Package artifact binding with package and symbols digests | Complete |
 | 3 | Credential readiness bridge for required publication secrets | Complete |
 | 4 | Publication evidence assembly from approved run and artifacts | Complete |
-| 5 | Release publish guard bridge | Pending |
+| 5 | Release publish guard bridge | Complete |
 | 6 | Publication channel policy evaluation bridge | Pending |
 | 7 | Commercial package publication gate execution | Pending |
 | 8 | Dry-run publication rehearsal artifact | Pending |
@@ -29,6 +29,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationEvidenceAssembly` creates the publication gate evidence manifest from credential readiness, package integrity, supply-chain promotion readiness, and approved commercial evidence readiness. It reuses the existing `SigtranPublicationEvidenceManifest` contract so the final package publication gate receives the same evidence shape as earlier release foundations.
 
+`SigtranPackagePublicationPublishGuardEvaluation` connects assembled publication evidence to the release publish guard. It retains the evaluated release context, blocks non-manual or untagged publication attempts, and only moves forward when publish intent and NuGet API key availability are present.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Units 1 through 4 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, and publication evidence assembly. Real package publication remains blocked until release guard, channel policy, and the final publication gate all pass.
+Phase 42 is still in progress. Units 1 through 5 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, and release publish guard evaluation. Real package publication remains blocked until channel policy and the final publication gate pass.

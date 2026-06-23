@@ -326,6 +326,7 @@ Run("SIGTRAN package publication request derives from approved handoff", Sigtran
 Run("SIGTRAN package publication artifacts bind package and symbols digests", SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests);
 Run("SIGTRAN package publication credential readiness gates required secrets", SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets);
 Run("SIGTRAN package publication evidence assembly creates gate manifest", SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest);
+Run("SIGTRAN package publication publish guard requires manual tagged release", SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5858,6 +5859,40 @@ static void SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest()
     }
 }
 
+static void SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationEvidenceAssembly evidence = CreateReadyPackagePublicationEvidenceAssembly(tempRoot);
+
+        SigtranPackagePublicationPublishGuardEvaluation ready = SigtranPackagePublicationPublishGuards.Evaluate(
+            evidence,
+            isManualDispatch: true,
+            isVersionTag: true,
+            DateTimeOffset.UtcNow);
+        SigtranPackagePublicationPublishGuardEvaluation blocked = SigtranPackagePublicationPublishGuards.Evaluate(
+            evidence,
+            isManualDispatch: false,
+            isVersionTag: true,
+            DateTimeOffset.UtcNow);
+
+        Assert(ready.IsReadyForChannelPolicy, ready.Describe());
+        Assert(ready.PublishGuardAllowsPublication, "publish guard should allow manual tagged release with API key");
+        Assert(ready.HasUtcEvaluationTime, "publish guard evaluation should use UTC time");
+        Assert(ready.PublishContext.PublishRequested, "publish guard context should preserve handoff publish intent");
+        Assert(ready.PublishContext.HasNuGetApiKey, "publish guard context should see NuGet API key availability");
+        Assert(!blocked.IsReadyForChannelPolicy, "non-manual release should block channel policy evaluation");
+        Assert(blocked.PublishGuardResult.Reasons.Contains("manual-dispatch-required"), "publish guard should report manual dispatch blocker");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -5970,6 +6005,15 @@ static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicatio
             "SIGNING_CERTIFICATE",
             "SIGNING_CERTIFICATE_PASSWORD"
         },
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranPackagePublicationEvidenceAssembly CreateReadyPackagePublicationEvidenceAssembly(string tempRoot)
+{
+    return SigtranPackagePublicationEvidenceAssemblies.Assemble(
+        CreateReadyPackagePublicationCredentialReadiness(tempRoot),
+        supplyChainPromotionReady: true,
+        commercialEvidenceReady: true,
         DateTimeOffset.UtcNow);
 }
 
