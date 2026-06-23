@@ -26,7 +26,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | 7 | Stable publish execution plan | Complete |
 | 8 | Final commercial report writer | Complete |
 | 9 | Stable release audit trail | Complete |
-| 10 | Final status, documentation, README alignment, validation, commit, and push | Pending |
+| 10 | Final status, documentation, README alignment, validation, commit, and push | Complete |
 
 ## Current Capability
 
@@ -48,6 +48,10 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStableReleaseAuditTrail` covers the final gate lifecycle with digest-backed audit events for target locking, dossier mapping, checklist approval, release decisioning, tag gate evaluation, publication authorization, publish plan preparation, commercial report retention, and completion evaluation. Final status evaluation is blocked when required events are missing, event identifiers are duplicated, event digests are invalid, or the retained report is not audit-ready.
 
+`SigtranStableCommercialReleaseGateStatus` reports the final stable commercial release gate status. It tracks the ten completed foundation capabilities and separates foundation readiness from real stable commercial release readiness. Stable commercial release readiness still requires verified retained stable release evidence, a completed protected stable publication run, and verified NuGet publication evidence.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Units 1 through 9 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, stable publish execution plan, final commercial report writer, and stable release audit trail. Stable publication remains blocked until final status reporting and retained release evidence all pass.
+Phase 43 foundation is complete. It adds the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, stable publish execution plan, final commercial report writer, stable release audit trail, and final status reporting.
+
+Stable commercial publication is still not claimed complete by default. It remains blocked until real retained stable release evidence is verified, a protected stable publication run completes, and actual NuGet publication evidence is retained and verified.

@@ -1,6 +1,6 @@
 # Phase 43 Summary - Stable Commercial Release Gate
 
-Phase 43 is in progress. It creates the final stable commercial release gate without pretending that live stable publication has happened.
+Phase 43 is foundation-complete. It creates the final stable commercial release gate without pretending that live stable publication has happened.
 
 ## Completed Capabilities
 
@@ -13,7 +13,8 @@ Phase 43 is in progress. It creates the final stable commercial release gate wit
 - Stable publish execution plan that dispatches the stable release workflow, watches and downloads artifacts, verifies the package, uses a guarded NuGet API key environment reference, and retains publication evidence.
 - Final stable commercial report writer that retains Markdown, computes a real report SHA-256 digest, and keeps auditable report readiness separate from actual stable publication completion.
 - Stable release audit trail that records digest-backed lifecycle events for target, dossier, checklist, decision, tag gate, authorization, publish plan, report retention, and completion evaluation.
+- Stable commercial release gate status reporting that tracks ten completed foundation capabilities while keeping real retained evidence, protected publication run, and NuGet publication evidence as explicit commercial blockers.
 
 ## Readiness Position
 
-Units 1 through 9 are complete. Stable publication still requires final status reporting, retained release evidence, and a protected approved publication run.
+All ten units are complete. Stable publication still requires real retained stable release evidence, a completed protected stable publication run, and verified NuGet publication evidence before the SDK can claim a stable commercial release.

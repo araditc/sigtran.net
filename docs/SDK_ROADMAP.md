@@ -373,6 +373,15 @@ Status: Phase 41 is foundation-complete. Approved run target identity binds pack
 
 Status: Phase 42 is foundation-complete. Package publication requests derive from approved handoff gates and preserve package version, channel, requester, run id, promotion package id, and UTC request time. Publication artifacts bind nupkg/snupkg paths, retained sizes, SHA-256 digests, version-matched paths, and package integrity manifest projection. Credential readiness evaluates NuGet and signing secret names without storing secret values. Publication evidence assembly creates the final evidence manifest from package integrity, supply-chain readiness, and approved commercial evidence readiness. Publish guard and channel policy bridges enforce manual dispatch, publish intent, version tags, NuGet API key availability, prerelease channel rules, and stable commercial readiness. Final gate execution aggregates credentials, evidence, metadata, layout, guard, and channel blockers. Dry-run rehearsal writes retained non-publishing Markdown output, guarded command materialization writes a release script using environment-based `NUGET_API_KEY`, and status reporting tracks ten completed capabilities while keeping real package publication blocked until retained release evidence and protected approval exist.
 
+## Phase 43 - Stable Commercial Release Gate
+
+- Lock the stable release target and bind it to a matching `v{version}` tag.
+- Map the complete stable commercial dossier and require reviewed readiness before decisioning.
+- Gate stable tag creation, protected publication authorization, guarded publish execution, final report retention, audit trail, and final status.
+- Keep the gate foundation separate from real stable publication evidence.
+
+Status: Phase 43 is foundation-complete. The SDK can model the stable release target, retained dossier evidence, approved readiness checklist, stable decision, stable tag commands, protected publication authorization, guarded stable publish execution plan, final commercial report, audit trail, and final stable gate status. Stable commercial release remains blocked until real retained stable release evidence is verified, a protected stable publication run completes, and actual NuGet publication evidence is retained and verified.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

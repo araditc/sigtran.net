@@ -341,6 +341,7 @@ Run("SIGTRAN stable publication authorization requires protected approval", Sigt
 Run("SIGTRAN stable publish execution plan dispatches guarded stable workflow", SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow);
 Run("SIGTRAN stable commercial report writer retains final report", SigtranStableCommercialReportWriterRetainsFinalReport);
 Run("SIGTRAN stable release audit trail covers final gate lifecycle", SigtranStableReleaseAuditTrailCoversFinalGateLifecycle);
+Run("SIGTRAN stable commercial release gate status separates foundation from release", SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelease);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6532,6 +6533,51 @@ static void SigtranStableReleaseAuditTrailCoversFinalGateLifecycle()
         Assert(invalidDigest.GetBlockers().Contains("stable-audit-events-not-ready"), "invalid audit digest blocker should be reported");
         Assert(!missingEvent.IsReadyForFinalStatus, "missing audit event should block final status readiness");
         Assert(missingEvent.GetBlockers().Contains("stable-audit-required-events-missing"), "missing audit event blocker should be reported");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelease()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-status-" + Guid.NewGuid().ToString("N"));
+    SigtranStablePublishExecutionPlan plan = CreateReadyStablePublishExecutionPlan();
+
+    try
+    {
+        SigtranStableCommercialReportWriteResult report = SigtranStableCommercialReportWriters.WriteReport(
+            plan,
+            tempRoot,
+            DateTimeOffset.UtcNow,
+            stableTagCreated: true,
+            stablePackagePublished: true,
+            publicationEvidenceRetained: true);
+        SigtranStableReleaseAuditTrail trail = SigtranStableReleaseAuditTrails.CreateDefault(report, DateTimeOffset.UtcNow);
+        SigtranStableCommercialReleaseGateStatusReport releaseReady = SigtranStableCommercialReleaseGateStatus.CreateReport(
+            trail,
+            retainedReleaseEvidenceVerified: true,
+            protectedPublicationRunCompleted: true,
+            nugetPublicationVerified: true);
+        SigtranStableCommercialReleaseGateStatusReport evidencePending = SigtranStableCommercialReleaseGateStatus.CreateReport(
+            trail,
+            retainedReleaseEvidenceVerified: false,
+            protectedPublicationRunCompleted: false,
+            nugetPublicationVerified: false);
+
+        AssertEqual(10, SigtranStableCommercialReleaseGateStatus.CompletedUnitCount, "stable commercial release gate completed unit count");
+        AssertEqual(10, SigtranStableCommercialReleaseGateStatus.GetCompletedCapabilities().Count, "stable commercial release gate capability count");
+        Assert(SigtranStableCommercialReleaseGateStatus.GetCompletedCapabilities().Contains("documentation-and-final-status"), "stable commercial release gate status should include documentation");
+        Assert(SigtranStableCommercialReleaseGateStatus.FoundationReady, SigtranStableCommercialReleaseGateStatus.Describe());
+        Assert(!SigtranStableCommercialReleaseGateStatus.StableCommercialReleaseReady, SigtranStableCommercialReleaseGateStatus.Describe());
+        Assert(SigtranStableCommercialReleaseGateStatus.GetDefaultCommercialBlockers().Contains("retained-stable-release-evidence-required"), "stable release status should retain evidence blocker");
+        Assert(releaseReady.FoundationReady, releaseReady.Describe());
+        Assert(releaseReady.StableCommercialReleaseReady, releaseReady.Describe());
+        Assert(!evidencePending.StableCommercialReleaseReady, "missing real evidence should block stable commercial release status");
+        Assert(evidencePending.GetBlockers().Contains("retained-stable-release-evidence-required"), "missing retained evidence blocker should be reported");
+        Assert(evidencePending.GetBlockers().Contains("protected-stable-publication-run-required"), "missing protected run blocker should be reported");
+        Assert(evidencePending.GetBlockers().Contains("actual-nuget-publication-evidence-required"), "missing NuGet evidence blocker should be reported");
     }
     finally
     {
