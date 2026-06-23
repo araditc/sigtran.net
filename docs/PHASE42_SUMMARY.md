@@ -9,7 +9,8 @@ Phase 42 is in progress. It connects approved commercial evidence handoff record
 - Package publication credential readiness that evaluates NuGet and signing secret availability by secret name without storing secret values.
 - Package publication evidence assembly that creates the final publication evidence manifest from package integrity, supply-chain readiness, and approved commercial evidence readiness.
 - Package publication publish guard bridge that evaluates manual dispatch, publish intent, version tag, and NuGet API key availability before channel policy evaluation.
+- Package publication channel policy bridge that gates prerelease and stable channels against version and commercial readiness requirements.
 
 ## Readiness Position
 
-Units 1 through 5 are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, and evaluate the release publish guard. Package publication still requires channel policy evaluation, final gate execution, dry-run rehearsal, guarded command materialization, status reporting, and retained real release evidence.
+Units 1 through 6 are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, evaluate the release publish guard, and evaluate publication channel policy. Package publication still requires final gate execution, dry-run rehearsal, guarded command materialization, status reporting, and retained real release evidence.

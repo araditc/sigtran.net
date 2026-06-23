@@ -327,6 +327,7 @@ Run("SIGTRAN package publication artifacts bind package and symbols digests", Si
 Run("SIGTRAN package publication credential readiness gates required secrets", SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets);
 Run("SIGTRAN package publication evidence assembly creates gate manifest", SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest);
 Run("SIGTRAN package publication publish guard requires manual tagged release", SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease);
+Run("SIGTRAN package publication channel policy gates stable readiness", SigtranPackagePublicationChannelPolicyGatesStableReadiness);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5893,6 +5894,46 @@ static void SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease()
     }
 }
 
+static void SigtranPackagePublicationChannelPolicyGatesStableReadiness()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationPublishGuardEvaluation betaGuard = CreateReadyPackagePublicationPublishGuardEvaluation(tempRoot);
+        SigtranPackagePublicationPublishGuardEvaluation stableGuard = CreateReadyPackagePublicationPublishGuardEvaluation(
+            tempRoot,
+            SigtranPublishChannelKind.Stable,
+            "1.0.0",
+            commercialReadinessApprovedForHandoff: true);
+
+        SigtranPackagePublicationChannelPolicyEvaluation beta = SigtranPackagePublicationChannelPolicies.Evaluate(
+            betaGuard,
+            commercialReadinessApproved: false,
+            DateTimeOffset.UtcNow);
+        SigtranPackagePublicationChannelPolicyEvaluation stableBlocked = SigtranPackagePublicationChannelPolicies.Evaluate(
+            stableGuard,
+            commercialReadinessApproved: false,
+            DateTimeOffset.UtcNow);
+        SigtranPackagePublicationChannelPolicyEvaluation stableAllowed = SigtranPackagePublicationChannelPolicies.Evaluate(
+            stableGuard,
+            commercialReadinessApproved: true,
+            DateTimeOffset.UtcNow);
+
+        Assert(beta.IsReadyForPublicationGate, beta.Describe());
+        AssertEqual(SigtranPublishChannelKind.Beta, beta.Channel.Kind, "beta channel policy channel");
+        Assert(!stableBlocked.IsReadyForPublicationGate, "stable channel should require commercial readiness approval");
+        Assert(stableBlocked.ChannelDecision.Reasons.Contains("commercial-readiness-required"), "stable channel policy should report commercial readiness blocker");
+        Assert(stableAllowed.IsReadyForPublicationGate, stableAllowed.Describe());
+        AssertEqual("1.0.0", stableAllowed.PackageVersion, "stable channel policy package version");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -5966,39 +6007,61 @@ static void SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidat
     Assert(!blockers.Contains("status-final-validation-pending"), "approval handoff status should clear final validation blocker");
 }
 
-static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(string tempRoot)
+static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(
+    string tempRoot,
+    SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
+    string packageVersion = "1.0.0-rc.1",
+    bool commercialReadinessApproved = false)
 {
     return SigtranCommercialEvidencePublicationHandoffGates.Evaluate(
         SigtranCommercialEvidencePublicationHandoffs.Create(
-            CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot),
-            SigtranPublishChannelKind.Beta,
+            CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot, packageVersion),
+            channelKind,
             "release-manager",
             DateTimeOffset.UtcNow),
-        commercialReadinessApproved: false);
+        commercialReadinessApproved);
 }
 
-static SigtranPackagePublicationRequest CreateReadyPackagePublicationRequest(string tempRoot)
+static SigtranPackagePublicationRequest CreateReadyPackagePublicationRequest(
+    string tempRoot,
+    SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
+    string packageVersion = "1.0.0-rc.1",
+    bool commercialReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationRequests.Create(
-        CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot),
+        CreateReadyCommercialEvidencePublicationHandoffGateResult(
+            tempRoot,
+            channelKind,
+            packageVersion,
+            commercialReadinessApprovedForHandoff),
         DateTimeOffset.UtcNow);
 }
 
 static SigtranPackagePublicationArtifactSet CreateReadyPackagePublicationArtifactSet(SigtranPackagePublicationRequest request)
 {
+    string fileStem = $"artifacts/Sigtran.NET.{request.PackageVersion}";
+
     return SigtranPackagePublicationArtifacts.Create(
         request,
         "Sigtran.NET",
         [
-            new(SigtranPackageArtifactKind.Package, "artifacts/Sigtran.NET.1.0.0-rc.1.nupkg", new string('a', 64), 1024, required: true),
-            new(SigtranPackageArtifactKind.SymbolPackage, "artifacts/Sigtran.NET.1.0.0-rc.1.snupkg", new string('b', 64), 512, required: true)
+            new(SigtranPackageArtifactKind.Package, $"{fileStem}.nupkg", new string('a', 64), 1024, required: true),
+            new(SigtranPackageArtifactKind.SymbolPackage, $"{fileStem}.snupkg", new string('b', 64), 512, required: true)
         ]);
 }
 
-static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicationCredentialReadiness(string tempRoot)
+static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicationCredentialReadiness(
+    string tempRoot,
+    SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
+    string packageVersion = "1.0.0-rc.1",
+    bool commercialReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationCredentialReadinessEvaluator.EvaluateDefault(
-        CreateReadyPackagePublicationArtifactSet(CreateReadyPackagePublicationRequest(tempRoot)),
+        CreateReadyPackagePublicationArtifactSet(CreateReadyPackagePublicationRequest(
+            tempRoot,
+            channelKind,
+            packageVersion,
+            commercialReadinessApprovedForHandoff)),
         new HashSet<string>(StringComparer.Ordinal)
         {
             "NUGET_API_KEY",
@@ -6008,49 +6071,84 @@ static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicatio
         DateTimeOffset.UtcNow);
 }
 
-static SigtranPackagePublicationEvidenceAssembly CreateReadyPackagePublicationEvidenceAssembly(string tempRoot)
+static SigtranPackagePublicationEvidenceAssembly CreateReadyPackagePublicationEvidenceAssembly(
+    string tempRoot,
+    SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
+    string packageVersion = "1.0.0-rc.1",
+    bool commercialReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationEvidenceAssemblies.Assemble(
-        CreateReadyPackagePublicationCredentialReadiness(tempRoot),
+        CreateReadyPackagePublicationCredentialReadiness(
+            tempRoot,
+            channelKind,
+            packageVersion,
+            commercialReadinessApprovedForHandoff),
         supplyChainPromotionReady: true,
         commercialEvidenceReady: true,
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(string tempRoot)
+static SigtranPackagePublicationPublishGuardEvaluation CreateReadyPackagePublicationPublishGuardEvaluation(
+    string tempRoot,
+    SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
+    string packageVersion = "1.0.0-rc.1",
+    bool commercialReadinessApprovedForHandoff = false)
 {
-    return SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
-        CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot),
+    return SigtranPackagePublicationPublishGuards.Evaluate(
+        CreateReadyPackagePublicationEvidenceAssembly(
+            tempRoot,
+            channelKind,
+            packageVersion,
+            commercialReadinessApprovedForHandoff),
+        isManualDispatch: true,
+        isVersionTag: true,
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalReportWriteResult CreateReadyCommercialEvidenceRunApprovalReportWriteResult(string tempRoot)
+static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(
+    string tempRoot,
+    string packageVersion = "1.0.0-rc.1")
+{
+    return SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
+        CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot, packageVersion),
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranCommercialEvidenceRunApprovalReportWriteResult CreateReadyCommercialEvidenceRunApprovalReportWriteResult(
+    string tempRoot,
+    string packageVersion = "1.0.0-rc.1")
 {
     return SigtranCommercialEvidenceRunApprovalReportWriters.WriteReport(
-        CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot),
+        CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot, packageVersion),
         Path.Combine(tempRoot, "approval"),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalManifest CreateReadyCommercialEvidenceRunApprovalManifest(string tempRoot)
+static SigtranCommercialEvidenceRunApprovalManifest CreateReadyCommercialEvidenceRunApprovalManifest(
+    string tempRoot,
+    string packageVersion = "1.0.0-rc.1")
 {
     return SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
-        CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot),
+        CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot, packageVersion),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalChecklist CreateReadyCommercialEvidenceRunApprovalChecklist(string tempRoot)
+static SigtranCommercialEvidenceRunApprovalChecklist CreateReadyCommercialEvidenceRunApprovalChecklist(
+    string tempRoot,
+    string packageVersion = "1.0.0-rc.1")
 {
-    return SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot));
+    return SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot, packageVersion));
 }
 
-static SigtranCommercialEvidenceApprovedRunTarget CreateReadyCommercialEvidenceApprovedRunTarget(string tempRoot)
+static SigtranCommercialEvidenceApprovedRunTarget CreateReadyCommercialEvidenceApprovedRunTarget(
+    string tempRoot,
+    string packageVersion = "1.0.0-rc.1")
 {
     DateTimeOffset startedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
 
     return SigtranCommercialEvidenceApprovedRunTargets.Create(
         "commercial-run-20260622-001",
-        "1.0.0-rc.1",
+        packageVersion,
         "abcdef123456",
         tempRoot,
         "release-operator",

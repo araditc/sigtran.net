@@ -11,7 +11,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | 3 | Credential readiness bridge for required publication secrets | Complete |
 | 4 | Publication evidence assembly from approved run and artifacts | Complete |
 | 5 | Release publish guard bridge | Complete |
-| 6 | Publication channel policy evaluation bridge | Pending |
+| 6 | Publication channel policy evaluation bridge | Complete |
 | 7 | Commercial package publication gate execution | Pending |
 | 8 | Dry-run publication rehearsal artifact | Pending |
 | 9 | Guarded publish command materialization and status | Pending |
@@ -31,6 +31,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationPublishGuardEvaluation` connects assembled publication evidence to the release publish guard. It retains the evaluated release context, blocks non-manual or untagged publication attempts, and only moves forward when publish intent and NuGet API key availability are present.
 
+`SigtranPackagePublicationChannelPolicyEvaluation` connects guarded package publication evidence to channel policy. It preserves the requested channel and package version, allows prerelease channels to proceed without stable commercial approval, and blocks stable publication until stable channel commercial readiness is approved.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Units 1 through 5 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, and release publish guard evaluation. Real package publication remains blocked until channel policy and the final publication gate pass.
+Phase 42 is still in progress. Units 1 through 6 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, and channel policy evaluation. Real package publication remains blocked until the final publication gate passes.
