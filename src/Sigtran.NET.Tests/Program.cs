@@ -332,6 +332,7 @@ Run("SIGTRAN package publication gate execution aggregates final blockers", Sigt
 Run("SIGTRAN package publication dry-run rehearsal retains safe report", SigtranPackagePublicationDryRunRehearsalRetainsSafeReport);
 Run("SIGTRAN package publication command materialization writes guarded script", SigtranPackagePublicationCommandMaterializationWritesGuardedScript);
 Run("SIGTRAN package publication integration status summarizes final validation", SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation);
+Run("SIGTRAN stable release target requires stable version and matching tag", SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6044,6 +6045,39 @@ static void SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation(
     Assert(!SigtranPackagePublicationIntegrationStatus.PackagePublicationReady, SigtranPackagePublicationIntegrationStatus.Describe());
     Assert(blockers.Contains("retained-real-release-evidence-required"), "package publication integration status should require retained release evidence");
     Assert(blockers.Contains("approved-protected-publication-run-required"), "package publication integration status should require protected publication run");
+}
+
+static void SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag()
+{
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableReleaseTarget prerelease = SigtranStableReleaseTargets.Create(
+        "1.0.0-rc.1",
+        "abcdef123456",
+        "artifacts/stable/1.0.0-rc.1",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableReleaseTarget wrongTag = new(
+        "1.0.0",
+        "abcdef123456",
+        "release-1.0.0",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+
+    Assert(target.IsReadyForStableGate, target.Describe());
+    Assert(target.HasStableVersion, "stable release target should require a stable package version");
+    Assert(target.HasMatchingTag, "stable release target should match v-prefixed tag");
+    Assert(target.HasSourceCommit, "stable release target should retain source commit");
+    Assert(target.HasUtcCreationTime, "stable release target should use UTC time");
+    Assert(!prerelease.IsReadyForStableGate, "prerelease version should not be stable target ready");
+    Assert(!prerelease.HasStableVersion, "prerelease target should expose stable version failure");
+    Assert(!wrongTag.IsReadyForStableGate, "wrong tag should block stable target readiness");
+    Assert(!wrongTag.HasMatchingTag, "wrong tag target should expose tag mismatch");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
