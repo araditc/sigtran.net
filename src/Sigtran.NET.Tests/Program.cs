@@ -324,6 +324,7 @@ Run("SIGTRAN commercial evidence publication handoff enforces channel version po
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN package publication request derives from approved handoff", SigtranPackagePublicationRequestDerivesFromApprovedHandoff);
 Run("SIGTRAN package publication artifacts bind package and symbols digests", SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests);
+Run("SIGTRAN package publication credential readiness gates required secrets", SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5772,6 +5773,47 @@ static void SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests()
         Assert(integrity.IsComplete, "publication artifacts should project to a complete integrity manifest");
         Assert(!blocked.IsReadyForCredentialEvaluation, "invalid package digest should block publication artifact readiness");
         Assert(!blocked.RequiredArtifactsAreReady, "blocked publication artifacts should expose digest failure");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationArtifactSet artifacts = CreateReadyPackagePublicationArtifactSet(CreateReadyPackagePublicationRequest(tempRoot));
+
+        SigtranPackagePublicationCredentialReadiness ready = SigtranPackagePublicationCredentialReadinessEvaluator.EvaluateDefault(
+            artifacts,
+            new HashSet<string>(StringComparer.Ordinal)
+            {
+                "NUGET_API_KEY",
+                "SIGNING_CERTIFICATE",
+                "SIGNING_CERTIFICATE_PASSWORD"
+            },
+            DateTimeOffset.UtcNow);
+        SigtranPackagePublicationCredentialReadiness blocked = SigtranPackagePublicationCredentialReadinessEvaluator.EvaluateDefault(
+            artifacts,
+            new HashSet<string>(StringComparer.Ordinal)
+            {
+                "NUGET_API_KEY"
+            },
+            DateTimeOffset.UtcNow);
+
+        Assert(ready.IsReadyForEvidenceAssembly, ready.Describe());
+        Assert(ready.HasRequiredSecrets, "credential readiness should have every required secret");
+        Assert(ready.HasNuGetApiKey, "credential readiness should expose NuGet API key availability");
+        Assert(ready.HasSigningSecrets, "credential readiness should expose signing secret availability");
+        Assert(ready.HasUtcEvaluationTime, "credential readiness evaluation should be UTC");
+        Assert(!blocked.IsReadyForEvidenceAssembly, "missing signing secrets should block publication credential readiness");
+        Assert(blocked.MissingSecretNames.Contains("SIGNING_CERTIFICATE"), "credential readiness should report missing signing certificate");
+        Assert(blocked.MissingSecretNames.Contains("SIGNING_CERTIFICATE_PASSWORD"), "credential readiness should report missing signing password");
     }
     finally
     {
