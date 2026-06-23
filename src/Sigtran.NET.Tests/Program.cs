@@ -334,6 +334,7 @@ Run("SIGTRAN package publication command materialization writes guarded script",
 Run("SIGTRAN package publication integration status summarizes final validation", SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation);
 Run("SIGTRAN stable release target requires stable version and matching tag", SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag);
 Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts);
+Run("SIGTRAN stable commercial readiness checklist requires approved areas", SigtranStableCommercialReadinessChecklistRequiresApprovedAreas);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6124,6 +6125,58 @@ static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
     Assert(!invalidDigest.HasValidDigests, "invalid digest should be exposed");
     Assert(!outsideRoot.IsReadyForChecklist, "outside-root retained path should block checklist readiness");
     Assert(!outsideRoot.PathsStayUnderArtifactRoot, "outside-root retained path should be exposed");
+}
+
+static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
+{
+    const string digest = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap invalidMap = new(
+        target,
+        [new(
+            map.Items[0].Kind,
+            map.Items[0].RetainedPath,
+            "invalid-digest",
+            map.Items[0].Required,
+            map.Items[0].Summary), .. map.Items.Skip(1)]);
+    SigtranStableCommercialReadinessChecklist invalidMapChecklist = new(invalidMap, checklist.Items);
+    SigtranStableCommercialReadinessChecklist rejectedChecklist = new(
+        map,
+        [new(
+            checklist.Items[0].Area,
+            approved: false,
+            checklist.Items[0].EvidencePath,
+            checklist.Items[0].Reviewer,
+            checklist.Items[0].ReviewedAtUtc,
+            checklist.Items[0].Notes), .. checklist.Items.Skip(1)]);
+    SigtranStableCommercialReadinessChecklist missingArea = new(
+        map,
+        checklist.Items
+            .Where(static item => item.Area != SigtranStableCommercialReadinessArea.OperationsCompliance)
+            .ToArray());
+
+    Assert(checklist.IsReadyForDecision, checklist.Describe());
+    Assert(checklist.HasReadyTarget, "stable readiness checklist should require ready target");
+    Assert(checklist.HasReadyEvidenceMap, "stable readiness checklist should require ready evidence map");
+    Assert(checklist.CoversRequiredAreas, "stable readiness checklist should cover required areas");
+    Assert(checklist.AllItemsApproved, "stable readiness checklist should require approved review items");
+    AssertEqual(0, checklist.GetBlockers().Count, "ready stable checklist blocker count");
+    Assert(!invalidMapChecklist.IsReadyForDecision, "invalid evidence map should block stable decision readiness");
+    Assert(invalidMapChecklist.GetBlockers().Contains("stable-dossier-evidence-map-not-ready"), "invalid evidence map blocker should be reported");
+    Assert(!rejectedChecklist.IsReadyForDecision, "rejected readiness item should block stable decision readiness");
+    Assert(rejectedChecklist.GetBlockers().Contains("stable-readiness-StableReleaseTarget-not-approved"), "rejected readiness item should be reported");
+    Assert(!missingArea.IsReadyForDecision, "missing readiness area should block stable decision readiness");
+    Assert(missingArea.GetBlockers().Contains("stable-readiness-required-areas-missing"), "missing readiness area should be reported");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()

@@ -19,7 +19,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | --- | --- | --- |
 | 1 | Stable release target lock | Complete |
 | 2 | Stable commercial dossier evidence map | Complete |
-| 3 | Stable commercial readiness checklist | Pending |
+| 3 | Stable commercial readiness checklist | Complete |
 | 4 | Stable release decision gate | Pending |
 | 5 | Stable tag gate and command plan | Pending |
 | 6 | Protected stable publication authorization | Pending |
@@ -34,6 +34,8 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStableCommercialDossierEvidenceMap` binds retained evidence items to that stable target. It requires maintained external peer evidence, native SCTP hardening evidence, protocol interop evidence, performance benchmark evidence, final SBOM, signing verification, provenance attestation, public API diff, release workflow artifacts, publication notes, and final commercial readiness report. Checklist evaluation is blocked when required evidence is missing, retained paths are duplicated, SHA-256 digests are invalid, or retained paths escape the target artifact root.
 
+`SigtranStableCommercialReadinessChecklist` turns the evidence map into reviewed readiness. It requires approved checklist areas for target lock, dossier evidence, maintained external peer interoperability, native SCTP hardening, protocol interoperability, benchmark evidence, supply-chain release evidence, public API baseline, operations/compliance, and publication dossier. Stable decisioning is blocked when the target or evidence map is not ready, required readiness areas are missing, areas are duplicated, or any approval is missing.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Units 1 and 2 add the stable release target boundary and the retained commercial dossier evidence map. Stable publication remains blocked until the readiness checklist, stable decision, protected tag/publish authorization, final commercial report, audit trail, and retained release evidence all pass.
+Phase 43 is in progress. Units 1 through 3 add the stable release target boundary, retained commercial dossier evidence map, and approved readiness checklist. Stable publication remains blocked until the stable decision, protected tag/publish authorization, final commercial report, audit trail, and retained release evidence all pass.
