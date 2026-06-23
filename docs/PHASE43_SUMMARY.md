@@ -11,7 +11,8 @@ Phase 43 is in progress. It creates the final stable commercial release gate wit
 - Stable tag gate and command plan that pins the expected `v{version}` tag to the approved source commit, verifies the tag, avoids package publication, and blocks on tag conflicts or missing protected-tag policy.
 - Protected stable publication authorization that requires ready tag gate, protected stable environment, publish intent, release/security/operations approvals, required publication secret names, and UTC authorization time.
 - Stable publish execution plan that dispatches the stable release workflow, watches and downloads artifacts, verifies the package, uses a guarded NuGet API key environment reference, and retains publication evidence.
+- Final stable commercial report writer that retains Markdown, computes a real report SHA-256 digest, and keeps auditable report readiness separate from actual stable publication completion.
 
 ## Readiness Position
 
-Units 1 through 7 are complete. Stable publication still requires final commercial report writer, audit trail, status reporting, retained release evidence, and a protected approved publication run.
+Units 1 through 8 are complete. Stable publication still requires audit trail, status reporting, retained release evidence, and a protected approved publication run.

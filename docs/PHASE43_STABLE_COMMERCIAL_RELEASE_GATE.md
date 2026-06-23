@@ -24,7 +24,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | 5 | Stable tag gate and command plan | Complete |
 | 6 | Protected stable publication authorization | Complete |
 | 7 | Stable publish execution plan | Complete |
-| 8 | Final commercial report writer | Pending |
+| 8 | Final commercial report writer | Complete |
 | 9 | Stable release audit trail | Pending |
 | 10 | Final status, documentation, README alignment, validation, commit, and push | Pending |
 
@@ -44,6 +44,8 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStablePublishExecutionPlan` turns protected authorization into ordered stable publication commands. The plan validates authorization, dispatches the release workflow with `channel=stable` and `publish=true`, watches the workflow, downloads artifacts, verifies the package, publishes through a guarded `NUGET_API_KEY` environment reference, and retains final publication evidence. The plan is not a live publication record; it is ready only when protected authorization is ready.
 
+`SigtranStableCommercialReportWriters` writes a retained Markdown stable commercial release report and computes a real SHA-256 digest for the report file. The report separates auditable report readiness from actual stable commercial release completion. It only marks the stable commercial release complete when the publish plan is ready, stable tag evidence exists, stable package publication evidence exists, and final publication evidence is retained.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Units 1 through 7 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, and stable publish execution plan. Stable publication remains blocked until the final commercial report, audit trail, and retained release evidence all pass.
+Phase 43 is in progress. Units 1 through 8 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, stable publish execution plan, and final commercial report writer. Stable publication remains blocked until the audit trail and retained release evidence all pass.

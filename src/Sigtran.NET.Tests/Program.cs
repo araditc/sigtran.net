@@ -339,6 +339,7 @@ Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranSta
 Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTagGateMaterializesGuardedTagCommands);
 Run("SIGTRAN stable publication authorization requires protected approval", SigtranStablePublicationAuthorizationRequiresProtectedApproval);
 Run("SIGTRAN stable publish execution plan dispatches guarded stable workflow", SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow);
+Run("SIGTRAN stable commercial report writer retains final report", SigtranStableCommercialReportWriterRetainsFinalReport);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6408,6 +6409,85 @@ static void SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow()
     Assert(plan.Commands.Any(static command => command.CommandText.Contains("dotnet nuget push", StringComparison.Ordinal)), "stable publish execution plan should include NuGet publish command");
     Assert(plan.Commands.All(static command => !command.CommandText.Contains("<secret>", StringComparison.Ordinal)), "stable publish execution plan should not retain placeholder secrets");
     Assert(!blockedPlan.IsReady, "blocked authorization should block stable publish plan readiness");
+}
+
+static void SigtranStableCommercialReportWriterRetainsFinalReport()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-commercial-report-" + Guid.NewGuid().ToString("N"));
+    SigtranStablePublishExecutionPlan plan = CreateReadyStablePublishExecutionPlan();
+
+    try
+    {
+        SigtranStableCommercialReportWriteResult complete = SigtranStableCommercialReportWriters.WriteReport(
+            plan,
+            Path.Combine(tempRoot, "complete"),
+            DateTimeOffset.UtcNow,
+            stableTagCreated: true,
+            stablePackagePublished: true,
+            publicationEvidenceRetained: true);
+        SigtranStableCommercialReportWriteResult evidencePending = SigtranStableCommercialReportWriters.WriteReport(
+            plan,
+            Path.Combine(tempRoot, "pending"),
+            DateTimeOffset.UtcNow,
+            stableTagCreated: false,
+            stablePackagePublished: false,
+            publicationEvidenceRetained: false);
+        string completeMarkdown = File.ReadAllText(complete.ReportPath);
+
+        Assert(complete.IsReadyForAuditTrail, complete.Describe());
+        Assert(complete.StableCommercialReleaseComplete, complete.Describe());
+        Assert(complete.ReportExists, "stable commercial report should exist");
+        Assert(complete.ReportSizeBytes > 0, "stable commercial report should be non-empty");
+        Assert(complete.HasValidReportDigest, "stable commercial report should have valid digest");
+        Assert(complete.HasUtcWriteTime, "stable commercial report should use UTC write time");
+        Assert(completeMarkdown.Contains("Stable commercial release complete: `True`", StringComparison.Ordinal), "stable commercial report should render completion status");
+        Assert(evidencePending.IsReadyForAuditTrail, evidencePending.Describe());
+        Assert(!evidencePending.StableCommercialReleaseComplete, "pending report should not claim stable commercial completion");
+        Assert(evidencePending.GetBlockers().Contains("stable-tag-creation-evidence-required"), "pending report should require stable tag evidence");
+        Assert(evidencePending.GetBlockers().Contains("stable-package-publication-evidence-required"), "pending report should require package publication evidence");
+        Assert(evidencePending.GetBlockers().Contains("stable-publication-evidence-retention-required"), "pending report should require retained publication evidence");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static SigtranStablePublishExecutionPlan CreateReadyStablePublishExecutionPlan()
+{
+    const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+        checklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+    SigtranStableTagGateResult tagGate = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: true,
+        existingTagConflict: false);
+    HashSet<string> completeSecrets = new(StringComparer.Ordinal)
+    {
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD"
+    };
+    SigtranStablePublicationAuthorization authorization = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow);
+
+    return SigtranStablePublishExecutionPlans.Create(authorization);
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
