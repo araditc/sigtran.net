@@ -322,6 +322,7 @@ Run("SIGTRAN commercial evidence run approval report writer retains markdown", S
 Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
 Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
+Run("SIGTRAN package publication request derives from approved handoff", SigtranPackagePublicationRequestDerivesFromApprovedHandoff);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5706,6 +5707,34 @@ static void SigtranCommercialEvidencePublicationHandoffGateReportsBlockers()
         Assert(stableBlocked.Blockers.Contains("stable-commercial-readiness-required"), "stable handoff should expose commercial readiness blocker");
         Assert(!noPublishBlocked.CanProceedToPackagePublicationGate, "missing publish request should block handoff");
         Assert(noPublishBlocked.Blockers.Contains("publish-not-requested"), "handoff gate should expose publish intent blocker");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
+static void SigtranPackagePublicationRequestDerivesFromApprovedHandoff()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranCommercialEvidencePublicationHandoffGateResult gate = CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot);
+
+        SigtranPackagePublicationRequest request = SigtranPackagePublicationRequests.Create(
+            gate,
+            DateTimeOffset.UtcNow);
+
+        Assert(request.IsReadyForArtifactBinding, request.Describe());
+        Assert(request.HasUtcRequestTime, "package publication request time should be UTC");
+        Assert(request.HandoffGateAllowsPackageEvaluation, "handoff gate should allow package publication evaluation");
+        AssertEqual("1.0.0-rc.1", request.PackageVersion, "publication request package version");
+        AssertEqual(SigtranPublishChannelKind.Beta, request.Channel.Kind, "publication request channel");
+        AssertEqual("release-manager", request.RequestedBy, "publication request requester");
+        AssertEqual("commercial-run-20260622-001", request.RunId, "publication request run id");
+        Assert(request.Describe().Contains("packagePublicationRequestReady=True", StringComparison.Ordinal), request.Describe());
     }
     finally
     {
