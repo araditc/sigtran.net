@@ -323,6 +323,7 @@ Run("SIGTRAN commercial evidence approved run promotion package covers required 
 Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
 Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN package publication request derives from approved handoff", SigtranPackagePublicationRequestDerivesFromApprovedHandoff);
+Run("SIGTRAN package publication artifacts bind package and symbols digests", SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5742,6 +5743,42 @@ static void SigtranPackagePublicationRequestDerivesFromApprovedHandoff()
     }
 }
 
+static void SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationRequest request = CreateReadyPackagePublicationRequest(tempRoot);
+
+        SigtranPackagePublicationArtifactSet artifacts = CreateReadyPackagePublicationArtifactSet(request);
+        SigtranPackagePublicationArtifactSet blocked = SigtranPackagePublicationArtifacts.Create(
+            request,
+            "Sigtran.NET",
+            [
+                new(SigtranPackageArtifactKind.Package, "artifacts/Sigtran.NET.1.0.0-rc.1.nupkg", "not-a-digest", 1024, required: true),
+                new(SigtranPackageArtifactKind.SymbolPackage, "artifacts/Sigtran.NET.1.0.0-rc.1.snupkg", new string('b', 64), 512, required: true)
+            ]);
+
+        SigtranPackageIntegrityManifest integrity = artifacts.ToIntegrityManifest();
+
+        Assert(artifacts.IsReadyForCredentialEvaluation, artifacts.Describe());
+        Assert(artifacts.IncludesPackage, "publication artifacts should include nupkg");
+        Assert(artifacts.IncludesSymbolPackage, "publication artifacts should include snupkg");
+        Assert(artifacts.UsesUniqueArtifactKinds, "publication artifacts should use unique kinds");
+        Assert(artifacts.RequiredArtifactsAreReady, "publication artifacts should have digest-covered required artifacts");
+        Assert(artifacts.PathsMatchRequestedVersion, "publication artifact paths should match request version");
+        Assert(integrity.IsComplete, "publication artifacts should project to a complete integrity manifest");
+        Assert(!blocked.IsReadyForCredentialEvaluation, "invalid package digest should block publication artifact readiness");
+        Assert(!blocked.RequiredArtifactsAreReady, "blocked publication artifacts should expose digest failure");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -5824,6 +5861,24 @@ static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommerci
             "release-manager",
             DateTimeOffset.UtcNow),
         commercialReadinessApproved: false);
+}
+
+static SigtranPackagePublicationRequest CreateReadyPackagePublicationRequest(string tempRoot)
+{
+    return SigtranPackagePublicationRequests.Create(
+        CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot),
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranPackagePublicationArtifactSet CreateReadyPackagePublicationArtifactSet(SigtranPackagePublicationRequest request)
+{
+    return SigtranPackagePublicationArtifacts.Create(
+        request,
+        "Sigtran.NET",
+        [
+            new(SigtranPackageArtifactKind.Package, "artifacts/Sigtran.NET.1.0.0-rc.1.nupkg", new string('a', 64), 1024, required: true),
+            new(SigtranPackageArtifactKind.SymbolPackage, "artifacts/Sigtran.NET.1.0.0-rc.1.snupkg", new string('b', 64), 512, required: true)
+        ]);
 }
 
 static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(string tempRoot)

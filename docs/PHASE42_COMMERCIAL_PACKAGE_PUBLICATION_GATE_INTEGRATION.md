@@ -7,7 +7,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | Unit | Capability | Status |
 | --- | --- | --- |
 | 1 | Package publication request derived from approved handoff gate | Complete |
-| 2 | Package artifact binding with package and symbols digests | Pending |
+| 2 | Package artifact binding with package and symbols digests | Complete |
 | 3 | Credential readiness bridge for required publication secrets | Pending |
 | 4 | Publication evidence assembly from approved run and artifacts | Pending |
 | 5 | Release publish guard bridge | Pending |
@@ -23,6 +23,8 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 
 The request can only move to package artifact binding when the upstream handoff gate allows evaluation and the request time is normalized to UTC. This keeps package publication blocked when approval handoff evidence is incomplete.
 
+`SigtranPackagePublicationArtifactSet` binds the request to the retained NuGet package and symbols package. It requires unique artifact kinds, package and symbols coverage, non-empty retained sizes, SHA-256 hex digests, and paths that match the requested package version. The artifact set can also project into the existing `SigtranPackageIntegrityManifest` contract used by the package publication gate.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Unit 1 establishes the handoff-to-publication request boundary. Real package publication remains blocked until package artifacts, required credentials, retained evidence, release guard, channel policy, and the final publication gate all pass.
+Phase 42 is still in progress. Units 1 and 2 establish the handoff-to-publication request boundary and digest-covered package artifact binding. Real package publication remains blocked until required credentials, retained evidence, release guard, channel policy, and the final publication gate all pass.
