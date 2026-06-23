@@ -330,6 +330,7 @@ Run("SIGTRAN package publication publish guard requires manual tagged release", 
 Run("SIGTRAN package publication channel policy gates stable readiness", SigtranPackagePublicationChannelPolicyGatesStableReadiness);
 Run("SIGTRAN package publication gate execution aggregates final blockers", SigtranPackagePublicationGateExecutionAggregatesFinalBlockers);
 Run("SIGTRAN package publication dry-run rehearsal retains safe report", SigtranPackagePublicationDryRunRehearsalRetainsSafeReport);
+Run("SIGTRAN package publication command materialization writes guarded script", SigtranPackagePublicationCommandMaterializationWritesGuardedScript);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5996,6 +5997,38 @@ static void SigtranPackagePublicationDryRunRehearsalRetainsSafeReport()
     }
 }
 
+static void SigtranPackagePublicationCommandMaterializationWritesGuardedScript()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationDryRunRehearsal rehearsal = CreateReadyPackagePublicationDryRunRehearsal(tempRoot);
+
+        SigtranPackagePublicationCommandPlan plan = SigtranPackagePublicationCommands.CreateGuardedPlan(rehearsal);
+        SigtranPackagePublicationCommandMaterialization materialization = SigtranPackagePublicationCommands.WriteScript(
+            plan,
+            Path.Combine(tempRoot, "publication", "publish-guarded.sh"),
+            DateTimeOffset.UtcNow);
+
+        Assert(plan.IsReady, plan.Describe());
+        Assert(plan.PublishCommandIsGuarded, "package publication plan should guard publish command");
+        Assert(materialization.IsReady, materialization.Describe());
+        Assert(materialization.ScriptExists, "package publication command script should exist");
+        Assert(materialization.ScriptSizeBytes > 0, "package publication command script should be non-empty");
+        Assert(materialization.IncludesPublicationGateGuard, "package publication command script should include gate guard");
+        Assert(materialization.IncludesAllCommands, "package publication command script should include every command");
+        Assert(materialization.RenderedScript.Contains("dotnet nuget push", StringComparison.Ordinal), "guarded script should include NuGet publish command");
+        Assert(materialization.RenderedScript.Contains("${NUGET_API_KEY:?missing NuGet API key}", StringComparison.Ordinal), "guarded script should use environment NuGet API key");
+        Assert(!materialization.RenderedScript.Contains("--api-key <secret>", StringComparison.Ordinal), "guarded script should not retain placeholder secret");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -6190,6 +6223,14 @@ static SigtranPackagePublicationGateExecution CreateReadyPackagePublicationGateE
         CreateReadyPackagePublicationChannelPolicyEvaluation(tempRoot),
         metadataReady: true,
         layoutReady: true,
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranPackagePublicationDryRunRehearsal CreateReadyPackagePublicationDryRunRehearsal(string tempRoot)
+{
+    return SigtranPackagePublicationDryRunRehearsals.WriteReport(
+        CreateReadyPackagePublicationGateExecution(tempRoot),
+        Path.Combine(tempRoot, "publication", "dry-run.md"),
         DateTimeOffset.UtcNow);
 }
 

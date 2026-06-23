@@ -12,7 +12,8 @@ Phase 42 is in progress. It connects approved commercial evidence handoff record
 - Package publication channel policy bridge that gates prerelease and stable channels against version and commercial readiness requirements.
 - Final package publication gate execution that aggregates publish guard, channel policy, credentials, evidence, metadata, and package layout blockers.
 - Retained dry-run publication rehearsal report that records safe non-publishing commands and final gate state.
+- Guarded publication command materialization that writes a release script with gate validation and environment-based NuGet API key usage.
 
 ## Readiness Position
 
-Units 1 through 8 are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, evaluate the release publish guard, evaluate publication channel policy, execute the final package publication gate, and retain a safe dry-run rehearsal report. Package publication still requires guarded command materialization, status reporting, and retained real release evidence.
+Units 1 through 9 are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, evaluate the release publish guard, evaluate publication channel policy, execute the final package publication gate, retain a safe dry-run rehearsal report, and materialize guarded publish commands. Package publication still requires status reporting and retained real release evidence.
