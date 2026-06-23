@@ -333,6 +333,7 @@ Run("SIGTRAN package publication dry-run rehearsal retains safe report", Sigtran
 Run("SIGTRAN package publication command materialization writes guarded script", SigtranPackagePublicationCommandMaterializationWritesGuardedScript);
 Run("SIGTRAN package publication integration status summarizes final validation", SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation);
 Run("SIGTRAN stable release target requires stable version and matching tag", SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag);
+Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6078,6 +6079,51 @@ static void SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag()
     Assert(!prerelease.HasStableVersion, "prerelease target should expose stable version failure");
     Assert(!wrongTag.IsReadyForStableGate, "wrong tag should block stable target readiness");
     Assert(!wrongTag.HasMatchingTag, "wrong tag target should expose tag mismatch");
+}
+
+static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
+{
+    const string digest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialDossierEvidenceMap missingProtocol = new(
+        target,
+        map.Items
+            .Where(static item => item.Kind != SigtranStableCommercialDossierEvidenceKind.ProtocolInterop)
+            .ToArray());
+    SigtranStableCommercialDossierEvidenceMap invalidDigest = new(
+        target,
+        [new(
+            map.Items[0].Kind,
+            map.Items[0].RetainedPath,
+            "not-a-sha",
+            map.Items[0].Required,
+            map.Items[0].Summary), .. map.Items.Skip(1)]);
+    SigtranStableCommercialDossierEvidenceMap outsideRoot = new(
+        target,
+        [new(
+            map.Items[0].Kind,
+            "artifacts/other/1.0.0/interop/maintained-peer-run-report.md",
+            map.Items[0].Sha256,
+            map.Items[0].Required,
+            map.Items[0].Summary), .. map.Items.Skip(1)]);
+
+    Assert(map.IsReadyForChecklist, map.Describe());
+    Assert(map.HasRequiredEvidenceKinds, "stable dossier map should include every required evidence kind");
+    Assert(map.HasUniqueRetainedPaths, "stable dossier map should keep retained paths unique");
+    Assert(map.HasValidDigests, "stable dossier map should require valid SHA-256 digests");
+    Assert(map.PathsStayUnderArtifactRoot, "stable dossier map should stay under target artifact root");
+    Assert(!missingProtocol.IsReadyForChecklist, "missing protocol evidence should block checklist readiness");
+    Assert(missingProtocol.MissingRequiredKinds().Contains(SigtranStableCommercialDossierEvidenceKind.ProtocolInterop), "missing protocol evidence should be reported");
+    Assert(!invalidDigest.IsReadyForChecklist, "invalid digest should block checklist readiness");
+    Assert(!invalidDigest.HasValidDigests, "invalid digest should be exposed");
+    Assert(!outsideRoot.IsReadyForChecklist, "outside-root retained path should block checklist readiness");
+    Assert(!outsideRoot.PathsStayUnderArtifactRoot, "outside-root retained path should be exposed");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()

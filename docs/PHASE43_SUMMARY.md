@@ -5,7 +5,8 @@ Phase 43 is in progress. It creates the final stable commercial release gate wit
 ## Completed Capabilities
 
 - Stable release target lock that validates stable package version, source commit, matching `v{version}` tag, retained artifact root, requester identity, and UTC target time.
+- Stable commercial dossier evidence map that requires retained external peer, native SCTP, protocol interop, benchmark, SBOM, signing, provenance, API diff, release workflow, publication notes, and final readiness report artifacts with valid SHA-256 digests under the target artifact root.
 
 ## Readiness Position
 
-Unit 1 is complete. Stable publication still requires the commercial dossier evidence map, readiness checklist, stable decision gate, stable tag gate, protected publication authorization, stable publish execution plan, final commercial report writer, audit trail, status reporting, retained release evidence, and a protected approved publication run.
+Units 1 and 2 are complete. Stable publication still requires the readiness checklist, stable decision gate, stable tag gate, protected publication authorization, stable publish execution plan, final commercial report writer, audit trail, status reporting, retained release evidence, and a protected approved publication run.

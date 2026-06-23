@@ -18,7 +18,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | Unit | Capability | Status |
 | --- | --- | --- |
 | 1 | Stable release target lock | Complete |
-| 2 | Stable commercial dossier evidence map | Pending |
+| 2 | Stable commercial dossier evidence map | Complete |
 | 3 | Stable commercial readiness checklist | Pending |
 | 4 | Stable release decision gate | Pending |
 | 5 | Stable tag gate and command plan | Pending |
@@ -32,6 +32,8 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStableReleaseTarget` locks the stable package version, source commit, stable tag, retained artifact root, requester identity, and UTC target creation time. It only enters stable gate evaluation when the version is stable SemVer, the tag matches `v{version}`, the source commit is retained, and the timestamp is UTC.
 
+`SigtranStableCommercialDossierEvidenceMap` binds retained evidence items to that stable target. It requires maintained external peer evidence, native SCTP hardening evidence, protocol interop evidence, performance benchmark evidence, final SBOM, signing verification, provenance attestation, public API diff, release workflow artifacts, publication notes, and final commercial readiness report. Checklist evaluation is blocked when required evidence is missing, retained paths are duplicated, SHA-256 digests are invalid, or retained paths escape the target artifact root.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Unit 1 adds the stable release target boundary. Stable publication remains blocked until a complete commercial dossier, stable decision, protected tag/publish authorization, final commercial report, and retained release evidence all pass.
+Phase 43 is in progress. Units 1 and 2 add the stable release target boundary and the retained commercial dossier evidence map. Stable publication remains blocked until the readiness checklist, stable decision, protected tag/publish authorization, final commercial report, audit trail, and retained release evidence all pass.
