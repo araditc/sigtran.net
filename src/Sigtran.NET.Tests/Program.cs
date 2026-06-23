@@ -337,6 +337,7 @@ Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", S
 Run("SIGTRAN stable commercial readiness checklist requires approved areas", SigtranStableCommercialReadinessChecklistRequiresApprovedAreas);
 Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranStableCommercialReleaseDecisionGatesTagReadiness);
 Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTagGateMaterializesGuardedTagCommands);
+Run("SIGTRAN stable publication authorization requires protected approval", SigtranStablePublicationAuthorizationRequiresProtectedApproval);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6268,6 +6269,89 @@ static void SigtranStableTagGateMaterializesGuardedTagCommands()
     Assert(unprotected.GetBlockers().Contains("protected-stable-tag-policy-required"), "protected tag policy blocker should be reported");
     Assert(!conflict.IsReadyForAuthorization, "existing tag conflict should block authorization");
     Assert(conflict.GetBlockers().Contains("stable-tag-conflict"), "stable tag conflict blocker should be reported");
+}
+
+static void SigtranStablePublicationAuthorizationRequiresProtectedApproval()
+{
+    const string digest = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+        checklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+    SigtranStableTagGateResult tagGate = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: true,
+        existingTagConflict: false);
+    SigtranStableTagGateResult blockedTagGate = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: false,
+        existingTagConflict: false);
+    HashSet<string> completeSecrets = new(StringComparer.Ordinal)
+    {
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD"
+    };
+    HashSet<string> missingSigningPassword = new(StringComparer.Ordinal)
+    {
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE"
+    };
+
+    SigtranStablePublicationAuthorization ready = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStablePublicationAuthorization missingSecret = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        missingSigningPassword,
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStablePublicationAuthorization rejectedApproval = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow,
+        securityApproved: false);
+    SigtranStablePublicationAuthorization missingIntent = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow,
+        publishIntentConfirmed: false);
+    SigtranStablePublicationAuthorization blockedByTagGate = SigtranStablePublicationAuthorizations.CreateDefault(
+        blockedTagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow);
+
+    Assert(ready.IsReadyForPublishPlan, ready.Describe());
+    Assert(ready.HasReadyTagGate, "stable publication authorization should require ready tag gate");
+    Assert(ready.HasProtectedStableEnvironment, "stable publication authorization should require protected stable environment");
+    Assert(ready.HasRequiredSecrets, "stable publication authorization should require publication secrets by name");
+    Assert(ready.HasRequiredApprovals, "stable publication authorization should require release security and operations approvals");
+    Assert(ready.PublishIntentConfirmed, "stable publication authorization should require explicit publish intent");
+    AssertEqual(0, ready.GetBlockers().Count, "ready stable authorization blocker count");
+    Assert(!missingSecret.IsReadyForPublishPlan, "missing signing password secret should block stable authorization");
+    Assert(missingSecret.GetBlockers().Contains("missing-secret:SIGNING_CERTIFICATE_PASSWORD"), "missing signing password blocker should be reported");
+    Assert(!rejectedApproval.IsReadyForPublishPlan, "rejected approval should block stable authorization");
+    Assert(rejectedApproval.GetBlockers().Contains("stable-publication-approvals-required"), "rejected approval blocker should be reported");
+    Assert(!missingIntent.IsReadyForPublishPlan, "missing publish intent should block stable authorization");
+    Assert(missingIntent.GetBlockers().Contains("stable-publication-intent-required"), "missing publish intent blocker should be reported");
+    Assert(!blockedByTagGate.IsReadyForPublishPlan, "blocked tag gate should block stable authorization");
+    Assert(blockedByTagGate.GetBlockers().Contains("stable-tag-gate-not-ready"), "blocked tag gate blocker should be reported");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()

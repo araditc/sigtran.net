@@ -9,7 +9,8 @@ Phase 43 is in progress. It creates the final stable commercial release gate wit
 - Stable commercial readiness checklist that requires approved target, dossier, external peer, native SCTP, protocol, benchmark, supply-chain, API, operations/compliance, and publication dossier areas before decisioning.
 - Stable commercial release decision gate that turns a reviewed checklist into an approved or blocked decision with retained reasons and UTC decision time.
 - Stable tag gate and command plan that pins the expected `v{version}` tag to the approved source commit, verifies the tag, avoids package publication, and blocks on tag conflicts or missing protected-tag policy.
+- Protected stable publication authorization that requires ready tag gate, protected stable environment, publish intent, release/security/operations approvals, required publication secret names, and UTC authorization time.
 
 ## Readiness Position
 
-Units 1 through 5 are complete. Stable publication still requires protected publication authorization, stable publish execution plan, final commercial report writer, audit trail, status reporting, retained release evidence, and a protected approved publication run.
+Units 1 through 6 are complete. Stable publication still requires stable publish execution plan, final commercial report writer, audit trail, status reporting, retained release evidence, and a protected approved publication run.
