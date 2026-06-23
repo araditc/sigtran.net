@@ -23,7 +23,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | 4 | Stable release decision gate | Complete |
 | 5 | Stable tag gate and command plan | Complete |
 | 6 | Protected stable publication authorization | Complete |
-| 7 | Stable publish execution plan | Pending |
+| 7 | Stable publish execution plan | Complete |
 | 8 | Final commercial report writer | Pending |
 | 9 | Stable release audit trail | Pending |
 | 10 | Final status, documentation, README alignment, validation, commit, and push | Pending |
@@ -42,6 +42,8 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStablePublicationAuthorization` evaluates protected stable publication approval. It requires a ready tag gate, protected stable release environment profile, explicit stable publish intent, release/security/operations approvals, required publication secret names, and UTC authorization timing. It reports blockers for missing tag readiness, missing protected environment, missing publish intent, missing approvals, and missing secret names without retaining secret values.
 
+`SigtranStablePublishExecutionPlan` turns protected authorization into ordered stable publication commands. The plan validates authorization, dispatches the release workflow with `channel=stable` and `publish=true`, watches the workflow, downloads artifacts, verifies the package, publishes through a guarded `NUGET_API_KEY` environment reference, and retains final publication evidence. The plan is not a live publication record; it is ready only when protected authorization is ready.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Units 1 through 6 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, and protected stable publication authorization. Stable publication remains blocked until the stable publish execution plan, final commercial report, audit trail, and retained release evidence all pass.
+Phase 43 is in progress. Units 1 through 7 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, and stable publish execution plan. Stable publication remains blocked until the final commercial report, audit trail, and retained release evidence all pass.

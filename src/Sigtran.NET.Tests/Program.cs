@@ -338,6 +338,7 @@ Run("SIGTRAN stable commercial readiness checklist requires approved areas", Sig
 Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranStableCommercialReleaseDecisionGatesTagReadiness);
 Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTagGateMaterializesGuardedTagCommands);
 Run("SIGTRAN stable publication authorization requires protected approval", SigtranStablePublicationAuthorizationRequiresProtectedApproval);
+Run("SIGTRAN stable publish execution plan dispatches guarded stable workflow", SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6352,6 +6353,61 @@ static void SigtranStablePublicationAuthorizationRequiresProtectedApproval()
     Assert(missingIntent.GetBlockers().Contains("stable-publication-intent-required"), "missing publish intent blocker should be reported");
     Assert(!blockedByTagGate.IsReadyForPublishPlan, "blocked tag gate should block stable authorization");
     Assert(blockedByTagGate.GetBlockers().Contains("stable-tag-gate-not-ready"), "blocked tag gate blocker should be reported");
+}
+
+static void SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow()
+{
+    const string digest = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+        checklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+    SigtranStableTagGateResult tagGate = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: true,
+        existingTagConflict: false);
+    HashSet<string> completeSecrets = new(StringComparer.Ordinal)
+    {
+        "NUGET_API_KEY",
+        "SIGNING_CERTIFICATE",
+        "SIGNING_CERTIFICATE_PASSWORD"
+    };
+    SigtranStablePublicationAuthorization authorization = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStablePublicationAuthorization missingIntent = SigtranStablePublicationAuthorizations.CreateDefault(
+        tagGate,
+        completeSecrets,
+        "release-manager",
+        DateTimeOffset.UtcNow,
+        publishIntentConfirmed: false);
+
+    SigtranStablePublishExecutionPlan plan = SigtranStablePublishExecutionPlans.Create(authorization);
+    SigtranStablePublishExecutionPlan blockedPlan = SigtranStablePublishExecutionPlans.Create(missingIntent);
+
+    Assert(plan.IsReady, plan.Describe());
+    Assert(plan.UsesDeterministicOrder, "stable publish execution plan should use deterministic order");
+    Assert(plan.CoversRequiredCommandKinds, "stable publish execution plan should cover command kinds");
+    Assert(plan.DispatchesStablePublishWorkflow, "stable publish execution plan should dispatch stable publish workflow");
+    Assert(plan.PublishCommandIsGuarded, "stable publish execution plan should guard NuGet API key");
+    Assert(plan.RetainsPublicationEvidence, "stable publish execution plan should retain publication evidence");
+    Assert(plan.Commands.Any(static command => command.CommandText.Contains("gh workflow run release.yml", StringComparison.Ordinal)), "stable publish execution plan should use release workflow");
+    Assert(plan.Commands.Any(static command => command.CommandText.Contains("dotnet nuget push", StringComparison.Ordinal)), "stable publish execution plan should include NuGet publish command");
+    Assert(plan.Commands.All(static command => !command.CommandText.Contains("<secret>", StringComparison.Ordinal)), "stable publish execution plan should not retain placeholder secrets");
+    Assert(!blockedPlan.IsReady, "blocked authorization should block stable publish plan readiness");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
