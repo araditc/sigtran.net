@@ -9,7 +9,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | 1 | Package publication request derived from approved handoff gate | Complete |
 | 2 | Package artifact binding with package and symbols digests | Complete |
 | 3 | Credential readiness bridge for required publication secrets | Complete |
-| 4 | Publication evidence assembly from approved run and artifacts | Pending |
+| 4 | Publication evidence assembly from approved run and artifacts | Complete |
 | 5 | Release publish guard bridge | Pending |
 | 6 | Publication channel policy evaluation bridge | Pending |
 | 7 | Commercial package publication gate execution | Pending |
@@ -27,6 +27,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationCredentialReadiness` evaluates required publication credentials by secret name only. It uses the default NuGet publication credential policy, reports missing secret names, tracks NuGet API key and signing secret availability, and requires a UTC evaluation time before moving into evidence assembly.
 
+`SigtranPackagePublicationEvidenceAssembly` creates the publication gate evidence manifest from credential readiness, package integrity, supply-chain promotion readiness, and approved commercial evidence readiness. It reuses the existing `SigtranPublicationEvidenceManifest` contract so the final package publication gate receives the same evidence shape as earlier release foundations.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Units 1 through 3 establish the handoff-to-publication request boundary, digest-covered package artifact binding, and secret-name based credential readiness. Real package publication remains blocked until retained evidence, release guard, channel policy, and the final publication gate all pass.
+Phase 42 is still in progress. Units 1 through 4 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, and publication evidence assembly. Real package publication remains blocked until release guard, channel policy, and the final publication gate all pass.

@@ -325,6 +325,7 @@ Run("SIGTRAN commercial evidence publication handoff gate reports blockers", Sig
 Run("SIGTRAN package publication request derives from approved handoff", SigtranPackagePublicationRequestDerivesFromApprovedHandoff);
 Run("SIGTRAN package publication artifacts bind package and symbols digests", SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests);
 Run("SIGTRAN package publication credential readiness gates required secrets", SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets);
+Run("SIGTRAN package publication evidence assembly creates gate manifest", SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5821,6 +5822,42 @@ static void SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets()
     }
 }
 
+static void SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationCredentialReadiness credentials = CreateReadyPackagePublicationCredentialReadiness(tempRoot);
+
+        SigtranPackagePublicationEvidenceAssembly ready = SigtranPackagePublicationEvidenceAssemblies.Assemble(
+            credentials,
+            supplyChainPromotionReady: true,
+            commercialEvidenceReady: true,
+            DateTimeOffset.UtcNow);
+        SigtranPackagePublicationEvidenceAssembly blocked = SigtranPackagePublicationEvidenceAssemblies.Assemble(
+            credentials,
+            supplyChainPromotionReady: false,
+            commercialEvidenceReady: true,
+            DateTimeOffset.UtcNow);
+
+        Assert(ready.IsReadyForPublishGuard, ready.Describe());
+        Assert(ready.PackageIntegrityReady, "publication evidence assembly should include package integrity");
+        Assert(ready.SupplyChainPromotionReady, "publication evidence assembly should include supply-chain promotion evidence");
+        Assert(ready.CommercialEvidenceReady, "publication evidence assembly should include approved commercial evidence");
+        Assert(ready.EvidenceManifest.IsComplete, "publication evidence manifest should be complete");
+        AssertEqual("1.0.0-rc.1", ready.EvidenceManifest.Version, "publication evidence package version");
+        AssertEqual(SigtranPublishChannelKind.Beta, ready.EvidenceManifest.Channel, "publication evidence channel");
+        Assert(!blocked.IsReadyForPublishGuard, "missing supply-chain evidence should block publish guard readiness");
+        Assert(!blocked.EvidenceManifest.IsComplete, "blocked publication evidence manifest should be incomplete");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -5921,6 +5958,19 @@ static SigtranPackagePublicationArtifactSet CreateReadyPackagePublicationArtifac
             new(SigtranPackageArtifactKind.Package, "artifacts/Sigtran.NET.1.0.0-rc.1.nupkg", new string('a', 64), 1024, required: true),
             new(SigtranPackageArtifactKind.SymbolPackage, "artifacts/Sigtran.NET.1.0.0-rc.1.snupkg", new string('b', 64), 512, required: true)
         ]);
+}
+
+static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicationCredentialReadiness(string tempRoot)
+{
+    return SigtranPackagePublicationCredentialReadinessEvaluator.EvaluateDefault(
+        CreateReadyPackagePublicationArtifactSet(CreateReadyPackagePublicationRequest(tempRoot)),
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "NUGET_API_KEY",
+            "SIGNING_CERTIFICATE",
+            "SIGNING_CERTIFICATE_PASSWORD"
+        },
+        DateTimeOffset.UtcNow);
 }
 
 static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(string tempRoot)
