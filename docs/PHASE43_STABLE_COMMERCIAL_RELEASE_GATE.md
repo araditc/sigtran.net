@@ -21,7 +21,7 @@ The previous phase map is still directionally correct, but the SDK is not commer
 | 2 | Stable commercial dossier evidence map | Complete |
 | 3 | Stable commercial readiness checklist | Complete |
 | 4 | Stable release decision gate | Complete |
-| 5 | Stable tag gate and command plan | Pending |
+| 5 | Stable tag gate and command plan | Complete |
 | 6 | Protected stable publication authorization | Pending |
 | 7 | Stable publish execution plan | Pending |
 | 8 | Final commercial report writer | Pending |
@@ -38,6 +38,8 @@ The previous phase map is still directionally correct, but the SDK is not commer
 
 `SigtranStableCommercialReleaseDecision` records whether the reviewed checklist is approved or blocked. It preserves the decision maker, UTC decision time, and reasons. The decision only becomes ready for stable tag gate evaluation when the checklist is ready and the decision kind is approved.
 
+`SigtranStableTagGateResult` evaluates whether the stable tag workflow can move to protected publication authorization. The generated command plan validates the approved decision, verifies the source commit, creates the annotated `v{version}` tag on the pinned commit, verifies the tag commit, and pushes only the target tag. The tag gate blocks when the command plan is not ready, protected stable tag policy is not confirmed, or an existing tag conflict is present.
+
 ## Commercial Gate Position
 
-Phase 43 is in progress. Units 1 through 4 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, and stable release decision gate. Stable publication remains blocked until protected tag/publish authorization, final commercial report, audit trail, and retained release evidence all pass.
+Phase 43 is in progress. Units 1 through 5 add the stable release target boundary, retained commercial dossier evidence map, approved readiness checklist, stable release decision gate, and stable tag gate. Stable publication remains blocked until protected tag/publish authorization, final commercial report, audit trail, and retained release evidence all pass.

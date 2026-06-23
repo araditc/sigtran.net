@@ -336,6 +336,7 @@ Run("SIGTRAN stable release target requires stable version and matching tag", Si
 Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts);
 Run("SIGTRAN stable commercial readiness checklist requires approved areas", SigtranStableCommercialReadinessChecklistRequiresApprovedAreas);
 Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranStableCommercialReleaseDecisionGatesTagReadiness);
+Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTagGateMaterializesGuardedTagCommands);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6222,6 +6223,51 @@ static void SigtranStableCommercialReleaseDecisionGatesTagReadiness()
     Assert(!blocked.ApprovesStablePublication, "blocked stable decision should not approve publication");
     Assert(!blocked.IsReadyForTagGate, "blocked stable decision should not enter tag gate");
     Assert(blocked.Reasons.Contains("stable-readiness-StableReleaseTarget-not-approved"), "blocked stable decision should retain checklist blocker");
+}
+
+static void SigtranStableTagGateMaterializesGuardedTagCommands()
+{
+    const string digest = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
+    SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
+        "1.0.0",
+        "abcdef123456",
+        "artifacts/stable/1.0.0",
+        "release-manager",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+        map,
+        "chief-architect",
+        DateTimeOffset.UtcNow);
+    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+        checklist,
+        "release-board",
+        DateTimeOffset.UtcNow);
+
+    SigtranStableTagGateResult ready = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: true,
+        existingTagConflict: false);
+    SigtranStableTagGateResult unprotected = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: false,
+        existingTagConflict: false);
+    SigtranStableTagGateResult conflict = SigtranStableTagGates.Evaluate(
+        decision,
+        protectedTagPolicyConfirmed: true,
+        existingTagConflict: true);
+
+    Assert(ready.IsReadyForAuthorization, ready.Describe());
+    Assert(ready.CommandPlan.IsReady, ready.CommandPlan.Describe());
+    Assert(ready.CommandPlan.UsesDeterministicOrder, "stable tag commands should use deterministic order");
+    Assert(ready.CommandPlan.CoversRequiredCommandKinds, "stable tag commands should cover required command kinds");
+    Assert(ready.CommandPlan.CreateTagCommandPinsTarget, "stable tag command should pin target tag and commit");
+    Assert(ready.CommandPlan.PushCommandUsesTargetTag, "stable tag push command should use target tag");
+    Assert(ready.CommandPlan.ContainsNoPublishCommand, "stable tag commands should not publish packages");
+    Assert(!unprotected.IsReadyForAuthorization, "missing protected tag policy should block authorization");
+    Assert(unprotected.GetBlockers().Contains("protected-stable-tag-policy-required"), "protected tag policy blocker should be reported");
+    Assert(!conflict.IsReadyForAuthorization, "existing tag conflict should block authorization");
+    Assert(conflict.GetBlockers().Contains("stable-tag-conflict"), "stable tag conflict blocker should be reported");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
