@@ -19,6 +19,7 @@ Status: not commercially releasable yet.
 - Package signing verification currently fails commercial requirements because the signing certificate is not trusted by the verifier and the signature is not timestamped.
 - Performance evidence is smoke-only; commercial release needs sustained peer/load benchmark evidence with latency and resource metrics.
 - Release workflow must regenerate package, SBOM, signing, provenance, benchmark, API baseline, and evidence artifacts after the final release commit.
+- Package publication gate integration is foundation-complete, but live publication still requires retained release evidence and an approved protected publication run.
 
 ## Commercial Decision
 

@@ -331,6 +331,7 @@ Run("SIGTRAN package publication channel policy gates stable readiness", Sigtran
 Run("SIGTRAN package publication gate execution aggregates final blockers", SigtranPackagePublicationGateExecutionAggregatesFinalBlockers);
 Run("SIGTRAN package publication dry-run rehearsal retains safe report", SigtranPackagePublicationDryRunRehearsalRetainsSafeReport);
 Run("SIGTRAN package publication command materialization writes guarded script", SigtranPackagePublicationCommandMaterializationWritesGuardedScript);
+Run("SIGTRAN package publication integration status summarizes final validation", SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -6027,6 +6028,22 @@ static void SigtranPackagePublicationCommandMaterializationWritesGuardedScript()
     {
         DeleteTempEvidenceRoot(tempRoot);
     }
+}
+
+static void SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation()
+{
+    IReadOnlyList<string> capabilities = SigtranPackagePublicationIntegrationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranPackagePublicationIntegrationStatus.GetDefaultBlockers();
+
+    AssertEqual(10, SigtranPackagePublicationIntegrationStatus.CompletedUnitCount, "package publication integration completed unit count");
+    AssertEqual(10, capabilities.Count, "package publication integration capability count");
+    Assert(capabilities.Contains("guarded-command-materialization"), "package publication integration status should include command materialization");
+    Assert(capabilities.Contains("documentation"), "package publication integration status should include documentation");
+    Assert(SigtranPackagePublicationIntegrationStatus.FoundationReady, SigtranPackagePublicationIntegrationStatus.Describe());
+    Assert(!SigtranPackagePublicationIntegrationStatus.RetainedRealReleaseEvidenceReady, SigtranPackagePublicationIntegrationStatus.Describe());
+    Assert(!SigtranPackagePublicationIntegrationStatus.PackagePublicationReady, SigtranPackagePublicationIntegrationStatus.Describe());
+    Assert(blockers.Contains("retained-real-release-evidence-required"), "package publication integration status should require retained release evidence");
+    Assert(blockers.Contains("approved-protected-publication-run-required"), "package publication integration status should require protected publication run");
 }
 
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()

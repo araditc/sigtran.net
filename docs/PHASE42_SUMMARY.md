@@ -1,6 +1,6 @@
 # Phase 42 Summary - Commercial Package Publication Gate Integration
 
-Phase 42 is in progress. It connects approved commercial evidence handoff records to the package publication gate without enabling live publication prematurely.
+Phase 42 is foundation-complete. It connects approved commercial evidence handoff records to the package publication gate without enabling live publication prematurely.
 
 ## Completed Capabilities
 
@@ -13,7 +13,8 @@ Phase 42 is in progress. It connects approved commercial evidence handoff record
 - Final package publication gate execution that aggregates publish guard, channel policy, credentials, evidence, metadata, and package layout blockers.
 - Retained dry-run publication rehearsal report that records safe non-publishing commands and final gate state.
 - Guarded publication command materialization that writes a release script with gate validation and environment-based NuGet API key usage.
+- Final package publication integration status reporting for ten completed capabilities, with real publication still blocked until retained release evidence and protected approval exist.
 
 ## Readiness Position
 
-Units 1 through 9 are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, evaluate the release publish guard, evaluate publication channel policy, execute the final package publication gate, retain a safe dry-run rehearsal report, and materialize guarded publish commands. Package publication still requires status reporting and retained real release evidence.
+All ten units are complete. The SDK can now represent the publication request boundary after commercial approval handoff, bind digest-covered package artifacts to that request, gate the next step on required publication secret names, assemble the publication evidence manifest, evaluate the release publish guard, evaluate publication channel policy, execute the final package publication gate, retain a safe dry-run rehearsal report, materialize guarded publish commands, and report final integration status. Package publication still requires retained real release evidence and an approved protected publication run.

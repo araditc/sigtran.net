@@ -15,7 +15,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | 7 | Commercial package publication gate execution | Complete |
 | 8 | Dry-run publication rehearsal artifact | Complete |
 | 9 | Guarded publish command materialization | Complete |
-| 10 | Status reporting, final documentation, README alignment, validation, commit, and push | Pending |
+| 10 | Status reporting, final documentation, README alignment, validation, commit, and push | Complete |
 
 ## Current Capability
 
@@ -39,6 +39,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationCommandPlan` and `SigtranPackagePublicationCommandMaterialization` render the guarded publication script. The script requires `SIGTRAN_PUBLICATION_GATE_ALLOWED=true`, retains the dry-run report check, repacks and verifies the package, and uses `${NUGET_API_KEY:?missing NuGet API key}` for upload without storing secret values.
 
+`SigtranPackagePublicationIntegrationStatus` reports the ten completed integration capabilities and keeps publication readiness separate from foundation readiness. The default status still blocks real publication until retained real release evidence exists and an approved protected publication run is executed.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Units 1 through 9 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, retained dry-run rehearsal, and guarded publish command materialization. Real package publication remains blocked until final status reporting is complete and retained release evidence exists.
+Phase 42 is foundation-complete. It establishes the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, retained dry-run rehearsal, guarded publish command materialization, and status reporting. Real package publication remains blocked until retained release evidence exists and a protected approved publication run is executed.
