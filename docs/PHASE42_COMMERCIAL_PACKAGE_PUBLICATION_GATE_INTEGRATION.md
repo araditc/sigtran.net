@@ -13,7 +13,7 @@ Phase 42 connects an approved commercial evidence publication handoff to the pac
 | 5 | Release publish guard bridge | Complete |
 | 6 | Publication channel policy evaluation bridge | Complete |
 | 7 | Commercial package publication gate execution | Complete |
-| 8 | Dry-run publication rehearsal artifact | Pending |
+| 8 | Dry-run publication rehearsal artifact | Complete |
 | 9 | Guarded publish command materialization and status | Pending |
 | 10 | Final documentation, README alignment, validation, commit, and push | Pending |
 
@@ -35,6 +35,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationGateExecution` executes the final package publication gate by reusing `SigtranPublicationGate`. It aggregates publish guard, channel policy, credential policy, available secret names, publication evidence, NuGet metadata readiness, and package layout readiness into one blocker-aware result.
 
+`SigtranPackagePublicationDryRunRehearsal` writes a retained Markdown dry-run report. It records the package version, channel, run id, gate decision, UTC rehearsal time, and dry-run commands from `SigtranNuGetPublishPlans.CreateDryRun()`. The rehearsal remains safe because the plan cannot contain a NuGet push command or require an API key.
+
 ## Commercial Gate Position
 
-Phase 42 is still in progress. Units 1 through 7 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, and final package publication gate execution. Real package publication remains blocked until dry-run rehearsal, guarded commands, and status reporting are complete and retained release evidence exists.
+Phase 42 is still in progress. Units 1 through 8 establish the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, and retained dry-run rehearsal. Real package publication remains blocked until guarded commands and status reporting are complete and retained release evidence exists.

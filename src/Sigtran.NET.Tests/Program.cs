@@ -329,6 +329,7 @@ Run("SIGTRAN package publication evidence assembly creates gate manifest", Sigtr
 Run("SIGTRAN package publication publish guard requires manual tagged release", SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease);
 Run("SIGTRAN package publication channel policy gates stable readiness", SigtranPackagePublicationChannelPolicyGatesStableReadiness);
 Run("SIGTRAN package publication gate execution aggregates final blockers", SigtranPackagePublicationGateExecutionAggregatesFinalBlockers);
+Run("SIGTRAN package publication dry-run rehearsal retains safe report", SigtranPackagePublicationDryRunRehearsalRetainsSafeReport);
 Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
 Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
 Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
@@ -5967,6 +5968,34 @@ static void SigtranPackagePublicationGateExecutionAggregatesFinalBlockers()
     }
 }
 
+static void SigtranPackagePublicationDryRunRehearsalRetainsSafeReport()
+{
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(tempRoot);
+
+    try
+    {
+        SigtranPackagePublicationGateExecution gateExecution = CreateReadyPackagePublicationGateExecution(tempRoot);
+
+        SigtranPackagePublicationDryRunRehearsal rehearsal = SigtranPackagePublicationDryRunRehearsals.WriteReport(
+            gateExecution,
+            Path.Combine(tempRoot, "publication", "dry-run.md"),
+            DateTimeOffset.UtcNow);
+
+        Assert(rehearsal.IsReadyForRetention, rehearsal.Describe());
+        Assert(rehearsal.CanProceedAfterDryRun, "dry-run rehearsal should allow proceeding when gate execution allows publication");
+        Assert(rehearsal.ReportExists, "dry-run report should exist");
+        Assert(rehearsal.ReportSizeBytes > 0, "dry-run report should be non-empty");
+        Assert(rehearsal.HasSafeDryRunPlan, "dry-run plan should be safe");
+        Assert(rehearsal.ReportIncludesAllCommands, "dry-run report should include every command");
+        Assert(!rehearsal.RenderedReport.Contains("nuget push", StringComparison.Ordinal), "dry-run report should not contain a NuGet push command");
+    }
+    finally
+    {
+        DeleteTempEvidenceRoot(tempRoot);
+    }
+}
+
 static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
@@ -6152,6 +6181,15 @@ static SigtranPackagePublicationChannelPolicyEvaluation CreateReadyPackagePublic
             packageVersion,
             commercialReadinessApprovedForHandoff),
         commercialReadinessApprovedForChannel,
+        DateTimeOffset.UtcNow);
+}
+
+static SigtranPackagePublicationGateExecution CreateReadyPackagePublicationGateExecution(string tempRoot)
+{
+    return SigtranPackagePublicationGateExecutions.Execute(
+        CreateReadyPackagePublicationChannelPolicyEvaluation(tempRoot),
+        metadataReady: true,
+        layoutReady: true,
         DateTimeOffset.UtcNow);
 }
 
