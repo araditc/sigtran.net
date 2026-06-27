@@ -148,6 +148,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\set-github-internal-si
 
 The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to GitHub Secrets, sets `TIMESTAMP_AUTHORITY`, and deletes the local PFX/private key. During `channel=dry-run`, the workflow extracts the public certificate from the PFX and trusts it only inside the temporary GitHub runner. The runner imports the certificate into the OS trust store and appends it to the .NET SDK NuGet code-signing bundle before running `dotnet nuget verify --all --verbosity detailed` with the extracted certificate fingerprint. Do not use this internal certificate path for `prerelease` or `stable` publication.
 
+GitHub-hosted provenance and SBOM attestations are skipped for `channel=dry-run` because private repositories or organizations can reject attestation persistence depending on billing and visibility. The dry-run still retains package, SBOM, signing, timestamp, dry-run, digest, and local provenance marker artifacts. Prerelease and stable runs keep the GitHub attestation steps enabled.
+
 Publication requires the protected release workflow and live secrets:
 
 - `NUGET_API_KEY`

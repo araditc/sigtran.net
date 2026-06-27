@@ -174,11 +174,13 @@ jobs:
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.sha256"
 
       - name: Attest Package Provenance
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'dry-run' }}
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
 
       - name: Attest SBOM
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'dry-run' }}
         uses: actions/attest-sbom@v2
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
