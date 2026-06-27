@@ -1,6 +1,6 @@
 # Commercial Closure Report
 
-Status: internal RC evidence is closed except protected release workflow dispatch; stable commercial publication is still gated.
+Status: internal RC dry-run evidence is closed; stable commercial publication is still gated.
 
 ## Evidence Closed Today
 
@@ -10,6 +10,7 @@ Status: internal RC evidence is closed except protected release workflow dispatc
 - Peer traffic benchmark evidence passed with warmup, sustained, and peak stages against the same independent peer.
 - Local release evidence passed for build, tests, package creation, SBOM, public API baseline, smoke benchmark, and provenance.
 - Internal RC package-signing evidence passed with a timestamped NuGet author signature and detailed verification log.
+- Protected GitHub release workflow dry-run `28289987418` passed with `publish=false` and uploaded package, symbols, supply-chain, and dry-run artifacts.
 
 ## Evidence Manifest
 
@@ -22,7 +23,9 @@ Key run ids:
 - External peer: `commercial-external-peer-20260627T111932Z`
 - Performance: `commercial-peer-benchmark-20260627T112215Z`
 - Local release readiness: `20260627T122913Z`
+- Final local readiness with release-dispatch evidence: `20260627T130623Z`
 - Internal signing: `internal-signing-20260627T122124Z`
+- Protected release workflow dry-run: `28289987418`
 
 ## Signing Evidence
 
@@ -38,10 +41,10 @@ This closes internal RC signing evidence. It does not claim public CA-backed sta
 
 ## Remaining Gates
 
-- The protected release workflow must run for the final release commit and upload package, SBOM, provenance, API diff, signing, dry-run, and release artifacts.
 - Public/stable signing must use the organization's approved trusted certificate and protected release environment.
 - NuGet publication is intentionally paused until explicitly requested.
+- Operator-sized deployment benchmarks are still required before broad capacity claims beyond the current single-host peer benchmark.
 
 ## Decision
 
-The SDK is ready for an internal signed RC dry-run after protected release dispatch is executed. It is not yet ready to claim stable commercial publication.
+The SDK is ready for internal signed RC consumption and controlled SIGTRAN/M3UA integration trials. It is not yet ready to claim stable public commercial publication until NuGet publication, stable signing policy, and any operator-specific capacity evidence are approved.

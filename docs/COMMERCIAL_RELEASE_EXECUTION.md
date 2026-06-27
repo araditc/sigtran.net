@@ -140,6 +140,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\new-internal-signing-e
 
 The retained internal signing run is `internal-signing-20260627T122124Z`. Its detailed verification log records the NuGet author signature, timestamp, and Sectigo timestamping chain. This is enough for internal RC dry-run evidence after reviewer approval. Stable public release signing still requires the organization's approved trusted signing certificate in the protected release environment.
 
+The retained protected dry-run release workflow run is `28289987418`:
+
+- URL: `https://github.com/araditc/sigtran.net/actions/runs/28289987418`
+- Commit: `fd1224143361307673e4ec7b14e732098aa78a5e`
+- Version: `1.0.0-rc.1`
+- Channel: `dry-run`
+- Publish: `false`
+- Uploaded artifacts: `sigtran-package`, `sigtran-symbols`, `sigtran-supply-chain`, `sigtran-release-dry-run`
+- Evidence manifest: `docs/evidence/RELEASE_WORKFLOW_DRY_RUN_28289987418.json`
+
 For the protected GitHub dry-run workflow, create internal signing secrets with:
 
 ```powershell

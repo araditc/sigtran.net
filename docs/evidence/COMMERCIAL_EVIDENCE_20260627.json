@@ -5,7 +5,7 @@
     "packageId": "Sigtran.NET",
     "version": "1.0.0-rc.1",
     "channel": "prerelease",
-    "sourceCommit": "f029be3"
+    "sourceCommit": "fd1224143361307673e4ec7b14e732098aa78a5e"
   },
   "externalPeer": {
     "status": "passed",
@@ -78,9 +78,10 @@
   },
   "supplyChain": {
     "status": "local-passed",
-    "runId": "20260627T122913Z",
-    "artifactRoot": "artifacts/commercial-release/20260627T122913Z",
-    "localEvidenceReady": true
+    "runId": "20260627T130623Z",
+    "artifactRoot": "artifacts/commercial-release/20260627T130623Z",
+    "localEvidenceReady": true,
+    "commercialReady": true
   },
   "signing": {
     "status": "passed",
@@ -103,8 +104,31 @@
     "note": "Detailed verification log records the author signature and Sectigo timestamping certificate chain. The signing certificate is internal self-signed evidence for RC dry-runs, not a public CA-backed stable release identity."
   },
   "releaseDispatch": {
-    "status": "blocked",
-    "blocker": "protected-release-dispatch-access-required",
-    "note": "The protected GitHub release workflow must be dispatched and artifacts must be uploaded for the final release commit."
+    "status": "passed",
+    "runId": "28289987418",
+    "jobId": "83820237854",
+    "workflow": "release",
+    "event": "workflow_dispatch",
+    "channel": "dry-run",
+    "publish": false,
+    "conclusion": "success",
+    "sourceCommit": "fd1224143361307673e4ec7b14e732098aa78a5e",
+    "url": "https://github.com/araditc/sigtran.net/actions/runs/28289987418",
+    "evidencePath": "docs/evidence/RELEASE_WORKFLOW_DRY_RUN_28289987418.json",
+    "artifactNames": [
+      "sigtran-package",
+      "sigtran-symbols",
+      "sigtran-supply-chain",
+      "sigtran-release-dry-run"
+    ],
+    "downloadedArtifactRoot": "artifacts/github-release-runs/28289987418",
+    "downloadedFileCount": 21,
+    "downloadedManifestSha256": "3f2d5398fd5670a2f1bdad36e138d5a6423056dac102603e975546cab9049f8e",
+    "packageSha256": "4c108e0fbe3ec9ed15db9a22461a446e32993d929b5ee28b64c17e5e93e5f950",
+    "sbomSha256": "61603051aa5e9acbb423ab87144727639988d044dfb9d1f750b2e6f03b866e5c",
+    "signingVerificationSha256": "4f15dbe9c53fa9fb18101c0207e26df936456f8274b5fafeac85cf1ebd8d41f7",
+    "provenanceMarkerSha256": "c51812b47d94c1ecebb9825775cb92489f08438c0a7a73d1e526a7d571b5293b",
+    "nugetPublishAttempted": false,
+    "note": "Protected release workflow dry-run passed with publish=false, retained package, symbols, SBOM, signing, timestamp, digest, dry-run, and local provenance marker artifacts."
   }
 }

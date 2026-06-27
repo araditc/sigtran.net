@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "runId": 28289987418,
+  "jobId": 83820237854,
+  "workflow": "release",
+  "event": "workflow_dispatch",
+  "channel": "dry-run",
+  "publish": false,
+  "version": "1.0.0-rc.1",
+  "conclusion": "success",
+  "sourceCommit": "fd1224143361307673e4ec7b14e732098aa78a5e",
+  "url": "https://github.com/araditc/sigtran.net/actions/runs/28289987418",
+  "startedUtc": "2026-06-27T13:01:56Z",
+  "completedUtc": "2026-06-27T13:02:50Z",
+  "artifactNames": [
+    "sigtran-package",
+    "sigtran-symbols",
+    "sigtran-supply-chain",
+    "sigtran-release-dry-run"
+  ],
+  "downloadedArtifactRoot": "artifacts/github-release-runs/28289987418",
+  "downloadedFileCount": 21,
+  "downloadedManifestPath": "artifacts/github-release-runs/28289987418/downloaded-artifacts.sha256",
+  "downloadedManifestSha256": "3f2d5398fd5670a2f1bdad36e138d5a6423056dac102603e975546cab9049f8e",
+  "keyArtifacts": {
+    "packageSha256": "4c108e0fbe3ec9ed15db9a22461a446e32993d929b5ee28b64c17e5e93e5f950",
+    "symbolsSha256": "3ab3a00ae753b2a1c9a7509678af5f435418af7164dfbc8027ab9ffb9bedc416",
+    "sbomSha256": "61603051aa5e9acbb423ab87144727639988d044dfb9d1f750b2e6f03b866e5c",
+    "signingVerificationSha256": "4f15dbe9c53fa9fb18101c0207e26df936456f8274b5fafeac85cf1ebd8d41f7",
+    "timestampReportSha256": "4f15dbe9c53fa9fb18101c0207e26df936456f8274b5fafeac85cf1ebd8d41f7",
+    "dryRunReportSha256": "8054433211bb2d287922cc62bc86c4b4afacd5fc29a1444b101693b84689fd99",
+    "digestManifestSha256": "1236c30c32a03d5399bbeb246be79cdafb06085867c4d854534fe7b80db535d8",
+    "provenanceMarkerSha256": "c51812b47d94c1ecebb9825775cb92489f08438c0a7a73d1e526a7d571b5293b",
+    "apiDiffSha256": "65553e760134297609f419aa4cb957634f2386e12003ca8cfd8a6d781bbeb953"
+  },
+  "signing": {
+    "certificateFingerprintSha256": "3eba51ec524aad24999d6edab2b4106703888d78e75bb12f515a233993ac3474",
+    "timestampAuthority": "http://timestamp.sectigo.com",
+    "timestampUtc": "2026-06-27T13:02:43Z",
+    "verificationResult": "Successfully verified package 'Sigtran.NET.1.0.0-rc.1'.",
+    "trustModel": "internal-self-signed-dry-run-certificate-imported-into-runner-and-dotnet-codesign-bundle"
+  },
+  "attestation": {
+    "hostedGitHubAttestations": "skipped-for-dry-run",
+    "reason": "Private repository or organization attestation persistence can require a supported plan or public repository.",
+    "retainedFallback": "artifacts/github-release-runs/28289987418/sigtran-supply-chain/provenance/Sigtran.NET.1.0.0-rc.1.intoto.jsonl"
+  },
+  "publication": {
+    "nugetPublishAttempted": false,
+    "note": "Workflow ran with publish=false. No NuGet publication was attempted."
+  }
+}
