@@ -52,6 +52,7 @@ public static class SigtranReleaseWorkflowValidation
         "secrets.SIGNING_CERTIFICATE_PASSWORD",
         "secrets.NUGET_API_KEY",
         "Dry-Run Release Evidence",
+        "Retain Unsigned Prerelease Package Evidence",
         "Trust Dry-Run Signing Certificate",
         "update-ca-certificates",
         "codesignctl.pem",

@@ -160,6 +160,8 @@ The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to G
 
 GitHub-hosted provenance and SBOM attestations are skipped for `channel=dry-run` because private repositories or organizations can reject attestation persistence depending on billing and visibility. The dry-run still retains package, SBOM, signing, timestamp, dry-run, digest, and local provenance marker artifacts. Prerelease and stable runs keep the GitHub attestation steps enabled.
 
+For `channel=prerelease`, the workflow intentionally skips internal author-signing and publishes the unsigned package to NuGet.org. NuGet.org applies repository signing after ingestion. This avoids pushing a package signed with the internal self-signed dry-run certificate, which NuGet.org would reject because public signed packages require a registered trusted author-signing certificate. Stable publication should replace this prerelease policy with the organization's approved public signing certificate.
+
 Publication requires the protected release workflow and live secrets:
 
 - `NUGET_API_KEY`

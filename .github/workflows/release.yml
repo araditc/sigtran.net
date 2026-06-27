@@ -128,6 +128,7 @@ jobs:
           echo "SIGTRAN_FINAL_SBOM_FORMAT=spdx-json" >> "$GITHUB_ENV"
 
       - name: Sign Package
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'prerelease' }}
         shell: bash
         env:
           SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
@@ -139,6 +140,20 @@ jobs:
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$signing_certificate_path"
           dotnet nuget sign "$SIGTRAN_RELEASE_PACKAGE" --certificate-path "$signing_certificate_path" --certificate-password "$SIGNING_CERTIFICATE_PASSWORD" --timestamper "$TIMESTAMP_AUTHORITY" --overwrite
           sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
+
+      - name: Retain Unsigned Prerelease Package Evidence
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel == 'prerelease' }}
+        shell: bash
+        run: |
+          sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
+          {
+            echo "version=$RELEASE_VERSION"
+            echo "channel=$SIGTRAN_RELEASE_CHANNEL"
+            echo "authorSigning=skipped-for-public-prerelease"
+            echo "reason=NuGet.org rejects self-issued author signing certificates; repository signing is applied by NuGet.org after publish."
+            echo "package=$SIGTRAN_RELEASE_PACKAGE"
+          } > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.md"
+          sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.sha256"
 
       - name: Trust Dry-Run Signing Certificate
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel == 'dry-run' }}
@@ -162,6 +177,7 @@ jobs:
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.txt" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.sha256"
 
       - name: Verify Signature And Timestamp
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'prerelease' }}
         shell: bash
         run: |
           verify_args=( "$SIGTRAN_RELEASE_PACKAGE" --all --verbosity detailed )
@@ -174,13 +190,13 @@ jobs:
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.sha256"
 
       - name: Attest Package Provenance
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'dry-run' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
 
       - name: Attest SBOM
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'dry-run' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         uses: actions/attest-sbom@v2
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
