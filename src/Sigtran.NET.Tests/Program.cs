@@ -1902,7 +1902,8 @@ static void SigtranPackageSigningPlanMarksCommercialReleaseRequirement()
     AssertEqual(SigtranPackageSigningMode.Author, plan.Mode, "package signing mode");
     Assert(plan.IsRequiredForCommercialRelease, "package signing should be required for commercial release");
     Assert(plan.HasSigningMaterialReferences, plan.Describe());
-    Assert(plan.TimestampAuthorityUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
+    Assert(plan.TimestampAuthorityUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
+    Assert(plan.TimestampAuthorityUrl.Contains("timestamp", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
     Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
 }
 

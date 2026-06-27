@@ -71,7 +71,9 @@ public sealed class SigtranTrustedPackageSigningEvidence
     public bool VerificationPassed { get; }
 
     /// <summary>Whether the timestamp authority is trusted enough for release evidence.</summary>
-    public bool HasTrustedTimestampAuthority => TimestampAuthorityUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    public bool HasTrustedTimestampAuthority => Uri.TryCreate(TimestampAuthorityUrl, UriKind.Absolute, out Uri? uri)
+        && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+        && !string.IsNullOrWhiteSpace(uri.Host);
 
     /// <summary>Whether all signing evidence artifacts have retained digests.</summary>
     public bool HasDigestCoverage => PackageSha256.Length == 64

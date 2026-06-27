@@ -10,7 +10,7 @@ This roadmap is based on the current repository and the supplied SIGTRAN referen
 
 ## Current Assessment
 
-The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, retained external C SCTP peer evidence, retained peer-traffic benchmark evidence, and RC publication gates. Stable commercial publication is still blocked until trusted timestamped signing, protected release workflow dispatch, signed release-run artifacts, and NuGet publication evidence are complete.
+The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, retained external C SCTP peer evidence, retained peer-traffic benchmark evidence, retained internal timestamped RC signing evidence, and RC publication gates. Stable commercial publication is still blocked until protected release workflow dispatch, signed release-run artifacts from that protected run, and NuGet publication evidence are complete.
 
 For a concise map of every phase and its primary documents, see [Phase Index](PHASE_INDEX.md).
 
@@ -227,7 +227,7 @@ Status: Phase 24 is foundation-ready for package publication readiness. Real NuG
 - Keep blocker evidence explicit instead of manufacturing passing artifacts.
 - Promote only when all retained evidence areas are passing and digest-covered.
 
-Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM, and external C SCTP peer evidence is retained for the RC gate. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility. Stable commercial publication remains blocked on trusted timestamped signing and protected release publication evidence.
+Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM, external C SCTP peer evidence is retained for the RC gate, peer-traffic benchmark evidence is retained, and internal timestamped RC signing evidence is retained. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility. Stable commercial publication remains blocked on protected release publication evidence and public/stable signing policy execution.
 
 ## Phase 26 - Commercial Roadmap Realignment
 

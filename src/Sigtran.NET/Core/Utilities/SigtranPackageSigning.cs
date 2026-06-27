@@ -74,7 +74,7 @@ public static class SigtranPackageSigning
         return new(
             SigtranPackageSigningMode.Author,
             "SIGTRAN.NET release signing",
-            "https://timestamp.digicert.com",
+            "http://timestamp.sectigo.com",
             isRequiredForCommercialRelease: true);
     }
 }

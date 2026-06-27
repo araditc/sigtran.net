@@ -121,12 +121,13 @@ public static class SigtranSupplyChainReleaseCommands
         string normalizedVersion = string.IsNullOrWhiteSpace(version)
             ? throw new ArgumentException("Version is required.", nameof(version))
             : version;
+        SigtranPackageSigningPlan signingPlan = SigtranPackageSigning.CreateDefaultPlan();
 
         return new(
             normalizedVersion,
             [
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.GenerateFinalSbom, "Generate final SBOM", $"sbom-tool generate -b src/Sigtran.NET/bin/Release -bc . -pn Sigtran.NET -pv {normalizedVersion} -ps Sigtran.NET -nsb https://github.com/araditc/Sigtran.NET -m artifacts/supply-chain/sbom", requiresSecret: false),
-                new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.SignPackage, "Sign package", $"dotnet nuget sign src/Sigtran.NET/bin/Release/Sigtran.NET.{normalizedVersion}.nupkg --certificate-path \"$SIGNING_CERTIFICATE_PATH\" --certificate-password \"$SIGNING_CERTIFICATE_PASSWORD\" --timestamper https://timestamp.digicert.com --output artifacts/release", requiresSecret: true),
+                new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.SignPackage, "Sign package", $"dotnet nuget sign src/Sigtran.NET/bin/Release/Sigtran.NET.{normalizedVersion}.nupkg --certificate-path \"$SIGNING_CERTIFICATE_PATH\" --certificate-password \"$SIGNING_CERTIFICATE_PASSWORD\" --timestamper {signingPlan.TimestampAuthorityUrl} --output artifacts/release", requiresSecret: true),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.VerifySignature, "Verify signature", $"dotnet nuget verify artifacts/release/Sigtran.NET.{normalizedVersion}.nupkg --all > artifacts/supply-chain/signing/Sigtran.NET.{normalizedVersion}.verification.md", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreateProvenance, "Create provenance", $"actions/attest-build-provenance@v4 subject-path=artifacts/release/Sigtran.NET.{normalizedVersion}.nupkg", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreatePublicApiDiff, "Create public API diff", $"dotnet build src/Sigtran.NET/Sigtran.NET.csproj --configuration Release /p:GenerateDocumentationFile=true > artifacts/supply-chain/api/Sigtran.NET.{normalizedVersion}.api-diff.md", requiresSecret: false),

@@ -1,6 +1,6 @@
 # SIGTRAN.NET Commercial Readiness Report
 
-Status: RC evidence nearly closed; stable commercial publication remains gated.
+Status: internal RC evidence is closed except protected release workflow dispatch; stable commercial publication remains gated.
 
 ## Passed Evidence
 
@@ -18,17 +18,18 @@ Status: RC evidence nearly closed; stable commercial publication remains gated.
 - External peer SCTP/M3UA run `commercial-external-peer-20260627T111932Z` passed on host `sigtrannet` against an independent C SCTP peer. Retained artifacts include PCAP, external peer log, SDK trace, TShark decode, M3UA field comparison, configuration, run report, summary JSON, and digest manifest.
 - External peer evidence digests: PCAP `2d4313440e665ddd9686bc3be3937810921d11c6d4ed2e6b4746a71d31f79416`, SDK trace `11a6da80dffc786ba66667ca0c85cc7b68fa5eb0f24316c5d47ea5ea2bb842fb`, peer log `50509d0ca7013c4496516daaec327eb269393c8fccc2036869db1bca2794c897`, TShark decode `a728d708de5f55022b776405bb7b2ffd6f12cc5239c4cdd54c9f0b36fad4712e`.
 - Peer traffic benchmark `commercial-peer-benchmark-20260627T112215Z` passed with warmup, sustained, and peak stages against the independent C SCTP peer. Sustained stage: `20` runs, `0` failures, average `647.2 ms`, P95 `660 ms`, P99 `665 ms`, max RSS `50732 KB`. Peak stage: `5` concurrent runs, `0` failures, P95/P99 `769 ms`.
+- Internal RC signing run `internal-signing-20260627T122124Z` passed with `SignExitCode=0` and `VerifyExitCode=0`. The retained detailed verification log records the NuGet author signature, the certificate fingerprint `678103179f7dd54c1427bed0074e3809a3398c569799bc556f26677be89354a3`, the timestamp time, and the Sectigo timestamping certificate chain.
 
 ## Remaining Commercial Blockers
 
-- Package signing verification currently fails commercial requirements because the signing certificate is not trusted by the verifier and the signature is not timestamped.
 - The current benchmark is real Linux SCTP peer traffic evidence, but it is single-host loopback. Do not use it for broad operator capacity claims until an operator-sized deployment benchmark is retained.
 - Release workflow must regenerate package, SBOM, signing, provenance, benchmark, API baseline, and evidence artifacts after the final release commit.
 - Package publication and stable commercial release gates are foundation-complete, but live stable publication still requires retained release evidence, a completed protected publication run, and verified NuGet publication evidence.
-- The current local runner reports `LocalEvidenceReady=true`. `CommercialReady=false` until trusted timestamped signing and protected release-dispatch/publication evidence are complete.
+- Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
+- The current local runner run `20260627T122913Z` reports `LocalEvidenceReady=true` and `CommercialReady=false` with only `github-cli-or-release-dispatch-access-required` remaining.
 
 ## Commercial Decision
 
 Do not publish this SDK as stable commercially production-ready yet.
 
-The next release-candidate milestone should replace test signing with trusted timestamped production signing, run the protected release workflow for the final release commit, and attach the generated evidence artifacts to the release workflow. The stable release gate is ready to evaluate that evidence, but it must not be used to claim a stable commercial release until the protected publication run and NuGet publication evidence are retained and verified. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.
+The next release-candidate milestone is the protected release workflow dry-run with `publish=false`, artifact upload, and review of the retained package, SBOM, provenance, signing, API diff, dry-run, and digest artifacts. The stable release gate is ready to evaluate that evidence, but it must not be used to claim a stable commercial release until the protected publication run and NuGet publication evidence are retained and verified. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.

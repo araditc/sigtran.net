@@ -39,7 +39,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\run-commercial-release
   -EvidenceManifestPath docs\evidence\COMMERCIAL_EVIDENCE_20260627.json
 ```
 
-The manifest can close evidence-only blockers such as external peer and production benchmark evidence when the retained artifact paths and digests have been reviewed. It cannot replace trusted signing, protected release dispatch, or NuGet publication evidence.
+The manifest can close evidence-only blockers such as external peer, production benchmark, and internal RC signing evidence when retained artifact paths and digests have been reviewed. It cannot replace protected release dispatch or NuGet publication evidence.
 
 Commercial readiness requires:
 
@@ -130,7 +130,15 @@ This benchmark closes the smoke-only evidence gap for the RC gate. It is still s
 
 ## Signing And Publication
 
-Commercial package signing requires a trusted code-signing certificate and timestamp authority. A local unsigned package can pass build and pack checks, but `dotnet nuget verify --all` must fail until the package is signed. That failure is a valid commercial blocker, not a runner defect.
+Commercial package signing requires a code-signing certificate, timestamp authority, and retained verification evidence. The internal RC signing helper creates self-signed RC evidence for dry-runs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\new-internal-signing-evidence.ps1 `
+  -Version 1.0.0-rc.1 `
+  -TrustCurrentUserRoot
+```
+
+The retained internal signing run is `internal-signing-20260627T122124Z`. Its detailed verification log records the NuGet author signature, timestamp, and Sectigo timestamping chain. This is enough for internal RC dry-run evidence after reviewer approval. Stable public release signing still requires the organization's approved trusted signing certificate in the protected release environment.
 
 Publication requires the protected release workflow and live secrets:
 

@@ -47,6 +47,7 @@ public static class SigtranReleaseWorkflowValidation
         "SIGTRAN_COMMERCIAL_EVIDENCE: true",
         "SIGTRAN_DRY_RUN_ARTIFACT_ROOT",
         "SIGTRAN_RELEASE_CHANNEL",
+        "TIMESTAMP_AUTHORITY",
         "secrets.SIGNING_CERTIFICATE",
         "secrets.SIGNING_CERTIFICATE_PASSWORD",
         "secrets.NUGET_API_KEY",

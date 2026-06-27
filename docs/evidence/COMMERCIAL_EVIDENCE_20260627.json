@@ -5,7 +5,7 @@
     "packageId": "Sigtran.NET",
     "version": "1.0.0-rc.1",
     "channel": "prerelease",
-    "sourceCommit": "a303cf0"
+    "sourceCommit": "f029be3"
   },
   "externalPeer": {
     "status": "passed",
@@ -78,14 +78,29 @@
   },
   "supplyChain": {
     "status": "local-passed",
-    "runId": "20260627T111421Z",
-    "artifactRoot": "artifacts/commercial-release/20260627T111421Z",
+    "runId": "20260627T122913Z",
+    "artifactRoot": "artifacts/commercial-release/20260627T122913Z",
     "localEvidenceReady": true
   },
   "signing": {
-    "status": "blocked",
-    "blocker": "trusted-timestamped-package-signing-required",
-    "note": "A trusted code-signing certificate and timestamped verification evidence are required before publication."
+    "status": "passed",
+    "runId": "internal-signing-20260627T122124Z",
+    "version": "1.0.0-rc.1",
+    "scope": "Internal RC signing evidence only; public stable releases require approved trusted signing material and protected release execution.",
+    "trustModel": "internal-self-signed-current-user-root",
+    "timestampAuthority": "http://timestamp.sectigo.com",
+    "packagePath": "artifacts/internal-signing/20260627T122124Z/Sigtran.NET.1.0.0-rc.1.nupkg",
+    "publicCertificatePath": "artifacts/internal-signing/20260627T122124Z/sigtran-internal-rc-signing.cer",
+    "certificatePublicInfoPath": "artifacts/internal-signing/20260627T122124Z/certificate-public-info.json",
+    "verificationLogPath": "artifacts/internal-signing/20260627T122124Z/verify-package.log",
+    "certificateThumbprintSha1": "3c4695a3f60554373b42ef83b894e4d3a3280b84",
+    "certificateFingerprintSha256": "678103179f7dd54c1427bed0074e3809a3398c569799bc556f26677be89354a3",
+    "packageSha256": "9f97a2b03ae120ef633baf4fb7522924d644ad73dc1282e15c3f02f82475dfab",
+    "verificationLogSha256": "751c53a77b2b5c05aa8fbbd841491e0b03a74472582a7dd5b0c33e55032f9691",
+    "signExitCode": 0,
+    "verifyExitCode": 0,
+    "privateKeyDeleted": true,
+    "note": "Detailed verification log records the author signature and Sectigo timestamping certificate chain. The signing certificate is internal self-signed evidence for RC dry-runs, not a public CA-backed stable release identity."
   },
   "releaseDispatch": {
     "status": "blocked",

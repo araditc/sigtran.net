@@ -44,6 +44,7 @@ jobs:
       SIGTRAN_COMMERCIAL_EVIDENCE: true
       SIGTRAN_COMMERCIAL_EVIDENCE_ROOT: artifacts/commercial-evidence
       SIGTRAN_DRY_RUN_ARTIFACT_ROOT: artifacts/release-dry-run
+      TIMESTAMP_AUTHORITY: ${{ vars.TIMESTAMP_AUTHORITY || 'http://timestamp.sectigo.com' }}
 
     steps:
       - name: Checkout
@@ -136,7 +137,7 @@ jobs:
           test -n "$SIGNING_CERTIFICATE_PASSWORD"
           signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$signing_certificate_path"
-          dotnet nuget sign "$SIGTRAN_RELEASE_PACKAGE" --certificate-path "$signing_certificate_path" --certificate-password "$SIGNING_CERTIFICATE_PASSWORD" --timestamper https://timestamp.digicert.com --overwrite
+          dotnet nuget sign "$SIGTRAN_RELEASE_PACKAGE" --certificate-path "$signing_certificate_path" --certificate-password "$SIGNING_CERTIFICATE_PASSWORD" --timestamper "$TIMESTAMP_AUTHORITY" --overwrite
           sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
 
       - name: Verify Signature And Timestamp
