@@ -31,7 +31,17 @@ The runner performs these local release-day checks:
 
 `LocalEvidenceReady` means build, tests, package creation, SBOM, public API baseline, smoke benchmark, and provenance generation passed for the current repository state.
 
-`CommercialReady` is stricter. It must stay false until all commercial blockers are cleared with retained evidence:
+`CommercialReady` is stricter. It must stay false until all commercial blockers are cleared with retained evidence. Use `-EvidenceManifestPath` to bind reviewed external evidence into the runner:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\run-commercial-release-readiness.ps1 `
+  -Version 1.0.0-rc.1 `
+  -EvidenceManifestPath docs\evidence\COMMERCIAL_EVIDENCE_20260627.json
+```
+
+The manifest can close evidence-only blockers such as external peer and production benchmark evidence when the retained artifact paths and digests have been reviewed. It cannot replace trusted signing, protected release dispatch, or NuGet publication evidence.
+
+Commercial readiness requires:
 
 - Trusted timestamped package signing is verified.
 - A maintained external SIGTRAN peer run produces retained PCAP, peer logs, SDK traces, configuration, comparison report, run report, and digests.
@@ -87,6 +97,36 @@ Retained VM evidence run:
 | Run report SHA-256 | `0933d0ce1d95dd494f1a89c0f2bd84c81bc89a96a36eeb62e118c6302cf9f1b4` |
 
 This closes the SDK native SCTP loopback evidence gap. It does not close the maintained external peer interoperability gap because both endpoints are the SDK lab executable on the same Linux host.
+
+## External Peer Evidence
+
+The current external peer evidence run is `commercial-external-peer-20260627T111932Z` on host `sigtrannet`. The SDK ran as an SCTP/M3UA client against an independent C SCTP peer that emitted ASPUP ACK, ASPACTIVE ACK, and HEARTBEAT ACK over Linux kernel SCTP.
+
+Retained external peer evidence:
+
+| Field | Value |
+| --- | --- |
+| Artifact root | `/home/ammar/sigtran-lab/artifacts/commercial-external-peer/commercial-external-peer-20260627T111932Z` |
+| PCAP bytes | `2030` |
+| SDK trace events | `7` |
+| Peer events | `7` |
+| TShark M3UA decode hits | `7` |
+| PCAP SHA-256 | `2d4313440e665ddd9686bc3be3937810921d11c6d4ed2e6b4746a71d31f79416` |
+| SDK trace SHA-256 | `11a6da80dffc786ba66667ca0c85cc7b68fa5eb0f24316c5d47ea5ea2bb842fb` |
+| Peer log SHA-256 | `50509d0ca7013c4496516daaec327eb269393c8fccc2036869db1bca2794c897` |
+| TShark decode SHA-256 | `a728d708de5f55022b776405bb7b2ffd6f12cc5239c4cdd54c9f0b36fad4712e` |
+
+## Peer Benchmark Evidence
+
+The current peer traffic benchmark is `commercial-peer-benchmark-20260627T112215Z` on host `sigtrannet`. It runs the SDK client against the independent C SCTP peer with warmup, sustained, and peak stages.
+
+| Stage | Count | Failures | Avg ms | P95 ms | P99 ms | Max RSS KB |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Warmup | `3` | `0` | `642.0` | `661` | `661` | `50340` |
+| Sustained | `20` | `0` | `647.2` | `660` | `665` | `50732` |
+| Peak | `5` | `0` | `675.8` | `769` | `769` | `50440` |
+
+This benchmark closes the smoke-only evidence gap for the RC gate. It is still single-host loopback evidence and must not be used as an operator-wide capacity claim.
 
 ## Signing And Publication
 

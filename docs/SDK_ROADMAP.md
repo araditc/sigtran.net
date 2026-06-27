@@ -10,7 +10,7 @@ This roadmap is based on the current repository and the supplied SIGTRAN referen
 
 ## Current Assessment
 
-The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, and RC publication gates. Stable commercial publication is still blocked until retained external peer evidence, trusted timestamped signing, production benchmark evidence, and real release-run artifacts are complete.
+The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, retained external C SCTP peer evidence, retained peer-traffic benchmark evidence, and RC publication gates. Stable commercial publication is still blocked until trusted timestamped signing, protected release workflow dispatch, signed release-run artifacts, and NuGet publication evidence are complete.
 
 For a concise map of every phase and its primary documents, see [Phase Index](PHASE_INDEX.md).
 
@@ -171,7 +171,7 @@ Status: Phase 17 is foundation-ready for native SCTP lab scenario catalog, artif
 - Keep execution foundation readiness separate from verified external peer evidence.
 - Make required external peer artifacts explicit before commercial interoperability claims.
 
-Status: Phase 18 is foundation-ready for external peer interoperability execution. Verification remains blocked until real external peer packet captures, SDK traces, peer configuration, peer logs, and comparison reports are captured and promoted.
+Status: Phase 18 is foundation-ready and has RC-grade external peer evidence from `commercial-external-peer-20260627T111932Z`, including PCAP, SDK trace, peer log, configuration, TShark decode, comparison output, run report, and digests. Stable publication still requires the protected release workflow to attach reviewed evidence to the final release run.
 
 ## Phase 19 - SCCP TCAP MAP Interop Vectors
 
@@ -227,7 +227,7 @@ Status: Phase 24 is foundation-ready for package publication readiness. Real NuG
 - Keep blocker evidence explicit instead of manufacturing passing artifacts.
 - Promote only when all retained evidence areas are passing and digest-covered.
 
-Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM; external peer interoperability remains blocked until a maintained SIGTRAN peer run is captured. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility.
+Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM, and external C SCTP peer evidence is retained for the RC gate. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility. Stable commercial publication remains blocked on trusted timestamped signing and protected release publication evidence.
 
 ## Phase 26 - Commercial Roadmap Realignment
 

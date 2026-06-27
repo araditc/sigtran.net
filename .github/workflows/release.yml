@@ -47,10 +47,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -87,13 +87,18 @@ jobs:
         run: |
           dry_run_dir="$SIGTRAN_DRY_RUN_ARTIFACT_ROOT/$RELEASE_VERSION"
           mkdir -p "$dry_run_dir"
-          dotnet nuget verify "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" --all | tee "$dry_run_dir/package-verification.md"
+          set +e
+          dotnet nuget verify "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" --all > "$dry_run_dir/package-verification.md" 2>&1
+          verify_rc=$?
+          set -e
           {
             echo "version=$RELEASE_VERSION"
             echo "channel=$SIGTRAN_RELEASE_CHANNEL"
             echo "package=src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg"
             echo "symbols=src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.snupkg"
             echo "publication=disabled-during-dry-run"
+            echo "signatureVerificationExitCode=$verify_rc"
+            echo "signatureVerificationNote=unsigned dry-run packages are retained as release evidence; trusted timestamped signing is enforced in the signing gate."
           } > "$dry_run_dir/release-dry-run.md"
           sha256sum "$dry_run_dir/package-verification.md" "$dry_run_dir/release-dry-run.md" > "$dry_run_dir/Sigtran.NET.$RELEASE_VERSION.dry-run.sha256"
 

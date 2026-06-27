@@ -81,6 +81,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Stable commercial release gate | Phase 43 foundation-complete: stable release target lock, commercial dossier evidence map, reviewed readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, guarded stable publish execution plan, final report writer, stable release audit trail, and final status reporting are available; stable publication remains blocked until real retained stable release evidence, a completed protected publication run, and verified NuGet publication evidence all pass |
 | Commercial release-day execution | Runner added for local release evidence generation and blocker reporting: build, tests, pack, SBOM, public API baseline, smoke benchmark, provenance, signing verification, VM SSH probe, and GitHub release-dispatch probe |
 | Native SCTP lab executable | Self-contained `Sigtran.NET.NativeSctpLab` tool added for Linux SCTP/M3UA loopback evidence with JSONL SDK traces and PCAP comparison artifacts |
+| Commercial closure evidence | External C SCTP peer run and peer-traffic benchmark evidence are now retained in `docs/evidence/COMMERCIAL_EVIDENCE_20260627.json`; trusted timestamped signing and protected release publication remain the final commercial gates |
 
 ## Requirements
 
@@ -151,6 +152,7 @@ Start here:
 - [Phase 42 package publication gate integration](docs/PHASE42_COMMERCIAL_PACKAGE_PUBLICATION_GATE_INTEGRATION.md)
 - [Phase 43 stable commercial release gate](docs/PHASE43_STABLE_COMMERCIAL_RELEASE_GATE.md)
 - [Commercial release execution runbook](docs/COMMERCIAL_RELEASE_EXECUTION.md)
+- [Commercial closure report](docs/COMMERCIAL_CLOSURE_REPORT.md)
 - [Alpha release checklist](docs/ALPHA_RELEASE.md)
 
 Architecture and protocol docs:
@@ -192,10 +194,10 @@ Release, operations, and governance docs:
 The roadmap is intentionally conservative. The SDK can move toward a governed RC, but stable commercial publication remains blocked until retained evidence is complete.
 
 1. Run the `dry-run` release workflow for the intended RC version and review uploaded artifacts.
-2. Execute the maintained external peer lab against real peer traffic and retain PCAP, peer logs, SDK traces, configuration, comparison report, run report, and digests.
-3. Re-run native SCTP verification on Linux with retained peer traffic evidence covering stream/PPID, lifecycle, reconnect, backpressure, cancellation, multi-homing readiness, and fault recovery.
+2. Review the retained external C SCTP peer evidence and peer benchmark manifest in `docs/evidence/COMMERCIAL_EVIDENCE_20260627.json`.
+3. Re-run native SCTP verification for the final release commit when code changes affect transport behavior.
 4. Promote SCCP, TCAP, and MAP from SDK evidence-backed status to production evidence-backed status using retained external interoperability artifacts.
-5. Replace smoke performance evidence with retained peer/load benchmarks covering warmup, sustained, peak, latency P95/P99, CPU, memory, allocation, and failover behavior.
+5. Treat the current single-host peer benchmark as RC evidence only; add operator-sized deployment benchmarks before broad capacity claims.
 6. Execute release supply-chain automation for the final release commit: SBOM, trusted timestamped signing, signature verification, provenance, public API diff, digest manifest, and artifact upload.
 7. Publish a gated NuGet prerelease only after the RC decision report, release notes, migration notes, package artifacts, dry-run evidence, and digests are retained.
 8. Feed the retained commercial evidence dossier through the Phase 43 stable gate and keep stable publication blocked until the dossier passes without blockers.

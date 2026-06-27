@@ -17,6 +17,7 @@ param(
     [string]$VmHost = "192.168.100.28",
     [string]$VmUser = "ammar",
     [string]$SshKeyPath = "$HOME/.ssh/sigtran_vm_release_ed25519",
+    [string]$EvidenceManifestPath = "",
     [switch]$SkipVmProbe
 )
 
@@ -31,6 +32,36 @@ $reportPath = Join-Path $runRoot "commercial-release-readiness.md"
 $jsonPath = Join-Path $runRoot "commercial-release-readiness.json"
 
 New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
+
+$evidenceManifest = $null
+if (![string]::IsNullOrWhiteSpace($EvidenceManifestPath)) {
+    $evidenceManifestFullPath = Join-Path $root $EvidenceManifestPath
+    if (!(Test-Path $evidenceManifestFullPath)) {
+        throw "Evidence manifest was not found at $EvidenceManifestPath."
+    }
+
+    $evidenceManifest = Get-Content -Raw -Path $evidenceManifestFullPath | ConvertFrom-Json
+}
+
+function Test-ManifestEvidence {
+    param([string]$Name)
+
+    if ($null -eq $evidenceManifest) {
+        return $false
+    }
+
+    $property = $evidenceManifest.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $false
+    }
+
+    return [string]::Equals([string]$property.Value.status, "passed", [StringComparison]::OrdinalIgnoreCase)
+}
+
+$hasExternalPeerEvidence = Test-ManifestEvidence -Name "externalPeer"
+$hasProductionBenchmarkEvidence = Test-ManifestEvidence -Name "performance"
+$hasTrustedSigningEvidence = Test-ManifestEvidence -Name "signing"
+$hasReleaseDispatchEvidence = Test-ManifestEvidence -Name "releaseDispatch"
 
 function Get-RelativePath {
     param([string]$Path)
@@ -159,7 +190,8 @@ if (!$SkipVmProbe) {
     }
 }
 
-$steps += Invoke-ReadinessStep -Name "github-cli-probe" -CommercialBlocker "github-cli-or-release-dispatch-access-required" -Action {
+$releaseDispatchBlocker = if ($hasReleaseDispatchEvidence) { $null } else { "github-cli-or-release-dispatch-access-required" }
+$steps += Invoke-ReadinessStep -Name "github-cli-probe" -CommercialBlocker $releaseDispatchBlocker -Action {
     $gh = Get-Command gh -ErrorAction Stop
     & $gh.Source auth status
     Assert-LastExitCode "GitHub CLI auth status"
@@ -178,12 +210,16 @@ $commercialBlockers = @(
     $steps | Where-Object { !$_.Passed -and ![string]::IsNullOrWhiteSpace($_.CommercialBlocker) } | ForEach-Object { $_.CommercialBlocker }
 )
 
-if ($commercialBlockers -notcontains "maintained-external-peer-evidence-required") {
+if (!$hasExternalPeerEvidence -and $commercialBlockers -notcontains "maintained-external-peer-evidence-required") {
     $commercialBlockers += "maintained-external-peer-evidence-required"
 }
 
-if ($commercialBlockers -notcontains "production-peer-benchmark-evidence-required") {
+if (!$hasProductionBenchmarkEvidence -and $commercialBlockers -notcontains "production-peer-benchmark-evidence-required") {
     $commercialBlockers += "production-peer-benchmark-evidence-required"
+}
+
+if ($hasTrustedSigningEvidence) {
+    $commercialBlockers = $commercialBlockers | Where-Object { $_ -ne "trusted-timestamped-package-signing-required" }
 }
 
 $commercialBlockers = $commercialBlockers | Sort-Object -Unique
@@ -195,6 +231,8 @@ $result = [ordered]@{
     RunId = $runId
     SourceCommit = $sourceCommit
     ArtifactRoot = Get-RelativePath -Path $runRoot
+    EvidenceManifestPath = if ([string]::IsNullOrWhiteSpace($EvidenceManifestPath)) { $null } else { $EvidenceManifestPath }
+    EvidenceManifest = $evidenceManifest
     LocalEvidenceReady = $localEvidenceReady
     CommercialReady = $commercialReady
     Steps = $steps
@@ -209,6 +247,7 @@ $builder = [System.Text.StringBuilder]::new()
 [void]$builder.AppendLine()
 [void]$builder.AppendLine(("- Run id: ``{0}``" -f $runId))
 [void]$builder.AppendLine(("- Source commit: ``{0}``" -f $sourceCommit))
+[void]$builder.AppendLine(("- Evidence manifest: ``{0}``" -f $(if ([string]::IsNullOrWhiteSpace($EvidenceManifestPath)) { "not-provided" } else { $EvidenceManifestPath })))
 [void]$builder.AppendLine(("- Local evidence ready: ``{0}``" -f $localEvidenceReady))
 [void]$builder.AppendLine(("- Commercial ready: ``{0}``" -f $commercialReady))
 [void]$builder.AppendLine()

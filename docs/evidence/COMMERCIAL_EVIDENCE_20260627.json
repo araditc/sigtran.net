@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-06-27T11:30:00Z",
+  "target": {
+    "packageId": "Sigtran.NET",
+    "version": "1.0.0-rc.1",
+    "channel": "prerelease",
+    "sourceCommit": "a303cf0"
+  },
+  "externalPeer": {
+    "status": "passed",
+    "runId": "commercial-external-peer-20260627T111932Z",
+    "host": "sigtrannet",
+    "os": "Ubuntu 22.04.1 LTS",
+    "kernel": "5.15.0-181-generic",
+    "artifactRoot": "/home/ammar/sigtran-lab/artifacts/commercial-external-peer/commercial-external-peer-20260627T111932Z",
+    "peerImplementation": "external-c-sctp-peer",
+    "sdkEndpoint": "Sigtran.NET.NativeSctpLab client",
+    "pcapBytes": 2030,
+    "sdkTraceEvents": 7,
+    "peerEvents": 7,
+    "tsharkM3uaDecodeHits": 7,
+    "digests": {
+      "pcap": "2d4313440e665ddd9686bc3be3937810921d11c6d4ed2e6b4746a71d31f79416",
+      "sdkTrace": "11a6da80dffc786ba66667ca0c85cc7b68fa5eb0f24316c5d47ea5ea2bb842fb",
+      "peerLog": "50509d0ca7013c4496516daaec327eb269393c8fccc2036869db1bca2794c897",
+      "tsharkDecode": "a728d708de5f55022b776405bb7b2ffd6f12cc5239c4cdd54c9f0b36fad4712e",
+      "runReport": "d988cdebeaf15c0fbac16176f35237f5d1c5e6c633ff232aea90eeb64bbb56b4",
+      "runSummary": "6e4cf2364ab3c05bfe912e457ff45e2251f366e11ddcc62a27923aa68a74e9d5"
+    }
+  },
+  "performance": {
+    "status": "passed",
+    "runId": "commercial-peer-benchmark-20260627T112215Z",
+    "host": "sigtrannet",
+    "kernel": "5.15.0-181-generic",
+    "artifactRoot": "/home/ammar/sigtran-lab/artifacts/performance/commercial-peer-benchmark-20260627T112215Z",
+    "workload": "Sigtran.NET client to external C SCTP peer over Linux kernel SCTP loopback",
+    "scope": "single-host Linux SCTP peer benchmark; operator-sized deployment benchmarks are still required before broad capacity claims",
+    "stageSummary": {
+      "warmup": {
+        "count": 3,
+        "failures": 0,
+        "avgMs": 642.0,
+        "p50Ms": 652,
+        "p95Ms": 661,
+        "p99Ms": 661,
+        "maxMs": 661,
+        "maxRssKb": 50340
+      },
+      "sustained": {
+        "count": 20,
+        "failures": 0,
+        "avgMs": 647.2,
+        "p50Ms": 651,
+        "p95Ms": 660,
+        "p99Ms": 665,
+        "maxMs": 665,
+        "maxRssKb": 50732
+      },
+      "peak": {
+        "count": 5,
+        "failures": 0,
+        "avgMs": 675.8,
+        "p50Ms": 643,
+        "p95Ms": 769,
+        "p99Ms": 769,
+        "maxMs": 769,
+        "maxRssKb": 50440
+      }
+    },
+    "digests": {
+      "csv": "dbcab5b64215ad8e1442c5a18fc9890f269bf47f444147966161ab1bb80ec55f",
+      "json": "5286aa8f132d550cf56eb13d90b77347e915ed11b4406f94cfe135e218ed549e",
+      "markdown": "ea2685ff6e300dae3e55a848e91ba8ad1bc0866bebdebc29d381ddc14b23f859",
+      "digestManifest": "14287bcdf1d211d5c8718e2ce6ae5f1cfb4b70ce0d3cbbdf6afec5977a28dd3c"
+    }
+  },
+  "supplyChain": {
+    "status": "local-passed",
+    "runId": "20260627T111421Z",
+    "artifactRoot": "artifacts/commercial-release/20260627T111421Z",
+    "localEvidenceReady": true
+  },
+  "signing": {
+    "status": "blocked",
+    "blocker": "trusted-timestamped-package-signing-required",
+    "note": "A trusted code-signing certificate and timestamped verification evidence are required before publication."
+  },
+  "releaseDispatch": {
+    "status": "blocked",
+    "blocker": "protected-release-dispatch-access-required",
+    "note": "The protected GitHub release workflow must be dispatched and artifacts must be uploaded for the final release commit."
+  }
+}
