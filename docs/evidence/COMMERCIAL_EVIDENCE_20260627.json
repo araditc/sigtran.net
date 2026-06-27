@@ -5,7 +5,7 @@
     "packageId": "Sigtran.NET",
     "version": "1.0.0-rc.1",
     "channel": "prerelease",
-    "sourceCommit": "fd1224143361307673e4ec7b14e732098aa78a5e"
+    "sourceCommit": "914fc333fc3b99184af9781d25585928583a3239"
   },
   "externalPeer": {
     "status": "passed",
@@ -130,5 +130,37 @@
     "provenanceMarkerSha256": "c51812b47d94c1ecebb9825775cb92489f08438c0a7a73d1e526a7d571b5293b",
     "nugetPublishAttempted": false,
     "note": "Protected release workflow dry-run passed with publish=false, retained package, symbols, SBOM, signing, timestamp, digest, dry-run, and local provenance marker artifacts."
+  },
+  "nugetPublication": {
+    "status": "published",
+    "runId": "28290586511",
+    "jobId": "83821761683",
+    "workflow": "release",
+    "event": "workflow_dispatch",
+    "channel": "prerelease",
+    "publish": true,
+    "conclusion": "success",
+    "sourceCommit": "914fc333fc3b99184af9781d25585928583a3239",
+    "url": "https://github.com/araditc/sigtran.net/actions/runs/28290586511",
+    "evidencePath": "docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json",
+    "artifactNames": [
+      "sigtran-package",
+      "sigtran-symbols",
+      "sigtran-supply-chain",
+      "sigtran-release-dry-run"
+    ],
+    "downloadedArtifactRoot": "artifacts/nuget-publish-runs/28290586511",
+    "downloadedFileCount": 17,
+    "packageSha256": "cf30a1449fae9593ba768e7db2be3b0435bfdfab30c2fdd8757936a0e80c48b5",
+    "symbolsSha256": "ce7d3be455b9007ade91897c0d7cc8a80bca0488a318959270eb287f65a3fa74",
+    "sbomSha256": "9b8c1511031c2242241d44bcc019396a8f15e9ab917a5582a11427738e380e3c",
+    "apiDiffSha256": "65553e760134297609f419aa4cb957634f2386e12003ca8cfd8a6d781bbeb953",
+    "provenanceMarkerSha256": "7084c80588b9f42145c8a253a8ef6d06e2bd5ddf749623058c6035ae80503d5b",
+    "nugetPackageUrl": "https://www.nuget.org/packages/Sigtran.NET/1.0.0-rc.1",
+    "nugetFlatContainerIndex": "https://api.nuget.org/v3-flatcontainer/sigtran.net/index.json",
+    "nugetServedPackageSha256": "fea6ffe08bf05c67df829c14b85853d69f60ed1677ff6734fa19752f58c586e0",
+    "nugetServedPackageBytes": 516033,
+    "dotnetAddPackageResult": "restored",
+    "note": "NuGet prerelease package 1.0.0-rc.1 is published, visible through the flat-container API, and restorable with dotnet add package. Stable publication remains gated separately."
   }
 }

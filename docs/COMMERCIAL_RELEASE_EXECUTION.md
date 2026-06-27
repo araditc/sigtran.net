@@ -158,9 +158,23 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\set-github-internal-si
 
 The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to GitHub Secrets, sets `TIMESTAMP_AUTHORITY`, and deletes the local PFX/private key. During `channel=dry-run`, the workflow extracts the public certificate from the PFX and trusts it only inside the temporary GitHub runner. The runner imports the certificate into the OS trust store and appends it to the .NET SDK NuGet code-signing bundle before running `dotnet nuget verify --all --verbosity detailed` with the extracted certificate fingerprint. Do not use this internal certificate path for `prerelease` or `stable` publication.
 
-GitHub-hosted provenance and SBOM attestations are skipped for `channel=dry-run` because private repositories or organizations can reject attestation persistence depending on billing and visibility. The dry-run still retains package, SBOM, signing, timestamp, dry-run, digest, and local provenance marker artifacts. Prerelease and stable runs keep the GitHub attestation steps enabled.
+GitHub-hosted provenance and SBOM attestations are skipped for `channel=dry-run` and `channel=prerelease` because private repositories or organizations can reject attestation persistence depending on billing and visibility. These runs still retain package, SBOM, signing policy, dry-run, digest, API diff, and local provenance marker artifacts. Stable runs keep the hosted attestation path reserved for the protected stable gate.
 
 For `channel=prerelease`, the workflow intentionally skips internal author-signing and publishes the unsigned package to NuGet.org. NuGet.org applies repository signing after ingestion. This avoids pushing a package signed with the internal self-signed dry-run certificate, which NuGet.org would reject because public signed packages require a registered trusted author-signing certificate. Stable publication should replace this prerelease policy with the organization's approved public signing certificate.
+
+The retained prerelease publication run is `28290586511`:
+
+- URL: `https://github.com/araditc/sigtran.net/actions/runs/28290586511`
+- Commit: `914fc333fc3b99184af9781d25585928583a3239`
+- Version: `1.0.0-rc.1`
+- Channel: `prerelease`
+- Publish: `true`
+- NuGet package: `https://www.nuget.org/packages/Sigtran.NET/1.0.0-rc.1`
+- Uploaded artifacts: `sigtran-package`, `sigtran-symbols`, `sigtran-supply-chain`, `sigtran-release-dry-run`
+- Evidence manifest: `docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json`
+- NuGet restore check: `dotnet add package Sigtran.NET --version 1.0.0-rc.1` restored successfully.
+
+The package retained by the workflow has SHA-256 `cf30a1449fae9593ba768e7db2be3b0435bfdfab30c2fdd8757936a0e80c48b5`. The package served by NuGet.org after repository signing has SHA-256 `fea6ffe08bf05c67df829c14b85853d69f60ed1677ff6734fa19752f58c586e0`.
 
 Publication requires the protected release workflow and live secrets:
 

@@ -17,4 +17,4 @@ Phase 36 prepares the SDK for evidence-producing execution by locking the commer
 
 ## Readiness Position
 
-The phase is foundation-complete. The SDK can now start governed evidence-producing execution when the required protected secrets are available. RC and stable publication remain blocked until retained commercial release evidence is complete.
+The phase is foundation-complete. The SDK can now start governed evidence-producing execution when the required protected secrets are available. RC publication is complete for `Sigtran.NET` version `1.0.0-rc.1`; stable publication remains blocked until retained stable commercial release evidence is complete.

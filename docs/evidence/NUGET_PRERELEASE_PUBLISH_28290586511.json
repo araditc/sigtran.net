@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "createdUtc": "2026-06-27T13:33:00Z",
+  "runId": 28290586511,
+  "jobId": 83821761683,
+  "workflow": "release",
+  "event": "workflow_dispatch",
+  "channel": "prerelease",
+  "publish": true,
+  "version": "1.0.0-rc.1",
+  "packageId": "Sigtran.NET",
+  "conclusion": "success",
+  "sourceCommit": "914fc333fc3b99184af9781d25585928583a3239",
+  "url": "https://github.com/araditc/sigtran.net/actions/runs/28290586511",
+  "startedUtc": "2026-06-27T13:27:03Z",
+  "completedUtc": "2026-06-27T13:28:00Z",
+  "publishStep": {
+    "startedUtc": "2026-06-27T13:27:56Z",
+    "packagePushStatus": "created",
+    "symbolPackagePushStatus": "created",
+    "packagePushMessage": "Your package was pushed.",
+    "symbolPackagePushMessage": "Your package was pushed."
+  },
+  "artifactNames": [
+    "sigtran-package",
+    "sigtran-symbols",
+    "sigtran-supply-chain",
+    "sigtran-release-dry-run"
+  ],
+  "downloadedArtifactRoot": "artifacts/nuget-publish-runs/28290586511",
+  "downloadedFileCount": 17,
+  "keyArtifacts": {
+    "packagePath": "artifacts/nuget-publish-runs/28290586511/sigtran-package/Sigtran.NET.1.0.0-rc.1.nupkg",
+    "packageSha256": "cf30a1449fae9593ba768e7db2be3b0435bfdfab30c2fdd8757936a0e80c48b5",
+    "symbolsPath": "artifacts/nuget-publish-runs/28290586511/sigtran-symbols/Sigtran.NET.1.0.0-rc.1.snupkg",
+    "symbolsSha256": "ce7d3be455b9007ade91897c0d7cc8a80bca0488a318959270eb287f65a3fa74",
+    "sbomPath": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/sbom/Sigtran.NET.1.0.0-rc.1.spdx.json",
+    "sbomSha256": "9b8c1511031c2242241d44bcc019396a8f15e9ab917a5582a11427738e380e3c",
+    "apiDiffPath": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/api/Sigtran.NET.1.0.0-rc.1.api-diff.md",
+    "apiDiffSha256": "65553e760134297609f419aa4cb957634f2386e12003ca8cfd8a6d781bbeb953",
+    "provenanceMarkerPath": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/provenance/Sigtran.NET.1.0.0-rc.1.intoto.jsonl",
+    "provenanceMarkerSha256": "7084c80588b9f42145c8a253a8ef6d06e2bd5ddf749623058c6035ae80503d5b",
+    "digestManifestPath": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/digests/Sigtran.NET.1.0.0-rc.1.sha256",
+    "digestManifestSha256": "c68003b56d103d32b66c69e7ddc7612885070415496af8780877bc95baae4cd7"
+  },
+  "signingPolicy": {
+    "authorSigning": "skipped-for-public-prerelease",
+    "reason": "NuGet.org rejects self-issued author signing certificates; repository signing is applied by NuGet.org after publish.",
+    "policyPath": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/signing/Sigtran.NET.1.0.0-rc.1.prerelease-signing-policy.md",
+    "policySha256": "68abd5e862e0e2219bef087eab2d4f46e55ee112dabc5291a1d7f00e645475e8"
+  },
+  "nugetVerification": {
+    "status": "visible-and-restorable",
+    "checkedUtc": "2026-06-27T13:32:52Z",
+    "packagePage": "https://www.nuget.org/packages/Sigtran.NET/1.0.0-rc.1",
+    "flatContainerIndex": "https://api.nuget.org/v3-flatcontainer/sigtran.net/index.json",
+    "flatContainerPackage": "https://api.nuget.org/v3-flatcontainer/sigtran.net/1.0.0-rc.1/sigtran.net.1.0.0-rc.1.nupkg",
+    "flatContainerVersions": [
+      "1.0.0-rc.1"
+    ],
+    "nugetServedPackageSha256": "fea6ffe08bf05c67df829c14b85853d69f60ed1677ff6734fa19752f58c586e0",
+    "nugetServedPackageBytes": 516033,
+    "dotnetAddPackageResult": "restored",
+    "dotnetContentHash": "naJl8UbtpST5qJsS8zy/4jcf28CM19P3OUo+jdAcXEgDIZ45Je3Z6S1eawKfW0DBXhBe0ZNvA7dX+l6+waVJYA=="
+  },
+  "attestation": {
+    "hostedGitHubAttestations": "skipped-for-prerelease",
+    "reason": "Private repository or organization attestation persistence can require a supported plan or public repository.",
+    "retainedFallback": "artifacts/nuget-publish-runs/28290586511/sigtran-supply-chain/provenance/Sigtran.NET.1.0.0-rc.1.intoto.jsonl"
+  },
+  "decision": {
+    "releaseCandidatePublished": true,
+    "stablePublicationApproved": false,
+    "note": "The public prerelease package is published and restorable from NuGet.org. Stable publication still requires the stable commercial gate, trusted public signing material, and operator-approved capacity evidence."
+  }
+}

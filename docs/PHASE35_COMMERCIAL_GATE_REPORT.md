@@ -15,14 +15,14 @@ The RC gate foundation is complete:
 
 ## Current Decision
 
-The current SDK foundation supports an RC decision when the prerelease secret is available and a real workflow run retains artifacts.
+The current SDK foundation produced a real RC decision and the protected prerelease workflow run `28290586511` published `Sigtran.NET` version `1.0.0-rc.1` to NuGet.org.
 
 Stable commercial publication is not approved yet.
 
 ## Stable Commercial Blockers
 
-- Real release workflow run artifacts must be retained for the intended RC version.
-- NuGet prerelease secret must be available only at publish time.
+- Stable release workflow artifacts must be retained for the intended stable version.
+- Stable publication secrets must be available only inside the protected stable release environment.
 - Stable publication still requires complete commercial evidence.
 - External peer interoperability evidence must be retained from real traffic.
 - Trusted timestamped package signing must be verified in a real release run.
@@ -30,4 +30,4 @@ Stable commercial publication is not approved yet.
 
 ## Operator Position
 
-Use `dry-run` first, then `prerelease` for an RC package only after reviewing retained artifacts. Use `stable` only after the commercial evidence gate is complete.
+The public RC package can be used for controlled integration trials. Use `stable` only after the commercial evidence gate is complete.

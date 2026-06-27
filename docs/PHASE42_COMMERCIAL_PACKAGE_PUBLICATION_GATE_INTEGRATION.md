@@ -2,6 +2,8 @@
 
 Phase 42 connects an approved commercial evidence publication handoff to the package publication gate. It does not publish packages by itself. The phase prepares request, package artifact, credential, evidence, release guard, channel policy, gate execution, dry-run, command, and status contracts so a release workflow can decide whether publication is allowed from retained evidence.
 
+The first public RC package was later published by protected workflow run `28290586511`. This keeps the Phase 42 publication contracts useful as stable-release governance while the stable channel remains gated.
+
 ## Unit Plan
 
 | Unit | Capability | Status |
@@ -39,8 +41,8 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationCommandPlan` and `SigtranPackagePublicationCommandMaterialization` render the guarded publication script. The script requires `SIGTRAN_PUBLICATION_GATE_ALLOWED=true`, retains the dry-run report check, repacks and verifies the package, and uses `${NUGET_API_KEY:?missing NuGet API key}` for upload without storing secret values.
 
-`SigtranPackagePublicationIntegrationStatus` reports the ten completed integration capabilities and keeps publication readiness separate from foundation readiness. The default status still blocks real publication until retained real release evidence exists and an approved protected publication run is executed.
+`SigtranPackagePublicationIntegrationStatus` reports the ten completed integration capabilities and keeps publication readiness separate from foundation readiness. The default stable status still blocks stable publication until retained stable release evidence exists and an approved protected stable publication run is executed.
 
 ## Commercial Gate Position
 
-Phase 42 is foundation-complete. It establishes the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, retained dry-run rehearsal, guarded publish command materialization, and status reporting. Real package publication remains blocked until retained release evidence exists and a protected approved publication run is executed.
+Phase 42 is foundation-complete. It establishes the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, retained dry-run rehearsal, guarded publish command materialization, and status reporting. RC package publication is complete for `1.0.0-rc.1`; stable package publication remains blocked until retained stable release evidence exists and a protected approved stable publication run is executed.

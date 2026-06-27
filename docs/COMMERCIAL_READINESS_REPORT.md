@@ -1,6 +1,6 @@
 # SIGTRAN.NET Commercial Readiness Report
 
-Status: internal RC dry-run evidence is closed; stable commercial publication remains gated.
+Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
 ## Passed Evidence
 
@@ -20,17 +20,19 @@ Status: internal RC dry-run evidence is closed; stable commercial publication re
 - Peer traffic benchmark `commercial-peer-benchmark-20260627T112215Z` passed with warmup, sustained, and peak stages against the independent C SCTP peer. Sustained stage: `20` runs, `0` failures, average `647.2 ms`, P95 `660 ms`, P99 `665 ms`, max RSS `50732 KB`. Peak stage: `5` concurrent runs, `0` failures, P95/P99 `769 ms`.
 - Internal RC signing run `internal-signing-20260627T122124Z` passed with `SignExitCode=0` and `VerifyExitCode=0`. The retained detailed verification log records the NuGet author signature, the certificate fingerprint `678103179f7dd54c1427bed0074e3809a3398c569799bc556f26677be89354a3`, the timestamp time, and the Sectigo timestamping certificate chain.
 - Protected release workflow dry-run `28289987418` passed on commit `fd1224143361307673e4ec7b14e732098aa78a5e` with `publish=false`. It uploaded `sigtran-package`, `sigtran-symbols`, `sigtran-supply-chain`, and `sigtran-release-dry-run` artifacts and retained package, SBOM, signing verification, timestamp, digest, API diff, dry-run, and local provenance marker evidence.
+- Protected prerelease publication workflow `28290586511` passed on commit `914fc333fc3b99184af9781d25585928583a3239` with `publish=true`. It pushed `Sigtran.NET.1.0.0-rc.1.nupkg` and `Sigtran.NET.1.0.0-rc.1.snupkg` to NuGet.org, uploaded package, symbols, supply-chain, and dry-run artifacts, and retained publication evidence at `docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json`.
+- NuGet.org visibility and restore evidence passed for `Sigtran.NET` version `1.0.0-rc.1`: the package page returned HTTP 200, the flat-container index includes `1.0.0-rc.1`, the flat-container package returned HTTP 200, and a clean `dotnet add package Sigtran.NET --version 1.0.0-rc.1` restore succeeded.
 - Final local readiness run `20260627T130623Z` evaluated the retained evidence manifest and reported `LocalEvidenceReady=true`, `CommercialReady=true`, and no commercial blockers for the internal RC gate.
 
 ## Remaining Commercial Blockers
 
 - The current benchmark is real Linux SCTP peer traffic evidence, but it is single-host loopback. Do not use it for broad operator capacity claims until an operator-sized deployment benchmark is retained.
-- Package publication and stable commercial release gates are foundation-complete, but live stable publication still requires retained release evidence, a completed protected publication run, and verified NuGet publication evidence.
+- Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
-- Hosted GitHub provenance/SBOM attestations were skipped for dry-run because private repository or organization attestation persistence can require a supported plan or public repository. The dry-run retained a local provenance marker; prerelease and stable runs keep hosted attestation enabled.
+- Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
 
 ## Commercial Decision
 
 Do not publish this SDK as stable commercially production-ready yet.
 
-The SDK has enough retained evidence for an internal signed RC dry-run and controlled integration use. The stable release gate is ready to evaluate future publication evidence, but it must not be used to claim a stable public commercial release until the protected publication run and NuGet publication evidence are retained and verified. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.
+The SDK has enough retained evidence for public RC consumption and controlled integration use. The stable release gate is ready to evaluate future stable publication evidence, but it must not be used to claim a stable public commercial release until the protected stable publication run, trusted public signing evidence, and stable NuGet publication evidence are retained and verified. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.

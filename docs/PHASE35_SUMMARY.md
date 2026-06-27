@@ -17,4 +17,4 @@ Phase 35 builds the SDK contracts needed to rehearse and gate RC publication wit
 
 ## Readiness Position
 
-Phase 35 is complete as an RC publication and commercial gate foundation. RC publication can be attempted only through the gated workflow with retained artifacts and a NuGet prerelease secret at publish time. Stable publication remains blocked by retained commercial blockers until full commercial evidence is complete.
+Phase 35 is complete as an RC publication and commercial gate foundation. RC publication was executed through protected workflow run `28290586511`, and `Sigtran.NET` version `1.0.0-rc.1` is published on NuGet.org. Stable publication remains blocked by retained commercial blockers until full commercial evidence, trusted stable signing, and protected stable approval are complete.

@@ -74,7 +74,7 @@ The report intentionally separates `ReleaseCandidateReady` from `StableReleaseRe
 - `ReleaseCandidate` when prerelease publication is allowed but stable commercial evidence is still incomplete.
 - `Stable` when both RC and stable commercial gates are ready.
 
-The default current decision is `ReleaseCandidate` when the NuGet prerelease secret is available, because the dry-run, prerelease, release notes, migration notes, and supply-chain foundations are present while commercial blockers remain retained. This prevents accidental stable publication.
+The current decision is `ReleaseCandidate` for `Sigtran.NET` version `1.0.0-rc.1`, because the dry-run, prerelease, release notes, migration notes, supply-chain foundations, and retained prerelease publication evidence are present while stable commercial blockers remain retained. This prevents accidental stable publication.
 
 ## Unit 7 - RC Publication Evidence Manifest
 
@@ -109,7 +109,7 @@ The workflow uploads package, symbols, supply-chain evidence, and dry-run eviden
 - Real publication readiness.
 - Stable commercial publication readiness.
 
-The current status marks the RC gate foundation as ready, but keeps real publication blocked until a real release workflow run produces retained artifacts and the NuGet prerelease secret is available at publish time. Stable publication remains blocked by commercial evidence requirements.
+The current status marks the RC gate foundation as ready and the first public RC publication complete for `Sigtran.NET` version `1.0.0-rc.1`. Stable publication remains blocked by commercial evidence, trusted stable signing, and protected stable publication requirements.
 
 ## Unit 10 - Final Validation And Commercial Gate Report
 
@@ -121,7 +121,7 @@ The final unit closes the phase with:
 - Full `dotnet build`, SDK test run, and `dotnet pack` validation.
 - Source naming sweep to keep phase numbers out of public API names.
 
-Phase 35 is complete as an RC publication and commercial gate foundation. A real RC publish still requires a retained workflow run with production secrets, and stable publication still requires complete commercial evidence.
+Phase 35 is complete as an RC publication and commercial gate foundation. The retained prerelease workflow run `28290586511` published the public RC package to NuGet.org; stable publication still requires complete commercial evidence and protected stable approval.
 
 ## Validation
 
