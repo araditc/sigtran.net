@@ -54,6 +54,8 @@ public static class SigtranReleaseWorkflowValidation
         "Dry-Run Release Evidence",
         "Trust Dry-Run Signing Certificate",
         "update-ca-certificates",
+        "codesignctl.pem",
+        "SIGTRAN_SIGNING_CERTIFICATE_SHA256",
         "Evaluate RC Publication Gate",
         "Upload Dry-Run Evidence",
         "sbom-tool generate",

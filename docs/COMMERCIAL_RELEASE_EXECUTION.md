@@ -146,7 +146,7 @@ For the protected GitHub dry-run workflow, create internal signing secrets with:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\set-github-internal-signing-secrets.ps1
 ```
 
-The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to GitHub Secrets, sets `TIMESTAMP_AUTHORITY`, and deletes the local PFX/private key. During `channel=dry-run`, the workflow extracts the public certificate from the PFX and trusts it only inside the temporary GitHub runner so `dotnet nuget verify --all --verbosity detailed` can retain timestamped signature evidence. Do not use this internal certificate path for `prerelease` or `stable` publication.
+The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to GitHub Secrets, sets `TIMESTAMP_AUTHORITY`, and deletes the local PFX/private key. During `channel=dry-run`, the workflow extracts the public certificate from the PFX and trusts it only inside the temporary GitHub runner. The runner imports the certificate into the OS trust store and appends it to the .NET SDK NuGet code-signing bundle before running `dotnet nuget verify --all --verbosity detailed` with the extracted certificate fingerprint. Do not use this internal certificate path for `prerelease` or `stable` publication.
 
 Publication requires the protected release workflow and live secrets:
 

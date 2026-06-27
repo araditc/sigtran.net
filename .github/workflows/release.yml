@@ -152,13 +152,23 @@ jobs:
           openssl pkcs12 -in "$signing_certificate_path" -passin pass:"$SIGNING_CERTIFICATE_PASSWORD" -clcerts -nokeys -out "$signing_certificate_crt"
           sudo cp "$signing_certificate_crt" /usr/local/share/ca-certificates/sigtran-release-signing.crt
           sudo update-ca-certificates
+          for codesign_bundle in /usr/share/dotnet/sdk/*/trustedroots/codesignctl.pem; do
+            test -f "$codesign_bundle"
+            sudo tee -a "$codesign_bundle" < "$signing_certificate_crt" > /dev/null
+          done
+          signing_certificate_fingerprint="$(openssl x509 -in "$signing_certificate_crt" -noout -fingerprint -sha256 | cut -d= -f2 | tr -d :)"
+          echo "SIGTRAN_SIGNING_CERTIFICATE_SHA256=$signing_certificate_fingerprint" >> "$GITHUB_ENV"
           openssl x509 -in "$signing_certificate_crt" -noout -fingerprint -sha256 | tee "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.txt"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.txt" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.sha256"
 
       - name: Verify Signature And Timestamp
         shell: bash
         run: |
-          dotnet nuget verify "$SIGTRAN_RELEASE_PACKAGE" --all --verbosity detailed | tee "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md"
+          verify_args=( "$SIGTRAN_RELEASE_PACKAGE" --all --verbosity detailed )
+          if [ -n "${SIGTRAN_SIGNING_CERTIFICATE_SHA256:-}" ]; then
+            verify_args+=( --certificate-fingerprint "$SIGTRAN_SIGNING_CERTIFICATE_SHA256" )
+          fi
+          dotnet nuget verify "${verify_args[@]}" | tee "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md"
           cp "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.sha256"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.sha256"
