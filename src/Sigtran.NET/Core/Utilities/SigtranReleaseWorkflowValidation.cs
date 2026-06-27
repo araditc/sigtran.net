@@ -52,6 +52,8 @@ public static class SigtranReleaseWorkflowValidation
         "secrets.SIGNING_CERTIFICATE_PASSWORD",
         "secrets.NUGET_API_KEY",
         "Dry-Run Release Evidence",
+        "Trust Dry-Run Signing Certificate",
+        "update-ca-certificates",
         "Evaluate RC Publication Gate",
         "Upload Dry-Run Evidence",
         "sbom-tool generate",

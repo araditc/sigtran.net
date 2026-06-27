@@ -81,7 +81,7 @@ The first production milestone is M3UA over a transport abstraction. SCCP, TCAP,
 | Stable commercial release gate | Phase 43 foundation-complete: stable release target lock, commercial dossier evidence map, reviewed readiness checklist, stable release decision gate, stable tag gate, protected stable publication authorization, guarded stable publish execution plan, final report writer, stable release audit trail, and final status reporting are available; stable publication remains blocked until real retained stable release evidence, a completed protected publication run, and verified NuGet publication evidence all pass |
 | Commercial release-day execution | Runner added for local release evidence generation and blocker reporting: build, tests, pack, SBOM, public API baseline, smoke benchmark, provenance, signing verification, VM SSH probe, and GitHub release-dispatch probe |
 | Native SCTP lab executable | Self-contained `Sigtran.NET.NativeSctpLab` tool added for Linux SCTP/M3UA loopback evidence with JSONL SDK traces and PCAP comparison artifacts |
-| Commercial closure evidence | External C SCTP peer run, peer-traffic benchmark evidence, and internal timestamped RC signing evidence are now retained in `docs/evidence/COMMERCIAL_EVIDENCE_20260627.json`; protected release dispatch is the remaining RC gate, and NuGet publication is paused until explicitly requested |
+| Commercial closure evidence | External C SCTP peer run, peer-traffic benchmark evidence, internal timestamped RC signing evidence, and a protected dry-run signing-secret helper are now retained; protected release dispatch is the remaining RC gate, and NuGet publication is paused until explicitly requested |
 
 ## Requirements
 

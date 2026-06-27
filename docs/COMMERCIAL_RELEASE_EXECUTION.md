@@ -140,6 +140,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\new-internal-signing-e
 
 The retained internal signing run is `internal-signing-20260627T122124Z`. Its detailed verification log records the NuGet author signature, timestamp, and Sectigo timestamping chain. This is enough for internal RC dry-run evidence after reviewer approval. Stable public release signing still requires the organization's approved trusted signing certificate in the protected release environment.
 
+For the protected GitHub dry-run workflow, create internal signing secrets with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\set-github-internal-signing-secrets.ps1
+```
+
+The script uploads `SIGNING_CERTIFICATE` and `SIGNING_CERTIFICATE_PASSWORD` to GitHub Secrets, sets `TIMESTAMP_AUTHORITY`, and deletes the local PFX/private key. During `channel=dry-run`, the workflow extracts the public certificate from the PFX and trusts it only inside the temporary GitHub runner so `dotnet nuget verify --all --verbosity detailed` can retain timestamped signature evidence. Do not use this internal certificate path for `prerelease` or `stable` publication.
+
 Publication requires the protected release workflow and live secrets:
 
 - `NUGET_API_KEY`
