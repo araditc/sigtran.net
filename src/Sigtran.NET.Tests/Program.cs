@@ -7157,7 +7157,9 @@ static void NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform()
     {
         using Socket socket = factory.CreateSocket();
         AssertEqual(SocketType.Stream, socket.SocketType, "native SCTP factory socket type");
-        AssertEqual(NativeSctpPlatform.SctpProtocolType, socket.ProtocolType, "native SCTP factory protocol type");
+        Assert(
+            socket.ProtocolType is ProtocolType.Unknown || socket.ProtocolType == NativeSctpPlatform.SctpProtocolType,
+            $"native SCTP factory protocol type: expected {NativeSctpPlatform.IpProtocolSctp} or Unknown for wrapped native handles, got {socket.ProtocolType}");
     }
     else
     {

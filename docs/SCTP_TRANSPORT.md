@@ -181,6 +181,8 @@ The remaining production gate is explicit: native SCTP implementation and intero
 
 Some .NET runtimes can reject the managed `Socket(AddressFamily.InterNetwork, SocketType.Stream, (ProtocolType)132)` constructor even when the Linux kernel SCTP module is loaded and libc can create the socket. `NativeSctpSocketFactory` therefore keeps a Linux libc `socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)` fallback and wraps the resulting handle in `System.Net.Sockets.Socket`.
 
+When .NET wraps a libc-created SCTP handle, `Socket.ProtocolType` can report `ProtocolType.Unknown` even though the kernel socket was created with `IPPROTO_SCTP`. Treat `NativeSctpPlatform.Probe()` and retained Linux lab evidence as the SCTP capability source of truth instead of relying on that diagnostic property alone.
+
 The current retained VM evidence run is `commercial-native-sctp-20260627T073300Z` on Ubuntu 22.04.1 LTS with kernel `5.15.0-181-generic`. It captured M3UA ASPUP, ASPACTIVE, Payload DATA, HEARTBEAT, and HEARTBEAT ACK over native SCTP loopback with retained PCAP, SDK trace, TShark comparison, run report, and SHA-256 digests.
 
 The probe does not mark the transport production-ready by itself. It is the first native SCTP implementation gate.
