@@ -43,6 +43,11 @@ public sealed class NativeSctpSocketFactory : INativeSctpSocketFactory
             throw new NativeSctpUnavailableException(capability);
         }
 
-        return new Socket(AddressFamily.InterNetwork, NativeSctpPlatform.SctpSocketType, NativeSctpPlatform.SctpProtocolType);
+        if (NativeSctpPlatform.TryCreateSocket(out Socket? socket, out string reason))
+        {
+            return socket!;
+        }
+
+        throw new NativeSctpUnavailableException(new(NativeSctpPlatformStatus.SocketCreationUnavailable, reason));
     }
 }

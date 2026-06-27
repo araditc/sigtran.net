@@ -1,6 +1,8 @@
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
+using Microsoft.Win32.SafeHandles;
+
 namespace Sigtran.NET.Layers.SCTP;
 
 /// <summary>
@@ -58,7 +60,7 @@ public static class NativeSctpPlatform
     public const int IpProtocolSctp = 132;
 
     /// <summary>The socket type used by SCTP one-to-one style associations.</summary>
-    public const SocketType SctpSocketType = SocketType.Seqpacket;
+    public const SocketType SctpSocketType = SocketType.Stream;
 
     /// <summary>Gets the protocol type value used when creating native SCTP sockets.</summary>
     public static ProtocolType SctpProtocolType => (ProtocolType)IpProtocolSctp;
@@ -79,18 +81,56 @@ public static class NativeSctpPlatform
             return new(NativeSctpPlatformStatus.UnsupportedOperatingSystem, RuntimeInformation.OSDescription);
         }
 
-        try
+        if (TryCreateSocket(out Socket? socket, out string reason))
         {
-            using Socket socket = new(AddressFamily.InterNetwork, SctpSocketType, SctpProtocolType);
+            socket!.Dispose();
             return new(NativeSctpPlatformStatus.SocketCreationSupported, "SCTP socket creation succeeded.");
         }
-        catch (SocketException ex)
+
+        return new(NativeSctpPlatformStatus.SocketCreationUnavailable, reason);
+    }
+
+    internal static bool TryCreateSocket(out Socket? socket, out string reason)
+    {
+        socket = null;
+        if (!IsSupportedOperatingSystem())
         {
-            return new(NativeSctpPlatformStatus.SocketCreationUnavailable, ex.SocketErrorCode.ToString());
+            reason = RuntimeInformation.OSDescription;
+            return false;
         }
-        catch (PlatformNotSupportedException ex)
+
+        try
         {
-            return new(NativeSctpPlatformStatus.SocketCreationUnavailable, ex.Message);
+            socket = new Socket(AddressFamily.InterNetwork, SctpSocketType, SctpProtocolType);
+            reason = "managed-socket";
+            return true;
+        }
+        catch (Exception managedException) when (managedException is SocketException or PlatformNotSupportedException)
+        {
+            try
+            {
+                int handle = LibcSocket(AddressFamilyInterNetwork, SocketTypeStream, IpProtocolSctp);
+                if (handle < 0)
+                {
+                    reason = $"managed={managedException.Message}; libc-errno={Marshal.GetLastPInvokeError()}";
+                    return false;
+                }
+
+                socket = new Socket(new SafeSocketHandle(new IntPtr(handle), ownsHandle: true));
+                reason = "libc-socket";
+                return true;
+            }
+            catch (Exception nativeException)
+            {
+                reason = $"managed={managedException.Message}; libc={nativeException.Message}";
+                return false;
+            }
         }
     }
+
+    private const int AddressFamilyInterNetwork = 2;
+    private const int SocketTypeStream = 1;
+
+    [DllImport("libc", EntryPoint = "socket", SetLastError = true)]
+    private static extern int LibcSocket(int domain, int type, int protocol);
 }

@@ -177,7 +177,11 @@ The remaining production gate is explicit: native SCTP implementation and intero
 
 ## Phase 8 Native SCTP Probe
 
-`NativeSctpPlatform.Probe()` checks whether the current runtime can create a Linux SCTP socket using `SocketType.Seqpacket` and IP protocol number `132`.
+`NativeSctpPlatform.Probe()` checks whether the current runtime can create a Linux one-to-one SCTP socket using `SocketType.Stream` and IP protocol number `132`.
+
+Some .NET runtimes can reject the managed `Socket(AddressFamily.InterNetwork, SocketType.Stream, (ProtocolType)132)` constructor even when the Linux kernel SCTP module is loaded and libc can create the socket. `NativeSctpSocketFactory` therefore keeps a Linux libc `socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)` fallback and wraps the resulting handle in `System.Net.Sockets.Socket`.
+
+The current retained VM evidence run is `commercial-native-sctp-20260627T073300Z` on Ubuntu 22.04.1 LTS with kernel `5.15.0-181-generic`. It captured M3UA ASPUP, ASPACTIVE, Payload DATA, HEARTBEAT, and HEARTBEAT ACK over native SCTP loopback with retained PCAP, SDK trace, TShark comparison, run report, and SHA-256 digests.
 
 The probe does not mark the transport production-ready by itself. It is the first native SCTP implementation gate.
 

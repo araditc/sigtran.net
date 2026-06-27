@@ -7130,7 +7130,7 @@ static SigtranSupplyChainArtifactManifest CreateCompleteSupplyChainManifest()
 static void NativeSctpPlatformProbeReportsSocketCreationCapability()
 {
     AssertEqual(132, NativeSctpPlatform.IpProtocolSctp, "native SCTP protocol number");
-    AssertEqual(SocketType.Seqpacket, NativeSctpPlatform.SctpSocketType, "native SCTP socket type");
+    AssertEqual(SocketType.Stream, NativeSctpPlatform.SctpSocketType, "native SCTP socket type");
 
     NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
 
@@ -7156,7 +7156,7 @@ static void NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform()
     if (capability.CanCreateSocket)
     {
         using Socket socket = factory.CreateSocket();
-        AssertEqual(SocketType.Seqpacket, socket.SocketType, "native SCTP factory socket type");
+        AssertEqual(SocketType.Stream, socket.SocketType, "native SCTP factory socket type");
         AssertEqual(NativeSctpPlatform.SctpProtocolType, socket.ProtocolType, "native SCTP factory protocol type");
     }
     else

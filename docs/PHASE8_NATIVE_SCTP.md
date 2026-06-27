@@ -13,7 +13,7 @@ NativeSctpPlatformCapability capability = NativeSctpPlatform.Probe();
 bool canCreateSocket = capability.CanCreateSocket;
 ```
 
-The SDK uses Linux `IPPROTO_SCTP` protocol number `132` with `SocketType.Seqpacket`. Windows and macOS remain contract-only until a verified production provider is selected.
+The SDK uses Linux `IPPROTO_SCTP` protocol number `132` with `SocketType.Stream` for one-to-one SCTP associations. Windows and macOS remain contract-only until a verified production provider is selected.
 
 The probe is intentionally separate from readiness. Socket creation is necessary, but production readiness also requires metadata handling, lifecycle integration, integration tests, and external interoperability evidence.
 

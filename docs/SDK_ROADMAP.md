@@ -84,7 +84,7 @@ Status: SDK foundation is complete for commercial readiness gates, native SCTP s
 
 ## Phase 8 - Native SCTP Production Transport
 
-- Probe Linux native SCTP socket creation using `SocketType.Seqpacket` and IP protocol number `132`.
+- Probe Linux native SCTP socket creation using `SocketType.Stream` and IP protocol number `132`.
 - Add native SCTP socket factory, connector, listener, send/receive path, lifecycle events, health snapshots, and reconnect integration.
 - Add Linux-focused integration test hooks that can run when SCTP kernel support is available.
 - Keep Windows and macOS contract-only until a verified provider is selected.
