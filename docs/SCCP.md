@@ -23,6 +23,12 @@ byte encoded = protocolClass.Encode();
 
 The current SCCP work is still a foundation for standards-based encode/decode. Interoperability-sensitive consumers should wait for the Phase 3 readiness report before treating SCCP APIs as stable.
 
+## Service Contract
+
+`ISccpService` is the official SCCP service boundary consumed by TCAP. It depends on `IMtp3Network` and exposes SCCP Unitdata send/receive primitives without binding callers to a concrete MTP3 or M3UA implementation.
+
+`SccpConnectionlessService` implements `ISccpService` for UDT traffic over an `IMtp3Network`.
+
 ## Party Addresses
 
 `SccpPartyAddress` models the called/calling party address boundary with routing indicator, optional point code, optional subsystem number, and optional global title.

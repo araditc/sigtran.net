@@ -1,6 +1,6 @@
 # SCTP Transport
 
-Phase 2 stabilizes the production SCTP transport boundary. The existing `ISctpSocket` remains the packet-oriented contract used by M3UA. Production transports can additionally implement `ISctpMetadataSocket` when stream id, PPID, and unordered delivery metadata are available.
+Phase 2 stabilizes the production SCTP transport boundary. The official transport contract is now `ISctpTransport`, which carries complete SCTP user messages with stream id, PPID, unordered delivery metadata, and association lifecycle visibility through `ISctpAssociation`. The older `ISctpSocket` remains as a compatibility contract and can be adapted with `SctpSocketTransportAdapter`.
 
 ## Payload Metadata
 
@@ -17,9 +17,9 @@ SctpPayloadMetadata metadata = new(
 
 ## Compatibility
 
-The metadata contract is optional. Existing `ISctpSocket` implementations continue to work for M3UA packet send/receive. A native SCTP transport should implement both interfaces so higher layers can opt into SCTP-specific behavior without breaking the current M3UA session facade.
+The metadata contract is no longer limited to optional helpers. Existing `ISctpSocket` implementations continue to work for M3UA packet send/receive through `SctpSocketTransportAdapter`, while production transports should implement `ISctpTransport` directly so higher layers can opt into SCTP-specific behavior without binding to a concrete socket.
 
-The development `TcpSctpAdapter` now implements `ISctpMetadataSocket` with default M3UA PPID metadata and exposes a health snapshot. It still uses TCP length-prefix framing and must not be treated as production SCTP.
+The development `TcpSctpAdapter` now implements `ISctpMetadataSocket`, `ISctpTransport`, and `ISctpAssociation` with default M3UA PPID metadata and exposes a health snapshot. It still uses TCP length-prefix framing and must not be treated as production SCTP.
 
 `SigtranTransportSamples.CreateLocalM3uaAspToSg()` provides a documented local TCP sample scenario that maps an ASP endpoint to an SG endpoint with M3UA PPID metadata. It is intended for demos and deterministic tooling only.
 

@@ -382,6 +382,16 @@ Status: Phase 42 is foundation-complete. Package publication requests derive fro
 
 Status: Phase 43 is foundation-complete. The SDK can model the stable release target, retained dossier evidence, approved readiness checklist, stable decision, stable tag commands, protected publication authorization, guarded stable publish execution plan, final commercial report, audit trail, and final stable gate status. Stable commercial release remains blocked until real retained stable release evidence is verified, a protected stable publication run completes, and actual NuGet publication evidence is retained and verified.
 
+## Phase 44 - Layer Contracts And Package Boundaries
+
+- Define official layer contracts for SCTP, MTP2, MTP3, SCCP, TCAP, and MAP SMS.
+- Keep namespace ownership aligned with protocol layers and dependency direction.
+- Adapt existing SCTP and M3UA implementation paths to the official contracts.
+- Provide concrete composition points for SCCP, TCAP, and MAP SMS over lower-layer interfaces.
+- Document how consumers should wire applications through interfaces instead of concrete implementations.
+
+Status: Phase 44 is complete. `ISctpAssociation`, `ISctpTransport`, `IMtp2Link`, `IMtp3Network`, `ISccpService`, `ITcapDialogues`, and `IMapSmsService` are available. Existing SCTP adapters and `M3uaTransportSession` support the official transport contract, `M3uaMtp3Network` exposes M3UA as MTP3, and SCCP/TCAP/MAP service classes compose through lower-layer interfaces. Production readiness still depends on retained native SCTP, external peer, benchmark, supply-chain, and stable publication evidence.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 using Sigtran.NET.Layers.MAP;
 using Sigtran.NET.Layers.M3UA;
+using Sigtran.NET.Layers.MTP2;
 using Sigtran.NET.Layers.MTP3;
 using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.SCTP;
@@ -184,6 +185,10 @@ Run("SIGTRAN external peer readiness separates foundation from evidence", Sigtra
 Run("SIGTRAN external peer production readiness aggregates selection lab and evidence", SigtranExternalPeerProductionReadinessAggregatesSelectionLabAndEvidence);
 Run("SIGTRAN external peer status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
 Run("SIGTRAN API naming alignment status summarizes package-neutral completion", SigtranApiNamingAlignmentStatusSummarizesPackageNeutralCompletion);
+Run("SIGTRAN layer contract catalog exposes official boundaries", SigtranLayerContractCatalogExposesOfficialBoundaries);
+Run("SIGTRAN layer contract interfaces expose lower dependencies", SigtranLayerContractInterfacesExposeLowerDependencies);
+Run("SIGTRAN M3UA network adapter sends MTP3 over SCTP transport contract", SigtranM3uaNetworkAdapterSendsMtp3OverSctpTransportContract);
+Run("SIGTRAN MAP SMS service composes TCAP SCCP and MTP3 contracts", SigtranMapSmsServiceComposesLayerContracts);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
 Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
@@ -10526,6 +10531,100 @@ static void M3uaRkmClientRequiresSuccessfulResponses()
     Assert(exception.Message.Contains("ErrorNotRegistered", StringComparison.Ordinal), exception.Message);
 }
 
+static void SigtranLayerContractCatalogExposesOfficialBoundaries()
+{
+    IReadOnlyList<SigtranLayerContract> catalog = SigtranLayerContracts.GetCatalog();
+
+    AssertEqual(7, catalog.Count, "layer contract count");
+    Assert(SigtranLayerContracts.HasCompleteDependencyDirection(), "layer contracts should document downward dependencies");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(ISctpTransport)), "SCTP transport contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(ISctpAssociation)), "SCTP association contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(IMtp2Link)), "MTP2 link contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(IMtp3Network)), "MTP3 network contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(ISccpService)), "SCCP service contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(ITcapDialogues)), "TCAP dialogue contract should be cataloged");
+    Assert(catalog.Any(static contract => contract.ContractName == nameof(IMapSmsService)), "MAP SMS service contract should be cataloged");
+}
+
+static void SigtranLayerContractInterfacesExposeLowerDependencies()
+{
+    Type[] requiredInterfaces =
+    [
+        typeof(ISctpTransport),
+        typeof(ISctpAssociation),
+        typeof(IMtp2Link),
+        typeof(IMtp3Network),
+        typeof(ISccpService),
+        typeof(ITcapDialogues),
+        typeof(IMapSmsService)
+    ];
+
+    foreach (Type contract in requiredInterfaces)
+    {
+        Assert(contract.IsInterface, $"{contract.Name} should be an interface");
+    }
+
+    AssertEqual(typeof(ISctpAssociation), typeof(ISctpTransport).GetProperty(nameof(ISctpTransport.Association))?.PropertyType, "SCTP transport lower association dependency");
+    AssertEqual(typeof(IMtp3Network), typeof(ISccpService).GetProperty(nameof(ISccpService.Network))?.PropertyType, "SCCP lower MTP3 dependency");
+    AssertEqual(typeof(ISccpService), typeof(ITcapDialogues).GetProperty(nameof(ITcapDialogues.Sccp))?.PropertyType, "TCAP lower SCCP dependency");
+    AssertEqual(typeof(ITcapDialogues), typeof(IMapSmsService).GetProperty(nameof(IMapSmsService.Dialogues))?.PropertyType, "MAP lower TCAP dependency");
+}
+
+static void SigtranM3uaNetworkAdapterSendsMtp3OverSctpTransportContract()
+{
+    FakeSctpSocket socket = new();
+    using SctpSocketTransportAdapter transport = new(socket, leaveOpen: true);
+    using M3uaTransportSession session = new(transport, leaveOpen: true);
+    M3uaMtp3Network network = new(session);
+    Mtp3TransferMessage transfer = new(
+        new Mtp3ServiceInformationOctet(Mtp3ServiceIndicator.Sccp, networkIndicator: 2, messagePriority: 1),
+        new Mtp3RoutingLabel(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 3),
+        new byte[] { 0x09, 0x00, 0x00 },
+        routingContext: 100);
+
+    network.SendAsync(transfer).GetAwaiter().GetResult();
+
+    AssertEqual(1, socket.SentPackets.Count, "M3UA MTP3 network sent packet count");
+    M3uaMessage message = DecodeMessage(socket.SentPackets[0].Span);
+    Assert(
+        M3uaTypedMessageParser.TryParsePayloadData(message, out M3uaPayloadDataMessage? payload, out string? error),
+        error ?? "Payload Data parse failed");
+    AssertEqual((uint)1, payload!.OriginatingPointCode, "M3UA MTP3 adapter OPC");
+    AssertEqual((uint)2, payload.DestinationPointCode, "M3UA MTP3 adapter DPC");
+    AssertEqual((byte)Mtp3ServiceIndicator.Sccp, payload.ServiceIndicator, "M3UA MTP3 adapter SI");
+    AssertEqual((byte)2, payload.NetworkIndicator, "M3UA MTP3 adapter NI");
+    AssertEqual((uint)100, payload.RoutingContext, "M3UA MTP3 adapter routing context");
+}
+
+static void SigtranMapSmsServiceComposesLayerContracts()
+{
+    FakeMtp3Network network = new();
+    Mtp3RoutingLabel routingLabel = new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 0);
+    SccpConnectionlessService sccp = new(network, routingLabel, networkIndicator: 2);
+    TcapDialogueService tcap = new(sccp);
+    SccpPartyAddress called = new(SccpRoutingIndicator.RouteOnSubsystemNumber, SubsystemNumber.MAP, pointCode: 2);
+    SccpPartyAddress calling = new(SccpRoutingIndicator.RouteOnSubsystemNumber, SubsystemNumber.MAP, pointCode: 1);
+    MapSmsService map = new(tcap, called, calling);
+    MapMoForwardShortMessage operation = new(
+        new MapSmsAddress(MapSmsAddressKind.ServiceCentre, "989120000000"),
+        new MapSmsAddress(MapSmsAddressKind.Msisdn, "989121234567"),
+        new byte[] { 0x01, 0x02, 0x03 });
+
+    MapSmsSubmitResult result = map.SendMoForwardShortMessageAsync(operation).GetAwaiter().GetResult();
+
+    AssertEqual(MapSmsOperationCode.MoForwardShortMessage, result.OperationCode, "MAP SMS submitted operation");
+    Assert(result.Dialogue.DialogueId > 0, "MAP SMS should allocate TCAP dialogue");
+    AssertEqual(1, network.SentTransfers.Count, "MAP SMS sent transfer count");
+    AssertEqual(Mtp3ServiceIndicator.Sccp, network.SentTransfers[0].ServiceInformation.ServiceIndicator, "MAP SMS lower service indicator");
+    Assert(
+        SccpUnitdataMessage.TryDecode(network.SentTransfers[0].UserPayload.Span, out SccpUnitdataMessage? unitdata, out string? sccpError),
+        sccpError ?? "SCCP UDT decode failed");
+    Assert(
+        TcapTransactionMessage.TryDecode(unitdata!.UserData.Span, out TcapTransactionMessage? transaction, out string? tcapError),
+        tcapError ?? "TCAP transaction decode failed");
+    AssertEqual(TcapPackageType.Begin, transaction!.PackageType, "MAP SMS TCAP package type");
+}
+
 static void M3uaRejectsRoutingKeyWithoutDestinationPointCode()
 {
     Span<byte> buffer = stackalloc byte[64];
@@ -10667,5 +10766,33 @@ internal sealed class FakeSctpSocket : ISctpSocket
     public void Dispose()
     {
         Disposed = true;
+    }
+}
+
+internal sealed class FakeMtp3Network : IMtp3Network
+{
+    private readonly Queue<Mtp3TransferMessage> _receiveTransfers = new();
+
+    public List<Mtp3TransferMessage> SentTransfers { get; } = new();
+
+    public ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        SentTransfers.Add(message);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask<Mtp3TransferMessage> ReceiveAsync(CancellationToken ct = default)
+    {
+        if (_receiveTransfers.Count == 0)
+        {
+            throw new InvalidOperationException("No fake MTP3 transfer is queued.");
+        }
+
+        return ValueTask.FromResult(_receiveTransfers.Dequeue());
+    }
+
+    public void QueueReceive(Mtp3TransferMessage message)
+    {
+        _receiveTransfers.Enqueue(message);
     }
 }

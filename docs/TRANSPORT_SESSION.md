@@ -1,10 +1,10 @@
 # M3UA Transport Session
 
-`M3uaTransportSession` connects the M3UA processors to an `ISctpSocket`. It is the first async session facade over the transport abstraction.
+`M3uaTransportSession` connects the M3UA processors to an `ISctpTransport`. It remains compatible with `ISctpSocket` through `SctpSocketTransportAdapter`, but new code should prefer the official transport contract.
 
 ## Responsibilities
 
-- Receive one complete M3UA PDU from `ISctpSocket`.
+- Receive one complete M3UA PDU from `ISctpTransport`.
 - Automatically acknowledge inbound Heartbeat messages when requested.
 - Wait for a specific typed message kind across multiple inbound PDUs.
 - Wait for a specific ASP acknowledgement state transition across multiple inbound PDUs.
@@ -14,7 +14,7 @@
 - Send RKM Registration and Deregistration Request messages.
 - Send Management Error and Notify messages.
 - Send SSNM DUNA, DAVA, DAUD, DRST, DUPU, and SCON messages.
-- Send encoded packets through `ISctpSocket`.
+- Send encoded packets through `ISctpTransport`.
 - Expose session-local send, receive, and failure counters.
 - Manage rented buffers with `ArrayPool<byte>`.
 
@@ -22,7 +22,7 @@
 
 ```csharp
 await using M3uaTransportSession session = new(
-    socket,
+    transport,
     inboundProcessor,
     outboundProcessor);
 

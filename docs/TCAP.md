@@ -2,6 +2,12 @@
 
 Phase 4 replaces the early simplified TCAP byte layout with ASN.1 BER-shaped transaction, dialogue, and component primitives.
 
+## Dialogue Contract
+
+`ITcapDialogues` is the official TCAP service boundary consumed by MAP profiles. It depends on `ISccpService` and exposes Begin, Continue, End, and Receive primitives through `TcapDialogueHandle` and request/event models.
+
+`TcapDialogueService` implements this contract over SCCP Unitdata, so MAP code can depend on TCAP dialogue primitives instead of a concrete SCCP implementation.
+
 ## BER Primitives
 
 `TcapBerTag`, `TcapBerElement`, and `TcapBer` provide the low-level TLV boundary used by TCAP.

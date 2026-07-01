@@ -7,7 +7,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Wraps a native SCTP socket as the SDK packet transport contract.
 /// </summary>
-public sealed class NativeSctpSocketAdapter : ISctpSocket
+public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctpAssociation
 {
     private readonly Socket _socket;
     private readonly SctpConnectionOptions _options;
@@ -33,6 +33,12 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
 
     /// <summary>The current association state.</summary>
     public SctpAssociationState AssociationState => _disposed ? SctpAssociationState.Closed : _associationState;
+
+    /// <inheritdoc />
+    public ISctpAssociation Association => this;
+
+    /// <inheritdoc />
+    public SctpAssociationState State => AssociationState;
 
     /// <summary>The recorded association lifecycle events.</summary>
     public IReadOnlyList<SctpAssociationJournalEntry> AssociationEvents => _associationJournal.Snapshot();
@@ -75,6 +81,13 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
     }
 
     /// <inheritdoc />
+    async ValueTask ISctpTransport.SendAsync(SctpOutboundMessage message, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        await SendAsync(message.Payload, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken ct = default)
     {
         ThrowIfDisposed();
@@ -90,6 +103,13 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
         }
 
         return received;
+    }
+
+    /// <inheritdoc />
+    async ValueTask<SctpReceiveResult> ISctpTransport.ReceiveAsync(Memory<byte> buffer, CancellationToken ct)
+    {
+        int received = await ReceiveAsync(buffer, ct).ConfigureAwait(false);
+        return new(received, new SctpPayloadMetadata(streamId: 0, payloadProtocolIdentifier: _options.DefaultPayloadProtocolIdentifier));
     }
 
     /// <summary>Captures a native SCTP transport health snapshot.</summary>
@@ -108,6 +128,12 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
     }
 
     /// <inheritdoc />
+    public IReadOnlyList<SctpAssociationJournalEntry> SnapshotEvents()
+    {
+        return _associationJournal.Snapshot();
+    }
+
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_disposed)
@@ -119,6 +145,13 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket
         _associationState = SctpAssociationState.Closed;
         _associationJournal.Record(new(SctpAssociationEventType.Closed, SctpAssociationState.Closed, "disposed"));
         _socket.Dispose();
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
     }
 
     private void ThrowIfDisposed()

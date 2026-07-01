@@ -40,6 +40,7 @@ The current alpha track focuses on:
 
 - M3UA framing, parsing, routing, diagnostics, and ASP state handling.
 - Transport abstraction for SIGTRAN workloads.
+- Official layer contracts from SCTP through MAP SMS for dependency-injected applications.
 - SCTP direction, including Linux native SCTP validation.
 - SCCP, TCAP, and MAP foundations for future standards-oriented layers.
 - Byte-level tests and protocol validation.
@@ -133,6 +134,7 @@ Start here:
 
 - [SDK roadmap](docs/SDK_ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
 - [SCCP](docs/SCCP.md)

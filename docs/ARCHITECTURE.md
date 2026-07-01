@@ -19,7 +19,21 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 - Decoders validate lengths, padding, and required parameters before exposing typed messages.
 - Public APIs must carry XML documentation because the package is intended for external SDK users.
 - Experimental layers stay clearly labelled until they match the relevant standards.
-- Transport concerns are kept behind interfaces so M3UA can run over production SCTP later without changing protocol APIs.
+- Transport and protocol-layer concerns are kept behind interfaces so M3UA, SCCP, TCAP, and MAP can swap lower-layer implementations without changing upper-layer APIs.
+
+## Official Layer Contracts
+
+| Layer | Contract | Lower Contract |
+| --- | --- | --- |
+| SCTP association | `ISctpAssociation` | Platform association state |
+| SCTP transport | `ISctpTransport` | `ISctpAssociation` |
+| MTP2 link | `IMtp2Link` | SCTP, M2PA, or physical link provider |
+| MTP3 network | `IMtp3Network` | `IMtp2Link` or M3UA adapter |
+| SCCP service | `ISccpService` | `IMtp3Network` |
+| TCAP dialogues | `ITcapDialogues` | `ISccpService` |
+| MAP SMS service | `IMapSmsService` | `ITcapDialogues` |
+
+See [Layer Contracts](LAYER_CONTRACTS.md) for the product-facing dependency direction and composition guidance.
 
 ## M3UA Flow
 
@@ -29,7 +43,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 4. `M3uaTypedMessageParser` converts generic messages into typed DATA, ASPSM, ASPTM, management, SSNM, and RKM objects.
 5. `M3uaInboundProcessor` can orchestrate decode, typed dispatch, ASP acknowledgement state updates, and DATA route resolution.
 6. `M3uaOutboundProcessor` can apply association defaults and optional ASP active-state policy while building outbound messages.
-7. `M3uaTransportSession` connects processors to an `ISctpSocket` for async send/receive flows.
+7. `M3uaTransportSession` connects processors to an `ISctpTransport` for async send/receive flows.
 8. `M3uaAspClient` can run common ASP startup, heartbeat, and shutdown handshakes over the transport session.
 9. `M3uaRkmClient` can run dynamic Routing Key registration and deregistration handshakes.
 10. `M3uaPayloadRouteTable` can resolve typed DATA messages to application routes.
@@ -39,7 +53,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 
 ## Production Boundaries
 
-The current SDK should be consumed as an M3UA-focused alpha. SCCP, TCAP, MAP, and interoperability tooling foundations are present, but commercial integrations must still isolate experimental APIs and collect external interoperability evidence before production claims.
+The current SDK should be consumed as an M3UA-focused alpha with official layer contracts available for application composition. SCCP, TCAP, MAP, and interoperability tooling foundations are present, but production integrations must still isolate experimental APIs and collect external interoperability evidence before production claims.
 
 ## Planned Stabilization Order
 

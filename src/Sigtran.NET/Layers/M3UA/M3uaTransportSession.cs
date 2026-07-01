@@ -1,6 +1,7 @@
 using System.Buffers;
 
 using Sigtran.NET.Core.Interfaces;
+using Sigtran.NET.Layers.SCTP;
 
 namespace Sigtran.NET.Layers.M3UA;
 
@@ -75,7 +76,7 @@ public readonly struct M3uaTransportSessionHealth
 /// </summary>
 public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
 {
-    private readonly ISctpSocket _socket;
+    private readonly ISctpTransport _transport;
     private readonly bool _leaveOpen;
     private long _sentPdus;
     private long _receivedPdus;
@@ -95,13 +96,34 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
         M3uaOutboundProcessor? outboundProcessor = null,
         int maxPduSize = ushort.MaxValue,
         bool leaveOpen = false)
+        : this(
+            new SctpSocketTransportAdapter(socket, leaveOpen: leaveOpen),
+            inboundProcessor,
+            outboundProcessor,
+            maxPduSize,
+            leaveOpen: false)
+    {
+    }
+
+    /// <summary>Creates a transport-backed M3UA session.</summary>
+    /// <param name="transport">The SCTP transport that reads and writes complete M3UA user messages.</param>
+    /// <param name="inboundProcessor">The inbound processor used for received packets.</param>
+    /// <param name="outboundProcessor">The outbound processor used for sent packets.</param>
+    /// <param name="maxPduSize">The maximum inbound or outbound M3UA PDU size in bytes.</param>
+    /// <param name="leaveOpen">Whether disposing this session should leave the transport open.</param>
+    public M3uaTransportSession(
+        ISctpTransport transport,
+        M3uaInboundProcessor? inboundProcessor = null,
+        M3uaOutboundProcessor? outboundProcessor = null,
+        int maxPduSize = ushort.MaxValue,
+        bool leaveOpen = false)
     {
         if (maxPduSize < M3uaProtocol.HeaderLength)
         {
             throw new ArgumentOutOfRangeException(nameof(maxPduSize), "Maximum PDU size must fit an M3UA header.");
         }
 
-        _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        _transport = transport ?? throw new ArgumentNullException(nameof(transport));
         InboundProcessor = inboundProcessor ?? new M3uaInboundProcessor();
         OutboundProcessor = outboundProcessor ?? new M3uaOutboundProcessor(InboundProcessor.AspSession);
         MaxPduSize = maxPduSize;
@@ -168,7 +190,8 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
         bool failureCounted = false;
         try
         {
-            int received = await _socket.ReceiveAsync(rented.AsMemory(0, MaxPduSize), ct).ConfigureAwait(false);
+            SctpReceiveResult receiveResult = await _transport.ReceiveAsync(rented.AsMemory(0, MaxPduSize), ct).ConfigureAwait(false);
+            int received = receiveResult.BytesReceived;
             if (received == 0)
             {
                 return null;
@@ -714,15 +737,23 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
         _disposed = true;
         if (!_leaveOpen)
         {
-            _socket.Dispose();
+            _transport.Dispose();
         }
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        Dispose();
-        return ValueTask.CompletedTask;
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        if (!_leaveOpen)
+        {
+            await _transport.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private async Task BuildAndSendAsync(PacketBuilder builder, CancellationToken ct)
@@ -739,7 +770,10 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
                 throw new InvalidOperationException(error);
             }
 
-            await _socket.SendAsync(rented.AsMemory(0, written), ct).ConfigureAwait(false);
+            SctpOutboundMessage message = new(
+                rented.AsMemory(0, written).ToArray(),
+                new SctpPayloadMetadata(streamId: 0, payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua));
+            await _transport.SendAsync(message, ct).ConfigureAwait(false);
             Interlocked.Increment(ref _sentPdus);
         }
         catch

@@ -32,3 +32,9 @@ label.Encode(buffer);
 ```
 
 The label validates point-code and SLS ranges before encoding, which keeps SCCP and M3UA call sites from silently producing malformed protocol data.
+
+## Network Contract
+
+`IMtp3Network` is the public MTP3 transfer contract consumed by SCCP and other MTP3 users. It exchanges `Mtp3TransferMessage` values that pair a service information octet, routing label, user payload, and optional adaptation-layer values such as Network Appearance, Routing Context, and Correlation Id.
+
+`M3uaMtp3Network` adapts `M3uaTransportSession` to `IMtp3Network`, so SCCP and higher layers can work against the MTP3 contract without depending on the concrete M3UA session implementation.

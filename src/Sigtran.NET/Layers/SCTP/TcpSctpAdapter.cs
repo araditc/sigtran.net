@@ -12,7 +12,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// suitable for production use but allows development and testing on
 /// systems where SCTP is unavailable.
 /// </summary>
-public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
+public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket, ISctpTransport, ISctpAssociation
 {
     private readonly TcpClient _client;
     private readonly NetworkStream _stream;
@@ -37,6 +37,12 @@ public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
 
     /// <summary>The current development adapter association state.</summary>
     public SctpAssociationState AssociationState => _disposed ? SctpAssociationState.Closed : SctpAssociationState.Established;
+
+    /// <inheritdoc />
+    public ISctpAssociation Association => this;
+
+    /// <inheritdoc />
+    public SctpAssociationState State => AssociationState;
 
     /// <inheritdoc />
     public async Task SendAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default)
@@ -72,6 +78,13 @@ public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
     }
 
     /// <inheritdoc />
+    async ValueTask ISctpTransport.SendAsync(SctpOutboundMessage message, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        await SendAsync(message.Payload, message.Metadata, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<int> ReceiveAsync(Memory<byte> buffer, CancellationToken ct = default)
     {
         SctpReceiveResult result = await ReceiveWithMetadataAsync(buffer, ct).ConfigureAwait(false);
@@ -82,6 +95,19 @@ public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
     async Task<SctpReceiveResult> ISctpMetadataSocket.ReceiveAsync(Memory<byte> buffer, CancellationToken ct)
     {
         return await ReceiveWithMetadataAsync(buffer, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    async ValueTask<SctpReceiveResult> ISctpTransport.ReceiveAsync(Memory<byte> buffer, CancellationToken ct)
+    {
+        return await ReceiveWithMetadataAsync(buffer, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<SctpAssociationJournalEntry> SnapshotEvents()
+    {
+        SctpAssociationEventType eventType = _disposed ? SctpAssociationEventType.Closed : SctpAssociationEventType.Established;
+        return [new SctpAssociationJournalEntry(DateTimeOffset.UtcNow, new SctpAssociationEvent(eventType, State, "development TCP adapter"))];
     }
 
     /// <summary>
@@ -159,5 +185,12 @@ public sealed class TcpSctpAdapter : ISctpSocket, ISctpMetadataSocket
         _disposed = true;
         _stream.Dispose();
         _client.Dispose();
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
     }
 }

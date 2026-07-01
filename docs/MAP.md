@@ -2,6 +2,12 @@
 
 Phase 5 builds MAP SMS operation models and BER bindings on top of the TCAP foundation.
 
+## Service Contract
+
+`IMapSmsService` is the official SMS-oriented MAP service boundary. It depends on `ITcapDialogues` and exposes operation-level methods for MO-ForwardSM, MT-ForwardSM, and SendRoutingInfoForSM.
+
+`MapSmsService` composes `MapSmsTcapClient` with the TCAP dialogue contract, allowing applications to inject alternate TCAP dialogue managers without changing MAP SMS code.
+
 ## Operation Catalog
 
 `MapSmsOperationCatalog` exposes the MAP SMS operations targeted by the SDK profile:
