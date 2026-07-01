@@ -19,6 +19,8 @@ SctpPayloadMetadata metadata = new(
 
 The metadata contract is no longer limited to optional helpers. Existing `ISctpSocket` implementations continue to work for M3UA packet send/receive through `SctpSocketTransportAdapter`, while production transports should implement `ISctpTransport` directly so higher layers can opt into SCTP-specific behavior without binding to a concrete socket.
 
+On Linux, `NativeSctpSocketAdapter` now uses lksctp `sctp_sendmsg` and `sctp_recvmsg` for `ISctpTransport` operations. That path preserves outbound stream id, PPID, and unordered metadata and returns kernel-provided receive metadata through `SctpReceiveResult`.
+
 The development `TcpSctpAdapter` now implements `ISctpMetadataSocket`, `ISctpTransport`, and `ISctpAssociation` with default M3UA PPID metadata and exposes a health snapshot. It still uses TCP length-prefix framing and must not be treated as production SCTP.
 
 `SigtranTransportSamples.CreateLocalM3uaAspToSg()` provides a documented local TCP sample scenario that maps an ASP endpoint to an SG endpoint with M3UA PPID metadata. It is intended for demos and deterministic tooling only.
@@ -103,6 +105,21 @@ This contract is intentionally package-neutral. Platform-specific transports can
 `SctpFaultRecovery.Decide(...)` combines a fault with an `SctpReconnectSchedule` and returns a `SctpRecoveryDecision`. Reconnectable faults schedule the next reconnect attempt while the schedule has capacity; exhausted reconnect schedules fail fast. Backpressure rejection asks the caller to retry after drain, caller cancellation closes the association, and protocol errors fail fast for operator attention.
 
 Native transports should record the decision in diagnostics before reconnecting or closing the association.
+
+## Production Native SCTP Options
+
+`NativeSctpTransportOptions` binds the production behavior used by native SCTP transports:
+
+- `SctpBackpressurePolicy`
+- `SctpOperationTimeoutPolicy`
+- `SctpReconnectPolicy`
+- kernel metadata requirement
+
+`NativeSctpConnector` records `NativeSctpConnectionAttempt` entries for initial connect and reconnect attempts. The Phase 45 Linux sample uses those records as reconnect evidence.
+
+`NativeSctpSocketAdapter.GetQueueMetrics()` returns `SctpTransportQueueMetrics` for queued send messages, queued bytes, pending receives, sent/received counters, backpressure rejections, and graceful shutdown count.
+
+`NativeSctpSocketAdapter.ShutdownAsync(...)` moves the association through `ShuttingDown` and `Closed` lifecycle events and records graceful shutdown metrics.
 
 ## Transport Diagnostics
 
@@ -196,6 +213,10 @@ The probe does not mark the transport production-ready by itself. It is the firs
 `NativeSctpConnector` performs the client-side bind/connect path and returns an established native adapter.
 
 `NativeSctpListener` provides the server-side bind/listen/accept path for Linux native SCTP lab scenarios.
+
+`scripts/run-phase45-native-sctp-lab.sh` runs the production transport sample on Linux. It publishes the lab binary, captures PCAP with `tcpdump`, validates stream/PPID metadata from `sctp_recvmsg`, records reconnect attempts, writes queue metrics, performs graceful shutdown, decodes SCTP with TShark, generates a report, and computes SHA-256 digests.
+
+Run `phase45-native-sctp-20260701T103951Z` passed this script on a Linux VM and retained PCAP, trace, TShark decode, report, and digest evidence in `docs/evidence/PHASE45_NATIVE_SCTP_20260701T103951Z.md`.
 
 `NativeSctpLab.CreateFromEnvironment()` keeps native SCTP integration verification opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.
 

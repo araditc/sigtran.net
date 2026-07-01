@@ -392,6 +392,16 @@ Status: Phase 43 is foundation-complete. The SDK can model the stable release ta
 
 Status: Phase 44 is complete. `ISctpAssociation`, `ISctpTransport`, `IMtp2Link`, `IMtp3Network`, `ISccpService`, `ITcapDialogues`, and `IMapSmsService` are available. Existing SCTP adapters and `M3uaTransportSession` support the official transport contract, `M3uaMtp3Network` exposes M3UA as MTP3, and SCCP/TCAP/MAP service classes compose through lower-layer interfaces. Production readiness still depends on retained native SCTP, external peer, benchmark, supply-chain, and stable publication evidence.
 
+## Phase 45 - Native SCTP Production Transport
+
+- Use Linux lksctp metadata APIs for real stream id, PPID, unordered flag, and receive metadata.
+- Add production transport options for backpressure, timeout, reconnect, and metadata policy.
+- Track send/receive queue metrics, lifecycle events, fault recovery decisions, and graceful shutdowns.
+- Validate reconnect behavior and metadata through a repeatable Linux sample.
+- Retain PCAP, logs, SDK trace, TShark comparison, report, and SHA-256 digests from the sample run.
+
+Status: Phase 45 is evidence-complete for native Linux SCTP loopback. The native SCTP adapter uses lksctp metadata calls, records queue metrics and diagnostics, enforces backpressure, supports graceful shutdown, and the connector records reconnect attempts. Run `phase45-native-sctp-20260701T103951Z` retained PCAP/log/trace/comparison/report/digest artifacts and validated stream id `1`, PPID `3`, receive metadata, reconnect, and graceful shutdown. Independent external peer interoperability remains a separate production gate.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:

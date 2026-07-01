@@ -67,6 +67,7 @@ public sealed class NativeSctpListener : IDisposable
     private readonly INativeSctpSocketFactory _socketFactory;
     private readonly NativeSctpEndpointResolver _resolver = new();
     private Socket? _listenSocket;
+    private NativeSctpTransportOptions _transportOptions = new();
 
     /// <summary>Creates a native SCTP listener.</summary>
     /// <param name="socketFactory">The socket factory.</param>
@@ -77,8 +78,12 @@ public sealed class NativeSctpListener : IDisposable
 
     /// <summary>Starts listening on the configured local endpoint.</summary>
     /// <param name="options">The listener options.</param>
+    /// <param name="transportOptions">The optional production transport behavior options for accepted associations.</param>
     /// <param name="ct">A cancellation token.</param>
-    public async Task StartAsync(NativeSctpListenerOptions options, CancellationToken ct = default)
+    public async Task StartAsync(
+        NativeSctpListenerOptions options,
+        NativeSctpTransportOptions? transportOptions = null,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(options);
         if (_listenSocket is not null)
@@ -86,10 +91,16 @@ public sealed class NativeSctpListener : IDisposable
             throw new InvalidOperationException("Native SCTP listener has already started.");
         }
 
+        _transportOptions = transportOptions ?? new NativeSctpTransportOptions();
         IPEndPoint local = await _resolver.ResolveAsync(options.LocalEndpoint, ct).ConfigureAwait(false);
         Socket socket = _socketFactory.CreateSocket();
         try
         {
+            if (_transportOptions.RequireKernelMetadata)
+            {
+                NativeSctpInterop.ConfigureSocket(socket, options.OutboundStreams, options.InboundStreams);
+            }
+
             socket.Bind(local);
             socket.Listen(options.Backlog);
             _listenSocket = socket;
@@ -110,6 +121,10 @@ public sealed class NativeSctpListener : IDisposable
         ArgumentNullException.ThrowIfNull(options);
         Socket listenSocket = _listenSocket ?? throw new InvalidOperationException("Native SCTP listener has not started.");
         Socket accepted = await listenSocket.AcceptAsync(ct).ConfigureAwait(false);
+        if (_transportOptions.RequireKernelMetadata)
+        {
+            NativeSctpInterop.EnableReceiveMetadata(accepted);
+        }
 
         SctpEndpoint remote = ToSctpEndpoint(accepted.RemoteEndPoint, "remote");
         SctpConnectionOptions connectionOptions = new(
@@ -119,7 +134,7 @@ public sealed class NativeSctpListener : IDisposable
             options.InboundStreams,
             options.DefaultPayloadProtocolIdentifier);
 
-        return new NativeSctpSocketAdapter(accepted, connectionOptions, SctpAssociationState.Established);
+        return new NativeSctpSocketAdapter(accepted, connectionOptions, SctpAssociationState.Established, _transportOptions);
     }
 
     /// <inheritdoc />

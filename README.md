@@ -41,6 +41,7 @@ The current alpha track focuses on:
 - M3UA framing, parsing, routing, diagnostics, and ASP state handling.
 - Transport abstraction for SIGTRAN workloads.
 - Official layer contracts from SCTP through MAP SMS for dependency-injected applications.
+- Linux native SCTP production transport hardening with retained stream/PPID metadata validation evidence.
 - SCTP direction, including Linux native SCTP validation.
 - SCCP, TCAP, and MAP foundations for future standards-oriented layers.
 - Byte-level tests and protocol validation.
@@ -55,7 +56,7 @@ The current alpha track focuses on:
 | Area | Current Direction |
 | --- | --- |
 | M3UA | First production-oriented milestone; framing, parsing, routing, ASP state, diagnostics, and management flows are the main focus. |
-| SCTP | Transport abstraction is in place; Linux native SCTP validation is part of the production-readiness path. |
+| SCTP | Transport abstraction is in place; native Linux SCTP loopback evidence validates stream id, PPID, receive metadata, reconnect, metrics, and graceful shutdown. |
 | SCCP | Foundation work exists and is moving toward standards-oriented validation. |
 | TCAP | Foundation work exists and requires retained interoperability and MAP profile validation. |
 | MAP | SMS-oriented MAP foundations are part of the roadmap and require external validation before production claims. |
@@ -137,6 +138,7 @@ Start here:
 - [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
+- [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
 - [SCCP](docs/SCCP.md)
 - [TCAP](docs/TCAP.md)
 - [MAP SMS profile](docs/MAP.md)

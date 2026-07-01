@@ -363,6 +363,8 @@ Run("Native SCTP listener validates options and unsupported platform", NativeSct
 Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
 Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessSnapshotsFoundationAndVerificationGates);
 Run("SIGTRAN native SCTP implementation status summarizes foundation", SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation);
+Run("Native SCTP transport options expose production policies", NativeSctpTransportOptionsExposeProductionPolicies);
+Run("Native SCTP connector records reconnect attempts", NativeSctpConnectorRecordsReconnectAttempts);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
@@ -7322,6 +7324,54 @@ static void NativeSctpLabProfileIsOptIn()
     }
 }
 
+static void NativeSctpTransportOptionsExposeProductionPolicies()
+{
+    NativeSctpTransportOptions options = new(
+        new SctpBackpressurePolicy(maxQueuedMessages: 2, maxQueuedBytes: 32),
+        new SctpOperationTimeoutPolicy(sendTimeout: TimeSpan.FromMilliseconds(250)),
+        new SctpReconnectPolicy(maxAttempts: 2, initialDelay: TimeSpan.Zero),
+        requireKernelMetadata: true);
+
+    AssertEqual(2, options.BackpressurePolicy.MaxQueuedMessages, "native transport backpressure message limit");
+    AssertEqual(TimeSpan.FromMilliseconds(250), options.TimeoutPolicy.SendTimeout, "native transport send timeout");
+    AssertEqual(2, options.ReconnectPolicy.MaxAttempts, "native transport reconnect attempts");
+    Assert(options.RequireKernelMetadata, "native transport should require kernel metadata");
+
+    SctpTransportQueueMetrics metrics = new(
+        queuedSendMessages: 1,
+        queuedSendBytes: 16,
+        pendingReceiveOperations: 1,
+        sentMessages: 2,
+        receivedMessages: 3,
+        backpressureRejectedMessages: 4,
+        gracefulShutdowns: 5);
+    Assert(metrics.Describe().Contains("gracefulShutdowns=5", StringComparison.Ordinal), metrics.Describe());
+}
+
+static void NativeSctpConnectorRecordsReconnectAttempts()
+{
+    NativeSctpConnector connector = new(new TcpSocketFactoryForNativeSctpConnectorTests());
+    SctpConnectionOptions options = new(
+        new SctpEndpoint("127.0.0.1", 9),
+        connectTimeout: TimeSpan.FromMilliseconds(25));
+    NativeSctpTransportOptions transportOptions = new(
+        reconnectPolicy: new SctpReconnectPolicy(maxAttempts: 1, initialDelay: TimeSpan.Zero),
+        requireKernelMetadata: false);
+
+    try
+    {
+        connector.ConnectAsync(options, transportOptions).GetAwaiter().GetResult();
+        throw new InvalidOperationException("Expected native SCTP connector test connect to fail.");
+    }
+    catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+    {
+    }
+
+    Assert(connector.Attempts.Count >= 1, "connector should record failed attempts");
+    Assert(!connector.Attempts[0].Successful, "first connector attempt should fail");
+    Assert(connector.Attempts[0].AttemptNumber == 1, "first connector attempt number");
+}
+
 static void NativeSctpReadinessSnapshotsFoundationAndVerificationGates()
 {
     NativeSctpReadinessSnapshot report = NativeSctpReadiness.GetReport();
@@ -10794,5 +10844,13 @@ internal sealed class FakeMtp3Network : IMtp3Network
     public void QueueReceive(Mtp3TransferMessage message)
     {
         _receiveTransfers.Enqueue(message);
+    }
+}
+
+internal sealed class TcpSocketFactoryForNativeSctpConnectorTests : INativeSctpSocketFactory
+{
+    public Socket CreateSocket()
+    {
+        return new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
     }
 }

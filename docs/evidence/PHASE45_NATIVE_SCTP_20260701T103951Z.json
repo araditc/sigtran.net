@@ -1,0 +1,58 @@
+{
+  "runId": "phase45-native-sctp-20260701T103951Z",
+  "phase": 45,
+  "title": "Native SCTP Production Transport",
+  "host": "sigtrannet",
+  "vmAddress": "192.168.100.28",
+  "kernel": "5.15.0-181-generic",
+  "artifactRoot": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z",
+  "result": "PASS",
+  "streamId": 1,
+  "payloadProtocolIdentifier": 3,
+  "messageEvents": 14,
+  "metadataValidation": true,
+  "streamValidation": true,
+  "ppidValidation": true,
+  "reconnectFailedAttempts": 3,
+  "reconnectSuccessfulAttempts": 1,
+  "shutdownEvents": 2,
+  "metricsSnapshots": 4,
+  "artifacts": [
+    {
+      "kind": "pcap",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/pcap/phase45-native-sctp-20260701T103951Z.pcap",
+      "sha256": "33c7708b66fba17b7f5e72ed30e06be3e1f8e01d27e60c25d8c7165fe5663f35"
+    },
+    {
+      "kind": "sdk-trace",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/trace/phase45-native-sctp-20260701T103951Z.jsonl",
+      "sha256": "abaa2a9153b10db6abd73050c85d26c820d16d892594e781e4ade9559e863c90"
+    },
+    {
+      "kind": "tshark-decode",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/comparison/phase45-native-sctp-20260701T103951Z-tshark.txt",
+      "sha256": "2352dfce5f929f4678c9194d7e9819d97086344eb7443db5793b4f5a1f053a95"
+    },
+    {
+      "kind": "run-report",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/reports/phase45-native-sctp-20260701T103951Z-report.md",
+      "sha256": "e9bda8768130a2823195be5cd4e499e70045f5e8e55e3435f798e0e96d706858"
+    },
+    {
+      "kind": "tcpdump-log",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/logs/phase45-native-sctp-20260701T103951Z-tcpdump.log",
+      "sha256": "63900285e2c7224d0d120d3642337715793ed8a012ed8b574dea2bd9e765e761"
+    },
+    {
+      "kind": "publish-log",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/logs/phase45-native-sctp-20260701T103951Z-publish.log",
+      "sha256": "4146f251e8a70c35f48de67b0e1592b0ce465f2d26f1b4d5fba716e9a925d921"
+    },
+    {
+      "kind": "lab-log",
+      "path": "/home/ammar/sigtran-phase45-run/artifacts/phase45-native-sctp-20260701T103951Z/logs/phase45-native-sctp-20260701T103951Z-lab.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "Closes the native Linux SCTP loopback evidence gate for stream id, PPID, receive metadata, reconnect observation, metrics, graceful shutdown, and retained PCAP/log/trace/report/digest artifacts. Independent external peer interoperability evidence remains a separate gate."
+}
