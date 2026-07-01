@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes external peer interoperability execution readiness.
 /// </summary>
-public sealed class SigtranExternalPeerInteropReadinessReport
+public sealed class SigtranExternalPeerInteropReadinessSnapshot
 {
     /// <summary>Creates an external peer interoperability readiness report.</summary>
     /// <param name="hasEnvironment">Whether environment requirements are available.</param>
@@ -15,7 +15,7 @@ public sealed class SigtranExternalPeerInteropReadinessReport
     /// <param name="hasRunReport">Whether run report support is available.</param>
     /// <param name="hasEvidenceRegistry">Whether evidence registry is available.</param>
     /// <param name="hasPassingEvidence">Whether passing evidence exists.</param>
-    public SigtranExternalPeerInteropReadinessReport(
+    public SigtranExternalPeerInteropReadinessSnapshot(
         bool hasEnvironment,
         bool hasConfiguration,
         bool hasTraceExpectations,
@@ -78,7 +78,7 @@ public static class SigtranExternalPeerInteropReadiness
 {
     /// <summary>Returns the current external peer interoperability readiness report.</summary>
     /// <returns>The current external peer interoperability readiness report.</returns>
-    public static SigtranExternalPeerInteropReadinessReport GetReport()
+    public static SigtranExternalPeerInteropReadinessSnapshot GetReport()
     {
         return new(
             hasEnvironment: SigtranExternalPeerInteropEnvironments.CreateDefault().HasMinimumLabPrerequisites,

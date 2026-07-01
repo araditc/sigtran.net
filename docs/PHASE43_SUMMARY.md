@@ -1,4 +1,4 @@
-# Phase 43 Summary - Stable Commercial Release Gate
+# Phase 43 Summary - Stable Production Release Gate
 
 Phase 43 is foundation-complete. It creates the final stable commercial release gate without pretending that live stable publication has happened.
 

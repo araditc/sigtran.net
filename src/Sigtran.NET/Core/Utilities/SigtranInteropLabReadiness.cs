@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the interoperability lab readiness state.
 /// </summary>
-public sealed class SigtranInteropLabReadinessReport
+public sealed class SigtranInteropLabReadinessSnapshot
 {
     /// <summary>Creates an interoperability lab readiness report.</summary>
     /// <param name="hasScenarioCatalog">Whether scenario catalog is available.</param>
@@ -14,7 +14,7 @@ public sealed class SigtranInteropLabReadinessReport
     /// <param name="hasEvidencePromotion">Whether evidence promotion is available.</param>
     /// <param name="hasCiProfile">Whether CI profile is available.</param>
     /// <param name="hasPassingExternalEvidence">Whether passing external evidence exists.</param>
-    public SigtranInteropLabReadinessReport(
+    public SigtranInteropLabReadinessSnapshot(
         bool hasScenarioCatalog,
         bool hasArtifactManifests,
         bool hasRunReports,
@@ -85,7 +85,7 @@ public static class SigtranInteropLabReadiness
 {
     /// <summary>Returns the current interoperability lab readiness report.</summary>
     /// <returns>The current interoperability lab readiness report.</returns>
-    public static SigtranInteropLabReadinessReport GetReport()
+    public static SigtranInteropLabReadinessSnapshot GetReport()
     {
         return new(
             hasScenarioCatalog: SigtranInteropLabScenarios.GetScenarios().Count > 0,

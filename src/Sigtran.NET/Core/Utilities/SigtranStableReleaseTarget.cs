@@ -1,11 +1,11 @@
 namespace Sigtran.NET.Core.Utilities;
 
 /// <summary>
-/// Describes the stable commercial release target being evaluated.
+/// Describes the stable release release target being evaluated.
 /// </summary>
 public sealed class SigtranStableReleaseTarget
 {
-    /// <summary>Creates a stable commercial release target.</summary>
+    /// <summary>Creates a stable release release target.</summary>
     /// <param name="version">The stable package version.</param>
     /// <param name="sourceCommit">The source commit covered by the release.</param>
     /// <param name="targetTag">The stable release tag.</param>
@@ -60,7 +60,7 @@ public sealed class SigtranStableReleaseTarget
     /// <summary>Whether the target creation time is normalized to UTC.</summary>
     public bool HasUtcCreationTime => CreatedAtUtc.Offset == TimeSpan.Zero;
 
-    /// <summary>Whether the target is ready for stable commercial gate evaluation.</summary>
+    /// <summary>Whether the target is ready for stable release gate evaluation.</summary>
     public bool IsReadyForStableGate => HasStableVersion
         && HasSourceCommit
         && HasMatchingTag
@@ -75,17 +75,17 @@ public sealed class SigtranStableReleaseTarget
 }
 
 /// <summary>
-/// Provides stable commercial release target helpers.
+/// Provides stable release release target helpers.
 /// </summary>
 public static class SigtranStableReleaseTargets
 {
-    /// <summary>Creates a stable commercial release target.</summary>
+    /// <summary>Creates a stable release release target.</summary>
     /// <param name="version">The stable package version.</param>
     /// <param name="sourceCommit">The source commit covered by the release.</param>
     /// <param name="artifactRoot">The retained stable release artifact root.</param>
     /// <param name="requestedBy">The requester identity.</param>
     /// <param name="createdAtUtc">The UTC target creation time.</param>
-    /// <returns>The stable commercial release target.</returns>
+    /// <returns>The stable release release target.</returns>
     public static SigtranStableReleaseTarget Create(
         string version,
         string sourceCommit,

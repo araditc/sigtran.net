@@ -15,7 +15,7 @@ public static class SigtranNativeSctpLabVerificationStatus
         "native-sctp-evidence-registry",
         "native-sctp-lab-readiness",
         "native-sctp-lab-ci-profile",
-        "native-sctp-commercial-gate",
+        "native-sctp-production-gate",
         "documentation"
     ];
 

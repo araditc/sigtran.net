@@ -81,7 +81,7 @@ The manifest is the handoff point from local packaging to signing, SBOM, provena
 - Publication channel.
 - Package integrity completion.
 - Supply-chain promotion evidence.
-- Commercial evidence readiness.
+- Production evidence readiness.
 
 The manifest remains incomplete unless integrity, supply-chain, and commercial evidence are all present.
 

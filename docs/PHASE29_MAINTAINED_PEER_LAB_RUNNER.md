@@ -1,10 +1,10 @@
-# Phase 29 Maintained Peer Lab Runner Materialization
+# Phase 29 Reference Peer Lab Runner Materialization
 
-Phase 29 turns the maintained peer lab automation contracts into runner materialization contracts. The goal is to make a real lab runner deterministic about directories, inputs, commands, retained outputs, and handoff checks without pretending that generated plans are the same as real peer evidence.
+Phase 29 turns the reference peer lab automation contracts into runner materialization contracts. The goal is to make a real lab runner deterministic about directories, inputs, commands, retained outputs, and handoff checks without pretending that generated plans are the same as real peer evidence.
 
 ## Unit 1 - Runner Workspace
 
-`SigtranMaintainedPeerLabRunnerWorkspace` now describes the filesystem workspace used by a maintained peer lab runner. It records:
+`SigtranReferencePeerLabRunnerWorkspace` now describes the filesystem workspace used by a reference peer lab runner. It records:
 
 - Runner workspace root.
 - Script root.
@@ -17,7 +17,7 @@ This gives lab automation a single path contract before rendering inputs or star
 
 ## Unit 2 - Runner Input Bundle
 
-`SigtranMaintainedPeerLabRunnerInputBundle` now joins the runner workspace, rendered environment file, and command script into the deterministic input files a lab runner should materialize. It records:
+`SigtranReferencePeerLabRunnerInputBundle` now joins the runner workspace, rendered environment file, and command script into the deterministic input files a lab runner should materialize. It records:
 
 - Environment file path.
 - Command script path.
@@ -29,7 +29,7 @@ The bundle still does not write files or claim evidence. It only defines the exa
 
 ## Unit 3 - Output Artifact Materialization
 
-`SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan` now maps every expected retained artifact to the command expected to produce it. The plan checks:
+`SigtranReferencePeerLabRunnerArtifactMaterializationPlan` now maps every expected retained artifact to the command expected to produce it. The plan checks:
 
 - Required artifact coverage.
 - Output paths under the artifact root.
@@ -40,7 +40,7 @@ This gives the runner a deterministic post-execution checklist before evidence c
 
 ## Unit 4 - Runner Preflight
 
-`SigtranMaintainedPeerLabRunnerPreflight` now evaluates the checks that must pass before real maintained peer lab execution starts:
+`SigtranReferencePeerLabRunnerPreflight` now evaluates the checks that must pass before real reference peer lab execution starts:
 
 - Workspace materialization readiness.
 - Input bundle materialization readiness.
@@ -52,7 +52,7 @@ The preflight report returns stable failed check identifiers so operators can fi
 
 ## Unit 5 - Command Manifest
 
-`SigtranMaintainedPeerLabRunnerCommandManifest` now turns the command plan into an execution manifest. It records:
+`SigtranReferencePeerLabRunnerCommandManifest` now turns the command plan into an execution manifest. It records:
 
 - One-based command sequence.
 - Command kind, name, and command line.
@@ -64,7 +64,7 @@ The manifest is execution-ready only when inputs, outputs, preflight checks, com
 
 ## Unit 6 - Evidence Collection
 
-`SigtranMaintainedPeerLabRunnerEvidenceCollection` now records which expected runner artifacts were retained after execution. It tracks:
+`SigtranReferencePeerLabRunnerEvidenceCollection` now records which expected runner artifacts were retained after execution. It tracks:
 
 - Artifact kind.
 - Artifact path.
@@ -76,7 +76,7 @@ The collection can convert retained artifacts into evidence artifacts, but it in
 
 ## Unit 7 - Digest Generation
 
-`SigtranMaintainedPeerLabRunnerDigestReport` now validates calculated SHA-256 values for retained artifacts and produces the maintained peer lab digest manifest. It checks:
+`SigtranReferencePeerLabRunnerDigestReport` now validates calculated SHA-256 values for retained artifacts and produces the reference peer lab digest manifest. It checks:
 
 - Retained required artifact coverage.
 - Missing digest paths.
@@ -87,7 +87,7 @@ The SDK still does not invent digests. A real runner must calculate them from re
 
 ## Unit 8 - Comparison Handoff
 
-`SigtranMaintainedPeerLabRunnerComparisonHandoff` now bridges runner output into the maintained peer lab evidence bundle. It combines:
+`SigtranReferencePeerLabRunnerComparisonHandoff` now bridges runner output into the reference peer lab evidence bundle. It combines:
 
 - Runner input bundle.
 - Digest report.
@@ -98,7 +98,7 @@ The handoff is ready only when run ids are consistent, digest coverage is comple
 
 ## Unit 9 - Workflow Readiness
 
-`SigtranMaintainedPeerLabRunnerWorkflowReadiness` now evaluates whether the manual self-hosted workflow template can safely execute a materialized runner command manifest. It checks:
+`SigtranReferencePeerLabRunnerWorkflowReadiness` now evaluates whether the manual self-hosted workflow template can safely execute a materialized runner command manifest. It checks:
 
 - Manual dispatch and self-hosted Linux policy.
 - Default CI safety.
@@ -109,7 +109,7 @@ This keeps workflow availability separate from runner readiness and prevents pla
 
 ## Unit 10 - Runner Status
 
-`SigtranMaintainedPeerLabRunnerStatus` now summarizes the completed runner materialization foundation. It reports ten completed capabilities:
+`SigtranReferencePeerLabRunnerStatus` now summarizes the completed runner materialization foundation. It reports ten completed capabilities:
 
 - Runner workspace materialization.
 - Runner input bundle.
@@ -122,7 +122,7 @@ This keeps workflow availability separate from runner readiness and prevents pla
 - Runner workflow readiness.
 - Runner status reporting.
 
-The foundation report is ready, but commercial readiness remains blocked until a real maintained peer run produces retained runner evidence.
+The foundation report is ready, but commercial readiness remains blocked until a real reference peer run produces retained runner evidence.
 
 ## Validation
 

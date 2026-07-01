@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes interoperability tooling readiness.
 /// </summary>
-public sealed class SigtranInteroperabilityReadinessReport
+public sealed class SigtranInteroperabilityReadinessSnapshot
 {
     /// <summary>Creates an interoperability tooling readiness report.</summary>
     /// <param name="hasTraceFormatter">Whether trace formatting is available.</param>
@@ -15,7 +15,7 @@ public sealed class SigtranInteroperabilityReadinessReport
     /// <param name="hasSampleCatalog">Whether the sample catalog is available.</param>
     /// <param name="hasCiProfile">Whether the CI verification profile is available.</param>
     /// <param name="hasExternalInteroperabilityLab">Whether external interoperability lab evidence is available.</param>
-    public SigtranInteroperabilityReadinessReport(
+    public SigtranInteroperabilityReadinessSnapshot(
         bool hasTraceFormatter,
         bool hasConformanceRegistry,
         bool hasBuiltInVectors,
@@ -104,7 +104,7 @@ public static class SigtranInteroperabilityReadiness
 
     /// <summary>Returns the current interoperability tooling readiness report.</summary>
     /// <returns>The current readiness report.</returns>
-    public static SigtranInteroperabilityReadinessReport GetReport()
+    public static SigtranInteroperabilityReadinessSnapshot GetReport()
     {
         return new(
             hasTraceFormatter: true,

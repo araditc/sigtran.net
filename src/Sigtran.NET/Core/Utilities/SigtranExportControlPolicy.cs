@@ -6,8 +6,8 @@ namespace Sigtran.NET.Core.Utilities;
 public sealed class SigtranExportControlPolicy
 {
     /// <summary>Creates an export-control policy.</summary>
-    /// <param name="requiresLawfulUseAttestation">Whether lawful-use attestation is required for commercial deployment.</param>
-    /// <param name="requiresSanctionsScreening">Whether sanctions screening is required by commercial adopters.</param>
+    /// <param name="requiresLawfulUseAttestation">Whether lawful-use attestation is required for production deployment.</param>
+    /// <param name="requiresSanctionsScreening">Whether sanctions screening is required by production adopters.</param>
     /// <param name="requiresOperatorAuthorization">Whether operator authorization is required for live SS7 network use.</param>
     /// <param name="notice">The policy notice.</param>
     public SigtranExportControlPolicy(
@@ -22,10 +22,10 @@ public sealed class SigtranExportControlPolicy
         Notice = string.IsNullOrWhiteSpace(notice) ? throw new ArgumentException("Policy notice is required.", nameof(notice)) : notice;
     }
 
-    /// <summary>Whether lawful-use attestation is required for commercial deployment.</summary>
+    /// <summary>Whether lawful-use attestation is required for production deployment.</summary>
     public bool RequiresLawfulUseAttestation { get; }
 
-    /// <summary>Whether sanctions screening is required by commercial adopters.</summary>
+    /// <summary>Whether sanctions screening is required by production adopters.</summary>
     public bool RequiresSanctionsScreening { get; }
 
     /// <summary>Whether operator authorization is required for live SS7 network use.</summary>
@@ -35,7 +35,7 @@ public sealed class SigtranExportControlPolicy
     public string Notice { get; }
 
     /// <summary>Whether the policy contains the minimum lawful-use controls.</summary>
-    public bool HasCommercialControls => RequiresLawfulUseAttestation
+    public bool HasProductionControls => RequiresLawfulUseAttestation
         && RequiresSanctionsScreening
         && RequiresOperatorAuthorization;
 }

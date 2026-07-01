@@ -12,7 +12,7 @@ Phase 9 adds the real interoperability lab foundation for SIGTRAN.NET.
 6. Evidence promotion from passing lab runs.
 7. Opt-in CI profile for external lab execution.
 8. Phase 9 readiness report.
-9. Commercial readiness gate integration.
+9. Production readiness gate integration.
 10. Phase documentation and status reporting.
 
 ## Current State
@@ -23,9 +23,9 @@ The Phase 9 SDK foundation is complete.
 
 ## Production Gate
 
-Commercial production readiness still requires:
+Production production readiness still requires:
 
 - Linux native SCTP lab verification.
-- Maintained external SIGTRAN peer run.
+- Reference external SIGTRAN peer run.
 - PCAP, SDK trace, peer configuration, peer log, and comparison report artifacts.
 - Promotion of passing lab evidence into the release evidence registry.

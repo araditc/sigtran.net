@@ -39,7 +39,7 @@ public sealed class SigtranProtocolInteropRunPlan
     /// <summary>Whether the run plan is complete enough to execute in a lab.</summary>
     public bool IsExecutable => Vectors.All(vector => vector.RequiresExternalReference)
         && References.All(reference => reference.RequiresTraceValidation)
-        && Rules.IsCommercialValidationReady
+        && Rules.IsProductionValidationReady
         && RequiresExternalVectors;
 }
 

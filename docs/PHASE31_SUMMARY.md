@@ -28,7 +28,7 @@ Phase 31 completed the source-level native SCTP production hardening foundation.
 - `SctpProductionHardeningReadiness`
 - `SctpProductionHardeningStatus`
 
-## Commercial Position
+## Production Position
 
 The foundation is complete, but production SCTP hardening is not yet a commercial claim. The remaining blockers are:
 

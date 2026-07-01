@@ -52,8 +52,8 @@ public sealed class SigtranPublicationCredentialPolicy
     /// <summary>The required credentials.</summary>
     public IReadOnlyList<SigtranPublicationCredential> Credentials { get; }
 
-    /// <summary>Whether the policy requires every commercial publication secret.</summary>
-    public bool RequiresCommercialSecrets => Requires(SigtranPublicationCredentialKind.NuGetApiKey)
+    /// <summary>Whether the policy requires every production publication secret.</summary>
+    public bool RequiresProductionSecrets => Requires(SigtranPublicationCredentialKind.NuGetApiKey)
         && Requires(SigtranPublicationCredentialKind.SigningCertificate)
         && Requires(SigtranPublicationCredentialKind.SigningCertificatePassword);
 

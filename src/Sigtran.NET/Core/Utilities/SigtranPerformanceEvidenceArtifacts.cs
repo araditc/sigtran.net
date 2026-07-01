@@ -103,8 +103,8 @@ public sealed class SigtranPerformanceEvidenceArtifactManifest
     /// <summary>Whether all retained artifacts have valid SHA-256 digests.</summary>
     public bool HasDigestCoverage => _artifacts.Count > 0 && _artifacts.All(static artifact => artifact.HasValidDigest);
 
-    /// <summary>Whether the artifact manifest can support commercial performance evidence.</summary>
-    public bool SupportsCommercialEvidence => IsComplete && HasDigestCoverage;
+    /// <summary>Whether the artifact manifest can support production performance evidence.</summary>
+    public bool SupportsReleaseEvidence => IsComplete && HasDigestCoverage;
 
     /// <summary>Formats a compact artifact manifest summary.</summary>
     /// <returns>The artifact manifest summary.</returns>
@@ -164,15 +164,15 @@ public sealed class SigtranPerformanceEvidenceRunPlan
     public bool RequiresPeerTraffic => Workload.RequiresPeerTraffic;
 
     /// <summary>Whether the run plan has the required workload and artifact evidence contracts.</summary>
-    public bool SupportsCommercialEvidence => Workload.SupportsCommercialEvidence
-        && ArtifactManifest.SupportsCommercialEvidence
+    public bool SupportsReleaseEvidence => Workload.SupportsReleaseEvidence
+        && ArtifactManifest.SupportsReleaseEvidence
         && string.Equals(RunId, ArtifactManifest.RunId, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Formats a compact run plan summary.</summary>
     /// <returns>The run plan summary.</returns>
     public string Describe()
     {
-        return $"run={RunId} peerTraffic={RequiresPeerTraffic} workload={Workload.SupportsCommercialEvidence} artifacts={ArtifactManifest.SupportsCommercialEvidence}";
+        return $"run={RunId} peerTraffic={RequiresPeerTraffic} workload={Workload.SupportsReleaseEvidence} artifacts={ArtifactManifest.SupportsReleaseEvidence}";
     }
 }
 
@@ -189,7 +189,7 @@ public static class SigtranPerformanceEvidenceRunPlans
         ArgumentNullException.ThrowIfNull(manifest);
         return new(
             manifest.RunId,
-            SigtranPerformanceEvidenceWorkloads.CreateExpectedCommercialPeerTraffic(),
+            SigtranPerformanceEvidenceWorkloads.CreateExpectedProductionPeerTraffic(),
             manifest);
     }
 }

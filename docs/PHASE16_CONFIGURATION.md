@@ -64,9 +64,9 @@ The configuration foundation is ready when schema, validation, environment matri
 
 `SigtranConfigurationCi.CreateDefault()` reuses the official build, test, and pack commands while requiring configuration readiness and rejecting production plaintext secrets.
 
-## Commercial Gate
+## Production Gate
 
-`SigtranConfigurationCommercialGate.Evaluate()` makes the configuration contribution to commercial readiness explicit.
+`SigtranConfigurationProductionGate.Evaluate()` makes the configuration contribution to commercial readiness explicit.
 
 The current gate should report configuration foundation readiness and production secret safety as true, while production configuration claims remain false until commercial readiness is complete.
 

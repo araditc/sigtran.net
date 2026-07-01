@@ -1,0 +1,292 @@
+namespace Sigtran.NET.Core.Utilities;
+
+/// <summary>
+/// Describes one retained production evidence file observation.
+/// </summary>
+public sealed class SigtranReleaseEvidenceRetainedFile
+{
+    /// <summary>Creates a retained production evidence file observation.</summary>
+    /// <param name="kind">The checklist artifact kind.</param>
+    /// <param name="retainedPath">The retained artifact path.</param>
+    /// <param name="expectedSha256">The expected SHA-256 digest from promotion handoff.</param>
+    /// <param name="actualSha256">The observed SHA-256 digest from the retained file.</param>
+    /// <param name="sizeBytes">The observed file size in bytes.</param>
+    /// <param name="observedAtUtc">The UTC observation time.</param>
+    /// <param name="exists">Whether the retained file exists.</param>
+    public SigtranReleaseEvidenceRetainedFile(
+        SigtranReleaseEvidenceChecklistKind kind,
+        string retainedPath,
+        string expectedSha256,
+        string actualSha256,
+        long sizeBytes,
+        DateTimeOffset observedAtUtc,
+        bool exists)
+    {
+        Kind = kind;
+        RetainedPath = string.IsNullOrWhiteSpace(retainedPath) ? throw new ArgumentException("Retained path is required.", nameof(retainedPath)) : retainedPath;
+        ExpectedSha256 = string.IsNullOrWhiteSpace(expectedSha256) ? throw new ArgumentException("Expected SHA-256 digest is required.", nameof(expectedSha256)) : expectedSha256;
+        ActualSha256 = string.IsNullOrWhiteSpace(actualSha256) ? throw new ArgumentException("Actual SHA-256 digest is required.", nameof(actualSha256)) : actualSha256;
+        SizeBytes = sizeBytes;
+        ObservedAtUtc = observedAtUtc.Offset == TimeSpan.Zero ? observedAtUtc : observedAtUtc.ToUniversalTime();
+        Exists = exists;
+    }
+
+    /// <summary>The checklist artifact kind.</summary>
+    public SigtranReleaseEvidenceChecklistKind Kind { get; }
+
+    /// <summary>The retained artifact path.</summary>
+    public string RetainedPath { get; }
+
+    /// <summary>The expected SHA-256 digest from promotion handoff.</summary>
+    public string ExpectedSha256 { get; }
+
+    /// <summary>The observed SHA-256 digest from the retained file.</summary>
+    public string ActualSha256 { get; }
+
+    /// <summary>The observed file size in bytes.</summary>
+    public long SizeBytes { get; }
+
+    /// <summary>The UTC observation time.</summary>
+    public DateTimeOffset ObservedAtUtc { get; }
+
+    /// <summary>Whether the retained file exists.</summary>
+    public bool Exists { get; }
+
+    /// <summary>Whether the expected and actual digests are valid SHA-256 hex values.</summary>
+    public bool HasValidDigestValues => IsSha256(ExpectedSha256)
+        && IsSha256(ActualSha256);
+
+    /// <summary>Whether the observed digest matches the expected digest.</summary>
+    public bool DigestMatches => string.Equals(ExpectedSha256, ActualSha256, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Whether the retained file has a non-empty payload.</summary>
+    public bool HasContent => SizeBytes > 0;
+
+    /// <summary>Whether the observation timestamp is normalized to UTC.</summary>
+    public bool HasUtcObservationTime => ObservedAtUtc.Offset == TimeSpan.Zero;
+
+    /// <summary>Whether the retained file observation is verified.</summary>
+    public bool IsVerified => Exists
+        && HasContent
+        && HasValidDigestValues
+        && DigestMatches
+        && HasUtcObservationTime;
+
+    /// <summary>Formats a compact retained file summary.</summary>
+    /// <returns>The retained file summary.</returns>
+    public string Describe()
+    {
+        return $"productionEvidenceRetainedFile={RetainedPath} verified={IsVerified} sizeBytes={SizeBytes}";
+    }
+
+    private static bool IsSha256(string value)
+    {
+        return value.Length == 64
+            && value.All(Uri.IsHexDigit);
+    }
+}
+
+/// <summary>
+/// Describes the retained production evidence file manifest.
+/// </summary>
+public sealed class SigtranReleaseEvidenceRetainedFileManifest
+{
+    /// <summary>Creates a retained production evidence file manifest.</summary>
+    /// <param name="handoff">The promotion handoff that declares expected retained files.</param>
+    /// <param name="files">The observed retained files.</param>
+    public SigtranReleaseEvidenceRetainedFileManifest(
+        SigtranReleaseEvidencePromotionHandoff handoff,
+        IReadOnlyList<SigtranReleaseEvidenceRetainedFile> files)
+    {
+        Handoff = handoff ?? throw new ArgumentNullException(nameof(handoff));
+        ArgumentNullException.ThrowIfNull(files);
+        Files = files.Count == 0 ? throw new ArgumentException("At least one retained file is required.", nameof(files)) : files.ToArray();
+    }
+
+    /// <summary>The promotion handoff that declares expected retained files.</summary>
+    public SigtranReleaseEvidencePromotionHandoff Handoff { get; }
+
+    /// <summary>The observed retained files.</summary>
+    public IReadOnlyList<SigtranReleaseEvidenceRetainedFile> Files { get; }
+
+    /// <summary>Whether every required handoff item has an observed file.</summary>
+    public bool CoversRequiredHandoffItems => Handoff.Items
+        .Where(static item => item.RequiredForPromotion)
+        .All(item => Files.Any(file => file.Kind == item.Kind
+            && file.RetainedPath == item.RetainedPath
+            && string.Equals(file.ExpectedSha256, item.Sha256, StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Whether retained file paths are unique.</summary>
+    public bool UsesUniqueRetainedPaths => Files.Select(static file => file.RetainedPath).Distinct(StringComparer.OrdinalIgnoreCase).Count() == Files.Count;
+
+    /// <summary>Whether every observed file is verified.</summary>
+    public bool AllFilesVerified => Files.All(static file => file.IsVerified);
+
+    /// <summary>Whether the retained file manifest is ready for verification reporting.</summary>
+    public bool IsReady => Handoff.IsReady
+        && CoversRequiredHandoffItems
+        && UsesUniqueRetainedPaths
+        && AllFilesVerified;
+
+    /// <summary>Formats a compact retained file manifest summary.</summary>
+    /// <returns>The retained file manifest summary.</returns>
+    public string Describe()
+    {
+        return $"productionEvidenceRetainedFilesReady={IsReady} files={Files.Count} intake={Handoff.Report.Target.IntakeId}";
+    }
+}
+
+/// <summary>
+/// Describes the retained production evidence file verification report.
+/// </summary>
+public sealed class SigtranReleaseEvidenceFileVerificationReport
+{
+    /// <summary>Creates a retained production evidence file verification report.</summary>
+    /// <param name="manifest">The retained file manifest under verification.</param>
+    /// <param name="blockers">The verification blockers discovered from the manifest.</param>
+    public SigtranReleaseEvidenceFileVerificationReport(
+        SigtranReleaseEvidenceRetainedFileManifest manifest,
+        IReadOnlyList<string> blockers)
+    {
+        Manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
+        ArgumentNullException.ThrowIfNull(blockers);
+        Blockers = blockers.ToArray();
+    }
+
+    /// <summary>The retained file manifest under verification.</summary>
+    public SigtranReleaseEvidenceRetainedFileManifest Manifest { get; }
+
+    /// <summary>The verification blockers discovered from the manifest.</summary>
+    public IReadOnlyList<string> Blockers { get; }
+
+    /// <summary>The number of observed files that do not exist.</summary>
+    public int MissingFileCount => Manifest.Files.Count(static file => !file.Exists);
+
+    /// <summary>The number of observed files that exist but are empty.</summary>
+    public int EmptyFileCount => Manifest.Files.Count(static file => file.Exists && !file.HasContent);
+
+    /// <summary>The number of observed files with invalid SHA-256 values.</summary>
+    public int InvalidDigestCount => Manifest.Files.Count(static file => !file.HasValidDigestValues);
+
+    /// <summary>The number of observed files whose valid digest does not match the expected digest.</summary>
+    public int DigestMismatchCount => Manifest.Files.Count(static file => file.HasValidDigestValues && !file.DigestMatches);
+
+    /// <summary>The number of observed files whose observation time is not normalized to UTC.</summary>
+    public int NonUtcObservationCount => Manifest.Files.Count(static file => !file.HasUtcObservationTime);
+
+    /// <summary>Whether the retained file verification report is complete and unblocked.</summary>
+    public bool IsVerified => Manifest.IsReady
+        && Blockers.Count == 0;
+
+    /// <summary>Formats a compact retained file verification summary.</summary>
+    /// <returns>The retained file verification summary.</returns>
+    public string Describe()
+    {
+        return $"productionEvidenceFilesVerified={IsVerified} blockers={Blockers.Count} files={Manifest.Files.Count}";
+    }
+}
+
+/// <summary>
+/// Provides production evidence file verification report helpers.
+/// </summary>
+public static class SigtranReleaseEvidenceFileVerificationReports
+{
+    /// <summary>Evaluates a retained file manifest and returns a verification report.</summary>
+    /// <param name="manifest">The retained file manifest to evaluate.</param>
+    /// <returns>The retained file verification report.</returns>
+    public static SigtranReleaseEvidenceFileVerificationReport Evaluate(SigtranReleaseEvidenceRetainedFileManifest manifest)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+
+        List<string> blockers = [];
+
+        if (!manifest.Handoff.IsReady)
+        {
+            blockers.Add("promotion-handoff-not-ready");
+        }
+
+        if (!manifest.CoversRequiredHandoffItems)
+        {
+            blockers.Add("retained-file-manifest-incomplete");
+        }
+
+        if (!manifest.UsesUniqueRetainedPaths)
+        {
+            blockers.Add("retained-file-path-duplicate");
+        }
+
+        if (manifest.Files.Any(static file => !file.Exists))
+        {
+            blockers.Add("retained-file-missing");
+        }
+
+        if (manifest.Files.Any(static file => file.Exists && !file.HasContent))
+        {
+            blockers.Add("retained-file-empty");
+        }
+
+        if (manifest.Files.Any(static file => !file.HasValidDigestValues))
+        {
+            blockers.Add("retained-file-digest-invalid");
+        }
+
+        if (manifest.Files.Any(static file => file.HasValidDigestValues && !file.DigestMatches))
+        {
+            blockers.Add("retained-file-digest-mismatch");
+        }
+
+        if (manifest.Files.Any(static file => !file.HasUtcObservationTime))
+        {
+            blockers.Add("retained-file-observation-not-utc");
+        }
+
+        return new(manifest, blockers);
+    }
+}
+
+/// <summary>
+/// Provides production evidence retained file helpers.
+/// </summary>
+public static class SigtranReleaseEvidenceRetainedFiles
+{
+    /// <summary>Creates a verified retained file observation from a promotion handoff item.</summary>
+    /// <param name="item">The promotion handoff item.</param>
+    /// <param name="sizeBytes">The observed file size in bytes.</param>
+    /// <param name="observedAtUtc">The UTC observation time.</param>
+    /// <returns>The retained file observation.</returns>
+    public static SigtranReleaseEvidenceRetainedFile CreateVerified(
+        SigtranReleaseEvidencePromotionHandoffItem item,
+        long sizeBytes,
+        DateTimeOffset observedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return new(
+            item.Kind,
+            item.RetainedPath,
+            item.Sha256,
+            item.Sha256,
+            sizeBytes,
+            observedAtUtc,
+            exists: true);
+    }
+
+    /// <summary>Creates a verified retained file manifest from a promotion handoff.</summary>
+    /// <param name="handoff">The promotion handoff.</param>
+    /// <param name="sizeBytes">The observed file size assigned to every item.</param>
+    /// <param name="observedAtUtc">The UTC observation time.</param>
+    /// <returns>The retained file manifest.</returns>
+    public static SigtranReleaseEvidenceRetainedFileManifest CreateVerifiedManifest(
+        SigtranReleaseEvidencePromotionHandoff handoff,
+        long sizeBytes,
+        DateTimeOffset observedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(handoff);
+
+        return new(
+            handoff,
+            handoff.Items
+                .Select(item => CreateVerified(item, sizeBytes, observedAtUtc))
+                .ToArray());
+    }
+}

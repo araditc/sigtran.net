@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.TCAP;
 /// <summary>
 /// Readiness report for the TCAP BER foundation phase.
 /// </summary>
-public readonly struct TcapReadinessReport
+public readonly struct TcapReadinessSnapshot
 {
     /// <summary>Creates a TCAP readiness report.</summary>
     /// <param name="hasBerPrimitives">Whether BER TLV primitives are available.</param>
@@ -14,7 +14,7 @@ public readonly struct TcapReadinessReport
     /// <param name="hasDialogueState">Whether dialogue state and timeout controls are available.</param>
     /// <param name="hasSessionBuilder">Whether high-level transaction builders are available.</param>
     /// <param name="hasInteropVectors">Whether external TCAP interoperability vectors are present.</param>
-    public TcapReadinessReport(
+    public TcapReadinessSnapshot(
         bool hasBerPrimitives,
         bool hasTransactionModels,
         bool hasComponentCodecs,
@@ -116,7 +116,7 @@ public static class TcapReadiness
 
     /// <summary>Builds the current TCAP readiness report.</summary>
     /// <returns>The current TCAP readiness report.</returns>
-    public static TcapReadinessReport GetReport()
+    public static TcapReadinessSnapshot GetReport()
     {
         return new(
             hasBerPrimitives: true,

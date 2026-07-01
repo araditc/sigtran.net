@@ -98,13 +98,13 @@ public static class SigtranPerformanceEvidenceStatus
 
     /// <summary>Returns the current performance evidence status report.</summary>
     /// <param name="report">The optional retained performance evidence report.</param>
-    /// <param name="commercialReady">Whether wider commercial readiness is complete.</param>
+    /// <param name="productionReady">Whether wider production readiness is complete.</param>
     /// <returns>The current performance evidence status report.</returns>
     public static SigtranPerformanceEvidenceStatusReport GetStatus(
         SigtranPerformanceEvidenceReport? report = null,
-        bool commercialReady = false)
+        bool productionReady = false)
     {
-        SigtranPerformanceEvidenceGateResult gate = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady);
+        SigtranPerformanceEvidenceGateResult gate = SigtranPerformanceEvidenceGate.Evaluate(report, productionReady);
         return new(
             StatusLabel,
             CompletedUnitCount,

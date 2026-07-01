@@ -97,7 +97,7 @@ The catalog is intentionally metadata-only so documentation, tests, examples, an
 `SigtranInteroperabilityReadiness.GetReport()` summarizes the Phase 6 tooling foundation.
 
 ```csharp
-SigtranInteroperabilityReadinessReport report = SigtranInteroperabilityReadiness.GetReport();
+SigtranInteroperabilityReadinessSnapshot report = SigtranInteroperabilityReadiness.GetReport();
 bool foundationReady = report.FoundationReady;
 bool productionReady = report.IsProductionReady;
 ```

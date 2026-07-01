@@ -34,8 +34,8 @@ public sealed class SigtranEvidenceRetentionPolicy
     /// <summary>Whether evidence must link to release provenance.</summary>
     public bool RequiresProvenanceLink { get; }
 
-    /// <summary>Whether the policy is suitable for commercial release evidence.</summary>
-    public bool IsCommercialEvidencePolicy => RetentionPeriod >= TimeSpan.FromDays(365)
+    /// <summary>Whether the policy is suitable for production release evidence.</summary>
+    public bool IsReleaseEvidencePolicy => RetentionPeriod >= TimeSpan.FromDays(365)
         && RequiresImmutableStorage
         && RequiresTraceRedaction
         && RequiresProvenanceLink;
@@ -46,9 +46,9 @@ public sealed class SigtranEvidenceRetentionPolicy
 /// </summary>
 public static class SigtranEvidenceRetentionPolicies
 {
-    /// <summary>Creates the default commercial evidence retention policy.</summary>
-    /// <returns>The default commercial evidence retention policy.</returns>
-    public static SigtranEvidenceRetentionPolicy CreateCommercialDefault()
+    /// <summary>Creates the default production evidence retention policy.</summary>
+    /// <returns>The default production evidence retention policy.</returns>
+    public static SigtranEvidenceRetentionPolicy CreateProductionDefault()
     {
         return new(
             TimeSpan.FromDays(365 * 3),

@@ -17,7 +17,7 @@ Interoperability and Tooling is foundation-complete.
 
 ## Current Gate
 
-The SDK now has repeatable tooling for local validation, examples, and release review. Commercial production claims still require external interoperability lab evidence against real SIGTRAN peer stacks, captured packet traces, and native SCTP verification.
+The SDK now has repeatable tooling for local validation, examples, and release review. Production production claims still require external interoperability lab evidence against real SIGTRAN peer stacks, captured packet traces, and native SCTP verification.
 
 ## API Entry Points
 

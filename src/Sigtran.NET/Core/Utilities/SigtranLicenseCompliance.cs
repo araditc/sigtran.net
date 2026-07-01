@@ -9,17 +9,17 @@ public sealed class SigtranLicenseCompliancePolicy
     /// <param name="projectLicense">The project license expression.</param>
     /// <param name="requiresThirdPartyNotices">Whether third-party notices are required.</param>
     /// <param name="requiresDependencyReview">Whether dependency license review is required.</param>
-    /// <param name="allowsCommercialUse">Whether commercial use is allowed by the project license.</param>
+    /// <param name="allowsProductionUse">Whether production use is allowed by the project license.</param>
     public SigtranLicenseCompliancePolicy(
         string projectLicense,
         bool requiresThirdPartyNotices,
         bool requiresDependencyReview,
-        bool allowsCommercialUse)
+        bool allowsProductionUse)
     {
         ProjectLicense = string.IsNullOrWhiteSpace(projectLicense) ? throw new ArgumentException("Project license is required.", nameof(projectLicense)) : projectLicense;
         RequiresThirdPartyNotices = requiresThirdPartyNotices;
         RequiresDependencyReview = requiresDependencyReview;
-        AllowsCommercialUse = allowsCommercialUse;
+        AllowsProductionUse = allowsProductionUse;
     }
 
     /// <summary>The project license expression.</summary>
@@ -31,14 +31,14 @@ public sealed class SigtranLicenseCompliancePolicy
     /// <summary>Whether dependency license review is required.</summary>
     public bool RequiresDependencyReview { get; }
 
-    /// <summary>Whether commercial use is allowed by the project license.</summary>
-    public bool AllowsCommercialUse { get; }
+    /// <summary>Whether production use is allowed by the project license.</summary>
+    public bool AllowsProductionUse { get; }
 
-    /// <summary>Whether the license policy is ready for commercial adoption.</summary>
-    public bool IsCommercialReady => ProjectLicense == "Apache-2.0"
+    /// <summary>Whether the license policy is ready for production adoption.</summary>
+    public bool IsProductionReady => ProjectLicense == "Apache-2.0"
         && RequiresThirdPartyNotices
         && RequiresDependencyReview
-        && AllowsCommercialUse;
+        && AllowsProductionUse;
 }
 
 /// <summary>
@@ -54,6 +54,6 @@ public static class SigtranLicenseCompliance
             "Apache-2.0",
             requiresThirdPartyNotices: true,
             requiresDependencyReview: true,
-            allowsCommercialUse: true);
+            allowsProductionUse: true);
     }
 }

@@ -1,4 +1,4 @@
-# Phase 41 Summary - Approved Commercial Run Publication Handoff
+# Phase 41 Summary - Approved Production Run Publication Handoff
 
 Phase 41 prepares the SDK to move from filesystem-backed evidence verification into governed commercial approval and release publication handoff.
 

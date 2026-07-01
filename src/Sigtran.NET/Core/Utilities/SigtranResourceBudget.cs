@@ -34,8 +34,8 @@ public sealed class SigtranResourceBudget
     /// <summary>Whether allocation tracking is required.</summary>
     public bool RequiresAllocationTracking { get; }
 
-    /// <summary>Whether the resource budget is suitable for commercial benchmarking.</summary>
-    public bool IsCommercialBenchmarkBudget => RequiresAllocationTracking
+    /// <summary>Whether the resource budget is suitable for production benchmarking.</summary>
+    public bool IsProductionBenchmarkBudget => RequiresAllocationTracking
         && MaxWorkingSetMegabytes >= 512
         && MaxCpuPercent <= 90;
 }
@@ -45,9 +45,9 @@ public sealed class SigtranResourceBudget
 /// </summary>
 public static class SigtranResourceBudgets
 {
-    /// <summary>Creates the default commercial resource budget.</summary>
-    /// <returns>The default commercial resource budget.</returns>
-    public static SigtranResourceBudget CreateCommercialDefault()
+    /// <summary>Creates the default production resource budget.</summary>
+    /// <returns>The default production resource budget.</returns>
+    public static SigtranResourceBudget CreateProductionDefault()
     {
         return new(
             maxAllocatedBytesPerMessage: 0,

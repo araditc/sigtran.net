@@ -7,7 +7,7 @@ Phase 22 adds release workflow orchestration in smaller committed parts.
 1. Release workflow trigger contract.
 2. Release workflow stage contract.
 3. Supply-chain workflow integration contract.
-4. Commercial evidence workflow integration contract.
+4. Production evidence workflow integration contract.
 5. Publish secret contract.
 6. Release workflow readiness report.
 7. Release workflow status report.

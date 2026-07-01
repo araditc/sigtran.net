@@ -13,9 +13,9 @@ The phase does not manufacture benchmark evidence. Production performance claims
 - Sent and received message counters.
 - Message-loss detection.
 - Stage-level pass/fail checks.
-- Commercial peer-traffic workload coverage checks.
+- Production peer-traffic workload coverage checks.
 
-`SigtranPerformanceEvidenceWorkloads.CreateExpectedCommercialPeerTraffic()` maps the existing commercial load-test plan into the expected evidence workload. This gives later units a deterministic contract for real peer benchmark results.
+`SigtranPerformanceEvidenceWorkloads.CreateExpectedProductionPeerTraffic()` maps the existing commercial load-test plan into the expected evidence workload. This gives later units a deterministic contract for real peer benchmark results.
 
 ## Unit 2 - Peer-Traffic Artifacts And Run Plan
 
@@ -55,7 +55,7 @@ The manifest requires SHA-256 digest coverage for all retained artifacts before 
 - Allocated bytes per message.
 - Generation 2 garbage collection count.
 
-`SigtranPerformanceResourceEvidenceEvaluator` compares the evidence against `SigtranResourceBudgets.CreateCommercialDefault()`. The report separates CPU, working set, and allocation budget checks so performance evidence can identify the specific resource area that needs correction.
+`SigtranPerformanceResourceEvidenceEvaluator` compares the evidence against `SigtranResourceBudgets.CreateProductionDefault()`. The report separates CPU, working set, and allocation budget checks so performance evidence can identify the specific resource area that needs correction.
 
 ## Unit 5 - Resilience And Failover Evidence
 

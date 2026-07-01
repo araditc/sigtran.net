@@ -34,8 +34,8 @@ public sealed class SigtranBreakingChangeReviewPolicy
     /// <summary>Whether stable breaking changes require a major version.</summary>
     public bool RequiresMajorVersionAfterStable { get; }
 
-    /// <summary>Whether the review policy is ready for commercial API governance.</summary>
-    public bool IsCommercialApiGovernanceReady => RequiresApiBaselineDiff
+    /// <summary>Whether the review policy is ready for production API governance.</summary>
+    public bool IsProductionApiGovernanceReady => RequiresApiBaselineDiff
         && RequiresMigrationGuide
         && RequiresMaintainerApproval
         && RequiresMajorVersionAfterStable;

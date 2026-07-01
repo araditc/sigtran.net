@@ -10,19 +10,19 @@ public sealed class SigtranPublicationEvidenceManifest
     /// <param name="channel">The publication channel.</param>
     /// <param name="packageIntegrityComplete">Whether package integrity is complete.</param>
     /// <param name="supplyChainPromotionReady">Whether supply-chain promotion evidence is ready.</param>
-    /// <param name="commercialEvidenceReady">Whether commercial evidence is ready.</param>
+    /// <param name="releaseEvidenceReady">Whether production evidence is ready.</param>
     public SigtranPublicationEvidenceManifest(
         string version,
         SigtranPublishChannelKind channel,
         bool packageIntegrityComplete,
         bool supplyChainPromotionReady,
-        bool commercialEvidenceReady)
+        bool releaseEvidenceReady)
     {
         Version = string.IsNullOrWhiteSpace(version) ? throw new ArgumentException("Version is required.", nameof(version)) : version;
         Channel = channel;
         PackageIntegrityComplete = packageIntegrityComplete;
         SupplyChainPromotionReady = supplyChainPromotionReady;
-        CommercialEvidenceReady = commercialEvidenceReady;
+        ReleaseEvidenceReady = releaseEvidenceReady;
     }
 
     /// <summary>The package version.</summary>
@@ -37,11 +37,11 @@ public sealed class SigtranPublicationEvidenceManifest
     /// <summary>Whether supply-chain promotion evidence is ready.</summary>
     public bool SupplyChainPromotionReady { get; }
 
-    /// <summary>Whether commercial evidence is ready.</summary>
-    public bool CommercialEvidenceReady { get; }
+    /// <summary>Whether production evidence is ready.</summary>
+    public bool ReleaseEvidenceReady { get; }
 
     /// <summary>Whether the publication evidence is complete enough for upload promotion.</summary>
-    public bool IsComplete => PackageIntegrityComplete && SupplyChainPromotionReady && CommercialEvidenceReady;
+    public bool IsComplete => PackageIntegrityComplete && SupplyChainPromotionReady && ReleaseEvidenceReady;
 
     /// <summary>Creates a complete sample publication evidence manifest.</summary>
     /// <returns>The complete sample publication evidence manifest.</returns>
@@ -52,6 +52,6 @@ public sealed class SigtranPublicationEvidenceManifest
             SigtranPublishChannelKind.Stable,
             packageIntegrityComplete: true,
             supplyChainPromotionReady: true,
-            commercialEvidenceReady: true);
+            releaseEvidenceReady: true);
     }
 }

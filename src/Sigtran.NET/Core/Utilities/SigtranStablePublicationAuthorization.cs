@@ -126,9 +126,9 @@ public sealed class SigtranStablePublicationAuthorization
     public bool HasProtectedStableEnvironment => EnvironmentProfile.IsReady
         && EnvironmentProfile.ProtectsStablePublication;
 
-    /// <summary>Whether every commercial publication secret name is available.</summary>
+    /// <summary>Whether every production publication secret name is available.</summary>
     public bool HasRequiredSecrets => MissingSecretNames.Count == 0
-        && CredentialPolicy.RequiresCommercialSecrets;
+        && CredentialPolicy.RequiresProductionSecrets;
 
     /// <summary>Whether required stable publication approval roles are present and approved.</summary>
     public bool HasRequiredApprovals => RequiredApprovalRoles.All(role =>

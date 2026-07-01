@@ -15,7 +15,7 @@ public static class SigtranInteropLabStatus
         "evidence-promotion",
         "interop-lab-ci-profile",
         "interop-lab-readiness-report",
-        "commercial-readiness-gate-integration",
+        "production-readiness-gate-integration",
         "documentation"
     ];
 
@@ -36,7 +36,7 @@ public static class SigtranInteropLabStatus
     /// <returns>The interoperability lab status summary.</returns>
     public static string Describe()
     {
-        SigtranInteropLabReadinessReport readiness = SigtranInteropLabReadiness.GetReport();
+        SigtranInteropLabReadinessSnapshot readiness = SigtranInteropLabReadiness.GetReport();
         return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={readiness.FoundationReady} productionReady={readiness.ProductionReady}";
     }
 }

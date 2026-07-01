@@ -34,8 +34,8 @@ public sealed class SigtranProtocolInteropComparisonRuleSet
     /// <summary>Whether operator-specific extensions are allowed.</summary>
     public bool AllowsOperatorSpecificExtensions { get; }
 
-    /// <summary>Whether the rule set is strict enough for commercial validation.</summary>
-    public bool IsCommercialValidationReady => RequiresByteExactEncoding
+    /// <summary>Whether the rule set is strict enough for production validation.</summary>
+    public bool IsProductionValidationReady => RequiresByteExactEncoding
         && RequiresDecodedFieldComparison
         && RequiresTraceOrderValidation;
 }

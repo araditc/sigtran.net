@@ -59,7 +59,7 @@ public static class SigtranAuditEvents
 {
     private static readonly SigtranAuditEventDefinition[] Definitions =
     [
-        new(SigtranAuditEventCategory.Release, "release-candidate-created", "A release candidate manifest is created.", requiresEvidence: true),
+        new(SigtranAuditEventCategory.Release, "release-candidate-created", "A prerelease manifest is created.", requiresEvidence: true),
         new(SigtranAuditEventCategory.Interoperability, "interop-evidence-promoted", "External lab evidence is promoted into release readiness.", requiresEvidence: true),
         new(SigtranAuditEventCategory.Security, "security-advisory-opened", "A private security advisory or vulnerability report is opened.", requiresEvidence: true),
         new(SigtranAuditEventCategory.Operations, "incident-response-started", "A support or production incident response process starts.", requiresEvidence: false),

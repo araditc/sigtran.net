@@ -39,14 +39,14 @@ public static class SigtranReleaseGate
     /// <param name="artifactManifest">The artifact manifest.</param>
     /// <param name="releaseNotes">The release notes.</param>
     /// <param name="provenance">The release provenance.</param>
-    /// <param name="readiness">The commercial readiness report.</param>
+    /// <param name="readiness">The production readiness report.</param>
     /// <returns>The release gate result.</returns>
     public static SigtranReleaseGateResult Evaluate(
         SigtranPublishChannel channel,
         SigtranReleaseArtifactManifest artifactManifest,
         SigtranReleaseNotes releaseNotes,
         SigtranReleaseProvenance provenance,
-        SigtranCommercialReadinessReport readiness)
+        SigtranProductionReadinessSnapshot readiness)
     {
         ArgumentNullException.ThrowIfNull(channel);
         ArgumentNullException.ThrowIfNull(artifactManifest);
@@ -80,9 +80,9 @@ public static class SigtranReleaseGate
             reasons.Add("provenance-incomplete");
         }
 
-        if (channel.RequiresCommercialReadiness && !readiness.CommercialReady)
+        if (channel.RequiresProductionReadiness && !readiness.ProductionReady)
         {
-            reasons.Add("commercial-readiness-required");
+            reasons.Add("production-readiness-required");
         }
 
         return new SigtranReleaseGateResult(reasons.Count == 0, reasons);

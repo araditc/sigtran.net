@@ -40,8 +40,8 @@ public sealed class SigtranBenchmarkExecutionEvidence
     /// <summary>Whether the benchmark is a smoke benchmark only.</summary>
     public bool SmokeOnly { get; }
 
-    /// <summary>Whether this evidence can support commercial performance promotion.</summary>
-    public bool SupportsCommercialPerformancePromotion => !SmokeOnly
+    /// <summary>Whether this evidence can support production performance promotion.</summary>
+    public bool SupportsProductionPerformancePromotion => !SmokeOnly
         && ReportSha256.Length == 64
         && DurationMilliseconds > 0
         && PassedChecks > 0;

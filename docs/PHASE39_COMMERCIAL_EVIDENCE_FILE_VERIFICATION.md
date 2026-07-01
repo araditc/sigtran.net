@@ -1,12 +1,12 @@
-# Phase 39 Commercial Evidence File Verification
+# Phase 39 Production Evidence File Verification
 
 Phase 39 turns digest-covered intake handoff records into retained file verification contracts. It does not create real commercial evidence by itself. It defines how retained artifact files are observed, matched to expected digests, checked for retention, sealed, and prepared for release evidence gates.
 
-Public APIs use domain names such as `SigtranCommercialEvidenceRetainedFiles`; phase numbers are intentionally kept out of source type names.
+Public APIs use domain names such as `SigtranReleaseEvidenceRetainedFiles`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Retained File Evidence Item
 
-`SigtranCommercialEvidenceRetainedFiles` records an observed retained file:
+`SigtranReleaseEvidenceRetainedFiles` records an observed retained file:
 
 - Checklist artifact kind.
 - Retained artifact path.
@@ -20,7 +20,7 @@ A retained file is verified only when the file exists, is non-empty, carries val
 
 ## Unit 2 - Retained File Manifest
 
-`SigtranCommercialEvidenceRetainedFileManifest` groups observed retained files against a promotion handoff:
+`SigtranReleaseEvidenceRetainedFileManifest` groups observed retained files against a promotion handoff:
 
 - Every promotion-required handoff item must have an observed file.
 - Retained paths must be unique.
@@ -31,7 +31,7 @@ The manifest is the first aggregate proof that retained file observations match 
 
 ## Unit 3 - File Verification Report
 
-`SigtranCommercialEvidenceFileVerificationReport` evaluates the retained file manifest and produces explicit blocker reasons:
+`SigtranReleaseEvidenceFileVerificationReport` evaluates the retained file manifest and produces explicit blocker reasons:
 
 - Missing retained files.
 - Empty retained files.
@@ -45,7 +45,7 @@ The report keeps verification gates auditable. A commercial release decision can
 
 ## Unit 4 - Retention Ledger
 
-`SigtranCommercialEvidenceRetentionLedger` records how verified retained files are retained for commercial release evidence:
+`SigtranReleaseEvidenceRetentionLedger` records how verified retained files are retained for commercial release evidence:
 
 - One ledger entry per verified retained file.
 - Reviewer identity.
@@ -58,7 +58,7 @@ The ledger is ready only when the file verification report is verified, every ve
 
 ## Unit 5 - Integrity Seal
 
-`SigtranCommercialEvidenceIntegritySeal` creates a deterministic SHA-256 aggregate digest over the retention ledger:
+`SigtranReleaseEvidenceIntegritySeal` creates a deterministic SHA-256 aggregate digest over the retention ledger:
 
 - Stable seal id derived from the evidence intake.
 - Required `SHA-256` algorithm label.
@@ -70,7 +70,7 @@ This is an evidence integrity seal for the retained dossier. It does not replace
 
 ## Unit 6 - Publication Attachments
 
-`SigtranCommercialEvidencePublicationAttachmentManifest` prepares verified retained files for release dossier publication:
+`SigtranReleaseEvidencePublicationAttachmentManifest` prepares verified retained files for release dossier publication:
 
 - Every sealed ledger entry must have a publication attachment.
 - Attachment digests must remain valid SHA-256 values.
@@ -82,20 +82,20 @@ Publication attachment readiness does not publish anything. It only proves that 
 
 ## Unit 7 - Verified Promotion Gate
 
-`SigtranCommercialEvidenceVerifiedPromotionGateResult` decides whether retained commercial evidence can move into the release publication decision:
+`SigtranReleaseEvidenceVerifiedPromotionGateResult` decides whether retained commercial evidence can move into the release publication decision:
 
 - Publication attachments must be ready.
 - Integrity seal must be ready.
 - Retention ledger must be ready.
 - File verification report must be verified.
-- Commercial readiness report must be present.
+- Production readiness report must be present.
 - Explicit commercial evidence approval must be present.
 
 The gate returns concrete blocker labels. It does not publish a package; it only allows the release workflow to consider the verified evidence set.
 
 ## Unit 8 - File Verification Command Plan
 
-`SigtranCommercialEvidenceFileVerificationCommandPlan` defines the workflow-ready execution order:
+`SigtranReleaseEvidenceFileVerificationCommandPlan` defines the workflow-ready execution order:
 
 1. Observe retained files.
 2. Compute retained file digests.
@@ -110,13 +110,13 @@ The plan is package-neutral and shell-neutral. It describes the expected workflo
 
 ## Unit 9 - File Verification Status
 
-`SigtranCommercialEvidenceFileVerificationStatus` reports the current phase readiness:
+`SigtranReleaseEvidenceFileVerificationStatus` reports the current phase readiness:
 
 - Completed file verification capabilities.
 - Default commercial publication blockers.
 - Foundation readiness from the default verification chain.
 - Explicit separation between foundation readiness and real retained file evidence.
-- Commercial publication remains blocked until real retained file evidence and final validation are complete.
+- Production publication remains blocked until real retained file evidence and final validation are complete.
 
 During Unit 9 the status intentionally kept `status-final-validation-pending` as a blocker until final validation completed.
 

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 using Sigtran.NET.Layers.MAP;
 using Sigtran.NET.Layers.M3UA;
@@ -18,73 +20,73 @@ Run("MAP SMS simulator flow builds TCAP backed script", MapSmsSimulatorFlowBuild
 Run("SIGTRAN local TCP sample describes M3UA transport", SigtranLocalTcpSampleDescribesM3uaTransport);
 Run("SIGTRAN sample catalog exposes supported scenarios", SigtranSampleCatalogExposesSupportedScenarios);
 Run("SIGTRAN CI verification profile exposes official commands", SigtranCiVerificationProfileExposesOfficialCommands);
-Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessReportsFoundationStatus);
+Run("SIGTRAN interoperability readiness reports foundation status", SigtranInteroperabilityReadinessSnapshotsFoundationStatus);
 Run("SIGTRAN interoperability tooling status summarizes completed tooling", SigtranInteroperabilityToolingStatusSummarizesCompletedTooling);
-Run("SIGTRAN commercial readiness reports release gates", SigtranCommercialReadinessReportsReleaseGates);
+Run("SIGTRAN production readiness reports release gates", SigtranProductionReadinessSnapshotsReleaseGates);
 Run("SIGTRAN native SCTP support matrix reports verification status", SigtranNativeSctpSupportMatrixReportsVerificationStatus);
 Run("SIGTRAN interop evidence registry tracks lab results", SigtranInteropEvidenceRegistryTracksLabResults);
-Run("SIGTRAN release candidate manifest reports promotion gates", SigtranReleaseCandidateManifestReportsPromotionGates);
-Run("SIGTRAN package governance reports commercial requirements", SigtranPackageGovernanceReportsCommercialRequirements);
+Run("SIGTRAN prerelease manifest reports promotion gates", SigtranPrereleaseManifestReportsPromotionGates);
+Run("SIGTRAN package governance reports production requirements", SigtranPackageGovernanceReportsProductionRequirements);
 Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
-Run("SIGTRAN observability profile exposes commercial signals", SigtranObservabilityProfileExposesCommercialSignals);
-Run("SIGTRAN deployment profiles expose commercial and development gates", SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates);
-Run("SIGTRAN commercialization status summarizes foundation", SigtranCommercializationStatusSummarizesCommercializationFoundation);
+Run("SIGTRAN observability profile exposes production signals", SigtranObservabilityProfileExposesProductionSignals);
+Run("SIGTRAN deployment profiles expose production and development gates", SigtranDeploymentProfilesExposeProductionAndDevelopmentGates);
+Run("SIGTRAN productionization status summarizes foundation", SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
 Run("SIGTRAN interoperability lab artifact manifest validates required files", SigtranInteropLabArtifactManifestValidatesRequiredFiles);
 Run("SIGTRAN interoperability lab run report identifies passing evidence", SigtranInteropLabRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN external peer profile exposes M3UA ASP-to-SG template", SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate);
-Run("SIGTRAN external peer profile marks maintained commercial candidates", SigtranExternalPeerProfileMarksMaintainedCommercialCandidates);
-Run("SIGTRAN maintained peer selection policy requires package-neutral evidence criteria", SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
-Run("SIGTRAN maintained peer lab binding catalog exposes package-neutral defaults", SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults);
-Run("SIGTRAN maintained peer lab prerequisites report host readiness", SigtranMaintainedPeerLabPrerequisitesReportHostReadiness);
-Run("SIGTRAN maintained peer lab configuration validates environment contracts", SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts);
-Run("SIGTRAN maintained peer lab artifact plan covers retained evidence paths", SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths);
-Run("SIGTRAN maintained peer lab command plan covers execution steps", SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps);
-Run("SIGTRAN maintained peer lab traffic vectors expose comparable sequence", SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence);
-Run("SIGTRAN maintained peer lab evidence gate requires complete retained artifacts", SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
-Run("SIGTRAN maintained peer lab CI profile is manual and self-hosted", SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted);
-Run("SIGTRAN maintained peer lab status separates foundation from evidence", SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence);
-Run("SIGTRAN maintained peer lab run manifest aggregates executable contracts", SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts);
-Run("SIGTRAN maintained peer lab environment file renders manifest values", SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues);
-Run("SIGTRAN maintained peer lab artifact digest manifest gates handoff", SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff);
-Run("SIGTRAN maintained peer lab command script renders command plan", SigtranMaintainedPeerLabCommandScriptRendersCommandPlan);
-Run("SIGTRAN maintained peer lab comparison report renders trace outcome", SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome);
-Run("SIGTRAN maintained peer lab run report records step outcomes", SigtranMaintainedPeerLabRunReportRecordsStepOutcomes);
-Run("SIGTRAN maintained peer lab evidence bundle creates promotion report", SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport);
-Run("SIGTRAN maintained peer lab workflow template is manual and self-hosted", SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted);
-Run("SIGTRAN maintained peer lab commercial bridge gates readiness", SigtranMaintainedPeerLabCommercialBridgeGatesReadiness);
-Run("SIGTRAN maintained peer lab automation status summarizes completion", SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion);
-Run("SIGTRAN maintained peer lab runner workspace materializes deterministic paths", SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths);
-Run("SIGTRAN maintained peer lab runner inputs render environment and script", SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript);
-Run("SIGTRAN maintained peer lab runner artifacts map outputs to producers", SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers);
-Run("SIGTRAN maintained peer lab runner preflight gates execution", SigtranMaintainedPeerLabRunnerPreflightGatesExecution);
-Run("SIGTRAN maintained peer lab runner command manifest orders execution", SigtranMaintainedPeerLabRunnerCommandManifestOrdersExecution);
-Run("SIGTRAN maintained peer lab runner evidence collection tracks retained artifacts", SigtranMaintainedPeerLabRunnerEvidenceCollectionTracksRetainedArtifacts);
-Run("SIGTRAN maintained peer lab runner digests cover retained artifacts", SigtranMaintainedPeerLabRunnerDigestsCoverRetainedArtifacts);
-Run("SIGTRAN maintained peer lab runner comparison handoff creates evidence bundle", SigtranMaintainedPeerLabRunnerComparisonHandoffCreatesEvidenceBundle);
-Run("SIGTRAN maintained peer lab runner workflow readiness gates execution", SigtranMaintainedPeerLabRunnerWorkflowReadinessGatesExecution);
-Run("SIGTRAN maintained peer lab runner status summarizes completion", SigtranMaintainedPeerLabRunnerStatusSummarizesCompletion);
-Run("SIGTRAN maintained peer lab runner file materialization renders shell plan", SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan);
-Run("SIGTRAN maintained peer lab runner execution log renders lifecycle", SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle);
-Run("SIGTRAN maintained peer lab runner command outcomes aggregate log state", SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState);
-Run("SIGTRAN maintained peer lab runner artifact verification checks retained digests", SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests);
-Run("SIGTRAN maintained peer lab runner provenance records source and host identity", SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity);
-Run("SIGTRAN maintained peer lab runner failure classifier categorizes blockers", SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers);
-Run("SIGTRAN maintained peer lab runner retry policy gates transient failures", SigtranMaintainedPeerLabRunnerRetryPolicyGatesTransientFailures);
-Run("SIGTRAN maintained peer lab runner evidence package manifest gates handoff", SigtranMaintainedPeerLabRunnerEvidencePackageManifestGatesHandoff);
-Run("SIGTRAN maintained peer lab runner operator handoff recommends actions", SigtranMaintainedPeerLabRunnerOperatorHandoffRecommendsActions);
-Run("SIGTRAN maintained peer lab runner operations status summarizes completion", SigtranMaintainedPeerLabRunnerOperationsStatusSummarizesCompletion);
+Run("SIGTRAN external peer profile marks reference production candidates", SigtranExternalPeerProfileMarksReferenceProductionCandidates);
+Run("SIGTRAN reference peer selection policy requires package-neutral evidence criteria", SigtranReferencePeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria);
+Run("SIGTRAN reference peer lab binding catalog exposes package-neutral defaults", SigtranReferencePeerLabBindingCatalogExposesPackageNeutralDefaults);
+Run("SIGTRAN reference peer lab prerequisites report host readiness", SigtranReferencePeerLabPrerequisitesReportHostReadiness);
+Run("SIGTRAN reference peer lab configuration validates environment contracts", SigtranReferencePeerLabConfigurationValidatesEnvironmentContracts);
+Run("SIGTRAN reference peer lab artifact plan covers retained evidence paths", SigtranReferencePeerLabArtifactPlanCoversRetainedEvidencePaths);
+Run("SIGTRAN reference peer lab command plan covers execution steps", SigtranReferencePeerLabCommandPlanCoversExecutionSteps);
+Run("SIGTRAN reference peer lab traffic vectors expose comparable sequence", SigtranReferencePeerLabTrafficVectorsExposeComparableSequence);
+Run("SIGTRAN reference peer lab evidence gate requires complete retained artifacts", SigtranReferencePeerLabEvidenceGateRequiresCompleteRetainedArtifacts);
+Run("SIGTRAN reference peer lab CI profile is manual and self-hosted", SigtranReferencePeerLabCiProfileIsManualAndSelfHosted);
+Run("SIGTRAN reference peer lab status separates foundation from evidence", SigtranReferencePeerLabStatusSeparatesFoundationFromEvidence);
+Run("SIGTRAN reference peer lab run manifest aggregates executable contracts", SigtranReferencePeerLabRunManifestAggregatesExecutableContracts);
+Run("SIGTRAN reference peer lab environment file renders manifest values", SigtranReferencePeerLabEnvironmentFileRendersManifestValues);
+Run("SIGTRAN reference peer lab artifact digest manifest gates handoff", SigtranReferencePeerLabArtifactDigestManifestGatesHandoff);
+Run("SIGTRAN reference peer lab command script renders command plan", SigtranReferencePeerLabCommandScriptRendersCommandPlan);
+Run("SIGTRAN reference peer lab comparison report renders trace outcome", SigtranReferencePeerLabComparisonReportRendersTraceOutcome);
+Run("SIGTRAN reference peer lab run report records step outcomes", SigtranReferencePeerLabRunReportRecordsStepOutcomes);
+Run("SIGTRAN reference peer lab evidence bundle creates promotion report", SigtranReferencePeerLabEvidenceBundleCreatesPromotionReport);
+Run("SIGTRAN reference peer lab workflow template is manual and self-hosted", SigtranReferencePeerLabWorkflowTemplateIsManualAndSelfHosted);
+Run("SIGTRAN reference peer lab production bridge gates readiness", SigtranReferencePeerLabProductionBridgeGatesReadiness);
+Run("SIGTRAN reference peer lab automation status summarizes completion", SigtranReferencePeerLabAutomationStatusSummarizesCompletion);
+Run("SIGTRAN reference peer lab runner workspace materializes deterministic paths", SigtranReferencePeerLabRunnerWorkspaceMaterializesDeterministicPaths);
+Run("SIGTRAN reference peer lab runner inputs render environment and script", SigtranReferencePeerLabRunnerInputsRenderEnvironmentAndScript);
+Run("SIGTRAN reference peer lab runner artifacts map outputs to producers", SigtranReferencePeerLabRunnerArtifactsMapOutputsToProducers);
+Run("SIGTRAN reference peer lab runner preflight gates execution", SigtranReferencePeerLabRunnerPreflightGatesExecution);
+Run("SIGTRAN reference peer lab runner command manifest orders execution", SigtranReferencePeerLabRunnerCommandManifestOrdersExecution);
+Run("SIGTRAN reference peer lab runner evidence collection tracks retained artifacts", SigtranReferencePeerLabRunnerEvidenceCollectionTracksRetainedArtifacts);
+Run("SIGTRAN reference peer lab runner digests cover retained artifacts", SigtranReferencePeerLabRunnerDigestsCoverRetainedArtifacts);
+Run("SIGTRAN reference peer lab runner comparison handoff creates evidence bundle", SigtranReferencePeerLabRunnerComparisonHandoffCreatesEvidenceBundle);
+Run("SIGTRAN reference peer lab runner workflow readiness gates execution", SigtranReferencePeerLabRunnerWorkflowReadinessGatesExecution);
+Run("SIGTRAN reference peer lab runner status summarizes completion", SigtranReferencePeerLabRunnerStatusSummarizesCompletion);
+Run("SIGTRAN reference peer lab runner file materialization renders shell plan", SigtranReferencePeerLabRunnerFileMaterializationRendersShellPlan);
+Run("SIGTRAN reference peer lab runner execution log renders lifecycle", SigtranReferencePeerLabRunnerExecutionLogRendersLifecycle);
+Run("SIGTRAN reference peer lab runner command outcomes aggregate log state", SigtranReferencePeerLabRunnerCommandOutcomesAggregateLogState);
+Run("SIGTRAN reference peer lab runner artifact verification checks retained digests", SigtranReferencePeerLabRunnerArtifactVerificationChecksRetainedDigests);
+Run("SIGTRAN reference peer lab runner provenance records source and host identity", SigtranReferencePeerLabRunnerProvenanceRecordsSourceAndHostIdentity);
+Run("SIGTRAN reference peer lab runner failure classifier categorizes blockers", SigtranReferencePeerLabRunnerFailureClassifierCategorizesBlockers);
+Run("SIGTRAN reference peer lab runner retry policy gates transient failures", SigtranReferencePeerLabRunnerRetryPolicyGatesTransientFailures);
+Run("SIGTRAN reference peer lab runner evidence package manifest gates handoff", SigtranReferencePeerLabRunnerEvidencePackageManifestGatesHandoff);
+Run("SIGTRAN reference peer lab runner operator handoff recommends actions", SigtranReferencePeerLabRunnerOperatorHandoffRecommendsActions);
+Run("SIGTRAN reference peer lab runner operations status summarizes completion", SigtranReferencePeerLabRunnerOperationsStatusSummarizesCompletion);
 Run("SIGTRAN trace comparison reports ordered mismatches", SigtranTraceComparisonReportsOrderedMismatches);
 Run("SIGTRAN interoperability evidence promotion requires passing lab run", SigtranInteropEvidencePromotionRequiresPassingLabRun);
 Run("SIGTRAN interoperability lab CI profile is opt-in", SigtranInteropLabCiProfileIsOptIn);
-Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessReportsFoundationAndEvidenceGates);
-Run("SIGTRAN commercial readiness uses interoperability lab production gate", SigtranCommercialReadinessUsesInteropLabProductionGate);
+Run("SIGTRAN interoperability lab readiness reports foundation and evidence gates", SigtranInteropLabReadinessSnapshotsFoundationAndEvidenceGates);
+Run("SIGTRAN production readiness uses interoperability lab production gate", SigtranProductionReadinessUsesInteropLabProductionGate);
 Run("SIGTRAN interoperability lab status summarizes foundation", SigtranInteropLabStatusSummarizesInteropLabFoundation);
 Run("SIGTRAN release automation plan exposes deterministic release steps", SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps);
 Run("SIGTRAN release artifact manifest tracks package artifacts and digests", SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests);
-Run("SIGTRAN SBOM plan marks commercial release requirement", SigtranSbomPlanMarksCommercialReleaseRequirement);
-Run("SIGTRAN package signing plan marks commercial release requirement", SigtranPackageSigningPlanMarksCommercialReleaseRequirement);
+Run("SIGTRAN SBOM plan marks production release requirement", SigtranSbomPlanMarksReleaseRequirement);
+Run("SIGTRAN package signing plan marks production release requirement", SigtranPackageSigningPlanMarksReleaseRequirement);
 Run("SIGTRAN release provenance records source commit and artifact manifest", SigtranReleaseProvenanceRecordsSourceCommitAndArtifactManifest);
 Run("SIGTRAN release notes require SemVer and change entries", SigtranReleaseNotesRequireSemVerAndChangeEntries);
 Run("SIGTRAN publish channels separate prerelease and stable rules", SigtranPublishChannelsSeparatePrereleaseAndStableRules);
@@ -98,7 +100,7 @@ Run("SIGTRAN configuration profiles separate development lab and production", Si
 Run("SIGTRAN troubleshooting index maps symptoms to next actions", SigtranTroubleshootingIndexMapsSymptomsToNextActions);
 Run("SIGTRAN API reference index exposes onboarding APIs", SigtranApiReferenceIndexExposesOnboardingApis);
 Run("SIGTRAN adoption gates separate developer readiness from enterprise production", SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProduction);
-Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessReportsDeveloperDocsGate);
+Run("SIGTRAN documentation readiness reports developer docs gate", SigtranDocumentationReadinessSnapshotsDeveloperDocsGate);
 Run("SIGTRAN developer experience CI profile requires docs and adoption gates", SigtranDeveloperExperienceCiProfileRequiresDocsAndAdoptionGates);
 Run("SIGTRAN developer experience status summarizes foundation", SigtranDeveloperExperienceStatusSummarizesDeveloperExperienceFoundation);
 Run("SIGTRAN operations catalog exposes production support areas", SigtranOperationsCatalogExposesProductionSupportAreas);
@@ -107,7 +109,7 @@ Run("SIGTRAN incident response targets define severity timing", SigtranIncidentR
 Run("SIGTRAN health check matrix covers transport protocol evidence and release", SigtranHealthCheckMatrixCoversTransportProtocolEvidenceAndRelease);
 Run("SIGTRAN rollback plan defines package recovery steps", SigtranRollbackPlanDefinesPackageRecoverySteps);
 Run("SIGTRAN maintenance policy gates protocol and transport changes", SigtranMaintenancePolicyGatesProtocolAndTransportChanges);
-Run("SIGTRAN support handbook defines public private and commercial channels", SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels);
+Run("SIGTRAN support handbook defines public private and production channels", SigtranSupportHandbookDefinesPublicPrivateAndProductionChannels);
 Run("SIGTRAN operations readiness separates foundation from production", SigtranOperationsReadinessSeparatesFoundationFromProduction);
 Run("SIGTRAN operations CI profile requires operations readiness", SigtranOperationsCiProfileRequiresOperationsReadiness);
 Run("SIGTRAN operations status summarizes foundation", SigtranOperationsStatusSummarizesOperationsFoundation);
@@ -117,9 +119,9 @@ Run("SIGTRAN evidence retention policy requires immutable redacted provenance", 
 Run("SIGTRAN license compliance policy tracks Apache and third-party obligations", SigtranLicenseCompliancePolicyTracksApacheAndThirdPartyObligations);
 Run("SIGTRAN data handling rules classify confidential traces", SigtranDataHandlingRulesClassifyConfidentialTraces);
 Run("SIGTRAN export control policy requires lawful operator authorization", SigtranExportControlPolicyRequiresLawfulOperatorAuthorization);
-Run("SIGTRAN compliance readiness separates foundation from commercial claims", SigtranComplianceReadinessSeparatesFoundationFromCommercialClaims);
+Run("SIGTRAN compliance readiness separates foundation from production claims", SigtranComplianceReadinessSeparatesFoundationFromProductionClaims);
 Run("SIGTRAN compliance CI profile requires compliance readiness", SigtranComplianceCiProfileRequiresComplianceReadiness);
-Run("SIGTRAN compliance commercial gate waits for commercial readiness", SigtranComplianceCommercialGateWaitsForCommercialReadiness);
+Run("SIGTRAN compliance production gate waits for production readiness", SigtranComplianceProductionGateWaitsForProductionReadiness);
 Run("SIGTRAN compliance status summarizes foundation", SigtranComplianceStatusSummarizesComplianceFoundation);
 Run("SIGTRAN performance catalog exposes benchmark capacity and resource areas", SigtranPerformanceCatalogExposesBenchmarkCapacityAndResourceAreas);
 Run("SIGTRAN benchmark scenarios include local and peer benchmarks", SigtranBenchmarkScenariosIncludeLocalAndPeerBenchmarks);
@@ -156,9 +158,9 @@ Run("SIGTRAN environment matrix separates development lab and production require
 Run("SIGTRAN secret policy rejects production plaintext secrets", SigtranSecretPolicyRejectsProductionPlaintextSecrets);
 Run("SIGTRAN transport configuration requires PPID streams and reconnect policy", SigtranTransportConfigurationRequiresPpidStreamsAndReconnectPolicy);
 Run("SIGTRAN routing configuration requires route validation and ambiguity rejection", SigtranRoutingConfigurationRequiresRouteValidationAndAmbiguityRejection);
-Run("SIGTRAN configuration readiness separates foundation from commercial claims", SigtranConfigurationReadinessSeparatesFoundationFromCommercialClaims);
+Run("SIGTRAN configuration readiness separates foundation from production claims", SigtranConfigurationReadinessSeparatesFoundationFromProductionClaims);
 Run("SIGTRAN configuration CI profile rejects production plaintext secrets", SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets);
-Run("SIGTRAN configuration commercial gate waits for commercial readiness", SigtranConfigurationCommercialGateWaitsForCommercialReadiness);
+Run("SIGTRAN configuration production gate waits for production readiness", SigtranConfigurationProductionGateWaitsForProductionReadiness);
 Run("SIGTRAN configuration status summarizes foundation", SigtranConfigurationStatusSummarizesConfigurationFoundation);
 Run("SIGTRAN native SCTP lab scenarios require Linux verification", SigtranNativeSctpLabScenariosRequireLinuxVerification);
 Run("SIGTRAN native SCTP lab artifact manifest validates required artifacts", SigtranNativeSctpLabArtifactManifestValidatesRequiredArtifacts);
@@ -168,7 +170,7 @@ Run("SIGTRAN native SCTP lab run report identifies passing evidence", SigtranNat
 Run("SIGTRAN native SCTP lab evidence registry requires all scenarios", SigtranNativeSctpLabEvidenceRegistryRequiresAllScenarios);
 Run("SIGTRAN native SCTP lab readiness separates foundation from evidence", SigtranNativeSctpLabReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN native SCTP lab CI profile is opt-in and Linux-only", SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly);
-Run("SIGTRAN native SCTP lab commercial gate waits for complete evidence", SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence);
+Run("SIGTRAN native SCTP lab production gate waits for complete evidence", SigtranNativeSctpLabProductionGateWaitsForCompleteEvidence);
 Run("SIGTRAN native SCTP lab verification status summarizes foundation", SigtranNativeSctpLabVerificationStatusSummarizesFoundation);
 Run("SIGTRAN external peer interop environment requires Linux SCTP peer and packet capture", SigtranExternalPeerInteropEnvironmentRequiresLinuxSctpPeerAndPacketCapture);
 Run("SIGTRAN external peer interop configuration exposes ASP-to-SG defaults", SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults);
@@ -179,9 +181,9 @@ Run("SIGTRAN external peer commands require peer and packet capture", SigtranExt
 Run("SIGTRAN external peer run report identifies passing evidence", SigtranExternalPeerRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN external peer evidence registry starts empty", SigtranExternalPeerEvidenceRegistryStartsEmpty);
 Run("SIGTRAN external peer readiness separates foundation from evidence", SigtranExternalPeerReadinessSeparatesFoundationFromEvidence);
-Run("SIGTRAN external peer commercial readiness aggregates selection lab and evidence", SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence);
+Run("SIGTRAN external peer production readiness aggregates selection lab and evidence", SigtranExternalPeerProductionReadinessAggregatesSelectionLabAndEvidence);
 Run("SIGTRAN external peer status summarizes execution foundation", SigtranExternalPeerStatusSummarizesExecutionFoundation);
-Run("SIGTRAN commercial roadmap realignment status summarizes package-neutral completion", SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion);
+Run("SIGTRAN API naming alignment status summarizes package-neutral completion", SigtranApiNamingAlignmentStatusSummarizesPackageNeutralCompletion);
 Run("SIGTRAN protocol interop vector catalog covers SCCP TCAP and MAP", SigtranProtocolInteropVectorCatalogCoversSccpTcapAndMap);
 Run("SIGTRAN protocol evidence validator reports byte mismatches", SigtranProtocolEvidenceValidatorReportsByteMismatches);
 Run("SIGTRAN protocol evidence bundle aggregates SCCP TCAP and MAP", SigtranProtocolEvidenceBundleAggregatesSccpTcapAndMap);
@@ -191,22 +193,22 @@ Run("SIGTRAN protocol evidence readiness separates SDK evidence from production 
 Run("SIGTRAN protocol evidence status summarizes evidence upgrade", SigtranProtocolEvidenceStatusSummarizesEvidenceUpgrade);
 Run("SIGTRAN protocol interop references require trace validation", SigtranProtocolInteropReferencesRequireTraceValidation);
 Run("SIGTRAN protocol interop artifact manifest requires reference SDK and comparison", SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndComparison);
-Run("SIGTRAN protocol interop comparison rules are commercial validation ready", SigtranProtocolInteropComparisonRulesAreCommercialValidationReady);
+Run("SIGTRAN protocol interop comparison rules are production validation ready", SigtranProtocolInteropComparisonRulesAreProductionValidationReady);
 Run("SIGTRAN protocol interop run plan is executable with external vectors", SigtranProtocolInteropRunPlanIsExecutableWithExternalVectors);
 Run("SIGTRAN protocol interop commands require vector root and reports", SigtranProtocolInteropCommandsRequireVectorRootAndReports);
 Run("SIGTRAN protocol interop run report identifies passing evidence", SigtranProtocolInteropRunReportIdentifiesPassingEvidence);
 Run("SIGTRAN protocol interop evidence registry starts empty", SigtranProtocolInteropEvidenceRegistryStartsEmpty);
 Run("SIGTRAN protocol interop readiness separates foundation from evidence", SigtranProtocolInteropReadinessSeparatesFoundationFromEvidence);
 Run("SIGTRAN protocol interop status summarizes vector foundation", SigtranProtocolInteropStatusSummarizesVectorFoundation);
-Run("SIGTRAN commercial evidence requirements cover production claim areas", SigtranCommercialEvidenceRequirementsCoverProductionClaimAreas);
-Run("SIGTRAN commercial evidence manifest satisfies requirements with digests", SigtranCommercialEvidenceManifestSatisfiesRequirementsWithDigests);
-Run("SIGTRAN commercial evidence bundle keeps empty dossier incomplete", SigtranCommercialEvidenceBundleKeepsEmptyDossierIncomplete);
-Run("SIGTRAN commercial evidence bundle completes with retained artifacts", SigtranCommercialEvidenceBundleCompletesWithRetainedArtifacts);
-Run("SIGTRAN commercial evidence gate reports missing current evidence", SigtranCommercialEvidenceGateReportsMissingCurrentEvidence);
-Run("SIGTRAN commercial evidence gate allows complete verified dossier", SigtranCommercialEvidenceGateAllowsCompleteVerifiedDossier);
-Run("SIGTRAN commercial evidence readiness separates foundation from claims", SigtranCommercialEvidenceReadinessSeparatesFoundationFromClaims);
-Run("SIGTRAN commercial evidence CI profile requires retained bundle", SigtranCommercialEvidenceCiProfileRequiresRetainedBundle);
-Run("SIGTRAN commercial evidence status summarizes dossier foundation", SigtranCommercialEvidenceStatusSummarizesDossierFoundation);
+Run("SIGTRAN production evidence requirements cover production claim areas", SigtranReleaseEvidenceRequirementsCoverProductionClaimAreas);
+Run("SIGTRAN production evidence manifest satisfies requirements with digests", SigtranReleaseEvidenceManifestSatisfiesRequirementsWithDigests);
+Run("SIGTRAN production evidence bundle keeps empty dossier incomplete", SigtranReleaseEvidenceBundleKeepsEmptyDossierIncomplete);
+Run("SIGTRAN production evidence bundle completes with retained artifacts", SigtranReleaseEvidenceBundleCompletesWithRetainedArtifacts);
+Run("SIGTRAN production evidence gate reports missing current evidence", SigtranReleaseEvidenceGateReportsMissingCurrentEvidence);
+Run("SIGTRAN production evidence gate allows complete verified dossier", SigtranReleaseEvidenceGateAllowsCompleteVerifiedDossier);
+Run("SIGTRAN production evidence readiness separates foundation from claims", SigtranReleaseEvidenceReadinessSeparatesFoundationFromClaims);
+Run("SIGTRAN production evidence CI profile requires retained bundle", SigtranReleaseEvidenceCiProfileRequiresRetainedBundle);
+Run("SIGTRAN production evidence status summarizes dossier foundation", SigtranReleaseEvidenceStatusSummarizesDossierFoundation);
 Run("SIGTRAN supply chain automation plan wires SBOM signing provenance and evidence", SigtranSupplyChainAutomationPlanWiresSbomSigningProvenanceAndEvidence);
 Run("SIGTRAN supply chain commands expose ordered release security steps", SigtranSupplyChainCommandsExposeOrderedReleaseSecuritySteps);
 Run("SIGTRAN supply chain artifact manifest validates required artifacts", SigtranSupplyChainArtifactManifestValidatesRequiredArtifacts);
@@ -219,7 +221,7 @@ Run("SIGTRAN supply chain references align with SBOM and signing plans", Sigtran
 Run("SIGTRAN supply chain artifact digests are mandatory for promotion", SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion);
 Run("SIGTRAN release workflow plan includes release triggers and stages", SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages);
 Run("SIGTRAN release workflow requires supply chain evidence and publish secrets", SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets);
-Run("SIGTRAN release workflow readiness reports concrete workflow file", SigtranReleaseWorkflowReadinessReportsConcreteWorkflowFile);
+Run("SIGTRAN release workflow readiness reports concrete workflow file", SigtranReleaseWorkflowReadinessSnapshotsConcreteWorkflowFile);
 Run("SIGTRAN release workflow status summarizes orchestration foundation", SigtranReleaseWorkflowStatusSummarizesOrchestrationFoundation);
 Run("SIGTRAN release workflow file contract tracks concrete workflow file", SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile);
 Run("SIGTRAN release workflow validation accepts concrete workflow YAML", SigtranReleaseWorkflowValidationAcceptsConcreteWorkflowYaml);
@@ -236,17 +238,17 @@ Run("SIGTRAN release version policy accepts SemVer tags", SigtranReleaseVersionP
 Run("SIGTRAN NuGet metadata contract matches project file", SigtranNuGetMetadataContractMatchesProjectFile);
 Run("SIGTRAN package layout exposes nupkg and symbols", SigtranPackageLayoutExposesNupkgAndSymbols);
 Run("SIGTRAN NuGet publish plans separate dry-run and publish", SigtranNuGetPublishPlansSeparateDryRunAndPublish);
-Run("SIGTRAN publication credential policy requires commercial secrets", SigtranPublicationCredentialPolicyRequiresCommercialSecrets);
+Run("SIGTRAN publication credential policy requires production secrets", SigtranPublicationCredentialPolicyRequiresProductionSecrets);
 Run("SIGTRAN publication channel policy separates prerelease and stable", SigtranPublicationChannelPolicySeparatesPrereleaseAndStable);
 Run("SIGTRAN package integrity manifest requires package digests", SigtranPackageIntegrityManifestRequiresPackageDigests);
 Run("SIGTRAN publication evidence manifest requires integrity and release evidence", SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidence);
 Run("SIGTRAN publication gate blocks incomplete publish readiness", SigtranPublicationGateBlocksIncompletePublishReadiness);
 Run("SIGTRAN publication gate allows complete publish readiness", SigtranPublicationGateAllowsCompletePublishReadiness);
 Run("SIGTRAN package publication status summarizes readiness foundation", SigtranPackagePublicationStatusSummarizesReadinessFoundation);
-Run("SIGTRAN commercial release execution evidence tracks passed and blocked artifacts", SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
+Run("SIGTRAN production release execution evidence tracks passed and blocked artifacts", SigtranReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts);
 Run("SIGTRAN Linux SCTP evidence records passing smoke capture", SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture);
 Run("SIGTRAN external peer interop blocker evidence records retained failure context", SigtranExternalPeerInteropBlockerEvidenceRecordsRetainedFailureContext);
-Run("SIGTRAN commercial release artifact dossier tracks retained and missing artifacts", SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
+Run("SIGTRAN production release artifact dossier tracks retained and missing artifacts", SigtranReleaseArtifactDossierTracksRetainedAndMissingArtifacts);
 Run("SIGTRAN SBOM execution evidence records generated SPDX output", SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput);
 Run("SIGTRAN package signing execution evidence records verification blocker", SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker);
 Run("SIGTRAN provenance execution evidence records package and SBOM digests", SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests);
@@ -264,64 +266,64 @@ Run("SIGTRAN release dry-run plan rehearses without publication", SigtranRelease
 Run("SIGTRAN prerelease publication gate blocks stable and ungated uploads", SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads);
 Run("SIGTRAN release notes artifact renders RC publication notes", SigtranReleaseNotesArtifactRendersRcPublicationNotes);
 Run("SIGTRAN migration notes artifact documents RC boundaries", SigtranMigrationNotesArtifactDocumentsRcBoundaries);
-Run("SIGTRAN final commercial readiness report separates RC and stable gates", SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates);
-Run("SIGTRAN release decision recommends RC before stable commercial evidence", SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence);
-Run("SIGTRAN release candidate publication evidence gates RC upload", SigtranReleaseCandidatePublicationEvidenceGatesRcUpload);
-Run("SIGTRAN release candidate publication status summarizes RC gate", SigtranReleaseCandidatePublicationStatusSummarizesRcGate);
-Run("SIGTRAN commercial release execution readiness reports remaining blockers", SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers);
-Run("SIGTRAN commercial release target lock binds evidence to version and commit", SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit);
-Run("SIGTRAN commercial release secrets gate publish and signing readiness", SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness);
-Run("SIGTRAN commercial evidence retention map binds artifacts to release target", SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget);
-Run("SIGTRAN commercial evidence checklist requires essential artifacts", SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts);
-Run("SIGTRAN commercial release preflight aggregates lockdown inputs", SigtranCommercialReleasePreflightAggregatesLockdownInputs);
+Run("SIGTRAN final production readiness report separates RC and stable gates", SigtranFinalProductionReadinessSnapshotSeparatesRcAndStableGates);
+Run("SIGTRAN release decision recommends RC before stable release evidence", SigtranReleaseDecisionRecommendsRcBeforeStableReleaseEvidence);
+Run("SIGTRAN prerelease publication evidence gates RC upload", SigtranPrereleasePublicationEvidenceGatesRcUpload);
+Run("SIGTRAN prerelease publication status summarizes RC gate", SigtranPrereleasePublicationStatusSummarizesRcGate);
+Run("SIGTRAN production release execution readiness reports remaining blockers", SigtranReleaseExecutionReadinessSnapshotsRemainingBlockers);
+Run("SIGTRAN production release target lock binds evidence to version and commit", SigtranReleaseTargetLockBindsEvidenceToVersionAndCommit);
+Run("SIGTRAN production release secrets gate publish and signing readiness", SigtranReleaseSecretsGatePublishAndSigningReadiness);
+Run("SIGTRAN production evidence retention map binds artifacts to release target", SigtranReleaseEvidenceRetentionMapBindsArtifactsToReleaseTarget);
+Run("SIGTRAN production evidence checklist requires essential artifacts", SigtranReleaseEvidenceChecklistRequiresEssentialArtifacts);
+Run("SIGTRAN production release preflight aggregates lockdown inputs", SigtranReleasePreflightAggregatesLockdownInputs);
 Run("SIGTRAN protected release environment profile gates publication channels", SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels);
 Run("SIGTRAN evidence dossier handoff maps checklist items to reviewers", SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers);
-Run("SIGTRAN commercial go no-go gate separates evidence execution from publication", SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication);
-Run("SIGTRAN commercial evidence readiness lockdown status summarizes current gate", SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate);
-Run("SIGTRAN commercial evidence execution run binds artifacts to target", SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget);
-Run("SIGTRAN commercial evidence execution stage catalog covers required work", SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork);
-Run("SIGTRAN commercial evidence execution command plan covers stage work", SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork);
-Run("SIGTRAN commercial evidence execution environment contract protects run inputs", SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs);
-Run("SIGTRAN commercial evidence execution artifact manifest covers retained outputs", SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs);
-Run("SIGTRAN commercial evidence execution verification requires digests and redaction", SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction);
-Run("SIGTRAN commercial evidence execution blocker classifier categorizes failures", SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures);
-Run("SIGTRAN commercial evidence execution retry policy gates resume decisions", SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions);
-Run("SIGTRAN commercial evidence execution status summarizes orchestration readiness", SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness);
-Run("SIGTRAN commercial evidence artifact intake target binds to execution run", SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun);
-Run("SIGTRAN commercial evidence artifact sources cover expected execution artifacts", SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
-Run("SIGTRAN commercial evidence artifact digests cover retained sources", SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources);
-Run("SIGTRAN commercial evidence redaction reviews approve trace-bearing artifacts", SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts);
-Run("SIGTRAN commercial evidence artifact completeness reports blockers", SigtranCommercialEvidenceArtifactCompletenessReportsBlockers);
-Run("SIGTRAN commercial evidence dossier intake report renders retained summary", SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary);
-Run("SIGTRAN commercial evidence promotion handoff includes digests and report", SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport);
-Run("SIGTRAN commercial evidence dossier intake bridge builds handoff from execution run", SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun);
-Run("SIGTRAN commercial evidence artifact intake status summarizes foundation readiness", SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness);
-Run("SIGTRAN commercial evidence retained file verifies observed digest", SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest);
-Run("SIGTRAN commercial evidence retained file manifest covers handoff items", SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems);
-Run("SIGTRAN commercial evidence file verification report identifies blockers", SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers);
-Run("SIGTRAN commercial evidence retention ledger requires immutable retention", SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention);
-Run("SIGTRAN commercial evidence integrity seal verifies ledger digest", SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest);
-Run("SIGTRAN commercial evidence publication attachments protect trace artifacts", SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts);
-Run("SIGTRAN commercial evidence verified promotion gate requires approval", SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval);
-Run("SIGTRAN commercial evidence file verification command plan orders execution", SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution);
-Run("SIGTRAN commercial evidence file verification status summarizes readiness", SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness);
-Run("SIGTRAN commercial evidence filesystem observer computes retained file digest", SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest);
-Run("SIGTRAN commercial evidence filesystem manifest builder observes handoff files", SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles);
-Run("SIGTRAN commercial evidence filesystem verification report identifies missing files", SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
-Run("SIGTRAN commercial evidence filesystem artifact writer retains reports", SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports);
-Run("SIGTRAN commercial evidence filesystem retention ledger covers verified files", SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
-Run("SIGTRAN commercial evidence filesystem integrity seal matches ledger", SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger);
-Run("SIGTRAN commercial evidence filesystem publication attachments protect trace evidence", SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
-Run("SIGTRAN commercial evidence filesystem promotion gate requires approval", SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval);
-Run("SIGTRAN commercial evidence filesystem command materializer writes execution script", SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript);
-Run("SIGTRAN commercial evidence filesystem execution status summarizes final validation", SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
-Run("SIGTRAN commercial evidence approved run target binds filesystem promotion", SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion);
-Run("SIGTRAN commercial evidence run approval checklist requires reviewer approval", SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval);
-Run("SIGTRAN commercial evidence run approval manifest requires required roles", SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles);
-Run("SIGTRAN commercial evidence run approval report writer retains markdown", SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown);
-Run("SIGTRAN commercial evidence approved run promotion package covers required artifacts", SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
-Run("SIGTRAN commercial evidence publication handoff enforces channel version policy", SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy);
-Run("SIGTRAN commercial evidence publication handoff gate reports blockers", SigtranCommercialEvidencePublicationHandoffGateReportsBlockers);
+Run("SIGTRAN production go no-go gate separates evidence execution from publication", SigtranReleaseGoNoGoGateSeparatesEvidenceExecutionFromPublication);
+Run("SIGTRAN production evidence readiness lockdown status summarizes current gate", SigtranReleaseEvidenceReadinessLockdownStatusSummarizesCurrentGate);
+Run("SIGTRAN production evidence execution run binds artifacts to target", SigtranReleaseEvidenceExecutionRunBindsArtifactsToTarget);
+Run("SIGTRAN production evidence execution stage catalog covers required work", SigtranReleaseEvidenceExecutionStageCatalogCoversRequiredWork);
+Run("SIGTRAN production evidence execution command plan covers stage work", SigtranReleaseEvidenceExecutionCommandPlanCoversStageWork);
+Run("SIGTRAN production evidence execution environment contract protects run inputs", SigtranReleaseEvidenceExecutionEnvironmentContractProtectsRunInputs);
+Run("SIGTRAN production evidence execution artifact manifest covers retained outputs", SigtranReleaseEvidenceExecutionArtifactManifestCoversRetainedOutputs);
+Run("SIGTRAN production evidence execution verification requires digests and redaction", SigtranReleaseEvidenceExecutionVerificationRequiresDigestsAndRedaction);
+Run("SIGTRAN production evidence execution blocker classifier categorizes failures", SigtranReleaseEvidenceExecutionBlockerClassifierCategorizesFailures);
+Run("SIGTRAN production evidence execution retry policy gates resume decisions", SigtranReleaseEvidenceExecutionRetryPolicyGatesResumeDecisions);
+Run("SIGTRAN production evidence execution status summarizes orchestration readiness", SigtranReleaseEvidenceExecutionStatusSummarizesOrchestrationReadiness);
+Run("SIGTRAN production evidence artifact intake target binds to execution run", SigtranReleaseEvidenceArtifactIntakeTargetBindsToExecutionRun);
+Run("SIGTRAN production evidence artifact sources cover expected execution artifacts", SigtranReleaseEvidenceArtifactSourcesCoverExpectedExecutionArtifacts);
+Run("SIGTRAN production evidence artifact digests cover retained sources", SigtranReleaseEvidenceArtifactDigestsCoverRetainedSources);
+Run("SIGTRAN production evidence redaction reviews approve trace-bearing artifacts", SigtranReleaseEvidenceRedactionReviewsApproveTraceBearingArtifacts);
+Run("SIGTRAN production evidence artifact completeness reports blockers", SigtranReleaseEvidenceArtifactCompletenessReportsBlockers);
+Run("SIGTRAN production evidence dossier intake report renders retained summary", SigtranReleaseEvidenceDossierIntakeReportRendersRetainedSummary);
+Run("SIGTRAN production evidence promotion handoff includes digests and report", SigtranReleaseEvidencePromotionHandoffIncludesDigestsAndReport);
+Run("SIGTRAN production evidence dossier intake bridge builds handoff from execution run", SigtranReleaseEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun);
+Run("SIGTRAN production evidence artifact intake status summarizes foundation readiness", SigtranReleaseEvidenceArtifactIntakeStatusSummarizesFoundationReadiness);
+Run("SIGTRAN production evidence retained file verifies observed digest", SigtranReleaseEvidenceRetainedFileVerifiesObservedDigest);
+Run("SIGTRAN production evidence retained file manifest covers handoff items", SigtranReleaseEvidenceRetainedFileManifestCoversHandoffItems);
+Run("SIGTRAN production evidence file verification report identifies blockers", SigtranReleaseEvidenceFileVerificationReportIdentifiesBlockers);
+Run("SIGTRAN production evidence retention ledger requires immutable retention", SigtranReleaseEvidenceRetentionLedgerRequiresImmutableRetention);
+Run("SIGTRAN production evidence integrity seal verifies ledger digest", SigtranReleaseEvidenceIntegritySealVerifiesLedgerDigest);
+Run("SIGTRAN production evidence publication attachments protect trace artifacts", SigtranReleaseEvidencePublicationAttachmentsProtectTraceArtifacts);
+Run("SIGTRAN production evidence verified promotion gate requires approval", SigtranReleaseEvidenceVerifiedPromotionGateRequiresApproval);
+Run("SIGTRAN production evidence file verification command plan orders execution", SigtranReleaseEvidenceFileVerificationCommandPlanOrdersExecution);
+Run("SIGTRAN production evidence file verification status summarizes readiness", SigtranReleaseEvidenceFileVerificationStatusSummarizesReadiness);
+Run("SIGTRAN production evidence filesystem observer computes retained file digest", SigtranReleaseEvidenceFileSystemObserverComputesRetainedFileDigest);
+Run("SIGTRAN production evidence filesystem manifest builder observes handoff files", SigtranReleaseEvidenceFileSystemManifestBuilderObservesHandoffFiles);
+Run("SIGTRAN production evidence filesystem verification report identifies missing files", SigtranReleaseEvidenceFileSystemVerificationReportIdentifiesMissingFiles);
+Run("SIGTRAN production evidence filesystem artifact writer retains reports", SigtranReleaseEvidenceFileSystemArtifactWriterRetainsReports);
+Run("SIGTRAN production evidence filesystem retention ledger covers verified files", SigtranReleaseEvidenceFileSystemRetentionLedgerCoversVerifiedFiles);
+Run("SIGTRAN production evidence filesystem integrity seal matches ledger", SigtranReleaseEvidenceFileSystemIntegritySealMatchesLedger);
+Run("SIGTRAN production evidence filesystem publication attachments protect trace evidence", SigtranReleaseEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence);
+Run("SIGTRAN production evidence filesystem promotion gate requires approval", SigtranReleaseEvidenceFileSystemPromotionGateRequiresApproval);
+Run("SIGTRAN production evidence filesystem command materializer writes execution script", SigtranReleaseEvidenceFileSystemCommandMaterializerWritesExecutionScript);
+Run("SIGTRAN production evidence filesystem execution status summarizes final validation", SigtranReleaseEvidenceFileSystemExecutionStatusSummarizesFinalValidation);
+Run("SIGTRAN production evidence approved run target binds filesystem promotion", SigtranReleaseEvidenceApprovedRunTargetBindsFileSystemPromotion);
+Run("SIGTRAN production evidence run approval checklist requires reviewer approval", SigtranReleaseEvidenceRunApprovalChecklistRequiresReviewerApproval);
+Run("SIGTRAN production evidence run approval manifest requires required roles", SigtranReleaseEvidenceRunApprovalManifestRequiresRequiredRoles);
+Run("SIGTRAN production evidence run approval report writer retains markdown", SigtranReleaseEvidenceRunApprovalReportWriterRetainsMarkdown);
+Run("SIGTRAN production evidence approved run promotion package covers required artifacts", SigtranReleaseEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts);
+Run("SIGTRAN production evidence publication handoff enforces channel version policy", SigtranReleaseEvidencePublicationHandoffEnforcesChannelVersionPolicy);
+Run("SIGTRAN production evidence publication handoff gate reports blockers", SigtranReleaseEvidencePublicationHandoffGateReportsBlockers);
 Run("SIGTRAN package publication request derives from approved handoff", SigtranPackagePublicationRequestDerivesFromApprovedHandoff);
 Run("SIGTRAN package publication artifacts bind package and symbols digests", SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests);
 Run("SIGTRAN package publication credential readiness gates required secrets", SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets);
@@ -333,19 +335,20 @@ Run("SIGTRAN package publication dry-run rehearsal retains safe report", Sigtran
 Run("SIGTRAN package publication command materialization writes guarded script", SigtranPackagePublicationCommandMaterializationWritesGuardedScript);
 Run("SIGTRAN package publication integration status summarizes final validation", SigtranPackagePublicationIntegrationStatusSummarizesFinalValidation);
 Run("SIGTRAN stable release target requires stable version and matching tag", SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag);
-Run("SIGTRAN stable commercial dossier evidence map gates retained artifacts", SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts);
-Run("SIGTRAN stable commercial readiness checklist requires approved areas", SigtranStableCommercialReadinessChecklistRequiresApprovedAreas);
-Run("SIGTRAN stable commercial release decision gates tag readiness", SigtranStableCommercialReleaseDecisionGatesTagReadiness);
+Run("SIGTRAN stable release dossier evidence map gates retained artifacts", SigtranStableReleaseDossierEvidenceMapGatesRetainedArtifacts);
+Run("SIGTRAN stable release readiness checklist requires approved areas", SigtranStableReleaseReadinessChecklistRequiresApprovedAreas);
+Run("SIGTRAN stable release release decision gates tag readiness", SigtranStableReleaseDecisionGatesTagReadiness);
 Run("SIGTRAN stable tag gate materializes guarded tag commands", SigtranStableTagGateMaterializesGuardedTagCommands);
 Run("SIGTRAN stable publication authorization requires protected approval", SigtranStablePublicationAuthorizationRequiresProtectedApproval);
 Run("SIGTRAN stable publish execution plan dispatches guarded stable workflow", SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow);
-Run("SIGTRAN stable commercial report writer retains final report", SigtranStableCommercialReportWriterRetainsFinalReport);
+Run("SIGTRAN stable release report writer retains final report", SigtranStableReleaseReportWriterRetainsFinalReport);
 Run("SIGTRAN stable release audit trail covers final gate lifecycle", SigtranStableReleaseAuditTrailCoversFinalGateLifecycle);
-Run("SIGTRAN stable commercial release gate status separates foundation from release", SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelease);
-Run("SIGTRAN commercial evidence approval audit trail covers lifecycle", SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle);
-Run("SIGTRAN commercial evidence approval command materializer writes script", SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript);
-Run("SIGTRAN commercial evidence approval handoff status summarizes final validation", SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation);
+Run("SIGTRAN stable release release gate status separates foundation from release", SigtranStableReleaseGateStatusSeparatesFoundationFromRelease);
+Run("SIGTRAN production evidence approval audit trail covers lifecycle", SigtranReleaseEvidenceApprovalAuditTrailCoversLifecycle);
+Run("SIGTRAN production evidence approval command materializer writes script", SigtranReleaseEvidenceApprovalCommandMaterializerWritesScript);
+Run("SIGTRAN production evidence approval handoff status summarizes final validation", SigtranReleaseEvidenceApprovalHandoffStatusSummarizesFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
+Run("SIGTRAN public API naming avoids project plan terminology", SigtranPublicApiNamingAvoidsProjectPlanTerminology);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -353,7 +356,7 @@ Run("Native SCTP socket adapter reports lifecycle health", NativeSctpSocketAdapt
 Run("Native SCTP connector reports unsupported platform safely", NativeSctpConnectorReportsUnsupportedPlatformSafely);
 Run("Native SCTP listener validates options and unsupported platform", NativeSctpListenerValidatesOptionsAndUnsupportedPlatform);
 Run("Native SCTP lab profile is opt-in", NativeSctpLabProfileIsOptIn);
-Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessReportsFoundationAndVerificationGates);
+Run("Native SCTP readiness reports foundation and verification gates", NativeSctpReadinessSnapshotsFoundationAndVerificationGates);
 Run("SIGTRAN native SCTP implementation status summarizes foundation", SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
 Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
@@ -365,7 +368,7 @@ Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueCon
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
 Run("TCAP evidence vectors validate transaction bytes", TcapEvidenceVectorsValidateTransactionBytes);
-Run("TCAP readiness reports foundation status", TcapReadinessReportsFoundationStatus);
+Run("TCAP readiness reports foundation status", TcapReadinessSnapshotsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
 Run("MAP MO-ForwardSM model encodes required parameters", MapMoForwardSmModelEncodesRequiredParameters);
@@ -376,7 +379,7 @@ Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCent
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
 Run("MAP SMS evidence vectors validate operation bytes", MapSmsEvidenceVectorsValidateOperationBytes);
-Run("MAP SMS readiness reports foundation status", MapSmsReadinessReportsFoundationStatus);
+Run("MAP SMS readiness reports foundation status", MapSmsReadinessSnapshotsFoundationStatus);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -388,7 +391,7 @@ Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
 Run("SCCP evidence vectors validate codec bytes", SccpEvidenceVectorsValidateCodecBytes);
-Run("SCCP readiness reports foundation status", SccpReadinessReportsFoundationStatus);
+Run("SCCP readiness reports foundation status", SccpReadinessSnapshotsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
 Run("SCTP association events describe lifecycle state", SctpAssociationEventsDescribeLifecycleState);
 Run("SCTP association journal records lifecycle history", SctpAssociationJournalRecordsLifecycleHistory);
@@ -407,10 +410,10 @@ Run("SCTP transport diagnostics snapshots summarize state", SctpTransportDiagnos
 Run("SCTP production hardening readiness gates evidence", SctpProductionHardeningReadinessGatesEvidence);
 Run("SCTP production hardening status summarizes foundation", SctpProductionHardeningStatusSummarizesFoundation);
 Run("TCP SCTP adapter exposes development metadata and health", TcpSctpAdapterExposesDevelopmentMetadataAndHealth);
-Run("SCTP transport readiness reports foundation status", SctpTransportReadinessReportsFoundationStatus);
+Run("SCTP transport readiness reports foundation status", SctpTransportReadinessSnapshotsFoundationStatus);
 Run("M3UA Payload Data uses network byte order and RFC-style TLV length", M3uaPayloadDataUsesNetworkOrder);
 Run("M3UA protocol exposes public metadata", M3uaProtocolExposesPublicMetadata);
-Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessReportDescribesReleaseGate);
+Run("M3UA alpha readiness report describes release gate", M3uaAlphaReadinessSnapshotDescribesReleaseGate);
 Run("M3UA decoder returns the complete Protocol Data value", M3uaDecoderReturnsProtocolDataValue);
 Run("M3UA parses Payload Data optional fields", M3uaParsesPayloadDataOptionalFields);
 Run("M3UA rejects Payload Data without Protocol Data", M3uaRejectsPayloadDataWithoutProtocolData);
@@ -596,9 +599,9 @@ static void SigtranCiVerificationProfileExposesOfficialCommands()
     Assert(commands[2].Contains("dotnet pack", StringComparison.Ordinal), commands[2]);
 }
 
-static void SigtranInteroperabilityReadinessReportsFoundationStatus()
+static void SigtranInteroperabilityReadinessSnapshotsFoundationStatus()
 {
-    SigtranInteroperabilityReadinessReport report = SigtranInteroperabilityReadiness.GetReport();
+    SigtranInteroperabilityReadinessSnapshot report = SigtranInteroperabilityReadiness.GetReport();
 
     Assert(report.FoundationReady, "interoperability tooling foundation should be ready");
     Assert(!report.IsProductionReady, "interoperability tooling should wait for external lab evidence");
@@ -618,12 +621,12 @@ static void SigtranInteroperabilityToolingStatusSummarizesCompletedTooling()
     Assert(SigtranInteroperabilityToolingStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranInteroperabilityToolingStatus.Describe());
 }
 
-static void SigtranCommercialReadinessReportsReleaseGates()
+static void SigtranProductionReadinessSnapshotsReleaseGates()
 {
-    SigtranCommercialReadinessReport report = SigtranCommercialReadiness.GetReport();
+    SigtranProductionReadinessSnapshot report = SigtranProductionReadiness.GetReport();
 
-    Assert(report.InternalReleaseReady, "commercial readiness should see internal release foundation");
-    Assert(!report.CommercialReady, "commercial readiness should wait for external gates");
+    Assert(report.InternalReleaseReady, "production readiness should see internal release foundation");
+    Assert(!report.ProductionReady, "production readiness should wait for external gates");
     Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
     Assert(report.Describe().Contains("externalInterop=False", StringComparison.Ordinal), report.Describe());
 }
@@ -651,25 +654,25 @@ static void SigtranInteropEvidenceRegistryTracksLabResults()
     Assert(!SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence(), "current interop evidence should be empty until real lab artifacts are added");
 }
 
-static void SigtranReleaseCandidateManifestReportsPromotionGates()
+static void SigtranPrereleaseManifestReportsPromotionGates()
 {
-    SigtranReleaseCandidateManifest manifest = SigtranReleaseCandidate.Create("1.0.0-alpha.1", "abcdef0");
+    SigtranPrereleaseManifest manifest = SigtranPrerelease.Create("1.0.0-alpha.1", "abcdef0");
 
-    AssertEqual("Sigtran.NET", manifest.PackageId, "release candidate package id");
-    Assert(manifest.CanPublishReleaseCandidate, "release candidate should be publishable after internal gates");
-    Assert(!manifest.CanPromoteToCommercialProduction, "release candidate should not promote without commercial gates");
-    Assert(manifest.Describe().Contains("commercialProduction=False", StringComparison.Ordinal), manifest.Describe());
+    AssertEqual("Sigtran.NET", manifest.PackageId, "prerelease package id");
+    Assert(manifest.CanPublishPrerelease, "prerelease should be publishable after internal gates");
+    Assert(!manifest.CanPromoteToProduction, "prerelease should not promote without production gates");
+    Assert(manifest.Describe().Contains("production=False", StringComparison.Ordinal), manifest.Describe());
 }
 
-static void SigtranPackageGovernanceReportsCommercialRequirements()
+static void SigtranPackageGovernanceReportsProductionRequirements()
 {
     SigtranPackageGovernancePolicy current = SigtranPackageGovernance.CreateCurrentPolicy();
-    SigtranPackageGovernancePolicy commercial = SigtranPackageGovernance.CreateCommercialTargetPolicy();
+    SigtranPackageGovernancePolicy production = SigtranPackageGovernance.CreateProductionTargetPolicy();
 
     Assert(current.IsSatisfiedByCurrentPackage, "current package governance should reflect existing package metadata");
-    Assert(!commercial.IsSatisfiedByCurrentPackage, "commercial governance should wait for signing and SBOM");
-    Assert(commercial.Describe().Contains("signing=True", StringComparison.Ordinal), commercial.Describe());
-    Assert(commercial.Describe().Contains("sbom=True", StringComparison.Ordinal), commercial.Describe());
+    Assert(!production.IsSatisfiedByCurrentPackage, "production governance should wait for signing and SBOM");
+    Assert(production.Describe().Contains("signing=True", StringComparison.Ordinal), production.Describe());
+    Assert(production.Describe().Contains("sbom=True", StringComparison.Ordinal), production.Describe());
 }
 
 static void SigtranSecurityPolicyReportsResponseTargets()
@@ -693,7 +696,7 @@ static void SigtranCompatibilityPolicyReportsSemVerRules()
     Assert(policy.Describe().Contains("semver=True", StringComparison.Ordinal), policy.Describe());
 }
 
-static void SigtranObservabilityProfileExposesCommercialSignals()
+static void SigtranObservabilityProfileExposesProductionSignals()
 {
     SigtranObservabilityProfile profile = SigtranObservability.CreateDefaultProfile();
 
@@ -704,29 +707,29 @@ static void SigtranObservabilityProfileExposesCommercialSignals()
     AssertEqual("metrics=4 traces=4 health=4", profile.Describe(), "observability summary");
 }
 
-static void SigtranDeploymentProfilesExposeCommercialAndDevelopmentGates()
+static void SigtranDeploymentProfilesExposeProductionAndDevelopmentGates()
 {
-    SigtranDeploymentProfile commercial = SigtranDeploymentProfiles.CreateCommercialLinuxProfile();
+    SigtranDeploymentProfile production = SigtranDeploymentProfiles.CreateProductionLinuxProfile();
     SigtranDeploymentProfile local = SigtranDeploymentProfiles.CreateLocalDevelopmentProfile();
 
-    AssertEqual("commercial-linux", commercial.Name, "commercial deployment profile name");
-    AssertEqual(SigtranOperatingSystemFamily.Linux, commercial.OperatingSystem, "commercial deployment OS");
-    Assert(commercial.RequiresNativeSctp, "commercial deployment should require native SCTP");
-    Assert(commercial.RequiresExternalEvidence, "commercial deployment should require external evidence");
+    AssertEqual("production-linux", production.Name, "production deployment profile name");
+    AssertEqual(SigtranOperatingSystemFamily.Linux, production.OperatingSystem, "production deployment OS");
+    Assert(production.RequiresNativeSctp, "production deployment should require native SCTP");
+    Assert(production.RequiresExternalEvidence, "production deployment should require external evidence");
     Assert(!local.RequiresNativeSctp, "local development should not require native SCTP");
     Assert(local.Describe().Contains("security=True", StringComparison.Ordinal), local.Describe());
 }
 
-static void SigtranCommercializationStatusSummarizesCommercializationFoundation()
+static void SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercializationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranProductionReadinessStatus.GetCompletedCapabilities();
 
-    AssertEqual("Commercialization and Release Hardening", SigtranCommercializationStatus.StatusLabel, "commercialization label");
-    AssertEqual(10, SigtranCommercializationStatus.CompletedUnitCount, "commercialization completed unit count");
-    AssertEqual(10, capabilities.Count, "commercialization capability count");
-    Assert(capabilities.Contains("deployment-profiles"), "commercialization status should include deployment profiles");
-    Assert(SigtranCommercializationStatus.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranCommercializationStatus.Describe());
-    Assert(SigtranCommercializationStatus.Describe().Contains("commercialReady=False", StringComparison.Ordinal), SigtranCommercializationStatus.Describe());
+    AssertEqual("ProductionReadiness and Release Hardening", SigtranProductionReadinessStatus.StatusLabel, "productionization label");
+    AssertEqual(10, SigtranProductionReadinessStatus.CompletedUnitCount, "productionization completed unit count");
+    AssertEqual(10, capabilities.Count, "productionization capability count");
+    Assert(capabilities.Contains("deployment-profiles"), "productionization status should include deployment profiles");
+    Assert(SigtranProductionReadinessStatus.Describe().Contains("internalReleaseReady=True", StringComparison.Ordinal), SigtranProductionReadinessStatus.Describe());
+    Assert(SigtranProductionReadinessStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranProductionReadinessStatus.Describe());
 }
 
 static void SigtranInteropLabScenarioCatalogExposesRequiredScenarios()
@@ -787,7 +790,7 @@ static void SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate()
     SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
     AssertEqual("external-sigtran-sg", profile.Id, "external peer id");
     AssertEqual(SigtranInteropPeerRole.SignallingGateway, profile.Role, "external peer role");
-    AssertEqual(SigtranInteropPeerProfiles.MaintainedPeerReferenceUrl, profile.ReferenceUrl, "external peer reference URL");
+    AssertEqual(SigtranInteropPeerProfiles.ReferencePeerReferenceUrl, profile.ReferenceUrl, "external peer reference URL");
 
     SigtranInteropLabTemplate template = SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate();
     AssertEqual("external-peer-m3ua-asp-to-sg", template.Scenario.Id, "external peer lab scenario");
@@ -797,13 +800,13 @@ static void SigtranExternalPeerInteropProfileExposesM3uaAspToSgTemplate()
     Assert(template.Describe().Contains("messages=11", StringComparison.Ordinal), template.Describe());
 }
 
-static void SigtranExternalPeerProfileMarksMaintainedCommercialCandidates()
+static void SigtranExternalPeerProfileMarksReferenceProductionCandidates()
 {
     SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
 
-    AssertEqual(SigtranInteropPeerSupportModel.MaintainedPeerStack, profile.SupportModel, "external peer support model");
-    Assert(profile.IsMaintainedCommercialCandidate, profile.Describe());
-    Assert(profile.Describe().Contains("support=MaintainedPeerStack", StringComparison.Ordinal), profile.Describe());
+    AssertEqual(SigtranInteropPeerSupportModel.ReferencePeerStack, profile.SupportModel, "external peer support model");
+    Assert(profile.IsReferencePeerCandidate, profile.Describe());
+    Assert(profile.Describe().Contains("support=ReferencePeerStack", StringComparison.Ordinal), profile.Describe());
 
     SigtranInteropPeerProfile simulator = new(
         "external-peer-simulator",
@@ -811,48 +814,48 @@ static void SigtranExternalPeerProfileMarksMaintainedCommercialCandidates()
         "Protocol simulator",
         "https://example.invalid/simulator",
         "SCTP/M3UA",
-        "Simulator evidence is useful for development but not commercial promotion.",
+        "Simulator evidence is useful for development but not production promotion.",
         SigtranInteropPeerSupportModel.Simulator);
 
-    Assert(!simulator.IsMaintainedCommercialCandidate, simulator.Describe());
+    Assert(!simulator.IsReferencePeerCandidate, simulator.Describe());
 }
 
-static void SigtranMaintainedPeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria()
+static void SigtranReferencePeerSelectionPolicyRequiresPackageNeutralEvidenceCriteria()
 {
-    SigtranMaintainedPeerSelectionPolicy policy = SigtranMaintainedPeerSelectionPolicy.CreateDefault();
+    SigtranReferencePeerSelectionPolicy policy = SigtranReferencePeerSelectionPolicy.CreateDefault();
     SigtranInteropPeerProfile profile = SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway();
     IReadOnlyList<string> allCriteria = policy.GetCriteria().Select(static criterion => criterion.Id).ToArray();
 
-    AssertEqual(6, policy.GetCriteria().Count, "maintained peer criterion count");
-    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranMaintainedPeerSelectionCriterionKind.ModernLinuxSupport), "selection policy should require modern Linux support");
-    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranMaintainedPeerSelectionCriterionKind.LicenseIsolation), "selection policy should require license isolation");
+    AssertEqual(6, policy.GetCriteria().Count, "reference peer criterion count");
+    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranReferencePeerSelectionCriterionKind.ModernLinuxSupport), "selection policy should require modern Linux support");
+    Assert(policy.GetCriteria().Any(static criterion => criterion.Kind == SigtranReferencePeerSelectionCriterionKind.LicenseIsolation), "selection policy should require license isolation");
 
-    SigtranMaintainedPeerSelectionReport selected = policy.Evaluate(profile, allCriteria);
+    SigtranReferencePeerSelectionReport selected = policy.Evaluate(profile, allCriteria);
     Assert(selected.Selected, selected.Describe());
 
-    SigtranMaintainedPeerSelectionReport missing = policy.Evaluate(profile, ["maintained-upstream", "modern-linux", "native-sctp"]);
+    SigtranReferencePeerSelectionReport missing = policy.Evaluate(profile, ["reference-upstream", "modern-linux", "native-sctp"]);
     Assert(!missing.Selected, missing.Describe());
     Assert(missing.MissingCriteria.Contains("retained-artifacts"), "selection policy should require retained artifacts");
     Assert(missing.Describe().Contains("missing=3", StringComparison.Ordinal), missing.Describe());
 }
 
-static void SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults()
+static void SigtranReferencePeerLabBindingCatalogExposesPackageNeutralDefaults()
 {
-    SigtranMaintainedPeerLabBinding binding = SigtranMaintainedPeerLabBindings.CreateDefault();
-    IReadOnlyList<SigtranMaintainedPeerLabBinding> catalog = SigtranMaintainedPeerLabBindings.CreateCatalog();
-    SigtranMaintainedPeerSelectionReport report = binding.EvaluateSelection(SigtranMaintainedPeerSelectionPolicy.CreateDefault());
+    SigtranReferencePeerLabBinding binding = SigtranReferencePeerLabBindings.CreateDefault();
+    IReadOnlyList<SigtranReferencePeerLabBinding> catalog = SigtranReferencePeerLabBindings.CreateCatalog();
+    SigtranReferencePeerSelectionReport report = binding.EvaluateSelection(SigtranReferencePeerSelectionPolicy.CreateDefault());
 
-    AssertEqual("maintained-external-peer-lab", binding.Id, "maintained peer lab binding id");
-    AssertEqual("external-sigtran-sg", binding.PeerProfile.Id, "maintained peer lab binding profile");
-    AssertEqual("external-peer-package", binding.PackageId, "maintained peer lab binding package");
-    AssertEqual("configured-by-lab", binding.PackageVersion, "maintained peer lab binding package version");
-    AssertEqual("artifacts/external-peer/maintained", binding.ArtifactRoot, "maintained peer lab binding artifact root");
-    AssertEqual(1, catalog.Count, "maintained peer lab binding catalog count");
+    AssertEqual("reference-external-peer-lab", binding.Id, "reference peer lab binding id");
+    AssertEqual("external-sigtran-sg", binding.PeerProfile.Id, "reference peer lab binding profile");
+    AssertEqual("external-peer-package", binding.PackageId, "reference peer lab binding package");
+    AssertEqual("configured-by-lab", binding.PackageVersion, "reference peer lab binding package version");
+    AssertEqual("artifacts/external-peer/reference", binding.ArtifactRoot, "reference peer lab binding artifact root");
+    AssertEqual(1, catalog.Count, "reference peer lab binding catalog count");
 
-    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PeerIdEnvironmentVariable), "binding should expose peer id environment variable");
-    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PackageEnvironmentVariable), "binding should expose package environment variable");
-    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.PackageVersionEnvironmentVariable), "binding should expose package version environment variable");
-    Assert(binding.EnvironmentVariables.ContainsKey(SigtranMaintainedPeerLabBindings.ArtifactRootEnvironmentVariable), "binding should expose artifact root environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranReferencePeerLabBindings.PeerIdEnvironmentVariable), "binding should expose peer id environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranReferencePeerLabBindings.PackageEnvironmentVariable), "binding should expose package environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranReferencePeerLabBindings.PackageVersionEnvironmentVariable), "binding should expose package version environment variable");
+    Assert(binding.EnvironmentVariables.ContainsKey(SigtranReferencePeerLabBindings.ArtifactRootEnvironmentVariable), "binding should expose artifact root environment variable");
     Assert(binding.SatisfiedCriterionIds.Contains("license-isolated"), "binding should satisfy license isolation");
     Assert(report.Selected, report.Describe());
 
@@ -862,39 +865,39 @@ static void SigtranMaintainedPeerLabBindingCatalogExposesPackageNeutralDefaults(
     Assert(description.Contains("packageConfigured=True", StringComparison.Ordinal), description);
 }
 
-static void SigtranMaintainedPeerLabPrerequisitesReportHostReadiness()
+static void SigtranReferencePeerLabPrerequisitesReportHostReadiness()
 {
-    IReadOnlyList<SigtranMaintainedPeerLabPrerequisite> prerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault();
+    IReadOnlyList<SigtranReferencePeerLabPrerequisite> prerequisites = SigtranReferencePeerLabPrerequisites.GetDefault();
     IReadOnlyList<string> allPrerequisites = prerequisites.Select(static prerequisite => prerequisite.Id).ToArray();
 
-    AssertEqual(6, prerequisites.Count, "maintained peer lab prerequisite count");
-    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranMaintainedPeerLabPrerequisiteKind.NativeSctp), "prerequisites should include native SCTP");
-    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranMaintainedPeerLabPrerequisiteKind.PacketCapture), "prerequisites should include packet capture");
+    AssertEqual(6, prerequisites.Count, "reference peer lab prerequisite count");
+    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranReferencePeerLabPrerequisiteKind.NativeSctp), "prerequisites should include native SCTP");
+    Assert(prerequisites.Any(static prerequisite => prerequisite.Kind == SigtranReferencePeerLabPrerequisiteKind.PacketCapture), "prerequisites should include packet capture");
 
-    SigtranMaintainedPeerLabPrerequisiteReport ready = SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites);
+    SigtranReferencePeerLabPrerequisiteReport ready = SigtranReferencePeerLabPrerequisites.Evaluate(allPrerequisites);
     Assert(ready.Ready, ready.Describe());
-    AssertEqual(0, ready.MissingPrerequisiteIds.Count, "ready maintained peer prerequisite missing count");
+    AssertEqual(0, ready.MissingPrerequisiteIds.Count, "ready reference peer prerequisite missing count");
 
-    SigtranMaintainedPeerLabPrerequisiteReport missing = SigtranMaintainedPeerLabPrerequisites.Evaluate(["linux-host", "dotnet-10-runtime"]);
+    SigtranReferencePeerLabPrerequisiteReport missing = SigtranReferencePeerLabPrerequisites.Evaluate(["linux-host", "dotnet-10-runtime"]);
     Assert(!missing.Ready, missing.Describe());
     Assert(missing.MissingPrerequisiteIds.Contains("native-sctp-tools"), "missing prerequisite report should include native SCTP tools");
     Assert(missing.MissingPrerequisiteIds.Contains("external-peer-package"), "missing prerequisite report should include external peer package");
     Assert(missing.Describe().Contains("missing=4", StringComparison.Ordinal), missing.Describe());
 }
 
-static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
+static void SigtranReferencePeerLabConfigurationValidatesEnvironmentContracts()
 {
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
-    SigtranMaintainedPeerLabConfigurationValidation validation = configuration.Validate();
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.CreateDefault();
+    SigtranReferencePeerLabConfigurationValidation validation = configuration.Validate();
 
     Assert(validation.IsValid, validation.Describe());
-    AssertEqual("M3UA", configuration.Adaptation, "maintained peer lab adaptation");
-    AssertEqual((uint)100, configuration.RoutingContext, "maintained peer lab routing context");
+    AssertEqual("M3UA", configuration.Adaptation, "reference peer lab adaptation");
+    AssertEqual((uint)100, configuration.RoutingContext, "reference peer lab routing context");
     Assert(configuration.Describe().Contains("traffic=loadshare", StringComparison.Ordinal), configuration.Describe());
 
     Dictionary<string, string> environment = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["PEER_NAME"] = "phase27-maintained-peer",
+        ["PEER_NAME"] = "phase27-reference-peer",
         ["LOCAL_IP"] = "127.0.0.1",
         ["LOCAL_SCTP_PORT"] = "2905",
         ["REMOTE_IP"] = "127.0.0.1",
@@ -909,13 +912,13 @@ static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
         ["ARTIFACT_ROOT"] = "artifacts/external-peer/phase27"
     };
 
-    SigtranMaintainedPeerLabConfiguration parsed = SigtranMaintainedPeerLabConfigurations.FromEnvironment(environment);
-    AssertEqual("phase27-maintained-peer", parsed.PeerName, "parsed maintained peer name");
-    AssertEqual(2906, parsed.RemoteSctpPort, "parsed maintained peer remote SCTP port");
-    AssertEqual("artifacts/external-peer/phase27", parsed.ArtifactRoot, "parsed maintained peer artifact root");
+    SigtranReferencePeerLabConfiguration parsed = SigtranReferencePeerLabConfigurations.FromEnvironment(environment);
+    AssertEqual("phase27-reference-peer", parsed.PeerName, "parsed reference peer name");
+    AssertEqual(2906, parsed.RemoteSctpPort, "parsed reference peer remote SCTP port");
+    AssertEqual("artifacts/external-peer/phase27", parsed.ArtifactRoot, "parsed reference peer artifact root");
     Assert(parsed.Validate().IsValid, parsed.Validate().Describe());
 
-    SigtranMaintainedPeerLabConfiguration invalid = new(
+    SigtranReferencePeerLabConfiguration invalid = new(
         "bad-peer",
         "not-an-ip",
         0,
@@ -930,7 +933,7 @@ static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
         "invalid",
         "artifacts/external-peer/bad");
 
-    SigtranMaintainedPeerLabConfigurationValidation invalidReport = invalid.Validate();
+    SigtranReferencePeerLabConfigurationValidation invalidReport = invalid.Validate();
     Assert(!invalidReport.IsValid, invalidReport.Describe());
     Assert(invalidReport.Errors.Contains("local-ip-invalid"), "invalid config should report local IP");
     Assert(invalidReport.Errors.Contains("local-sctp-port-invalid"), "invalid config should report local SCTP port");
@@ -940,44 +943,44 @@ static void SigtranMaintainedPeerLabConfigurationValidatesEnvironmentContracts()
     Assert(invalidReport.Errors.Contains("traffic-mode-unsupported"), "invalid config should report unsupported traffic mode");
 }
 
-static void SigtranMaintainedPeerLabArtifactPlanCoversRetainedEvidencePaths()
+static void SigtranReferencePeerLabArtifactPlanCoversRetainedEvidencePaths()
 {
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
-    SigtranMaintainedPeerLabArtifactPlan plan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit5");
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.CreateDefault();
+    SigtranReferencePeerLabArtifactPlan plan = SigtranReferencePeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit5");
 
-    AssertEqual("phase27-unit5", plan.RunId, "maintained peer artifact plan run id");
-    AssertEqual("artifacts/external-peer/maintained", plan.ArtifactRoot, "maintained peer artifact plan root");
-    AssertEqual(6, plan.Items.Count, "maintained peer artifact plan item count");
+    AssertEqual("phase27-unit5", plan.RunId, "reference peer artifact plan run id");
+    AssertEqual("artifacts/external-peer/reference", plan.ArtifactRoot, "reference peer artifact plan root");
+    AssertEqual(6, plan.Items.Count, "reference peer artifact plan item count");
     Assert(plan.CoversRequiredArtifacts, plan.Describe());
-    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.PacketCapture && item.Path.EndsWith("/pcap/phase27-unit5.pcap", StringComparison.Ordinal)), "artifact plan should include PCAP path");
-    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.PeerConfiguration && item.Path.Contains("/config/", StringComparison.Ordinal)), "artifact plan should include config path");
-    Assert(plan.Items.Any(static item => item.Kind == SigtranMaintainedPeerLabArtifactKind.ComparisonReport && item.Path.Contains("/comparison/", StringComparison.Ordinal)), "artifact plan should include comparison path");
+    Assert(plan.Items.Any(static item => item.Kind == SigtranReferencePeerLabArtifactKind.PacketCapture && item.Path.EndsWith("/pcap/phase27-unit5.pcap", StringComparison.Ordinal)), "artifact plan should include PCAP path");
+    Assert(plan.Items.Any(static item => item.Kind == SigtranReferencePeerLabArtifactKind.PeerConfiguration && item.Path.Contains("/config/", StringComparison.Ordinal)), "artifact plan should include config path");
+    Assert(plan.Items.Any(static item => item.Kind == SigtranReferencePeerLabArtifactKind.ComparisonReport && item.Path.Contains("/comparison/", StringComparison.Ordinal)), "artifact plan should include comparison path");
     Assert(plan.Describe().Contains("requiredReady=True", StringComparison.Ordinal), plan.Describe());
 }
 
-static void SigtranMaintainedPeerLabCommandPlanCoversExecutionSteps()
+static void SigtranReferencePeerLabCommandPlanCoversExecutionSteps()
 {
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
-    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit6");
-    SigtranMaintainedPeerLabCommandPlan commandPlan = SigtranMaintainedPeerLabCommandPlans.CreateDefault(configuration, artifactPlan);
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.CreateDefault();
+    SigtranReferencePeerLabArtifactPlan artifactPlan = SigtranReferencePeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit6");
+    SigtranReferencePeerLabCommandPlan commandPlan = SigtranReferencePeerLabCommandPlans.CreateDefault(configuration, artifactPlan);
 
-    AssertEqual(6, commandPlan.Commands.Count, "maintained peer lab command count");
+    AssertEqual(6, commandPlan.Commands.Count, "reference peer lab command count");
     Assert(commandPlan.CoversRequiredCommandKinds, commandPlan.Describe());
-    AssertEqual(SigtranMaintainedPeerLabCommandKind.Prepare, commandPlan.Commands[0].Kind, "first maintained peer lab command");
-    AssertEqual(SigtranMaintainedPeerLabCommandKind.Collect, commandPlan.Commands[^1].Kind, "last maintained peer lab command");
+    AssertEqual(SigtranReferencePeerLabCommandKind.Prepare, commandPlan.Commands[0].Kind, "first reference peer lab command");
+    AssertEqual(SigtranReferencePeerLabCommandKind.Collect, commandPlan.Commands[^1].Kind, "last reference peer lab command");
     Assert(commandPlan.Commands.Any(static command => command.CommandLine.Contains("tcpdump", StringComparison.Ordinal)), "command plan should include packet capture");
-    Assert(commandPlan.Commands.Any(static command => command.ExpectedArtifactKinds.Contains(SigtranMaintainedPeerLabArtifactKind.SdkTrace)), "command plan should produce SDK trace");
+    Assert(commandPlan.Commands.Any(static command => command.ExpectedArtifactKinds.Contains(SigtranReferencePeerLabArtifactKind.SdkTrace)), "command plan should produce SDK trace");
     Assert(commandPlan.Describe().Contains("ready=True", StringComparison.Ordinal), commandPlan.Describe());
 }
 
-static void SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence()
+static void SigtranReferencePeerLabTrafficVectorsExposeComparableSequence()
 {
-    IReadOnlyList<SigtranMaintainedPeerLabTrafficVector> vectors = SigtranMaintainedPeerLabTrafficVectors.GetDefault();
-    IReadOnlyList<string> sequence = SigtranMaintainedPeerLabTrafficVectors.GetExpectedMessageSequence();
+    IReadOnlyList<SigtranReferencePeerLabTrafficVector> vectors = SigtranReferencePeerLabTrafficVectors.GetDefault();
+    IReadOnlyList<string> sequence = SigtranReferencePeerLabTrafficVectors.GetExpectedMessageSequence();
 
-    AssertEqual(3, vectors.Count, "maintained peer lab traffic vector count");
+    AssertEqual(3, vectors.Count, "reference peer lab traffic vector count");
     Assert(vectors.All(static vector => vector.IsComparable), "traffic vectors should be comparable");
-    Assert(vectors.Any(static vector => vector.Kind == SigtranMaintainedPeerLabTrafficVectorKind.PayloadData && vector.RequiresPayload), "traffic vectors should include payload DATA");
+    Assert(vectors.Any(static vector => vector.Kind == SigtranReferencePeerLabTrafficVectorKind.PayloadData && vector.RequiresPayload), "traffic vectors should include payload DATA");
     Assert(sequence.Contains("ASPUP"), "traffic sequence should include ASPUP");
     Assert(sequence.Contains("BEAT_ACK"), "traffic sequence should include heartbeat acknowledgement");
     Assert(sequence.Contains("DATA"), "traffic sequence should include DATA");
@@ -986,30 +989,30 @@ static void SigtranMaintainedPeerLabTrafficVectorsExposeComparableSequence()
     Assert(comparison.Passed, comparison.Describe());
 }
 
-static void SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifacts()
+static void SigtranReferencePeerLabEvidenceGateRequiresCompleteRetainedArtifacts()
 {
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
-    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit8");
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.CreateDefault();
+    SigtranReferencePeerLabArtifactPlan artifactPlan = SigtranReferencePeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit8");
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
 
-    SigtranMaintainedPeerLabEvidenceReport ready = new(
+    SigtranReferencePeerLabEvidenceReport ready = new(
         artifactPlan,
-        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        SigtranReferencePeerLabPrerequisites.Evaluate(allPrerequisites),
         configuration.Validate(),
-        SigtranMaintainedPeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
+        SigtranReferencePeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
         comparisonPassed: true);
 
     Assert(ready.PromotionReady, ready.Describe());
     Assert(ready.HasRequiredArtifacts, ready.Describe());
     Assert(ready.HasDigestCoverage, ready.Describe());
 
-    SigtranMaintainedPeerLabEvidenceReport missingDigest = new(
+    SigtranReferencePeerLabEvidenceReport missingDigest = new(
         artifactPlan,
-        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        SigtranReferencePeerLabPrerequisites.Evaluate(allPrerequisites),
         configuration.Validate(),
-        [new(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "artifacts/external-peer/maintained/pcap/missing.pcap", retained: true)],
+        [new(SigtranReferencePeerLabArtifactKind.PacketCapture, "artifacts/external-peer/reference/pcap/missing.pcap", retained: true)],
         comparisonPassed: true);
 
     Assert(!missingDigest.PromotionReady, missingDigest.Describe());
@@ -1018,66 +1021,66 @@ static void SigtranMaintainedPeerLabEvidenceGateRequiresCompleteRetainedArtifact
     Assert(missingDigest.Describe().Contains("promotion=False", StringComparison.Ordinal), missingDigest.Describe());
 }
 
-static void SigtranMaintainedPeerLabCiProfileIsManualAndSelfHosted()
+static void SigtranReferencePeerLabCiProfileIsManualAndSelfHosted()
 {
-    SigtranMaintainedPeerLabCiProfile profile = SigtranMaintainedPeerLabCi.CreateDefault();
+    SigtranReferencePeerLabCiProfile profile = SigtranReferencePeerLabCi.CreateDefault();
 
-    AssertEqual("maintained-peer-lab", profile.Name, "maintained peer lab CI profile name");
+    AssertEqual("reference-peer-lab", profile.Name, "reference peer lab CI profile name");
     Assert(profile.ManualDispatchOnly, profile.Describe());
     Assert(profile.RequiresSelfHostedLinux, profile.Describe());
     Assert(!profile.SafeForDefaultCi, profile.Describe());
-    Assert(profile.RequiredEnvironmentVariables.Contains(SigtranMaintainedPeerLabBindings.PackageEnvironmentVariable), "CI profile should require peer package variable");
+    Assert(profile.RequiredEnvironmentVariables.Contains(SigtranReferencePeerLabBindings.PackageEnvironmentVariable), "CI profile should require peer package variable");
     Assert(profile.RequiredEnvironmentVariables.Contains("LOCAL_SCTP_PORT"), "CI profile should require local SCTP port");
     Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/pcap/", StringComparison.Ordinal)), "CI profile should upload PCAP artifacts");
     Assert(profile.ArtifactPatterns.Any(static pattern => pattern.Contains("/comparison/", StringComparison.Ordinal)), "CI profile should upload comparison artifacts");
 }
 
-static void SigtranMaintainedPeerLabStatusSeparatesFoundationFromEvidence()
+static void SigtranReferencePeerLabStatusSeparatesFoundationFromEvidence()
 {
-    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabStatus.GetCompletedCapabilities();
-    SigtranMaintainedPeerLabStatusReport foundation = SigtranMaintainedPeerLabStatus.GetFoundationReport();
+    IReadOnlyList<string> capabilities = SigtranReferencePeerLabStatus.GetCompletedCapabilities();
+    SigtranReferencePeerLabStatusReport foundation = SigtranReferencePeerLabStatus.GetFoundationReport();
 
-    AssertEqual(10, SigtranMaintainedPeerLabStatus.CompletedUnitCount, "maintained peer lab completed unit count");
-    AssertEqual(10, capabilities.Count, "maintained peer lab completed capability count");
+    AssertEqual(10, SigtranReferencePeerLabStatus.CompletedUnitCount, "reference peer lab completed unit count");
+    AssertEqual(10, capabilities.Count, "reference peer lab completed capability count");
     Assert(capabilities.Contains("package-neutral-binding-catalog"), "status should include binding catalog capability");
     Assert(foundation.FoundationReady, foundation.Describe());
-    Assert(!foundation.CommercialReady, foundation.Describe());
-    Assert(foundation.Blockers.Contains("real-maintained-peer-run-required"), "foundation status should require real lab run");
+    Assert(!foundation.ProductionReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-reference-peer-run-required"), "foundation status should require real lab run");
 
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.CreateDefault();
-    SigtranMaintainedPeerLabArtifactPlan artifactPlan = SigtranMaintainedPeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit10");
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.CreateDefault();
+    SigtranReferencePeerLabArtifactPlan artifactPlan = SigtranReferencePeerLabArtifactPlans.CreateDefault(configuration, "phase27-unit10");
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabEvidenceReport evidence = new(
+    SigtranReferencePeerLabEvidenceReport evidence = new(
         artifactPlan,
-        SigtranMaintainedPeerLabPrerequisites.Evaluate(allPrerequisites),
+        SigtranReferencePeerLabPrerequisites.Evaluate(allPrerequisites),
         configuration.Validate(),
-        SigtranMaintainedPeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
+        SigtranReferencePeerLabEvidence.CreateDigestCoveredArtifacts(artifactPlan, "0123456789abcdef"),
         comparisonPassed: true);
 
-    SigtranMaintainedPeerLabStatusReport commercial = SigtranMaintainedPeerLabStatus.FromEvidence(evidence);
-    Assert(commercial.CommercialReady, commercial.Describe());
-    AssertEqual(0, commercial.Blockers.Count, "commercial maintained peer lab blocker count");
+    SigtranReferencePeerLabStatusReport production = SigtranReferencePeerLabStatus.FromEvidence(evidence);
+    Assert(production.ProductionReady, production.Describe());
+    AssertEqual(0, production.Blockers.Count, "production reference peer lab blocker count");
 }
 
-static void SigtranMaintainedPeerLabRunManifestAggregatesExecutableContracts()
+static void SigtranReferencePeerLabRunManifestAggregatesExecutableContracts()
 {
-    SigtranMaintainedPeerLabRunManifest manifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit1");
+    SigtranReferencePeerLabRunManifest manifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit1");
 
-    AssertEqual("phase28-unit1", manifest.RunId, "maintained peer lab run manifest id");
-    AssertEqual("maintained-external-peer-lab", manifest.Binding.Id, "maintained peer lab run manifest binding");
-    AssertEqual("phase28-unit1", manifest.ArtifactPlan.RunId, "maintained peer lab run manifest artifact run id");
-    AssertEqual(6, manifest.CommandPlan.Commands.Count, "maintained peer lab run manifest command count");
-    AssertEqual(3, manifest.TrafficVectors.Count, "maintained peer lab run manifest vector count");
+    AssertEqual("phase28-unit1", manifest.RunId, "reference peer lab run manifest id");
+    AssertEqual("reference-external-peer-lab", manifest.Binding.Id, "reference peer lab run manifest binding");
+    AssertEqual("phase28-unit1", manifest.ArtifactPlan.RunId, "reference peer lab run manifest artifact run id");
+    AssertEqual(6, manifest.CommandPlan.Commands.Count, "reference peer lab run manifest command count");
+    AssertEqual(3, manifest.TrafficVectors.Count, "reference peer lab run manifest vector count");
     Assert(manifest.IsExecutableContract, manifest.Describe());
     Assert(manifest.Describe().Contains("executable=True", StringComparison.Ordinal), manifest.Describe());
 }
 
-static void SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues()
+static void SigtranReferencePeerLabEnvironmentFileRendersManifestValues()
 {
-    SigtranMaintainedPeerLabRunManifest manifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit2");
-    SigtranMaintainedPeerLabEnvironmentFile environmentFile = SigtranMaintainedPeerLabEnvironmentFiles.FromManifest(manifest);
+    SigtranReferencePeerLabRunManifest manifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit2");
+    SigtranReferencePeerLabEnvironmentFile environmentFile = SigtranReferencePeerLabEnvironmentFiles.FromManifest(manifest);
     string rendered = environmentFile.Render();
 
     Assert(environmentFile.Variables.ContainsKey("PEER_NAME"), "environment file should include peer name");
@@ -1090,94 +1093,94 @@ static void SigtranMaintainedPeerLabEnvironmentFileRendersManifestValues()
     Dictionary<string, string> configurationEnvironment = environmentFile.Variables
         .Where(static pair => !pair.Key.StartsWith("SIGTRAN_EXTERNAL_", StringComparison.Ordinal))
         .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase);
-    SigtranMaintainedPeerLabConfiguration configuration = SigtranMaintainedPeerLabConfigurations.FromEnvironment(configurationEnvironment);
+    SigtranReferencePeerLabConfiguration configuration = SigtranReferencePeerLabConfigurations.FromEnvironment(configurationEnvironment);
     Assert(configuration.Validate().IsValid, configuration.Validate().Describe());
 }
 
-static void SigtranMaintainedPeerLabArtifactDigestManifestGatesHandoff()
+static void SigtranReferencePeerLabArtifactDigestManifestGatesHandoff()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit3");
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit3");
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
-    SigtranMaintainedPeerLabArtifactDigestManifest manifest = SigtranMaintainedPeerLabArtifactDigestManifests.CreateDigestCovered(runManifest.ArtifactPlan, digest);
-    AssertEqual(6, manifest.Digests.Count, "maintained peer lab digest count");
+    SigtranReferencePeerLabArtifactDigestManifest manifest = SigtranReferencePeerLabArtifactDigestManifests.CreateDigestCovered(runManifest.ArtifactPlan, digest);
+    AssertEqual(6, manifest.Digests.Count, "reference peer lab digest count");
     Assert(manifest.CoversRequiredArtifacts, manifest.Describe());
     Assert(manifest.HasValidDigests, manifest.Describe());
     Assert(manifest.IsHandoffReady, manifest.Describe());
-    AssertEqual(6, manifest.ToEvidenceArtifacts().Count, "maintained peer lab evidence artifact count");
+    AssertEqual(6, manifest.ToEvidenceArtifacts().Count, "reference peer lab evidence artifact count");
 
-    SigtranMaintainedPeerLabArtifactDigestManifest invalid = new(
+    SigtranReferencePeerLabArtifactDigestManifest invalid = new(
         runManifest.ArtifactPlan,
-        [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
+        [new SigtranReferencePeerLabArtifactDigest(SigtranReferencePeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
     Assert(!invalid.IsHandoffReady, invalid.Describe());
     Assert(!invalid.HasValidDigests, invalid.Describe());
 }
 
-static void SigtranMaintainedPeerLabCommandScriptRendersCommandPlan()
+static void SigtranReferencePeerLabCommandScriptRendersCommandPlan()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit4");
-    SigtranMaintainedPeerLabCommandScript script = SigtranMaintainedPeerLabCommandScripts.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit4");
+    SigtranReferencePeerLabCommandScript script = SigtranReferencePeerLabCommandScripts.CreateDefault(runManifest);
     string rendered = script.Render();
 
     Assert(rendered.StartsWith("#!/usr/bin/env bash", StringComparison.Ordinal), rendered);
     Assert(rendered.Contains("set -euo pipefail", StringComparison.Ordinal), rendered);
-    Assert(rendered.Contains("source 'artifacts/external-peer/maintained/config/phase28-unit4-peer.env'", StringComparison.Ordinal), rendered);
+    Assert(rendered.Contains("source 'artifacts/external-peer/reference/config/phase28-unit4-peer.env'", StringComparison.Ordinal), rendered);
     Assert(rendered.Contains("tcpdump -i lo", StringComparison.Ordinal), rendered);
     Assert(rendered.Contains("sigtran-trace-compare", StringComparison.Ordinal), rendered);
     Assert(script.CoversCommandPlan, script.Describe());
 }
 
-static void SigtranMaintainedPeerLabComparisonReportRendersTraceOutcome()
+static void SigtranReferencePeerLabComparisonReportRendersTraceOutcome()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit5");
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit5");
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
 
-    SigtranMaintainedPeerLabComparisonReport passed = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, expected);
+    SigtranReferencePeerLabComparisonReport passed = SigtranReferencePeerLabComparisonReports.Compare(runManifest, expected);
     Assert(passed.Passed, passed.Describe());
     Assert(passed.ComparisonArtifactPath.EndsWith("/comparison/phase28-unit5-comparison.md", StringComparison.Ordinal), passed.ComparisonArtifactPath);
     Assert(passed.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), passed.RenderMarkdown());
 
-    SigtranMaintainedPeerLabComparisonReport failed = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, ["ASPUP", "DATA"]);
+    SigtranReferencePeerLabComparisonReport failed = SigtranReferencePeerLabComparisonReports.Compare(runManifest, ["ASPUP", "DATA"]);
     Assert(!failed.Passed, failed.Describe());
     Assert(failed.TraceComparison.Mismatches.Count > 0, failed.Describe());
     Assert(failed.RenderMarkdown().Contains("## Mismatches", StringComparison.Ordinal), failed.RenderMarkdown());
 }
 
-static void SigtranMaintainedPeerLabRunReportRecordsStepOutcomes()
+static void SigtranReferencePeerLabRunReportRecordsStepOutcomes()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase28-unit6");
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase28-unit6");
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabComparisonReport comparison = SigtranMaintainedPeerLabComparisonReports.Compare(runManifest, expected);
-    SigtranMaintainedPeerLabRunReport report = SigtranMaintainedPeerLabRunReports.CreatePassing(runManifest, comparison, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabComparisonReport comparison = SigtranReferencePeerLabComparisonReports.Compare(runManifest, expected);
+    SigtranReferencePeerLabRunReport report = SigtranReferencePeerLabRunReports.CreatePassing(runManifest, comparison, DateTimeOffset.UnixEpoch);
 
     Assert(report.Passed, report.Describe());
-    AssertEqual(6, report.Steps.Count, "maintained peer lab run report step count");
+    AssertEqual(6, report.Steps.Count, "reference peer lab run report step count");
     Assert(report.ReportArtifactPath.EndsWith("/reports/phase28-unit6-run.md", StringComparison.Ordinal), report.ReportArtifactPath);
     Assert(report.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), report.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunReport failed = new(
+    SigtranReferencePeerLabRunReport failed = new(
         runManifest,
-        [new SigtranMaintainedPeerLabStepResult(SigtranMaintainedPeerLabCommandKind.Prepare, SigtranMaintainedPeerLabStepStatus.Failed, DateTimeOffset.UnixEpoch)],
+        [new SigtranReferencePeerLabStepResult(SigtranReferencePeerLabCommandKind.Prepare, SigtranReferencePeerLabStepStatus.Failed, DateTimeOffset.UnixEpoch)],
         comparison);
     Assert(!failed.Passed, failed.Describe());
 }
 
-static void SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport()
+static void SigtranReferencePeerLabEvidenceBundleCreatesPromotionReport()
 {
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-    SigtranMaintainedPeerLabEvidenceBundle bundle = SigtranMaintainedPeerLabEvidenceBundles.CreatePassing("phase28-unit7", digest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabEvidenceBundle bundle = SigtranReferencePeerLabEvidenceBundles.CreatePassing("phase28-unit7", digest, DateTimeOffset.UnixEpoch);
 
     Assert(bundle.UsesConsistentRun, bundle.Describe());
     Assert(bundle.IsHandoffReady, bundle.Describe());
-    SigtranMaintainedPeerLabEvidenceReport evidence = bundle.ToEvidenceReport();
+    SigtranReferencePeerLabEvidenceReport evidence = bundle.ToEvidenceReport();
     Assert(evidence.PromotionReady, evidence.Describe());
-    AssertEqual(6, evidence.Artifacts.Count, "maintained peer lab evidence bundle artifact count");
+    AssertEqual(6, evidence.Artifacts.Count, "reference peer lab evidence bundle artifact count");
     Assert(bundle.Describe().Contains("handoff=True", StringComparison.Ordinal), bundle.Describe());
 
-    SigtranMaintainedPeerLabArtifactDigestManifest invalidDigestManifest = new(
+    SigtranReferencePeerLabArtifactDigestManifest invalidDigestManifest = new(
         bundle.RunManifest.ArtifactPlan,
-        [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
-    SigtranMaintainedPeerLabEvidenceBundle invalid = new(
+        [new SigtranReferencePeerLabArtifactDigest(SigtranReferencePeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
+    SigtranReferencePeerLabEvidenceBundle invalid = new(
         bundle.RunManifest,
         bundle.EnvironmentFile,
         bundle.CommandScript,
@@ -1189,12 +1192,12 @@ static void SigtranMaintainedPeerLabEvidenceBundleCreatesPromotionReport()
     Assert(!invalid.ToEvidenceReport().PromotionReady, invalid.ToEvidenceReport().Describe());
 }
 
-static void SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted()
+static void SigtranReferencePeerLabWorkflowTemplateIsManualAndSelfHosted()
 {
-    SigtranMaintainedPeerLabWorkflowTemplate template = SigtranMaintainedPeerLabWorkflows.CreateDefault();
+    SigtranReferencePeerLabWorkflowTemplate template = SigtranReferencePeerLabWorkflows.CreateDefault();
     string yaml = template.RenderYaml();
 
-    AssertEqual(".github/workflows/maintained-peer-lab.yml", template.Path, "maintained peer lab workflow path");
+    AssertEqual(".github/workflows/reference-peer-lab.yml", template.Path, "reference peer lab workflow path");
     Assert(template.ManualDispatchOnly, template.Describe());
     Assert(template.RequiresSelfHostedLinux, template.Describe());
     Assert(!template.SafeForDefaultCi, template.Describe());
@@ -1206,352 +1209,352 @@ static void SigtranMaintainedPeerLabWorkflowTemplateIsManualAndSelfHosted()
     Assert(!yaml.Contains("pull_request", StringComparison.Ordinal), yaml);
 }
 
-static void SigtranMaintainedPeerLabCommercialBridgeGatesReadiness()
+static void SigtranReferencePeerLabProductionBridgeGatesReadiness()
 {
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-    SigtranMaintainedPeerLabEvidenceBundle bundle = SigtranMaintainedPeerLabEvidenceBundles.CreatePassing("phase28-unit9", digest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabCommercialReadinessReport ready = SigtranMaintainedPeerLabCommercialBridge.Evaluate(bundle);
+    SigtranReferencePeerLabEvidenceBundle bundle = SigtranReferencePeerLabEvidenceBundles.CreatePassing("phase28-unit9", digest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabProductionReadinessSnapshot ready = SigtranReferencePeerLabProductionBridge.Evaluate(bundle);
 
     Assert(ready.FoundationReady, ready.Describe());
     Assert(ready.EvidenceReady, ready.Describe());
-    Assert(ready.CommercialReady, ready.Describe());
-    AssertEqual(0, ready.Blockers.Count, "maintained peer lab commercial bridge blocker count");
+    Assert(ready.ProductionReady, ready.Describe());
+    AssertEqual(0, ready.Blockers.Count, "reference peer lab production bridge blocker count");
 
-    SigtranMaintainedPeerLabArtifactDigestManifest invalidDigestManifest = new(
+    SigtranReferencePeerLabArtifactDigestManifest invalidDigestManifest = new(
         bundle.RunManifest.ArtifactPlan,
-        [new SigtranMaintainedPeerLabArtifactDigest(SigtranMaintainedPeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
-    SigtranMaintainedPeerLabEvidenceBundle invalid = new(
+        [new SigtranReferencePeerLabArtifactDigest(SigtranReferencePeerLabArtifactKind.PacketCapture, "pcap/bad.pcap", "not-a-digest")]);
+    SigtranReferencePeerLabEvidenceBundle invalid = new(
         bundle.RunManifest,
         bundle.EnvironmentFile,
         bundle.CommandScript,
         bundle.ComparisonReport,
         bundle.RunReport,
         invalidDigestManifest);
-    SigtranMaintainedPeerLabCommercialReadinessReport blocked = SigtranMaintainedPeerLabCommercialBridge.Evaluate(invalid);
+    SigtranReferencePeerLabProductionReadinessSnapshot blocked = SigtranReferencePeerLabProductionBridge.Evaluate(invalid);
 
-    Assert(!blocked.CommercialReady, blocked.Describe());
-    Assert(blocked.Blockers.Contains("maintained-peer-bundle-handoff-required"), blocked.Describe());
-    Assert(blocked.Blockers.Contains("maintained-peer-promotion-evidence-required"), blocked.Describe());
+    Assert(!blocked.ProductionReady, blocked.Describe());
+    Assert(blocked.Blockers.Contains("reference-peer-bundle-handoff-required"), blocked.Describe());
+    Assert(blocked.Blockers.Contains("reference-peer-promotion-evidence-required"), blocked.Describe());
 }
 
-static void SigtranMaintainedPeerLabAutomationStatusSummarizesCompletion()
+static void SigtranReferencePeerLabAutomationStatusSummarizesCompletion()
 {
-    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabAutomationStatus.GetCompletedCapabilities();
-    SigtranMaintainedPeerLabAutomationStatusReport foundation = SigtranMaintainedPeerLabAutomationStatus.GetFoundationReport();
+    IReadOnlyList<string> capabilities = SigtranReferencePeerLabAutomationStatus.GetCompletedCapabilities();
+    SigtranReferencePeerLabAutomationStatusReport foundation = SigtranReferencePeerLabAutomationStatus.GetFoundationReport();
 
-    AssertEqual(10, SigtranMaintainedPeerLabAutomationStatus.CompletedUnitCount, "maintained peer lab automation unit count");
-    AssertEqual(10, capabilities.Count, "maintained peer lab automation capability count");
+    AssertEqual(10, SigtranReferencePeerLabAutomationStatus.CompletedUnitCount, "reference peer lab automation unit count");
+    AssertEqual(10, capabilities.Count, "reference peer lab automation capability count");
     Assert(foundation.FoundationReady, foundation.Describe());
-    Assert(!foundation.CommercialReady, foundation.Describe());
-    Assert(foundation.Blockers.Contains("real-maintained-peer-execution-required"), foundation.Describe());
+    Assert(!foundation.ProductionReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-reference-peer-execution-required"), foundation.Describe());
 
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-    SigtranMaintainedPeerLabEvidenceBundle bundle = SigtranMaintainedPeerLabEvidenceBundles.CreatePassing("phase28-unit10", digest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabAutomationStatusReport commercial = SigtranMaintainedPeerLabAutomationStatus.FromBundle(bundle);
+    SigtranReferencePeerLabEvidenceBundle bundle = SigtranReferencePeerLabEvidenceBundles.CreatePassing("phase28-unit10", digest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabAutomationStatusReport production = SigtranReferencePeerLabAutomationStatus.FromBundle(bundle);
 
-    Assert(commercial.FoundationReady, commercial.Describe());
-    Assert(commercial.CommercialEvidenceReady, commercial.Describe());
-    Assert(commercial.CommercialReady, commercial.Describe());
+    Assert(production.FoundationReady, production.Describe());
+    Assert(production.ReleaseEvidenceReady, production.Describe());
+    Assert(production.ProductionReady, production.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerWorkspaceMaterializesDeterministicPaths()
+static void SigtranReferencePeerLabRunnerWorkspaceMaterializesDeterministicPaths()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit1");
-    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit1");
+    SigtranReferencePeerLabRunnerWorkspace workspace = SigtranReferencePeerLabRunnerWorkspaces.CreateDefault(runManifest);
     IReadOnlyList<string> directories = workspace.GetRequiredDirectories();
 
     Assert(workspace.IsMaterializationReady, workspace.Describe());
-    AssertEqual(9, directories.Count, "maintained peer lab runner workspace directory count");
-    Assert(directories.Contains("artifacts/external-peer/maintained/config"), workspace.Describe());
-    Assert(directories.Contains("artifacts/external-peer/maintained/pcap"), workspace.Describe());
-    Assert(directories.Contains("artifacts/external-peer/maintained/reports"), workspace.Describe());
-    AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab", workspace.ScriptRoot, "maintained peer lab runner script root");
+    AssertEqual(9, directories.Count, "reference peer lab runner workspace directory count");
+    Assert(directories.Contains("artifacts/external-peer/reference/config"), workspace.Describe());
+    Assert(directories.Contains("artifacts/external-peer/reference/pcap"), workspace.Describe());
+    Assert(directories.Contains("artifacts/external-peer/reference/reports"), workspace.Describe());
+    AssertEqual("artifacts/external-peer/reference/scripts/reference-peer-lab", workspace.ScriptRoot, "reference peer lab runner script root");
 }
 
-static void SigtranMaintainedPeerLabRunnerInputsRenderEnvironmentAndScript()
+static void SigtranReferencePeerLabRunnerInputsRenderEnvironmentAndScript()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit2");
-    SigtranMaintainedPeerLabRunnerInputBundle bundle = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    IReadOnlyList<SigtranMaintainedPeerLabRunnerInputFile> inputs = bundle.GetInputFiles();
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit2");
+    SigtranReferencePeerLabRunnerInputBundle bundle = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    IReadOnlyList<SigtranReferencePeerLabRunnerInputFile> inputs = bundle.GetInputFiles();
 
     Assert(bundle.IsMaterializationReady, bundle.Describe());
-    AssertEqual(2, inputs.Count, "maintained peer lab runner input count");
-    AssertEqual("artifacts/external-peer/maintained/config/phase29-unit2-peer.env", bundle.EnvironmentFilePath, "maintained peer lab runner env path");
-    AssertEqual("artifacts/external-peer/maintained/scripts/maintained-peer-lab/phase29-unit2.sh", bundle.CommandScriptPath, "maintained peer lab runner script path");
+    AssertEqual(2, inputs.Count, "reference peer lab runner input count");
+    AssertEqual("artifacts/external-peer/reference/config/phase29-unit2-peer.env", bundle.EnvironmentFilePath, "reference peer lab runner env path");
+    AssertEqual("artifacts/external-peer/reference/scripts/reference-peer-lab/phase29-unit2.sh", bundle.CommandScriptPath, "reference peer lab runner script path");
     Assert(inputs[0].Content.Contains("SIGTRAN_LAB_RUN_ID='phase29-unit2'", StringComparison.Ordinal), inputs[0].Content);
-    Assert(inputs[1].Content.Contains("source 'artifacts/external-peer/maintained/config/phase29-unit2-peer.env'", StringComparison.Ordinal), inputs[1].Content);
+    Assert(inputs[1].Content.Contains("source 'artifacts/external-peer/reference/config/phase29-unit2-peer.env'", StringComparison.Ordinal), inputs[1].Content);
 }
 
-static void SigtranMaintainedPeerLabRunnerArtifactsMapOutputsToProducers()
+static void SigtranReferencePeerLabRunnerArtifactsMapOutputsToProducers()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit3");
-    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan plan = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit3");
+    SigtranReferencePeerLabRunnerWorkspace workspace = SigtranReferencePeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan plan = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(workspace);
 
     Assert(plan.IsMaterializationReady, plan.Describe());
-    AssertEqual(6, plan.Outputs.Count, "maintained peer lab runner output count");
-    AssertEqual(6, plan.GetRequiredOutputPaths().Count, "maintained peer lab runner required output path count");
+    AssertEqual(6, plan.Outputs.Count, "reference peer lab runner output count");
+    AssertEqual(6, plan.GetRequiredOutputPaths().Count, "reference peer lab runner required output path count");
     Assert(plan.OutputPathsStayUnderArtifactRoot, plan.Describe());
     Assert(plan.HasProducerCommands, plan.Describe());
-    Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.PacketCapture && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Capture), plan.Describe());
-    Assert(plan.Outputs.Any(static output => output.Kind == SigtranMaintainedPeerLabArtifactKind.RunReport && output.ProducerCommandKind == SigtranMaintainedPeerLabCommandKind.Collect), plan.Describe());
+    Assert(plan.Outputs.Any(static output => output.Kind == SigtranReferencePeerLabArtifactKind.PacketCapture && output.ProducerCommandKind == SigtranReferencePeerLabCommandKind.Capture), plan.Describe());
+    Assert(plan.Outputs.Any(static output => output.Kind == SigtranReferencePeerLabArtifactKind.RunReport && output.ProducerCommandKind == SigtranReferencePeerLabCommandKind.Collect), plan.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerPreflightGatesExecution()
+static void SigtranReferencePeerLabRunnerPreflightGatesExecution()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit4");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit4");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
 
-    SigtranMaintainedPeerLabRunnerPreflightReport ready = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerPreflightReport ready = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
     Assert(ready.Ready, ready.Describe());
-    AssertEqual(5, ready.Checks.Count, "maintained peer lab runner preflight check count");
-    AssertEqual(0, ready.FailedRequiredCheckIds.Count, "maintained peer lab runner ready preflight failures");
+    AssertEqual(5, ready.Checks.Count, "reference peer lab runner preflight check count");
+    AssertEqual(0, ready.FailedRequiredCheckIds.Count, "reference peer lab runner ready preflight failures");
 
-    SigtranMaintainedPeerLabRunnerPreflightReport blocked = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    SigtranReferencePeerLabRunnerPreflightReport blocked = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
     Assert(!blocked.Ready, blocked.Describe());
     Assert(blocked.FailedRequiredCheckIds.Contains("host-prerequisites-ready"), blocked.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerCommandManifestOrdersExecution()
+static void SigtranReferencePeerLabRunnerCommandManifestOrdersExecution()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit5");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit5");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest manifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest manifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
 
     Assert(manifest.IsExecutionReady, manifest.Describe());
-    AssertEqual(6, manifest.Commands.Count, "maintained peer lab runner command manifest command count");
+    AssertEqual(6, manifest.Commands.Count, "reference peer lab runner command manifest command count");
     Assert(manifest.HasContiguousSequence, manifest.Describe());
     Assert(manifest.CoversExpectedArtifacts, manifest.Describe());
-    AssertEqual(SigtranMaintainedPeerLabCommandKind.Prepare, manifest.Commands[0].Command.Kind, "maintained peer lab runner first command");
+    AssertEqual(SigtranReferencePeerLabCommandKind.Prepare, manifest.Commands[0].Command.Kind, "reference peer lab runner first command");
     Assert(manifest.RenderMarkdown().Contains("Ready: `True`", StringComparison.Ordinal), manifest.RenderMarkdown());
 }
 
-static void SigtranMaintainedPeerLabRunnerEvidenceCollectionTracksRetainedArtifacts()
+static void SigtranReferencePeerLabRunnerEvidenceCollectionTracksRetainedArtifacts()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit6");
-    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit6");
+    SigtranReferencePeerLabRunnerWorkspace workspace = SigtranReferencePeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(workspace);
     IReadOnlyList<string> retainedPaths = artifacts.GetRequiredOutputPaths();
 
-    SigtranMaintainedPeerLabRunnerEvidenceCollection retained = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths);
+    SigtranReferencePeerLabRunnerEvidenceCollection retained = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths);
     Assert(retained.HasRequiredArtifacts, retained.Describe());
-    AssertEqual(6, retained.Artifacts.Count, "maintained peer lab runner retained artifact count");
-    AssertEqual(6, retained.ToEvidenceArtifacts().Count, "maintained peer lab runner evidence artifact count");
+    AssertEqual(6, retained.Artifacts.Count, "reference peer lab runner retained artifact count");
+    AssertEqual(6, retained.ToEvidenceArtifacts().Count, "reference peer lab runner evidence artifact count");
     Assert(!retained.ToEvidenceArtifacts()[0].IsPromotionReady, "collection should not add digest coverage");
 
-    SigtranMaintainedPeerLabRunnerEvidenceCollection missing = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths.Take(5).ToArray());
+    SigtranReferencePeerLabRunnerEvidenceCollection missing = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, retainedPaths.Take(5).ToArray());
     Assert(!missing.HasRequiredArtifacts, missing.Describe());
-    AssertEqual(1, missing.MissingRequiredArtifactPaths.Count, "maintained peer lab runner missing artifact count");
+    AssertEqual(1, missing.MissingRequiredArtifactPaths.Count, "reference peer lab runner missing artifact count");
 }
 
-static void SigtranMaintainedPeerLabRunnerDigestsCoverRetainedArtifacts()
+static void SigtranReferencePeerLabRunnerDigestsCoverRetainedArtifacts()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit7");
-    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit7");
+    SigtranReferencePeerLabRunnerWorkspace workspace = SigtranReferencePeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(workspace);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
 
-    SigtranMaintainedPeerLabRunnerDigestReport report = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerDigestReport report = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
     Assert(report.HasDigestCoverage, report.Describe());
-    AssertEqual(6, report.DigestManifest.Digests.Count, "maintained peer lab runner digest count");
+    AssertEqual(6, report.DigestManifest.Digests.Count, "reference peer lab runner digest count");
     Assert(report.DigestManifest.IsHandoffReady, report.DigestManifest.Describe());
 
     Dictionary<string, string> partial = collection.Artifacts.Take(5).ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport missing = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, partial);
+    SigtranReferencePeerLabRunnerDigestReport missing = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, partial);
     Assert(!missing.HasDigestCoverage, missing.Describe());
-    AssertEqual(1, missing.MissingDigestPaths.Count, "maintained peer lab runner missing digest count");
+    AssertEqual(1, missing.MissingDigestPaths.Count, "reference peer lab runner missing digest count");
 }
 
-static void SigtranMaintainedPeerLabRunnerComparisonHandoffCreatesEvidenceBundle()
+static void SigtranReferencePeerLabRunnerComparisonHandoffCreatesEvidenceBundle()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit8");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit8");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
 
-    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerComparisonHandoff handoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
     Assert(handoff.IsHandoffReady, handoff.Describe());
     Assert(handoff.ToEvidenceBundle().IsHandoffReady, handoff.ToEvidenceBundle().Describe());
 
-    SigtranMaintainedPeerLabRunnerComparisonHandoff failed = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerComparisonHandoff failed = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
     Assert(!failed.IsHandoffReady, failed.Describe());
     Assert(!failed.ToEvidenceBundle().IsHandoffReady, failed.ToEvidenceBundle().Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerWorkflowReadinessGatesExecution()
+static void SigtranReferencePeerLabRunnerWorkflowReadinessGatesExecution()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit9");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit9");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport readyPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest readyManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, readyPreflight);
+    SigtranReferencePeerLabRunnerPreflightReport readyPreflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest readyManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, readyPreflight);
 
-    SigtranMaintainedPeerLabRunnerWorkflowReadinessReport ready = SigtranMaintainedPeerLabRunnerWorkflowReadiness.Evaluate(readyManifest);
+    SigtranReferencePeerLabRunnerWorkflowReadinessSnapshot ready = SigtranReferencePeerLabRunnerWorkflowReadiness.Evaluate(readyManifest);
     Assert(ready.Ready, ready.Describe());
     Assert(ready.WorkflowPolicyReady, ready.Describe());
     Assert(ready.ArtifactUploadReady, ready.Describe());
 
-    SigtranMaintainedPeerLabRunnerPreflightReport blockedPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
-    SigtranMaintainedPeerLabRunnerCommandManifest blockedManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, blockedPreflight);
-    SigtranMaintainedPeerLabRunnerWorkflowReadinessReport blocked = SigtranMaintainedPeerLabRunnerWorkflowReadiness.Evaluate(blockedManifest);
+    SigtranReferencePeerLabRunnerPreflightReport blockedPreflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    SigtranReferencePeerLabRunnerCommandManifest blockedManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, blockedPreflight);
+    SigtranReferencePeerLabRunnerWorkflowReadinessSnapshot blocked = SigtranReferencePeerLabRunnerWorkflowReadiness.Evaluate(blockedManifest);
     Assert(!blocked.Ready, blocked.Describe());
     Assert(!blocked.RunnerMaterializationReady, blocked.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerStatusSummarizesCompletion()
+static void SigtranReferencePeerLabRunnerStatusSummarizesCompletion()
 {
-    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabRunnerStatus.GetCompletedCapabilities();
-    SigtranMaintainedPeerLabRunnerStatusReport foundation = SigtranMaintainedPeerLabRunnerStatus.GetFoundationReport();
+    IReadOnlyList<string> capabilities = SigtranReferencePeerLabRunnerStatus.GetCompletedCapabilities();
+    SigtranReferencePeerLabRunnerStatusReport foundation = SigtranReferencePeerLabRunnerStatus.GetFoundationReport();
 
-    AssertEqual(10, SigtranMaintainedPeerLabRunnerStatus.CompletedUnitCount, "maintained peer lab runner unit count");
-    AssertEqual(10, capabilities.Count, "maintained peer lab runner capability count");
+    AssertEqual(10, SigtranReferencePeerLabRunnerStatus.CompletedUnitCount, "reference peer lab runner unit count");
+    AssertEqual(10, capabilities.Count, "reference peer lab runner capability count");
     Assert(foundation.FoundationReady, foundation.Describe());
-    Assert(!foundation.CommercialReady, foundation.Describe());
-    Assert(foundation.Blockers.Contains("real-maintained-peer-run-required"), foundation.Describe());
+    Assert(!foundation.ProductionReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-reference-peer-run-required"), foundation.Describe());
 
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase29-unit10");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase29-unit10");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerStatusReport commercial = SigtranMaintainedPeerLabRunnerStatus.FromHandoff(handoff);
+    SigtranReferencePeerLabRunnerComparisonHandoff handoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerStatusReport production = SigtranReferencePeerLabRunnerStatus.FromHandoff(handoff);
 
-    Assert(commercial.FoundationReady, commercial.Describe());
-    Assert(commercial.RunnerEvidenceReady, commercial.Describe());
-    Assert(commercial.CommercialReady, commercial.Describe());
+    Assert(production.FoundationReady, production.Describe());
+    Assert(production.RunnerEvidenceReady, production.Describe());
+    Assert(production.ProductionReady, production.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerFileMaterializationRendersShellPlan()
+static void SigtranReferencePeerLabRunnerFileMaterializationRendersShellPlan()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit1");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerFileMaterializationPlan plan = SigtranMaintainedPeerLabRunnerFileMaterialization.CreateDefault(inputs);
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit1");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerFileMaterializationPlan plan = SigtranReferencePeerLabRunnerFileMaterialization.CreateDefault(inputs);
     string script = plan.RenderShellScript();
 
     Assert(plan.IsMaterializationReady, plan.Describe());
-    AssertEqual(9, plan.Directories.Count, "maintained peer lab runner materialization directory count");
-    AssertEqual(2, plan.InputFiles.Count, "maintained peer lab runner materialization input count");
+    AssertEqual(9, plan.Directories.Count, "reference peer lab runner materialization directory count");
+    AssertEqual(2, plan.InputFiles.Count, "reference peer lab runner materialization input count");
     Assert(script.StartsWith("#!/usr/bin/env bash", StringComparison.Ordinal), script);
-    Assert(script.Contains("mkdir -p 'artifacts/external-peer/maintained/config'", StringComparison.Ordinal), script);
-    Assert(script.Contains("cat > 'artifacts/external-peer/maintained/config/phase30-unit1-peer.env'", StringComparison.Ordinal), script);
-    Assert(script.Contains("chmod +x 'artifacts/external-peer/maintained/scripts/maintained-peer-lab/phase30-unit1.sh'", StringComparison.Ordinal), script);
+    Assert(script.Contains("mkdir -p 'artifacts/external-peer/reference/config'", StringComparison.Ordinal), script);
+    Assert(script.Contains("cat > 'artifacts/external-peer/reference/config/phase30-unit1-peer.env'", StringComparison.Ordinal), script);
+    Assert(script.Contains("chmod +x 'artifacts/external-peer/reference/scripts/reference-peer-lab/phase30-unit1.sh'", StringComparison.Ordinal), script);
 }
 
-static void SigtranMaintainedPeerLabRunnerExecutionLogRendersLifecycle()
+static void SigtranReferencePeerLabRunnerExecutionLogRendersLifecycle()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit2");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit2");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
 
     Assert(log.Complete, log.Describe());
-    AssertEqual(14, log.Entries.Count, "maintained peer lab runner execution log entry count");
+    AssertEqual(14, log.Entries.Count, "reference peer lab runner execution log entry count");
     Assert(log.RenderJsonLines().Contains("\"kind\":\"Started\"", StringComparison.Ordinal), log.RenderJsonLines());
     Assert(log.RenderMarkdown().Contains("Complete: `True`", StringComparison.Ordinal), log.RenderMarkdown());
 }
 
-static void SigtranMaintainedPeerLabRunnerCommandOutcomesAggregateLogState()
+static void SigtranReferencePeerLabRunnerCommandOutcomesAggregateLogState()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit3");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit3");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
 
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport report = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport report = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
     Assert(report.Passed, report.Describe());
-    AssertEqual(6, report.Outcomes.Count, "maintained peer lab runner command outcome count");
+    AssertEqual(6, report.Outcomes.Count, "reference peer lab runner command outcome count");
     Assert(report.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), report.RenderMarkdown());
 
-    List<SigtranMaintainedPeerLabRunnerExecutionLogEntry> entries = log.Entries.ToList();
-    entries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranMaintainedPeerLabRunnerLogEventKind.Error, "capture failed", SigtranMaintainedPeerLabCommandKind.Capture));
-    SigtranMaintainedPeerLabRunnerExecutionLog failedLog = new(runManifest.RunId, entries);
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport failed = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, failedLog);
+    List<SigtranReferencePeerLabRunnerExecutionLogEntry> entries = log.Entries.ToList();
+    entries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranReferencePeerLabRunnerLogEventKind.Error, "capture failed", SigtranReferencePeerLabCommandKind.Capture));
+    SigtranReferencePeerLabRunnerExecutionLog failedLog = new(runManifest.RunId, entries);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport failed = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, failedLog);
     Assert(!failed.Passed, failed.Describe());
-    Assert(failed.FailedCommandKinds.Contains(SigtranMaintainedPeerLabCommandKind.Capture), failed.Describe());
+    Assert(failed.FailedCommandKinds.Contains(SigtranReferencePeerLabCommandKind.Capture), failed.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerArtifactVerificationChecksRetainedDigests()
+static void SigtranReferencePeerLabRunnerArtifactVerificationChecksRetainedDigests()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit4");
-    SigtranMaintainedPeerLabRunnerWorkspace workspace = SigtranMaintainedPeerLabRunnerWorkspaces.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(workspace);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit4");
+    SigtranReferencePeerLabRunnerWorkspace workspace = SigtranReferencePeerLabRunnerWorkspaces.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(workspace);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
 
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport verified = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport verified = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, digestReport);
     Assert(verified.Verified, verified.Describe());
-    AssertEqual(6, verified.Items.Count, "maintained peer lab runner artifact verification item count");
+    AssertEqual(6, verified.Items.Count, "reference peer lab runner artifact verification item count");
     Assert(verified.RenderMarkdown().Contains("Verified: `True`", StringComparison.Ordinal), verified.RenderMarkdown());
 
     Dictionary<string, string> partial = collection.Artifacts.Take(5).ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport missingDigest = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, partial);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport missing = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, missingDigest);
+    SigtranReferencePeerLabRunnerDigestReport missingDigest = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, partial);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport missing = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, missingDigest);
     Assert(!missing.Verified, missing.Describe());
-    AssertEqual(1, missing.MissingDigestPaths.Count, "maintained peer lab runner artifact verification missing digest count");
+    AssertEqual(1, missing.MissingDigestPaths.Count, "reference peer lab runner artifact verification missing digest count");
 
     Dictionary<string, string> invalidDigestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => "not-a-digest", StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport invalidDigest = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, invalidDigestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport invalid = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, invalidDigest);
+    SigtranReferencePeerLabRunnerDigestReport invalidDigest = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, invalidDigestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport invalid = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, invalidDigest);
     Assert(!invalid.Verified, invalid.Describe());
-    AssertEqual(6, invalid.InvalidDigestPaths.Count, "maintained peer lab runner artifact verification invalid digest count");
+    AssertEqual(6, invalid.InvalidDigestPaths.Count, "reference peer lab runner artifact verification invalid digest count");
 }
 
-static void SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity()
+static void SigtranReferencePeerLabRunnerProvenanceRecordsSourceAndHostIdentity()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit5");
-    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit5");
+    SigtranReferencePeerLabRunnerProvenanceReport provenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(
         runManifest,
         "abcdef123456",
         "linux-runner-01",
         DateTimeOffset.UnixEpoch);
 
     Assert(provenance.IsReviewReady, provenance.Describe());
-    AssertEqual("Sigtran.NET", provenance.SdkName, "maintained peer lab runner provenance SDK name");
-    AssertEqual(runManifest.ArtifactPlan.ArtifactRoot, provenance.ArtifactRoot, "maintained peer lab runner provenance artifact root");
+    AssertEqual("Sigtran.NET", provenance.SdkName, "reference peer lab runner provenance SDK name");
+    AssertEqual(runManifest.ArtifactPlan.ArtifactRoot, provenance.ArtifactRoot, "reference peer lab runner provenance artifact root");
     Assert(provenance.RenderMarkdown().Contains("Review ready: `True`", StringComparison.Ordinal), provenance.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunnerProvenanceReport shortCommit = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+    SigtranReferencePeerLabRunnerProvenanceReport shortCommit = SigtranReferencePeerLabRunnerProvenance.CreateDefault(
         runManifest,
         "abc",
         "linux-runner-01",
         DateTimeOffset.UnixEpoch);
     Assert(!shortCommit.IsReviewReady, shortCommit.Describe());
 
-    SigtranMaintainedPeerLabRunnerProvenanceReport localTime = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(
+    SigtranReferencePeerLabRunnerProvenanceReport localTime = SigtranReferencePeerLabRunnerProvenance.CreateDefault(
         runManifest,
         "abcdef123456",
         "linux-runner-01",
@@ -1559,214 +1562,214 @@ static void SigtranMaintainedPeerLabRunnerProvenanceRecordsSourceAndHostIdentity
     Assert(!localTime.IsReviewReady, localTime.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerFailureClassifierCategorizesBlockers()
+static void SigtranReferencePeerLabRunnerFailureClassifierCategorizesBlockers()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit6");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit6");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
-    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport artifactVerification = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranReferencePeerLabRunnerProvenanceReport provenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerComparisonHandoff handoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
 
-    SigtranMaintainedPeerLabRunnerFailureReport passed = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
+    SigtranReferencePeerLabRunnerFailureReport passed = SigtranReferencePeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
     Assert(passed.Passed, passed.Describe());
-    AssertEqual(0, passed.Failures.Count, "maintained peer lab runner passing failure count");
+    AssertEqual(0, passed.Failures.Count, "reference peer lab runner passing failure count");
     Assert(passed.RenderMarkdown().Contains("Passed: `True`", StringComparison.Ordinal), passed.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunnerPreflightReport blockedPreflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
-    List<SigtranMaintainedPeerLabRunnerExecutionLogEntry> failedEntries = log.Entries.ToList();
-    failedEntries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranMaintainedPeerLabRunnerLogEventKind.Error, "capture failed", SigtranMaintainedPeerLabCommandKind.Capture));
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport failedCommands = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, new(runManifest.RunId, failedEntries));
-    SigtranMaintainedPeerLabRunnerEvidenceCollection missingCollection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths().Take(5).ToArray());
-    SigtranMaintainedPeerLabRunnerDigestReport missingDigestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, missingCollection, new Dictionary<string, string>(StringComparer.Ordinal));
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport missingArtifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(missingCollection, missingDigestReport);
-    SigtranMaintainedPeerLabRunnerProvenanceReport invalidProvenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abc", "linux-runner-01", DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerComparisonHandoff failedHandoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, missingDigestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerPreflightReport blockedPreflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, []);
+    List<SigtranReferencePeerLabRunnerExecutionLogEntry> failedEntries = log.Entries.ToList();
+    failedEntries.Add(new(DateTimeOffset.UnixEpoch.AddSeconds(20), SigtranReferencePeerLabRunnerLogEventKind.Error, "capture failed", SigtranReferencePeerLabCommandKind.Capture));
+    SigtranReferencePeerLabRunnerCommandOutcomeReport failedCommands = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, new(runManifest.RunId, failedEntries));
+    SigtranReferencePeerLabRunnerEvidenceCollection missingCollection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths().Take(5).ToArray());
+    SigtranReferencePeerLabRunnerDigestReport missingDigestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, missingCollection, new Dictionary<string, string>(StringComparer.Ordinal));
+    SigtranReferencePeerLabRunnerArtifactVerificationReport missingArtifactVerification = SigtranReferencePeerLabRunnerArtifactVerification.Verify(missingCollection, missingDigestReport);
+    SigtranReferencePeerLabRunnerProvenanceReport invalidProvenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(runManifest, "abc", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerComparisonHandoff failedHandoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, missingDigestReport, ["ASPUP"], DateTimeOffset.UnixEpoch);
 
-    SigtranMaintainedPeerLabRunnerFailureReport failed = SigtranMaintainedPeerLabRunnerFailures.Classify(blockedPreflight, failedCommands, missingArtifactVerification, invalidProvenance, failedHandoff);
+    SigtranReferencePeerLabRunnerFailureReport failed = SigtranReferencePeerLabRunnerFailures.Classify(blockedPreflight, failedCommands, missingArtifactVerification, invalidProvenance, failedHandoff);
     Assert(!failed.Passed, failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Preflight), failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution), failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.ArtifactRetention), failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.DigestVerification), failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Provenance), failed.Describe());
-    Assert(failed.HasKind(SigtranMaintainedPeerLabRunnerFailureKind.Comparison), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.Preflight), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.CommandExecution), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.ArtifactRetention), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.DigestVerification), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.Provenance), failed.Describe());
+    Assert(failed.HasKind(SigtranReferencePeerLabRunnerFailureKind.Comparison), failed.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerRetryPolicyGatesTransientFailures()
+static void SigtranReferencePeerLabRunnerRetryPolicyGatesTransientFailures()
 {
-    SigtranMaintainedPeerLabRunnerRetryPolicy policy = SigtranMaintainedPeerLabRunnerRetryPolicy.CreateDefault();
-    AssertEqual(7, policy.Rules.Count, "maintained peer lab runner retry rule count");
-    Assert(policy.GetRule(SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution).Retryable, "command execution should be retryable");
-    Assert(!policy.GetRule(SigtranMaintainedPeerLabRunnerFailureKind.Preflight).Retryable, "preflight should not be retryable");
+    SigtranReferencePeerLabRunnerRetryPolicy policy = SigtranReferencePeerLabRunnerRetryPolicy.CreateDefault();
+    AssertEqual(7, policy.Rules.Count, "reference peer lab runner retry rule count");
+    Assert(policy.GetRule(SigtranReferencePeerLabRunnerFailureKind.CommandExecution).Retryable, "command execution should be retryable");
+    Assert(!policy.GetRule(SigtranReferencePeerLabRunnerFailureKind.Preflight).Retryable, "preflight should not be retryable");
 
-    SigtranMaintainedPeerLabRunnerFailureReport commandFailure = new(
+    SigtranReferencePeerLabRunnerFailureReport commandFailure = new(
         "phase30-unit7",
         [
             new(
-                SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution,
+                SigtranReferencePeerLabRunnerFailureKind.CommandExecution,
                 "command:Capture",
                 "Capture command failed.")
         ]);
-    SigtranMaintainedPeerLabRunnerRetryEvaluation retry = policy.Evaluate(commandFailure, attemptNumber: 1);
+    SigtranReferencePeerLabRunnerRetryEvaluation retry = policy.Evaluate(commandFailure, attemptNumber: 1);
     Assert(retry.CanRetry, retry.Describe());
-    AssertEqual(TimeSpan.FromSeconds(5), retry.NextDelay, "maintained peer lab runner command retry delay");
+    AssertEqual(TimeSpan.FromSeconds(5), retry.NextDelay, "reference peer lab runner command retry delay");
     Assert(retry.RenderMarkdown().Contains("Can retry: `True`", StringComparison.Ordinal), retry.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunnerRetryEvaluation exhausted = policy.Evaluate(commandFailure, attemptNumber: 3);
+    SigtranReferencePeerLabRunnerRetryEvaluation exhausted = policy.Evaluate(commandFailure, attemptNumber: 3);
     Assert(!exhausted.CanRetry, exhausted.Describe());
-    AssertEqual(1, exhausted.NonRetryableFailures.Count, "maintained peer lab runner exhausted retry count");
+    AssertEqual(1, exhausted.NonRetryableFailures.Count, "reference peer lab runner exhausted retry count");
 
-    SigtranMaintainedPeerLabRunnerFailureReport preflightFailure = new(
+    SigtranReferencePeerLabRunnerFailureReport preflightFailure = new(
         "phase30-unit7",
         [
             new(
-                SigtranMaintainedPeerLabRunnerFailureKind.Preflight,
+                SigtranReferencePeerLabRunnerFailureKind.Preflight,
                 "preflight:host-prerequisites-ready",
                 "Host prerequisites are missing.")
         ]);
-    SigtranMaintainedPeerLabRunnerRetryEvaluation blocked = policy.Evaluate(preflightFailure, attemptNumber: 1);
+    SigtranReferencePeerLabRunnerRetryEvaluation blocked = policy.Evaluate(preflightFailure, attemptNumber: 1);
     Assert(!blocked.CanRetry, blocked.Describe());
-    AssertEqual(1, blocked.NonRetryableFailures.Count, "maintained peer lab runner non-retryable preflight count");
+    AssertEqual(1, blocked.NonRetryableFailures.Count, "reference peer lab runner non-retryable preflight count");
 }
 
-static void SigtranMaintainedPeerLabRunnerEvidencePackageManifestGatesHandoff()
+static void SigtranReferencePeerLabRunnerEvidencePackageManifestGatesHandoff()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit8");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit8");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
-    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport artifactVerification = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranReferencePeerLabRunnerProvenanceReport provenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerFailureReport failures = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
+    SigtranReferencePeerLabRunnerComparisonHandoff handoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerFailureReport failures = SigtranReferencePeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
 
-    SigtranMaintainedPeerLabRunnerEvidencePackageManifest package = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, failures);
+    SigtranReferencePeerLabRunnerEvidencePackageManifest package = SigtranReferencePeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, failures);
     Assert(package.IsPackageReady, package.Describe());
-    AssertEqual(9, package.Items.Count, "maintained peer lab runner evidence package item count");
+    AssertEqual(9, package.Items.Count, "reference peer lab runner evidence package item count");
     Assert(package.RenderMarkdown().Contains("Package ready: `True`", StringComparison.Ordinal), package.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunnerFailureReport blockedFailures = new(
+    SigtranReferencePeerLabRunnerFailureReport blockedFailures = new(
         runManifest.RunId,
         [
             new(
-                SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution,
+                SigtranReferencePeerLabRunnerFailureKind.CommandExecution,
                 "command:Capture",
                 "Capture command failed.")
         ]);
-    SigtranMaintainedPeerLabRunnerEvidencePackageManifest blocked = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, blockedFailures);
+    SigtranReferencePeerLabRunnerEvidencePackageManifest blocked = SigtranReferencePeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, blockedFailures);
     Assert(!blocked.IsPackageReady, blocked.Describe());
     Assert(!blocked.HasNoBlockingFailures, blocked.Describe());
 }
 
-static void SigtranMaintainedPeerLabRunnerOperatorHandoffRecommendsActions()
+static void SigtranReferencePeerLabRunnerOperatorHandoffRecommendsActions()
 {
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit9");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit9");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
-    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport artifactVerification = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranReferencePeerLabRunnerProvenanceReport provenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabRunnerComparisonHandoff handoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerFailureReport failures = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
-    SigtranMaintainedPeerLabRunnerEvidencePackageManifest package = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, failures);
-    SigtranMaintainedPeerLabRunnerRetryPolicy policy = SigtranMaintainedPeerLabRunnerRetryPolicy.CreateDefault();
-    SigtranMaintainedPeerLabRunnerRetryEvaluation retry = policy.Evaluate(failures, attemptNumber: 1);
+    SigtranReferencePeerLabRunnerComparisonHandoff handoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerFailureReport failures = SigtranReferencePeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, handoff);
+    SigtranReferencePeerLabRunnerEvidencePackageManifest package = SigtranReferencePeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, failures);
+    SigtranReferencePeerLabRunnerRetryPolicy policy = SigtranReferencePeerLabRunnerRetryPolicy.CreateDefault();
+    SigtranReferencePeerLabRunnerRetryEvaluation retry = policy.Evaluate(failures, attemptNumber: 1);
 
-    SigtranMaintainedPeerLabRunnerOperatorHandoffReport ready = SigtranMaintainedPeerLabRunnerOperatorHandoffs.Create(package, retry, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerOperatorHandoffReport ready = SigtranReferencePeerLabRunnerOperatorHandoffs.Create(package, retry, DateTimeOffset.UnixEpoch);
     Assert(ready.ReadyForOperatorReview, ready.Describe());
-    Assert(ready.ReadyForCommercialPromotion, ready.Describe());
-    AssertEqual(SigtranMaintainedPeerLabRunnerOperatorAction.PromoteEvidence, ready.RecommendedAction, "maintained peer lab runner promotion action");
+    Assert(ready.ReadyForProductionPromotion, ready.Describe());
+    AssertEqual(SigtranReferencePeerLabRunnerOperatorAction.PromoteEvidence, ready.RecommendedAction, "reference peer lab runner promotion action");
     Assert(ready.RenderMarkdown().Contains("Recommended action: `PromoteEvidence`", StringComparison.Ordinal), ready.RenderMarkdown());
 
-    SigtranMaintainedPeerLabRunnerFailureReport commandFailure = new(
+    SigtranReferencePeerLabRunnerFailureReport commandFailure = new(
         runManifest.RunId,
         [
             new(
-                SigtranMaintainedPeerLabRunnerFailureKind.CommandExecution,
+                SigtranReferencePeerLabRunnerFailureKind.CommandExecution,
                 "command:Capture",
                 "Capture command failed.")
         ]);
-    SigtranMaintainedPeerLabRunnerEvidencePackageManifest blockedPackage = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, commandFailure);
-    SigtranMaintainedPeerLabRunnerRetryEvaluation retryable = policy.Evaluate(commandFailure, attemptNumber: 1);
-    SigtranMaintainedPeerLabRunnerOperatorHandoffReport blocked = SigtranMaintainedPeerLabRunnerOperatorHandoffs.Create(blockedPackage, retryable, DateTimeOffset.UnixEpoch);
-    Assert(!blocked.ReadyForCommercialPromotion, blocked.Describe());
-    AssertEqual(SigtranMaintainedPeerLabRunnerOperatorAction.RetryRun, blocked.RecommendedAction, "maintained peer lab runner retry action");
+    SigtranReferencePeerLabRunnerEvidencePackageManifest blockedPackage = SigtranReferencePeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, handoff, commandFailure);
+    SigtranReferencePeerLabRunnerRetryEvaluation retryable = policy.Evaluate(commandFailure, attemptNumber: 1);
+    SigtranReferencePeerLabRunnerOperatorHandoffReport blocked = SigtranReferencePeerLabRunnerOperatorHandoffs.Create(blockedPackage, retryable, DateTimeOffset.UnixEpoch);
+    Assert(!blocked.ReadyForProductionPromotion, blocked.Describe());
+    AssertEqual(SigtranReferencePeerLabRunnerOperatorAction.RetryRun, blocked.RecommendedAction, "reference peer lab runner retry action");
 }
 
-static void SigtranMaintainedPeerLabRunnerOperationsStatusSummarizesCompletion()
+static void SigtranReferencePeerLabRunnerOperationsStatusSummarizesCompletion()
 {
-    IReadOnlyList<string> capabilities = SigtranMaintainedPeerLabRunnerOperationsStatus.GetCompletedCapabilities();
-    SigtranMaintainedPeerLabRunnerOperationsStatusReport foundation = SigtranMaintainedPeerLabRunnerOperationsStatus.GetFoundationReport();
+    IReadOnlyList<string> capabilities = SigtranReferencePeerLabRunnerOperationsStatus.GetCompletedCapabilities();
+    SigtranReferencePeerLabRunnerOperationsStatusReport foundation = SigtranReferencePeerLabRunnerOperationsStatus.GetFoundationReport();
 
-    AssertEqual(10, SigtranMaintainedPeerLabRunnerOperationsStatus.CompletedUnitCount, "maintained peer lab runner operations unit count");
-    AssertEqual(10, capabilities.Count, "maintained peer lab runner operations capability count");
+    AssertEqual(10, SigtranReferencePeerLabRunnerOperationsStatus.CompletedUnitCount, "reference peer lab runner operations unit count");
+    AssertEqual(10, capabilities.Count, "reference peer lab runner operations capability count");
     Assert(foundation.FoundationReady, foundation.Describe());
-    Assert(!foundation.CommercialReady, foundation.Describe());
-    Assert(foundation.Blockers.Contains("real-maintained-peer-run-required"), foundation.Describe());
+    Assert(!foundation.ProductionReady, foundation.Describe());
+    Assert(foundation.Blockers.Contains("real-reference-peer-run-required"), foundation.Describe());
 
-    SigtranMaintainedPeerLabRunManifest runManifest = SigtranMaintainedPeerLabRunManifests.CreateDefault("phase30-unit10");
-    SigtranMaintainedPeerLabRunnerInputBundle inputs = SigtranMaintainedPeerLabRunnerInputs.CreateDefault(runManifest);
-    SigtranMaintainedPeerLabRunnerArtifactMaterializationPlan artifacts = SigtranMaintainedPeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
-    IReadOnlyList<string> allPrerequisites = SigtranMaintainedPeerLabPrerequisites.GetDefault()
+    SigtranReferencePeerLabRunManifest runManifest = SigtranReferencePeerLabRunManifests.CreateDefault("phase30-unit10");
+    SigtranReferencePeerLabRunnerInputBundle inputs = SigtranReferencePeerLabRunnerInputs.CreateDefault(runManifest);
+    SigtranReferencePeerLabRunnerArtifactMaterializationPlan artifacts = SigtranReferencePeerLabRunnerArtifacts.CreateDefault(inputs.Workspace);
+    IReadOnlyList<string> allPrerequisites = SigtranReferencePeerLabPrerequisites.GetDefault()
         .Select(static prerequisite => prerequisite.Id)
         .ToArray();
-    SigtranMaintainedPeerLabRunnerPreflightReport preflight = SigtranMaintainedPeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
-    SigtranMaintainedPeerLabRunnerCommandManifest commandManifest = SigtranMaintainedPeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
-    SigtranMaintainedPeerLabRunnerExecutionLog log = SigtranMaintainedPeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranMaintainedPeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
-    SigtranMaintainedPeerLabRunnerEvidenceCollection collection = SigtranMaintainedPeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
+    SigtranReferencePeerLabRunnerPreflightReport preflight = SigtranReferencePeerLabRunnerPreflight.Evaluate(inputs, artifacts, allPrerequisites);
+    SigtranReferencePeerLabRunnerCommandManifest commandManifest = SigtranReferencePeerLabRunnerCommandManifests.Create(inputs, artifacts, preflight);
+    SigtranReferencePeerLabRunnerExecutionLog log = SigtranReferencePeerLabRunnerExecutionLogs.CreatePassing(commandManifest, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerCommandOutcomeReport commandOutcomes = SigtranReferencePeerLabRunnerCommandOutcomes.FromLog(commandManifest, log);
+    SigtranReferencePeerLabRunnerEvidenceCollection collection = SigtranReferencePeerLabRunnerEvidenceCollections.Collect(artifacts, artifacts.GetRequiredOutputPaths());
     const string digest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
     Dictionary<string, string> digestByPath = collection.Artifacts.ToDictionary(static artifact => artifact.Path, static _ => digest, StringComparer.Ordinal);
-    SigtranMaintainedPeerLabRunnerDigestReport digestReport = SigtranMaintainedPeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
-    SigtranMaintainedPeerLabRunnerArtifactVerificationReport artifactVerification = SigtranMaintainedPeerLabRunnerArtifactVerification.Verify(collection, digestReport);
-    SigtranMaintainedPeerLabRunnerProvenanceReport provenance = SigtranMaintainedPeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerDigestReport digestReport = SigtranReferencePeerLabRunnerDigests.Create(runManifest.ArtifactPlan, collection, digestByPath);
+    SigtranReferencePeerLabRunnerArtifactVerificationReport artifactVerification = SigtranReferencePeerLabRunnerArtifactVerification.Verify(collection, digestReport);
+    SigtranReferencePeerLabRunnerProvenanceReport provenance = SigtranReferencePeerLabRunnerProvenance.CreateDefault(runManifest, "abcdef123456", "linux-runner-01", DateTimeOffset.UnixEpoch);
     IReadOnlyList<string> expected = runManifest.TrafficVectors.SelectMany(static vector => vector.ExpectedMessages).ToArray();
-    SigtranMaintainedPeerLabRunnerComparisonHandoff comparisonHandoff = SigtranMaintainedPeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerFailureReport failures = SigtranMaintainedPeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, comparisonHandoff);
-    SigtranMaintainedPeerLabRunnerEvidencePackageManifest package = SigtranMaintainedPeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, comparisonHandoff, failures);
-    SigtranMaintainedPeerLabRunnerRetryEvaluation retry = SigtranMaintainedPeerLabRunnerRetryPolicy.CreateDefault().Evaluate(failures, attemptNumber: 1);
-    SigtranMaintainedPeerLabRunnerOperatorHandoffReport handoff = SigtranMaintainedPeerLabRunnerOperatorHandoffs.Create(package, retry, DateTimeOffset.UnixEpoch);
-    SigtranMaintainedPeerLabRunnerOperationsStatusReport commercial = SigtranMaintainedPeerLabRunnerOperationsStatus.FromHandoff(handoff);
+    SigtranReferencePeerLabRunnerComparisonHandoff comparisonHandoff = SigtranReferencePeerLabRunnerComparisonHandoffs.Create(inputs, digestReport, expected, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerFailureReport failures = SigtranReferencePeerLabRunnerFailures.Classify(preflight, commandOutcomes, artifactVerification, provenance, comparisonHandoff);
+    SigtranReferencePeerLabRunnerEvidencePackageManifest package = SigtranReferencePeerLabRunnerEvidencePackages.Create(artifactVerification, provenance, comparisonHandoff, failures);
+    SigtranReferencePeerLabRunnerRetryEvaluation retry = SigtranReferencePeerLabRunnerRetryPolicy.CreateDefault().Evaluate(failures, attemptNumber: 1);
+    SigtranReferencePeerLabRunnerOperatorHandoffReport handoff = SigtranReferencePeerLabRunnerOperatorHandoffs.Create(package, retry, DateTimeOffset.UnixEpoch);
+    SigtranReferencePeerLabRunnerOperationsStatusReport production = SigtranReferencePeerLabRunnerOperationsStatus.FromHandoff(handoff);
 
-    Assert(commercial.FoundationReady, commercial.Describe());
-    Assert(commercial.RunnerEvidenceReady, commercial.Describe());
-    Assert(commercial.OperatorHandoffReady, commercial.Describe());
-    Assert(commercial.CommercialReady, commercial.Describe());
+    Assert(production.FoundationReady, production.Describe());
+    Assert(production.RunnerEvidenceReady, production.Describe());
+    Assert(production.OperatorHandoffReady, production.Describe());
+    Assert(production.ProductionReady, production.Describe());
 }
 
 static void SigtranTraceComparisonReportsOrderedMismatches()
@@ -1823,9 +1826,9 @@ static void SigtranInteropLabCiProfileIsOptIn()
     Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_INTEROP_LAB"] = "1" }), "interop lab profile should accept 1");
 }
 
-static void SigtranInteropLabReadinessReportsFoundationAndEvidenceGates()
+static void SigtranInteropLabReadinessSnapshotsFoundationAndEvidenceGates()
 {
-    SigtranInteropLabReadinessReport report = SigtranInteropLabReadiness.GetReport();
+    SigtranInteropLabReadinessSnapshot report = SigtranInteropLabReadiness.GetReport();
 
     Assert(report.FoundationReady, report.Describe());
     Assert(!report.HasPassingExternalEvidence, "external lab evidence should stay false until real artifacts are added");
@@ -1833,14 +1836,14 @@ static void SigtranInteropLabReadinessReportsFoundationAndEvidenceGates()
     Assert(report.Describe().Contains("foundationReady=True", StringComparison.Ordinal), report.Describe());
 }
 
-static void SigtranCommercialReadinessUsesInteropLabProductionGate()
+static void SigtranProductionReadinessUsesInteropLabProductionGate()
 {
-    SigtranInteropLabReadinessReport labReadiness = SigtranInteropLabReadiness.GetReport();
-    SigtranCommercialReadinessReport commercial = SigtranCommercialReadiness.GetReport();
+    SigtranInteropLabReadinessSnapshot labReadiness = SigtranInteropLabReadiness.GetReport();
+    SigtranProductionReadinessSnapshot production = SigtranProductionReadiness.GetReport();
 
-    AssertEqual(labReadiness.ProductionReady, commercial.HasExternalInteroperabilityEvidence, "commercial external interop gate");
-    Assert(!commercial.HasExternalInteroperabilityEvidence, "commercial readiness should wait for real lab evidence");
-    Assert(!commercial.CommercialReady, commercial.Describe());
+    AssertEqual(labReadiness.ProductionReady, production.HasExternalInteroperabilityEvidence, "production external interop gate");
+    Assert(!production.HasExternalInteroperabilityEvidence, "production readiness should wait for real lab evidence");
+    Assert(!production.ProductionReady, production.Describe());
 }
 
 static void SigtranInteropLabStatusSummarizesInteropLabFoundation()
@@ -1849,7 +1852,7 @@ static void SigtranInteropLabStatusSummarizesInteropLabFoundation()
 
     AssertEqual(10, SigtranInteropLabStatus.CompletedUnitCount, "interoperability lab completed unit count");
     AssertEqual(10, capabilities.Count, "interoperability lab capability count");
-    Assert(capabilities.Contains("commercial-readiness-gate-integration"), "interoperability lab status should include commercial readiness integration");
+    Assert(capabilities.Contains("production-readiness-gate-integration"), "interoperability lab status should include production readiness integration");
     Assert(SigtranInteropLabStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
     Assert(SigtranInteropLabStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
 }
@@ -1884,23 +1887,23 @@ static void SigtranReleaseArtifactManifestTracksPackageArtifactsAndDigests()
     Assert(!incomplete.AllArtifactsHaveDigests(), "release manifest should require digests");
 }
 
-static void SigtranSbomPlanMarksCommercialReleaseRequirement()
+static void SigtranSbomPlanMarksReleaseRequirement()
 {
     SigtranSbomPlan plan = SigtranSbom.CreateDefaultPlan();
 
     AssertEqual(SigtranSbomFormat.SpdxJson, plan.Format, "SBOM format");
     AssertEqual("Microsoft.Sbom.Tool", plan.ToolName, "SBOM tool");
-    Assert(plan.IsRequiredForCommercialRelease, "SBOM should be required for commercial release");
+    Assert(plan.IsRequiredForRelease, "SBOM should be required for production release");
     Assert(plan.OutputPath.EndsWith(".spdx.json", StringComparison.Ordinal), plan.OutputPath);
     Assert(plan.Describe().Contains("required=True", StringComparison.Ordinal), plan.Describe());
 }
 
-static void SigtranPackageSigningPlanMarksCommercialReleaseRequirement()
+static void SigtranPackageSigningPlanMarksReleaseRequirement()
 {
     SigtranPackageSigningPlan plan = SigtranPackageSigning.CreateDefaultPlan();
 
     AssertEqual(SigtranPackageSigningMode.Author, plan.Mode, "package signing mode");
-    Assert(plan.IsRequiredForCommercialRelease, "package signing should be required for commercial release");
+    Assert(plan.IsRequiredForRelease, "package signing should be required for production release");
     Assert(plan.HasSigningMaterialReferences, plan.Describe());
     Assert(plan.TimestampAuthorityUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
     Assert(plan.TimestampAuthorityUrl.Contains("timestamp", StringComparison.OrdinalIgnoreCase), plan.TimestampAuthorityUrl);
@@ -1940,10 +1943,10 @@ static void SigtranPublishChannelsSeparatePrereleaseAndStableRules()
     SigtranPublishChannel stable = channels.Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
 
     Assert(alpha.AcceptsVersion("1.0.0-alpha.1"), "alpha channel should accept prerelease");
-    Assert(!alpha.RequiresCommercialReadiness, "alpha channel should not require commercial readiness");
+    Assert(!alpha.RequiresProductionReadiness, "alpha channel should not require production readiness");
     Assert(!stable.AcceptsVersion("1.0.0-alpha.1"), "stable channel should reject prerelease");
     Assert(stable.AcceptsVersion("1.0.0"), "stable channel should accept stable SemVer");
-    Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
+    Assert(stable.RequiresProductionReadiness, "stable channel should require production readiness");
 }
 
 static void SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadiness()
@@ -1956,13 +1959,13 @@ static void SigtranReleaseGateEvaluatesArtifactNotesProvenanceAndChannelReadines
     SigtranPublishChannel alpha = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Alpha);
     SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
 
-    SigtranReleaseGateResult alphaResult = SigtranReleaseGate.Evaluate(alpha, manifest, notes, provenance, SigtranCommercialReadiness.GetReport());
+    SigtranReleaseGateResult alphaResult = SigtranReleaseGate.Evaluate(alpha, manifest, notes, provenance, SigtranProductionReadiness.GetReport());
     Assert(alphaResult.CanPublish, alphaResult.Describe());
 
-    SigtranReleaseGateResult stableResult = SigtranReleaseGate.Evaluate(stable, manifest, notes, provenance, SigtranCommercialReadiness.GetReport());
+    SigtranReleaseGateResult stableResult = SigtranReleaseGate.Evaluate(stable, manifest, notes, provenance, SigtranProductionReadiness.GetReport());
     Assert(!stableResult.CanPublish, stableResult.Describe());
     Assert(stableResult.Reasons.Contains("channel-version-rejected"), "stable gate should reject prerelease version");
-    Assert(stableResult.Reasons.Contains("commercial-readiness-required"), "stable gate should require commercial readiness");
+    Assert(stableResult.Reasons.Contains("production-readiness-required"), "stable gate should require production readiness");
 }
 
 static void SigtranReleaseCiProfileDeclaresTriggersSecretsAndPlan()
@@ -1985,7 +1988,7 @@ static void SigtranReleaseAutomationStatusSummarizesReleaseAutomationFoundation(
     AssertEqual(10, capabilities.Count, "release automation capability count");
     Assert(capabilities.Contains("release-gate-evaluator"), "release automation status should include release gate evaluator");
     Assert(SigtranReleaseAutomationStatus.FoundationReady, SigtranReleaseAutomationStatus.Describe());
-    Assert(!SigtranReleaseAutomationStatus.CommercialStableReleaseReady, SigtranReleaseAutomationStatus.Describe());
+    Assert(!SigtranReleaseAutomationStatus.ProductionStableReleaseReady, SigtranReleaseAutomationStatus.Describe());
 }
 
 static void SigtranDeveloperExperienceCatalogExposesAdoptionAreas()
@@ -2061,15 +2064,15 @@ static void SigtranAdoptionGatesSeparateDeveloperReadinessFromEnterpriseProducti
     SigtranAdoptionGateReport report = SigtranAdoptionGates.GetReport();
 
     Assert(report.DeveloperAdoptionReady, "developer adoption foundation should be ready");
-    Assert(!report.CommercialReady, "commercial readiness should still require external gates");
-    Assert(!report.EnterpriseProductionReady, "enterprise production adoption should wait for commercial readiness");
+    Assert(!report.ProductionReady, "production readiness should still require external gates");
+    Assert(!report.EnterpriseProductionReady, "enterprise production adoption should wait for production readiness");
 }
 
-static void SigtranDocumentationReadinessReportsDeveloperDocsGate()
+static void SigtranDocumentationReadinessSnapshotsDeveloperDocsGate()
 {
-    SigtranDocumentationReadinessReport report = SigtranDocumentationReadiness.GetReport();
+    SigtranDocumentationReadinessSnapshot report = SigtranDocumentationReadiness.GetReport();
 
-    Assert(report.HasRoadmap, "documentation readiness should include roadmap");
+    Assert(report.HasProjectPlan, "documentation readiness should include project plan");
     Assert(report.HasQuickstart, "documentation readiness should include quickstart");
     Assert(report.HasApiIndex, "documentation readiness should include API index");
     Assert(report.HasTroubleshooting, "documentation readiness should include troubleshooting");
@@ -2161,23 +2164,23 @@ static void SigtranMaintenancePolicyGatesProtocolAndTransportChanges()
     Assert(!policy.RequiresLabValidation(SigtranMaintenanceChangeKind.Documentation), "documentation changes should not require lab validation");
 }
 
-static void SigtranSupportHandbookDefinesPublicPrivateAndCommercialChannels()
+static void SigtranSupportHandbookDefinesPublicPrivateAndProductionChannels()
 {
     IReadOnlyList<SigtranSupportRule> rules = SigtranSupportHandbook.GetRules();
 
     AssertEqual(3, rules.Count, "support rule count");
     Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.GitHubIssues), "support should include GitHub issues");
     Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.PrivateSecurity && rule.EscalatesIncidents), "support should include private security escalation");
-    Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.Commercial && rule.EscalatesIncidents), "support should include commercial escalation");
+    Assert(rules.Any(static rule => rule.Channel == SigtranSupportChannel.Production && rule.EscalatesIncidents), "support should include production escalation");
 }
 
 static void SigtranOperationsReadinessSeparatesFoundationFromProduction()
 {
-    SigtranOperationsReadinessReport report = SigtranOperationsReadiness.GetReport();
+    SigtranOperationsReadinessSnapshot report = SigtranOperationsReadiness.GetReport();
 
     Assert(report.FoundationReady, "operations foundation should be ready");
-    Assert(!report.CommercialReady, "commercial readiness should still require external gates");
-    Assert(!report.ProductionOperationsReady, "production operations should wait for commercial readiness");
+    Assert(!report.ProductionReady, "production readiness should still require external gates");
+    Assert(!report.ProductionOperationsReady, "production operations should wait for production readiness");
 }
 
 static void SigtranOperationsCiProfileRequiresOperationsReadiness()
@@ -2220,13 +2223,13 @@ static void SigtranAuditEventCatalogMarksEvidenceBearingEvents()
 
 static void SigtranEvidenceRetentionPolicyRequiresImmutableRedactedProvenance()
 {
-    SigtranEvidenceRetentionPolicy policy = SigtranEvidenceRetentionPolicies.CreateCommercialDefault();
+    SigtranEvidenceRetentionPolicy policy = SigtranEvidenceRetentionPolicies.CreateProductionDefault();
 
     Assert(policy.RetentionPeriod >= TimeSpan.FromDays(365), "retention should be at least one year");
     Assert(policy.RequiresImmutableStorage, "evidence retention should require immutable storage");
     Assert(policy.RequiresTraceRedaction, "evidence retention should require trace redaction");
     Assert(policy.RequiresProvenanceLink, "evidence retention should require provenance links");
-    Assert(policy.IsCommercialEvidencePolicy, "evidence retention policy should satisfy commercial evidence controls");
+    Assert(policy.IsReleaseEvidencePolicy, "evidence retention policy should satisfy production evidence controls");
 }
 
 static void SigtranLicenseCompliancePolicyTracksApacheAndThirdPartyObligations()
@@ -2236,8 +2239,8 @@ static void SigtranLicenseCompliancePolicyTracksApacheAndThirdPartyObligations()
     AssertEqual("Apache-2.0", policy.ProjectLicense, "license compliance project license");
     Assert(policy.RequiresThirdPartyNotices, "license compliance should require third-party notices");
     Assert(policy.RequiresDependencyReview, "license compliance should require dependency review");
-    Assert(policy.AllowsCommercialUse, "Apache-2.0 should allow commercial use");
-    Assert(policy.IsCommercialReady, "license compliance should be commercial-ready");
+    Assert(policy.AllowsProductionUse, "Apache-2.0 should allow production use");
+    Assert(policy.IsProductionReady, "license compliance should be production-ready");
 }
 
 static void SigtranDataHandlingRulesClassifyConfidentialTraces()
@@ -2256,16 +2259,16 @@ static void SigtranExportControlPolicyRequiresLawfulOperatorAuthorization()
     Assert(policy.RequiresLawfulUseAttestation, "lawful use attestation should be required");
     Assert(policy.RequiresSanctionsScreening, "sanctions screening should be required");
     Assert(policy.RequiresOperatorAuthorization, "operator authorization should be required");
-    Assert(policy.HasCommercialControls, "export-control policy should include commercial controls");
+    Assert(policy.HasProductionControls, "export-control policy should include production controls");
 }
 
-static void SigtranComplianceReadinessSeparatesFoundationFromCommercialClaims()
+static void SigtranComplianceReadinessSeparatesFoundationFromProductionClaims()
 {
-    SigtranComplianceReadinessReport report = SigtranComplianceReadiness.GetReport();
+    SigtranComplianceReadinessSnapshot report = SigtranComplianceReadiness.GetReport();
 
     Assert(report.FoundationReady, "compliance foundation should be ready");
-    Assert(!report.CommercialReady, "compliance readiness should still depend on commercial gates");
-    Assert(!report.EnterpriseComplianceReady, "enterprise compliance should not be claimed before commercial readiness");
+    Assert(!report.ProductionReady, "compliance readiness should still depend on production gates");
+    Assert(!report.EnterpriseComplianceReady, "enterprise compliance should not be claimed before production readiness");
 }
 
 static void SigtranComplianceCiProfileRequiresComplianceReadiness()
@@ -2277,12 +2280,12 @@ static void SigtranComplianceCiProfileRequiresComplianceReadiness()
     Assert(profile.RequiresComplianceReadiness, "compliance CI should require compliance readiness");
 }
 
-static void SigtranComplianceCommercialGateWaitsForCommercialReadiness()
+static void SigtranComplianceProductionGateWaitsForProductionReadiness()
 {
-    SigtranComplianceCommercialGateResult result = SigtranComplianceCommercialGate.Evaluate();
+    SigtranComplianceProductionGateResult result = SigtranComplianceProductionGate.Evaluate();
 
     Assert(result.ComplianceFoundationReady, result.Describe());
-    Assert(!result.CommercialReady, result.Describe());
+    Assert(!result.ProductionReady, result.Describe());
     Assert(!result.CanClaimEnterpriseCompliance, result.Describe());
 }
 
@@ -2345,31 +2348,31 @@ static void SigtranLatencyBudgetsDefineP95AndP99Bounds()
 
 static void SigtranLoadTestPlanDefinesWarmupSustainedAndPeakStages()
 {
-    SigtranLoadTestPlan plan = SigtranLoadTestPlans.CreateCommercialDefault();
+    SigtranLoadTestPlan plan = SigtranLoadTestPlans.CreateProductionDefault();
 
-    AssertEqual("commercial-load-test", plan.Name, "load-test plan name");
+    AssertEqual("production-load-test", plan.Name, "load-test plan name");
     AssertEqual(3, plan.Stages.Count, "load-test stage count");
-    Assert(plan.RequiresNativeSctp, "commercial load test should require native SCTP");
-    Assert(plan.RequiresExternalPeer, "commercial load test should require an external peer");
+    Assert(plan.RequiresNativeSctp, "production load test should require native SCTP");
+    Assert(plan.RequiresExternalPeer, "production load test should require an external peer");
     AssertEqual(50000, plan.GetPeakMessagesPerSecond(), "load-test peak rate");
 }
 
 static void SigtranResourceBudgetRequiresAllocationTracking()
 {
-    SigtranResourceBudget budget = SigtranResourceBudgets.CreateCommercialDefault();
+    SigtranResourceBudget budget = SigtranResourceBudgets.CreateProductionDefault();
 
     AssertEqual(0L, budget.MaxAllocatedBytesPerMessage, "allocation budget");
     Assert(budget.RequiresAllocationTracking, "resource budget should require allocation tracking");
-    Assert(budget.IsCommercialBenchmarkBudget, "resource budget should satisfy commercial benchmark controls");
+    Assert(budget.IsProductionBenchmarkBudget, "resource budget should satisfy production benchmark controls");
 }
 
 static void SigtranPerformanceReadinessSeparatesFoundationFromBenchmarkEvidence()
 {
-    SigtranPerformanceReadinessReport report = SigtranPerformanceReadiness.GetReport();
+    SigtranPerformanceReadinessSnapshot report = SigtranPerformanceReadiness.GetReport();
 
     Assert(report.FoundationReady, "performance foundation should be ready");
     Assert(!report.HasBenchmarkEvidence, "performance readiness should wait for real benchmark evidence");
-    Assert(!report.ProductionPerformanceReady, "production performance claims should wait for benchmark evidence and commercial readiness");
+    Assert(!report.ProductionPerformanceReady, "production performance claims should wait for benchmark evidence and production readiness");
 }
 
 static void SigtranPerformanceCiProfileKeepsBenchmarksOptIn()
@@ -2395,13 +2398,13 @@ static void SigtranPerformanceStatusSummarizesPerformanceFoundation()
 
 static void SigtranPerformanceEvidenceWorkloadCoversPeerTrafficStages()
 {
-    SigtranPerformanceEvidenceWorkload workload = SigtranPerformanceEvidenceWorkloads.CreateExpectedCommercialPeerTraffic();
+    SigtranPerformanceEvidenceWorkload workload = SigtranPerformanceEvidenceWorkloads.CreateExpectedProductionPeerTraffic();
 
-    AssertEqual("commercial-peer-traffic", workload.Name, "performance evidence workload name");
-    Assert(workload.RequiresPeerTraffic, "commercial workload should require peer traffic");
+    AssertEqual("production-peer-traffic", workload.Name, "performance evidence workload name");
+    Assert(workload.RequiresPeerTraffic, "production workload should require peer traffic");
     Assert(workload.HasRequiredStageCoverage, workload.Describe());
     Assert(workload.AllStagesPassed, workload.Describe());
-    Assert(workload.SupportsCommercialEvidence, workload.Describe());
+    Assert(workload.SupportsReleaseEvidence, workload.Describe());
     AssertEqual(3, workload.Stages.Count, "performance evidence stage count");
     Assert(workload.Stages.Any(stage => stage.Kind == SigtranPerformanceEvidenceStageKind.Warmup), "warmup stage should exist");
     Assert(workload.Stages.Any(stage => stage.Kind == SigtranPerformanceEvidenceStageKind.Sustained), "sustained stage should exist");
@@ -2422,17 +2425,17 @@ static void SigtranPerformanceEvidenceArtifactsRequireRetainedPeerBenchmarkFiles
     SigtranPerformanceEvidenceArtifactManifest incomplete = new("perf-peer-run");
     incomplete.Add(new(SigtranPerformanceEvidenceArtifactKind.PacketCapture, "artifacts/perf/perf-peer-run.pcap", new string('a', 64)));
     Assert(!incomplete.IsComplete, incomplete.Describe());
-    Assert(!incomplete.SupportsCommercialEvidence, incomplete.Describe());
+    Assert(!incomplete.SupportsReleaseEvidence, incomplete.Describe());
 
     SigtranPerformanceEvidenceArtifactManifest complete = CreateCompletePerformanceArtifactManifest("perf-peer-run");
     AssertEqual(9, complete.Snapshot().Count, "performance artifact count");
     Assert(complete.IsComplete, complete.Describe());
     Assert(complete.HasDigestCoverage, complete.Describe());
-    Assert(complete.SupportsCommercialEvidence, complete.Describe());
+    Assert(complete.SupportsReleaseEvidence, complete.Describe());
 
     SigtranPerformanceEvidenceRunPlan runPlan = SigtranPerformanceEvidenceRunPlans.CreateDefault(complete);
     Assert(runPlan.RequiresPeerTraffic, runPlan.Describe());
-    Assert(runPlan.SupportsCommercialEvidence, runPlan.Describe());
+    Assert(runPlan.SupportsReleaseEvidence, runPlan.Describe());
 }
 
 static SigtranPerformanceEvidenceArtifactManifest CreateCompletePerformanceArtifactManifest(string runId)
@@ -2492,7 +2495,7 @@ static void SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations()
         peakWorkingSetMegabytes: 768,
         allocatedBytesPerMessage: 0,
         gen2Collections: 0);
-    SigtranPerformanceResourceBudgetReport passingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateCommercial(passing);
+    SigtranPerformanceResourceBudgetReport passingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateProduction(passing);
     Assert(passingReport.Passed, passingReport.Describe());
     Assert(passingReport.CpuWithinBudget, passingReport.Describe());
     Assert(passingReport.WorkingSetWithinBudget, passingReport.Describe());
@@ -2504,7 +2507,7 @@ static void SigtranPerformanceResourceEvidenceEvaluatesCpuMemoryAndAllocations()
         peakWorkingSetMegabytes: 2048,
         allocatedBytesPerMessage: 128,
         gen2Collections: 2);
-    SigtranPerformanceResourceBudgetReport failingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateCommercial(failing);
+    SigtranPerformanceResourceBudgetReport failingReport = SigtranPerformanceResourceEvidenceEvaluator.EvaluateProduction(failing);
     Assert(!failingReport.Passed, failingReport.Describe());
     Assert(!failingReport.CpuWithinBudget, failingReport.Describe());
     Assert(!failingReport.WorkingSetWithinBudget, failingReport.Describe());
@@ -2523,7 +2526,7 @@ static void SigtranPerformanceResilienceEvidenceGatesFailoverRecovery()
     Assert(passing.HasRequiredEvents, passing.Describe());
     Assert(passing.RecoveryWithinBudget, passing.Describe());
     Assert(passing.HasNoMessageLoss, passing.Describe());
-    Assert(passing.SupportsCommercialEvidence, passing.Describe());
+    Assert(passing.SupportsReleaseEvidence, passing.Describe());
 
     SigtranPerformanceResilienceEvidence tooSlow = SigtranPerformanceResilienceEvidenceFactory.CreateRecoveredFailover(
         "perf-peer-run",
@@ -2531,7 +2534,7 @@ static void SigtranPerformanceResilienceEvidenceGatesFailoverRecovery()
         start + TimeSpan.FromSeconds(10),
         TimeSpan.FromSeconds(5));
     Assert(!tooSlow.RecoveryWithinBudget, tooSlow.Describe());
-    Assert(!tooSlow.SupportsCommercialEvidence, tooSlow.Describe());
+    Assert(!tooSlow.SupportsReleaseEvidence, tooSlow.Describe());
 
     SigtranPerformanceResilienceEvidence lostMessages = new(
         "perf-peer-run",
@@ -2540,7 +2543,7 @@ static void SigtranPerformanceResilienceEvidenceGatesFailoverRecovery()
         lostMessages: 1);
     Assert(lostMessages.RecoveryWithinBudget, lostMessages.Describe());
     Assert(!lostMessages.HasNoMessageLoss, lostMessages.Describe());
-    Assert(!lostMessages.SupportsCommercialEvidence, lostMessages.Describe());
+    Assert(!lostMessages.SupportsReleaseEvidence, lostMessages.Describe());
 }
 
 static void SigtranPerformanceEvidenceReportRendersPublishableBenchmarkSummary()
@@ -2584,19 +2587,19 @@ static SigtranPerformanceEvidenceReport CreatePassingPerformanceEvidenceReport()
 
 static void SigtranPerformanceEvidenceGateSeparatesReportsFromProductionClaims()
 {
-    SigtranPerformanceEvidenceGateResult missing = SigtranPerformanceEvidenceGate.Evaluate(null, commercialReady: false);
+    SigtranPerformanceEvidenceGateResult missing = SigtranPerformanceEvidenceGate.Evaluate(null, productionReady: false);
     Assert(!missing.CanClaimProductionPerformance, missing.Describe());
     Assert(missing.Reasons.Contains("publishable-performance-report-required"), "missing performance report should block gate");
-    Assert(missing.Reasons.Contains("commercial-readiness-required"), "missing commercial readiness should block gate");
+    Assert(missing.Reasons.Contains("production-readiness-required"), "missing production readiness should block gate");
 
     SigtranPerformanceEvidenceReport report = CreatePassingPerformanceEvidenceReport();
-    SigtranPerformanceEvidenceGateResult reportOnly = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady: false);
+    SigtranPerformanceEvidenceGateResult reportOnly = SigtranPerformanceEvidenceGate.Evaluate(report, productionReady: false);
     Assert(reportOnly.FoundationReady, reportOnly.Describe());
     Assert(reportOnly.ReportPublishable, reportOnly.Describe());
     Assert(!reportOnly.CanClaimProductionPerformance, reportOnly.Describe());
-    Assert(reportOnly.Reasons.Contains("commercial-readiness-required"), "commercial readiness should remain required");
+    Assert(reportOnly.Reasons.Contains("production-readiness-required"), "production readiness should remain required");
 
-    SigtranPerformanceEvidenceGateResult ready = SigtranPerformanceEvidenceGate.Evaluate(report, commercialReady: true);
+    SigtranPerformanceEvidenceGateResult ready = SigtranPerformanceEvidenceGate.Evaluate(report, productionReady: true);
     Assert(ready.CanClaimProductionPerformance, ready.Describe());
     AssertEqual(0, ready.Reasons.Count, "performance evidence gate reason count");
 }
@@ -2608,7 +2611,7 @@ static void SigtranPerformanceEvidenceRunnerExposesManualPeerBenchmarkHandoff()
     Assert(runner.RequiresSelfHostedRunner, runner.Describe());
     Assert(runner.RequiresPeerTraffic, runner.Describe());
     Assert(runner.CoversRequiredCommands, runner.Describe());
-    Assert(runner.IsCommercialRunnerPlan, runner.Describe());
+    Assert(runner.IsProductionRunnerPlan, runner.Describe());
     AssertEqual(8, runner.Commands.Count, "performance runner command count");
     Assert(runner.Commands.Any(command => command.Kind == SigtranPerformanceEvidenceRunnerCommandKind.TriggerFailover), "runner should trigger failover");
 
@@ -2634,7 +2637,7 @@ static void SigtranPerformanceEvidenceStatusSummarizesReadinessAndBlockers()
 
     SigtranPerformanceEvidenceStatusReport ready = SigtranPerformanceEvidenceStatus.GetStatus(
         CreatePassingPerformanceEvidenceReport(),
-        commercialReady: true);
+        productionReady: true);
     Assert(ready.FoundationReady, ready.Describe());
     Assert(ready.ReportPublishable, ready.Describe());
     Assert(ready.ProductionPerformanceReady, ready.Describe());
@@ -2697,7 +2700,7 @@ static void SigtranBreakingChangeReviewRequiresBaselineMigrationAndApproval()
     Assert(policy.RequiresMigrationGuide, "breaking-change review should require migration guide");
     Assert(policy.RequiresMaintainerApproval, "breaking-change review should require maintainer approval");
     Assert(policy.RequiresMajorVersionAfterStable, "stable breaking changes should require major version");
-    Assert(policy.IsCommercialApiGovernanceReady, "breaking-change review should be commercial governance ready");
+    Assert(policy.IsProductionApiGovernanceReady, "breaking-change review should be production governance ready");
 }
 
 static void SigtranPublicApiBaselineCoversKnownSurfaces()
@@ -2711,11 +2714,11 @@ static void SigtranPublicApiBaselineCoversKnownSurfaces()
 
 static void SigtranApiLifecycleReadinessSeparatesFoundationFromStableClaims()
 {
-    SigtranApiLifecycleReadinessReport report = SigtranApiLifecycleReadiness.GetReport();
+    SigtranApiLifecycleReadinessSnapshot report = SigtranApiLifecycleReadiness.GetReport();
 
     Assert(report.FoundationReady, "API lifecycle foundation should be ready");
-    Assert(!report.CommercialReady, "API lifecycle readiness should still depend on commercial gates");
-    Assert(!report.StableApiLifecycleReady, "stable API lifecycle should not be claimed before commercial readiness");
+    Assert(!report.ProductionReady, "API lifecycle readiness should still depend on production gates");
+    Assert(!report.StableApiLifecycleReady, "stable API lifecycle should not be claimed before production readiness");
 }
 
 static void SigtranApiLifecycleCiProfileRequiresPublicApiDiffReview()
@@ -2806,13 +2809,13 @@ static void SigtranRoutingConfigurationRequiresRouteValidationAndAmbiguityReject
     Assert(configuration.IsEnterpriseReady, "routing configuration should be enterprise-ready");
 }
 
-static void SigtranConfigurationReadinessSeparatesFoundationFromCommercialClaims()
+static void SigtranConfigurationReadinessSeparatesFoundationFromProductionClaims()
 {
-    SigtranConfigurationReadinessReport report = SigtranConfigurationReadiness.GetReport();
+    SigtranConfigurationReadinessSnapshot report = SigtranConfigurationReadiness.GetReport();
 
     Assert(report.FoundationReady, "configuration foundation should be ready");
-    Assert(!report.CommercialReady, "configuration readiness should still depend on commercial gates");
-    Assert(!report.ProductionConfigurationReady, "production configuration should not be claimed before commercial readiness");
+    Assert(!report.ProductionReady, "configuration readiness should still depend on production gates");
+    Assert(!report.ProductionConfigurationReady, "production configuration should not be claimed before production readiness");
 }
 
 static void SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets()
@@ -2825,13 +2828,13 @@ static void SigtranConfigurationCiProfileRejectsProductionPlaintextSecrets()
     Assert(profile.RejectsProductionPlainTextSecrets, "configuration CI should reject production plaintext secrets");
 }
 
-static void SigtranConfigurationCommercialGateWaitsForCommercialReadiness()
+static void SigtranConfigurationProductionGateWaitsForProductionReadiness()
 {
-    SigtranConfigurationCommercialGateResult result = SigtranConfigurationCommercialGate.Evaluate();
+    SigtranConfigurationProductionGateResult result = SigtranConfigurationProductionGate.Evaluate();
 
     Assert(result.ConfigurationFoundationReady, result.Describe());
     Assert(result.ProductionSecretsSafe, result.Describe());
-    Assert(!result.CommercialReady, result.Describe());
+    Assert(!result.ProductionReady, result.Describe());
     Assert(!result.CanClaimProductionConfiguration, result.Describe());
 }
 
@@ -2911,7 +2914,7 @@ static void SigtranNativeSctpLabEvidenceRegistryRequiresAllScenarios()
 
 static void SigtranNativeSctpLabReadinessSeparatesFoundationFromEvidence()
 {
-    SigtranNativeSctpLabReadinessReport report = SigtranNativeSctpLabReadiness.GetReport();
+    SigtranNativeSctpLabReadinessSnapshot report = SigtranNativeSctpLabReadiness.GetReport();
 
     Assert(report.FoundationReady, "native SCTP lab foundation should be ready");
     Assert(!report.HasCompletePassingEvidence, "native SCTP lab should wait for real evidence");
@@ -2928,9 +2931,9 @@ static void SigtranNativeSctpLabCiProfileIsOptInAndLinuxOnly()
     Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_NATIVE_SCTP_LAB"] = "true" }), "native SCTP lab CI should enable from variable");
 }
 
-static void SigtranNativeSctpLabCommercialGateWaitsForCompleteEvidence()
+static void SigtranNativeSctpLabProductionGateWaitsForCompleteEvidence()
 {
-    SigtranNativeSctpLabCommercialGateResult result = SigtranNativeSctpLabCommercialGate.Evaluate();
+    SigtranNativeSctpLabProductionGateResult result = SigtranNativeSctpLabProductionGate.Evaluate();
 
     Assert(result.LabFoundationReady, result.Describe());
     Assert(!result.HasCompletePassingEvidence, result.Describe());
@@ -2962,7 +2965,7 @@ static void SigtranExternalPeerInteropEnvironmentRequiresLinuxSctpPeerAndPacketC
     Assert(environment.RequiresPeerLog, "external peer interop should require peer log capture");
     AssertEqual("artifacts/external-peer", environment.ArtifactRoot, "external peer artifact root");
     Assert(environment.RequiredTools.Contains("tcpdump"), "external peer environment should require packet capture tooling");
-    Assert(environment.CanProduceCommercialArtifacts, "external peer environment should produce commercial artifacts");
+    Assert(environment.CanProduceProductionArtifacts, "external peer environment should produce production artifacts");
 }
 
 static void SigtranExternalPeerInteropConfigurationExposesAspToSgDefaults()
@@ -3008,7 +3011,7 @@ static void SigtranExternalPeerRunPlanIsExecutableWithDefaultContracts()
 
     AssertEqual("external-peer-m3ua-asp-to-sg", plan.Template.Scenario.Id, "external peer scenario id");
     AssertEqual("external-sigtran-sg", plan.Template.PeerProfile.Id, "external peer profile id");
-    Assert(plan.CommandSet.IsCommercialLabCommandSet, "external peer run plan should include commercial lab commands");
+    Assert(plan.CommandSet.IsProductionLabCommandSet, "external peer run plan should include production lab commands");
     Assert(plan.IsExecutable, "external peer run plan should be executable");
 }
 
@@ -3023,7 +3026,7 @@ static void SigtranExternalPeerCommandsRequirePeerAndPacketCapture()
     Assert(commands.RequiredEnvironmentVariables.Contains("SIGTRAN_EXTERNAL_PEER_PACKAGE"), "external peer commands should require selected peer package env var");
     Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_EXTERNAL_PEER_ID", StringComparison.Ordinal)), "external peer commands should select peer id through env");
     Assert(commands.Commands.Any(command => command.Contains("SIGTRAN_EXTERNAL_PEER_ARTIFACT_ROOT", StringComparison.Ordinal)), "external peer commands should write under artifact root");
-    Assert(commands.IsCommercialLabCommandSet, "external peer command set should be commercial lab ready");
+    Assert(commands.IsProductionLabCommandSet, "external peer command set should be production lab ready");
 }
 
 static void SigtranExternalPeerRunReportIdentifiesPassingEvidence()
@@ -3036,12 +3039,12 @@ static void SigtranExternalPeerRunReportIdentifiesPassingEvidence()
         DateTimeOffset.UnixEpoch.AddMinutes(3));
 
     Assert(report.HasPassingEvidence, "external peer run report should identify passing evidence");
-    Assert(report.HasCommercialReviewReadyEvidence, "external peer run report should identify review-ready evidence");
+    Assert(report.HasProductionReviewReadyEvidence, "external peer run report should identify review-ready evidence");
 
     SigtranExternalPeerInteropEvidenceRegistry registry = new();
     registry.Add(report);
     Assert(registry.HasPassingAspToSgEvidence, "external peer registry should identify passing evidence");
-    Assert(registry.HasCommercialReviewReadyEvidence, "external peer registry should identify review-ready evidence");
+    Assert(registry.HasProductionReviewReadyEvidence, "external peer registry should identify review-ready evidence");
 }
 
 static void SigtranExternalPeerEvidenceRegistryStartsEmpty()
@@ -3054,20 +3057,20 @@ static void SigtranExternalPeerEvidenceRegistryStartsEmpty()
 
 static void SigtranExternalPeerReadinessSeparatesFoundationFromEvidence()
 {
-    SigtranExternalPeerInteropReadinessReport report = SigtranExternalPeerInteropReadiness.GetReport();
+    SigtranExternalPeerInteropReadinessSnapshot report = SigtranExternalPeerInteropReadiness.GetReport();
 
     Assert(report.FoundationReady, "external peer interop foundation should be ready");
     Assert(!report.HasPassingEvidence, "external peer interop should wait for real evidence");
     Assert(!report.Verified, "external peer interop should not be verified without evidence");
 }
 
-static void SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvidence()
+static void SigtranExternalPeerProductionReadinessAggregatesSelectionLabAndEvidence()
 {
-    SigtranExternalPeerCommercialReadinessReport current = SigtranExternalPeerCommercialReadiness.CreateCurrent();
+    SigtranExternalPeerProductionReadinessSnapshot current = SigtranExternalPeerProductionReadiness.CreateCurrent();
     Assert(!current.FoundationReady, current.Describe());
-    Assert(!current.CommercialInteropReady, current.Describe());
-    Assert(current.Blockers.Contains("maintained-peer-selection-required"), "current commercial readiness should require maintained peer selection");
-    Assert(current.Blockers.Contains("external-peer-review-ready-evidence-required"), "current commercial readiness should require review-ready evidence");
+    Assert(!current.ProductionInteropReady, current.Describe());
+    Assert(current.Blockers.Contains("reference-peer-selection-required"), "current production readiness should require reference peer selection");
+    Assert(current.Blockers.Contains("external-peer-review-ready-evidence-required"), "current production readiness should require review-ready evidence");
 
     SigtranExternalPeerInteropEvidenceRegistry registry = new();
     registry.Add(new SigtranExternalPeerInteropRunReport(
@@ -3077,19 +3080,19 @@ static void SigtranExternalPeerCommercialReadinessAggregatesSelectionLabAndEvide
         DateTimeOffset.UnixEpoch,
         DateTimeOffset.UnixEpoch.AddMinutes(1)));
 
-    IReadOnlyList<string> criteria = SigtranMaintainedPeerSelectionPolicy.CreateDefault()
+    IReadOnlyList<string> criteria = SigtranReferencePeerSelectionPolicy.CreateDefault()
         .GetCriteria()
         .Select(static criterion => criterion.Id)
         .ToArray();
 
-    SigtranExternalPeerCommercialReadinessReport ready = SigtranExternalPeerCommercialReadiness.Create(
+    SigtranExternalPeerProductionReadinessSnapshot ready = SigtranExternalPeerProductionReadiness.Create(
         SigtranInteropPeerProfiles.CreateExternalPeerSignallingGateway(),
         criteria,
         registry);
 
     Assert(ready.FoundationReady, ready.Describe());
-    Assert(ready.CommercialInteropReady, ready.Describe());
-    AssertEqual(0, ready.Blockers.Count, "ready external peer commercial blocker count");
+    Assert(ready.ProductionInteropReady, ready.Describe());
+    AssertEqual(0, ready.Blockers.Count, "ready external peer production blocker count");
 }
 
 static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
@@ -3103,33 +3106,36 @@ static void SigtranExternalPeerStatusSummarizesExecutionFoundation()
     Assert(!SigtranExternalPeerInteropStatus.Verified, SigtranExternalPeerInteropStatus.Describe());
 }
 
-static void SigtranCommercialRoadmapRealignmentStatusSummarizesPackageNeutralCompletion()
+static void SigtranApiNamingAlignmentStatusSummarizesPackageNeutralCompletion()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialRoadmapRealignmentStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> publicNames = SigtranCommercialRoadmapRealignmentStatus.GetPublicContractNames();
-    IReadOnlyList<string> guardCategories = SigtranCommercialRoadmapRealignmentStatus.GetPackageSpecificNameGuardCategories();
-    SigtranCommercialRoadmapRealignmentReport report = SigtranCommercialRoadmapRealignmentStatus.GetReport();
+    IReadOnlyList<string> capabilities = SigtranApiNamingAlignmentStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> publicNames = SigtranApiNamingAlignmentStatus.GetPublicContractNames();
+    IReadOnlyList<string> guardCategories = SigtranApiNamingAlignmentStatus.GetPackageSpecificNameGuardCategories();
+    SigtranApiNamingAlignmentSnapshot report = SigtranApiNamingAlignmentStatus.GetReport();
 
-    AssertEqual(10, SigtranCommercialRoadmapRealignmentStatus.CompletedUnitCount, "commercial roadmap realignment completed unit count");
-    AssertEqual(10, capabilities.Count, "commercial roadmap realignment capability count");
-    AssertEqual(3, guardCategories.Count, "commercial roadmap realignment guard category count");
-    Assert(capabilities.Contains("public-label-migration"), "commercial roadmap realignment should include public label migration");
+    AssertEqual(10, SigtranApiNamingAlignmentStatus.CompletedUnitCount, "API naming alignment completed unit count");
+    AssertEqual(10, capabilities.Count, "API naming alignment capability count");
+    AssertEqual(3, guardCategories.Count, "API naming alignment guard category count");
+    Assert(capabilities.Contains("public-label-migration"), "API naming alignment should include public label migration");
     Assert(publicNames.All(name => name.Contains("external", StringComparison.OrdinalIgnoreCase)
-        || name.Contains("commercial", StringComparison.OrdinalIgnoreCase)
-        || name.Contains("maintained", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("production", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("reference", StringComparison.OrdinalIgnoreCase)
         || name.Contains("evidence", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("release", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("api", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("naming", StringComparison.OrdinalIgnoreCase)
         || name.Contains("package-neutral", StringComparison.OrdinalIgnoreCase)
         || name.Contains("public-label", StringComparison.OrdinalIgnoreCase)
         || string.Equals(name, "documentation", StringComparison.OrdinalIgnoreCase)), "public realignment contract names should use package-neutral domains");
     Assert(report.PackageNeutralNamingReady, report.Describe());
-    Assert(report.MaintainedPeerPolicyReady, report.Describe());
+    Assert(report.ReferencePeerPolicyReady, report.Describe());
     Assert(report.ExternalPeerExecutionFoundationReady, report.Describe());
-    Assert(report.CommercialGateAligned, report.Describe());
+    Assert(report.ProductionGateAligned, report.Describe());
     Assert(report.FoundationReady, report.Describe());
-    Assert(!report.CommercialReleaseReady, report.Describe());
-    Assert(report.Blockers.Contains("maintained-peer-selection-required"), "current realignment report should require maintained peer selection evidence");
+    Assert(!report.ReleaseReady, report.Describe());
+    Assert(report.Blockers.Contains("reference-peer-selection-required"), "current realignment report should require reference peer selection evidence");
     Assert(report.Blockers.Contains("external-peer-review-ready-evidence-required"), "current realignment report should require review-ready external peer evidence");
-    Assert(SigtranCommercialRoadmapRealignmentStatus.Describe().Contains(SigtranCommercialRoadmapRealignmentStatus.StatusLabel, StringComparison.Ordinal), "realignment description should include the status label");
+    Assert(SigtranApiNamingAlignmentStatus.Describe().Contains(SigtranApiNamingAlignmentStatus.StatusLabel, StringComparison.Ordinal), "realignment description should include the status label");
 }
 
 static SigtranExternalPeerInteropArtifactManifest CreateCompleteExternalPeerManifest()
@@ -3256,14 +3262,14 @@ static void SigtranProtocolEvidenceMismatchClassifierRecommendsCorrectionActions
 
 static void SigtranProtocolEvidenceReadinessSeparatesSdkEvidenceFromProductionClaims()
 {
-    SigtranProtocolEvidenceReadinessReport current = SigtranProtocolEvidenceReadiness.GetReport();
+    SigtranProtocolEvidenceReadinessSnapshot current = SigtranProtocolEvidenceReadiness.GetReport();
 
     Assert(current.FoundationReady, current.Describe());
     Assert(current.SdkEvidenceBacked, current.Describe());
     Assert(!current.ProductionEvidenceReady, current.Describe());
     Assert(current.Blockers.Contains("external-protocol-interoperability-evidence-required"), "current readiness should require external protocol evidence");
 
-    SigtranProtocolEvidenceReadinessReport retainedExternal = SigtranProtocolEvidenceReadiness.GetReport(hasExternalInteroperabilityEvidence: true);
+    SigtranProtocolEvidenceReadinessSnapshot retainedExternal = SigtranProtocolEvidenceReadiness.GetReport(hasExternalInteroperabilityEvidence: true);
     Assert(retainedExternal.FoundationReady, retainedExternal.Describe());
     Assert(retainedExternal.SdkEvidenceBacked, retainedExternal.Describe());
     Assert(retainedExternal.ProductionEvidenceReady, retainedExternal.Describe());
@@ -3325,7 +3331,7 @@ static void SigtranProtocolInteropArtifactManifestRequiresReferenceSdkAndCompari
     Assert(manifest.IsComplete, "protocol interop manifest should be complete");
 }
 
-static void SigtranProtocolInteropComparisonRulesAreCommercialValidationReady()
+static void SigtranProtocolInteropComparisonRulesAreProductionValidationReady()
 {
     SigtranProtocolInteropComparisonRuleSet rules = SigtranProtocolInteropComparisonRules.CreateDefault();
 
@@ -3333,7 +3339,7 @@ static void SigtranProtocolInteropComparisonRulesAreCommercialValidationReady()
     Assert(rules.RequiresDecodedFieldComparison, "protocol interop should require decoded field comparison");
     Assert(rules.RequiresTraceOrderValidation, "protocol interop should require trace order validation");
     Assert(rules.AllowsOperatorSpecificExtensions, "protocol interop should allow operator-specific extensions");
-    Assert(rules.IsCommercialValidationReady, "protocol interop rules should be commercial validation ready");
+    Assert(rules.IsProductionValidationReady, "protocol interop rules should be production validation ready");
 }
 
 static void SigtranProtocolInteropRunPlanIsExecutableWithExternalVectors()
@@ -3377,7 +3383,7 @@ static void SigtranProtocolInteropEvidenceRegistryStartsEmpty()
 
 static void SigtranProtocolInteropReadinessSeparatesFoundationFromEvidence()
 {
-    SigtranProtocolInteropReadinessReport report = SigtranProtocolInteropReadiness.GetReport();
+    SigtranProtocolInteropReadinessSnapshot report = SigtranProtocolInteropReadiness.GetReport();
 
     Assert(report.FoundationReady, "protocol interop foundation should be ready");
     Assert(!report.HasCompletePassingEvidence, "protocol interop evidence should not be complete");
@@ -3404,113 +3410,113 @@ static SigtranProtocolInteropArtifactManifest CreateCompleteProtocolInteropManif
     return manifest;
 }
 
-static void SigtranCommercialEvidenceRequirementsCoverProductionClaimAreas()
+static void SigtranReleaseEvidenceRequirementsCoverProductionClaimAreas()
 {
-    IReadOnlyList<SigtranCommercialEvidenceRequirement> requirements = SigtranCommercialEvidenceRequirements.GetRequirements();
+    IReadOnlyList<SigtranReleaseEvidenceRequirement> requirements = SigtranReleaseEvidenceRequirements.GetRequirements();
 
-    AssertEqual(5, requirements.Count, "commercial evidence requirement count");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.NativeSctp), "native SCTP evidence requirement should exist");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ExternalPeerInterop), "external peer evidence requirement should exist");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ProtocolInterop), "protocol evidence requirement should exist");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.ReleaseProvenance), "release provenance evidence requirement should exist");
-    Assert(requirements.Any(requirement => requirement.Area == SigtranCommercialEvidenceArea.PackageArtifacts), "package artifact evidence requirement should exist");
-    Assert(requirements.All(requirement => requirement.RequiredArtifactKinds.Count > 0), "all commercial evidence requirements should have artifacts");
+    AssertEqual(5, requirements.Count, "production evidence requirement count");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranReleaseEvidenceArea.NativeSctp), "native SCTP evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranReleaseEvidenceArea.ExternalPeerInterop), "external peer evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranReleaseEvidenceArea.ProtocolInterop), "protocol evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranReleaseEvidenceArea.ReleaseProvenance), "release provenance evidence requirement should exist");
+    Assert(requirements.Any(requirement => requirement.Area == SigtranReleaseEvidenceArea.PackageArtifacts), "package artifact evidence requirement should exist");
+    Assert(requirements.All(requirement => requirement.RequiredArtifactKinds.Count > 0), "all production evidence requirements should have artifacts");
 }
 
-static void SigtranCommercialEvidenceManifestSatisfiesRequirementsWithDigests()
+static void SigtranReleaseEvidenceManifestSatisfiesRequirementsWithDigests()
 {
-    SigtranCommercialEvidenceManifest manifest = CreateCompleteCommercialEvidenceManifest();
-    IReadOnlyList<SigtranCommercialEvidenceRequirement> requirements = SigtranCommercialEvidenceRequirements.GetRequirements();
+    SigtranReleaseEvidenceManifest manifest = CreateCompleteReleaseEvidenceManifest();
+    IReadOnlyList<SigtranReleaseEvidenceRequirement> requirements = SigtranReleaseEvidenceRequirements.GetRequirements();
 
-    Assert(manifest.SatisfiesAll(requirements), "complete commercial evidence manifest should satisfy all requirements");
-    Assert(manifest.AllArtifactsHaveDigests(), "complete commercial evidence manifest should have digests");
+    Assert(manifest.SatisfiesAll(requirements), "complete production evidence manifest should satisfy all requirements");
+    Assert(manifest.AllArtifactsHaveDigests(), "complete production evidence manifest should have digests");
 }
 
-static void SigtranCommercialEvidenceBundleKeepsEmptyDossierIncomplete()
+static void SigtranReleaseEvidenceBundleKeepsEmptyDossierIncomplete()
 {
-    SigtranCommercialEvidenceBundle bundle = SigtranCommercialEvidenceBundles.CreateEmpty("1.0.0");
+    SigtranReleaseEvidenceBundle bundle = SigtranReleaseEvidenceBundles.CreateEmpty("1.0.0");
 
-    AssertEqual("1.0.0", bundle.ReleaseVersion, "commercial evidence bundle version");
-    Assert(!bundle.HasCompleteArtifacts, "empty commercial evidence bundle should not have complete artifacts");
-    Assert(!bundle.HasDigestCoverage, "empty commercial evidence bundle should not have digest coverage");
+    AssertEqual("1.0.0", bundle.ReleaseVersion, "production evidence bundle version");
+    Assert(!bundle.HasCompleteArtifacts, "empty production evidence bundle should not have complete artifacts");
+    Assert(!bundle.HasDigestCoverage, "empty production evidence bundle should not have digest coverage");
     Assert(!bundle.IsComplete, bundle.Describe());
 }
 
-static void SigtranCommercialEvidenceBundleCompletesWithRetainedArtifacts()
+static void SigtranReleaseEvidenceBundleCompletesWithRetainedArtifacts()
 {
-    SigtranCommercialEvidenceBundle bundle = new(
+    SigtranReleaseEvidenceBundle bundle = new(
         "1.0.0",
-        SigtranCommercialEvidenceRequirements.GetRequirements(),
-        CreateCompleteCommercialEvidenceManifest());
+        SigtranReleaseEvidenceRequirements.GetRequirements(),
+        CreateCompleteReleaseEvidenceManifest());
 
-    Assert(bundle.HasCompleteArtifacts, "commercial evidence bundle should have complete artifacts");
-    Assert(bundle.HasDigestCoverage, "commercial evidence bundle should have digest coverage");
+    Assert(bundle.HasCompleteArtifacts, "production evidence bundle should have complete artifacts");
+    Assert(bundle.HasDigestCoverage, "production evidence bundle should have digest coverage");
     Assert(bundle.IsComplete, bundle.Describe());
 }
 
-static void SigtranCommercialEvidenceGateReportsMissingCurrentEvidence()
+static void SigtranReleaseEvidenceGateReportsMissingCurrentEvidence()
 {
-    SigtranCommercialEvidenceBundle bundle = SigtranCommercialEvidenceBundles.CreateEmpty("1.0.0");
-    SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
+    SigtranReleaseEvidenceBundle bundle = SigtranReleaseEvidenceBundles.CreateEmpty("1.0.0");
+    SigtranReleaseEvidenceGateResult result = SigtranReleaseEvidenceGate.Evaluate(
         bundle,
         nativeSctpVerified: false,
         externalPeerInteropVerified: false,
         protocolInteropVerified: false,
         releaseGovernanceReady: false);
 
-    Assert(!result.CanClaimCommercialEvidence, "empty commercial evidence should not support claims");
-    Assert(result.Reasons.Contains("commercial-evidence-artifacts-incomplete"), "commercial evidence gate should report incomplete artifacts");
-    Assert(result.Reasons.Contains("native-sctp-evidence-required"), "commercial evidence gate should report native SCTP evidence");
-    Assert(result.Reasons.Contains("external-peer-evidence-required"), "commercial evidence gate should report external peer evidence");
-    Assert(result.Reasons.Contains("protocol-vector-evidence-required"), "commercial evidence gate should report protocol vector evidence");
+    Assert(!result.CanClaimReleaseEvidence, "empty production evidence should not support claims");
+    Assert(result.Reasons.Contains("release-evidence-artifacts-incomplete"), "production evidence gate should report incomplete artifacts");
+    Assert(result.Reasons.Contains("native-sctp-evidence-required"), "production evidence gate should report native SCTP evidence");
+    Assert(result.Reasons.Contains("external-peer-evidence-required"), "production evidence gate should report external peer evidence");
+    Assert(result.Reasons.Contains("protocol-vector-evidence-required"), "production evidence gate should report protocol vector evidence");
 }
 
-static void SigtranCommercialEvidenceGateAllowsCompleteVerifiedDossier()
+static void SigtranReleaseEvidenceGateAllowsCompleteVerifiedDossier()
 {
-    SigtranCommercialEvidenceBundle bundle = new(
+    SigtranReleaseEvidenceBundle bundle = new(
         "1.0.0",
-        SigtranCommercialEvidenceRequirements.GetRequirements(),
-        CreateCompleteCommercialEvidenceManifest());
-    SigtranCommercialEvidenceGateResult result = SigtranCommercialEvidenceGate.Evaluate(
+        SigtranReleaseEvidenceRequirements.GetRequirements(),
+        CreateCompleteReleaseEvidenceManifest());
+    SigtranReleaseEvidenceGateResult result = SigtranReleaseEvidenceGate.Evaluate(
         bundle,
         nativeSctpVerified: true,
         externalPeerInteropVerified: true,
         protocolInteropVerified: true,
         releaseGovernanceReady: true);
 
-    Assert(result.CanClaimCommercialEvidence, result.Describe());
-    AssertEqual(0, result.Reasons.Count, "complete commercial evidence gate reason count");
+    Assert(result.CanClaimReleaseEvidence, result.Describe());
+    AssertEqual(0, result.Reasons.Count, "complete production evidence gate reason count");
 }
 
-static void SigtranCommercialEvidenceReadinessSeparatesFoundationFromClaims()
+static void SigtranReleaseEvidenceReadinessSeparatesFoundationFromClaims()
 {
-    SigtranCommercialEvidenceReadinessReport report = SigtranCommercialEvidenceReadiness.GetReport();
+    SigtranReleaseEvidenceReadinessSnapshot report = SigtranReleaseEvidenceReadiness.GetReport();
 
-    Assert(report.FoundationReady, "commercial evidence foundation should be ready");
-    Assert(!report.CurrentEvidenceReady, "current commercial evidence should not be ready");
-    Assert(!report.CommercialEvidenceReady, "commercial evidence should not support current production claims");
+    Assert(report.FoundationReady, "production evidence foundation should be ready");
+    Assert(!report.CurrentEvidenceReady, "current production evidence should not be ready");
+    Assert(!report.ReleaseEvidenceReady, "production evidence should not support current production claims");
 }
 
-static void SigtranCommercialEvidenceCiProfileRequiresRetainedBundle()
+static void SigtranReleaseEvidenceCiProfileRequiresRetainedBundle()
 {
-    SigtranCommercialEvidenceCiProfile profile = SigtranCommercialEvidenceCi.CreateDefault();
+    SigtranReleaseEvidenceCiProfile profile = SigtranReleaseEvidenceCi.CreateDefault();
 
-    AssertEqual("SIGTRAN_COMMERCIAL_EVIDENCE", profile.EnableVariable, "commercial evidence CI enable variable");
-    AssertEqual("SIGTRAN_COMMERCIAL_EVIDENCE_ROOT", profile.BundleRootVariable, "commercial evidence CI root variable");
-    Assert(profile.RequiresEvidenceBundle, "commercial evidence CI should require retained bundle");
-    Assert(profile.Commands.Any(command => command.Contains("sigtran-evidence-verify", StringComparison.Ordinal)), "commercial evidence CI should include evidence verification command");
-    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_COMMERCIAL_EVIDENCE"] = "true" }), "commercial evidence CI should be enabled by true");
+    AssertEqual("SIGTRAN_RELEASE_EVIDENCE", profile.EnableVariable, "production evidence CI enable variable");
+    AssertEqual("SIGTRAN_RELEASE_EVIDENCE_ROOT", profile.BundleRootVariable, "production evidence CI root variable");
+    Assert(profile.RequiresEvidenceBundle, "production evidence CI should require retained bundle");
+    Assert(profile.Commands.Any(command => command.Contains("sigtran-evidence-verify", StringComparison.Ordinal)), "production evidence CI should include evidence verification command");
+    Assert(profile.IsEnabled(new Dictionary<string, string> { ["SIGTRAN_RELEASE_EVIDENCE"] = "true" }), "production evidence CI should be enabled by true");
 }
 
-static void SigtranCommercialEvidenceStatusSummarizesDossierFoundation()
+static void SigtranReleaseEvidenceStatusSummarizesDossierFoundation()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceStatus.GetCompletedCapabilities();
 
-    AssertEqual(10, SigtranCommercialEvidenceStatus.CompletedUnitCount, "commercial evidence completed unit count");
-    AssertEqual(10, capabilities.Count, "commercial evidence capability count");
-    Assert(capabilities.Contains("commercial-evidence-gate"), "commercial evidence status should include gate");
-    Assert(SigtranCommercialEvidenceStatus.FoundationReady, SigtranCommercialEvidenceStatus.Describe());
-    Assert(!SigtranCommercialEvidenceStatus.CommercialEvidenceReady, SigtranCommercialEvidenceStatus.Describe());
+    AssertEqual(10, SigtranReleaseEvidenceStatus.CompletedUnitCount, "production evidence completed unit count");
+    AssertEqual(10, capabilities.Count, "production evidence capability count");
+    Assert(capabilities.Contains("release-evidence-gate"), "production evidence status should include gate");
+    Assert(SigtranReleaseEvidenceStatus.FoundationReady, SigtranReleaseEvidenceStatus.Describe());
+    Assert(!SigtranReleaseEvidenceStatus.ReleaseEvidenceReady, SigtranReleaseEvidenceStatus.Describe());
 }
 
 static void SigtranSupplyChainAutomationPlanWiresSbomSigningProvenanceAndEvidence()
@@ -3520,7 +3526,7 @@ static void SigtranSupplyChainAutomationPlanWiresSbomSigningProvenanceAndEvidenc
     AssertEqual("supply-chain-default", plan.Id, "supply-chain plan id");
     AssertEqual("artifacts/supply-chain", plan.ArtifactRoot, "supply-chain artifact root");
     Assert(plan.IsExecutable, "supply-chain automation plan should be executable");
-    Assert(plan.SbomPlan.IsRequiredForCommercialRelease, "supply-chain plan should require SBOM");
+    Assert(plan.SbomPlan.IsRequiredForRelease, "supply-chain plan should require SBOM");
     Assert(plan.SigningPlan.HasSigningMaterialReferences, "supply-chain plan should have signing references");
 }
 
@@ -3550,12 +3556,12 @@ static void SigtranSupplyChainGateBlocksIncompletePromotionEvidence()
         SigtranSupplyChainAutomation.CreateDefaultPlan(),
         new SigtranSupplyChainArtifactManifest(),
         SigtranReleaseProvenanceFactory.Create("abcdef0", "artifacts/release-manifest.json"),
-        commercialEvidenceReady: false);
+        releaseEvidenceReady: false);
 
     Assert(!result.CanPromote, "empty supply-chain evidence should not promote");
     Assert(result.Reasons.Contains("supply-chain-artifacts-incomplete"), "supply-chain gate should report incomplete artifacts");
     Assert(result.Reasons.Contains("supply-chain-digests-incomplete"), "supply-chain gate should report incomplete digests");
-    Assert(result.Reasons.Contains("commercial-evidence-required"), "supply-chain gate should require commercial evidence");
+    Assert(result.Reasons.Contains("release-evidence-required"), "supply-chain gate should require production evidence");
 }
 
 static void SigtranSupplyChainGateAllowsCompleteVerifiedPromotion()
@@ -3564,7 +3570,7 @@ static void SigtranSupplyChainGateAllowsCompleteVerifiedPromotion()
         SigtranSupplyChainAutomation.CreateDefaultPlan(),
         CreateCompleteSupplyChainManifest(),
         SigtranReleaseProvenanceFactory.Create("abcdef0", "artifacts/release-manifest.json"),
-        commercialEvidenceReady: true);
+        releaseEvidenceReady: true);
 
     Assert(result.CanPromote, result.Describe());
     AssertEqual(0, result.Reasons.Count, "complete supply-chain gate reasons");
@@ -3572,7 +3578,7 @@ static void SigtranSupplyChainGateAllowsCompleteVerifiedPromotion()
 
 static void SigtranSupplyChainReadinessSeparatesFoundationFromPromotion()
 {
-    SigtranSupplyChainReadinessReport report = SigtranSupplyChainReadiness.GetReport();
+    SigtranSupplyChainReadinessSnapshot report = SigtranSupplyChainReadiness.GetReport();
 
     Assert(report.FoundationReady, "supply-chain foundation should be ready");
     Assert(!report.HasCurrentPromotionEvidence, "current supply-chain promotion evidence should be absent");
@@ -3625,7 +3631,7 @@ static void SigtranSupplyChainArtifactDigestsAreMandatoryForPromotion()
 
 static void SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages()
 {
-    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateCommercialReleasePlan();
+    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateReleasePlan();
 
     AssertEqual("release", plan.WorkflowName, "release workflow name");
     AssertEqual("10.0.x", plan.DotNetVersion, "release workflow .NET version");
@@ -3637,19 +3643,19 @@ static void SigtranReleaseWorkflowPlanIncludesReleaseTriggersAndStages()
 
 static void SigtranReleaseWorkflowRequiresSupplyChainEvidenceAndPublishSecrets()
 {
-    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateCommercialReleasePlan();
+    SigtranReleaseWorkflowPlan plan = SigtranReleaseWorkflows.CreateReleasePlan();
     IReadOnlyList<string> secrets = plan.GetRequiredSecrets();
 
     Assert(plan.RequiresSupplyChain, "release workflow should require supply-chain automation");
-    Assert(plan.RequiresCommercialEvidence, "release workflow should require commercial evidence");
+    Assert(plan.RequiresReleaseEvidence, "release workflow should require production evidence");
     Assert(plan.HasPublishStage, "release workflow should include publish stage");
     Assert(secrets.Contains("NUGET_API_KEY"), "release workflow should require NuGet API key");
     Assert(secrets.Contains("SIGNING_CERTIFICATE"), "release workflow should require signing certificate");
 }
 
-static void SigtranReleaseWorkflowReadinessReportsConcreteWorkflowFile()
+static void SigtranReleaseWorkflowReadinessSnapshotsConcreteWorkflowFile()
 {
-    SigtranReleaseWorkflowReadinessReport report = SigtranReleaseWorkflowReadiness.GetReport();
+    SigtranReleaseWorkflowReadinessSnapshot report = SigtranReleaseWorkflowReadiness.GetReport();
 
     Assert(report.ContractReady, "release workflow contract should be ready");
     Assert(report.HasWorkflowFile, "release workflow file should be marked ready");
@@ -3676,7 +3682,7 @@ static void SigtranReleaseWorkflowFileContractTracksConcreteWorkflowFile()
     AssertEqual("release", contract.WorkflowName, "release workflow file name");
     AssertEqual("release", contract.RequiredJobName, "release workflow job name");
     Assert(contract.RequiredStageNames.Contains("Supply Chain"), "release workflow file should include supply-chain stage");
-    Assert(contract.RequiredStageNames.Contains("Commercial Evidence"), "release workflow file should include commercial evidence stage");
+    Assert(contract.RequiredStageNames.Contains("Production Evidence"), "release workflow file should include production evidence stage");
     Assert(contract.IsValidationReady, "release workflow file contract should be validation ready");
 }
 
@@ -3733,7 +3739,7 @@ static void SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence()
     AssertEqual(4, rules.Count, "release workflow artifact rule count");
     Assert(rules.Any(static rule => rule.Name == "nuget-packages"), "release workflow should retain NuGet packages");
     Assert(rules.Any(static rule => rule.Name == "supply-chain"), "release workflow should retain supply-chain artifacts");
-    Assert(SigtranReleaseWorkflowArtifacts.RetainsCommercialEvidence(), "release workflow should retain commercial evidence");
+    Assert(SigtranReleaseWorkflowArtifacts.RetainsReleaseEvidence(), "release workflow should retain production evidence");
     Assert(rules.All(static rule => rule.RetentionDays >= 90), "release workflow artifacts should have audit-friendly retention");
 }
 
@@ -3764,7 +3770,7 @@ static void SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariab
 
     AssertEqual(5, variables.Count, "release workflow environment variable count");
     Assert(variables.Any(static variable => variable.Name == "SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT"), "release workflow should include supply-chain artifact root");
-    Assert(variables.Any(static variable => variable.Name == "SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"), "release workflow should include commercial evidence root");
+    Assert(variables.Any(static variable => variable.Name == "SIGTRAN_RELEASE_EVIDENCE_ROOT"), "release workflow should include production evidence root");
     Assert(SigtranReleaseWorkflowEnvironment.ArePresentInYaml(yaml), "release workflow YAML should contain required environment variables");
 }
 
@@ -3774,12 +3780,12 @@ static void SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence()
         SigtranReleasePublishGuard.Evaluate(new(false, false, false, false)),
         workflowOrchestrationReady: SigtranReleaseWorkflowStatus.OrchestrationReady,
         supplyChainPromotionReady: false,
-        commercialEvidenceReady: false);
+        releaseEvidenceReady: false);
 
     Assert(!result.CanPromote, "release promotion should be blocked without evidence");
     Assert(result.Reasons.Contains("publish-not-requested"), "release promotion should include publish guard reasons");
     Assert(result.Reasons.Contains("supply-chain-promotion-required"), "release promotion should require supply-chain promotion");
-    Assert(result.Reasons.Contains("commercial-evidence-required"), "release promotion should require commercial evidence");
+    Assert(result.Reasons.Contains("release-evidence-required"), "release promotion should require production evidence");
 }
 
 static void SigtranReleasePromotionGateAllowsCompleteReleaseEvidence()
@@ -3788,7 +3794,7 @@ static void SigtranReleasePromotionGateAllowsCompleteReleaseEvidence()
         SigtranReleasePublishGuard.Evaluate(new(true, true, true, true)),
         workflowOrchestrationReady: true,
         supplyChainPromotionReady: true,
-        commercialEvidenceReady: true);
+        releaseEvidenceReady: true);
 
     Assert(result.CanPromote, result.Describe());
     AssertEqual(0, result.Reasons.Count, "release promotion reason count");
@@ -3842,13 +3848,13 @@ static void SigtranNuGetPublishPlansSeparateDryRunAndPublish()
     AssertEqual(dryRun.Source, publish.Source, "NuGet source should match between dry-run and publish");
 }
 
-static void SigtranPublicationCredentialPolicyRequiresCommercialSecrets()
+static void SigtranPublicationCredentialPolicyRequiresProductionSecrets()
 {
     SigtranPublicationCredentialPolicy policy = SigtranPublicationCredentials.CreateDefaultPolicy();
     HashSet<string> available = ["NUGET_API_KEY"];
     IReadOnlyList<string> missing = policy.GetMissingSecrets(available);
 
-    Assert(policy.RequiresCommercialSecrets, "publication credential policy should require commercial secrets");
+    Assert(policy.RequiresProductionSecrets, "publication credential policy should require production secrets");
     AssertEqual(3, policy.Credentials.Count, "publication credential count");
     Assert(missing.Contains("SIGNING_CERTIFICATE"), "credential policy should require signing certificate");
     Assert(missing.Contains("SIGNING_CERTIFICATE_PASSWORD"), "credential policy should require signing certificate password");
@@ -3859,15 +3865,15 @@ static void SigtranPublicationChannelPolicySeparatesPrereleaseAndStable()
     SigtranPublishChannel alpha = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Alpha);
     SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
 
-    SigtranPublicationChannelDecision alphaDecision = SigtranPublicationChannelPolicy.Evaluate(alpha, "1.0.0-alpha.1", commercialReadiness: false);
-    SigtranPublicationChannelDecision stableBlocked = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", commercialReadiness: false);
-    SigtranPublicationChannelDecision stableAllowed = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", commercialReadiness: true);
+    SigtranPublicationChannelDecision alphaDecision = SigtranPublicationChannelPolicy.Evaluate(alpha, "1.0.0-alpha.1", productionReadiness: false);
+    SigtranPublicationChannelDecision stableBlocked = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", productionReadiness: false);
+    SigtranPublicationChannelDecision stableAllowed = SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", productionReadiness: true);
 
-    Assert(alphaDecision.Allowed, "alpha channel should accept prerelease versions without commercial readiness");
-    Assert(!stableBlocked.Allowed, "stable channel should block prerelease and missing commercial readiness");
+    Assert(alphaDecision.Allowed, "alpha channel should accept prerelease versions without production readiness");
+    Assert(!stableBlocked.Allowed, "stable channel should block prerelease and missing production readiness");
     Assert(stableBlocked.Reasons.Contains("channel-version-mismatch"), "stable channel should reject prerelease version");
-    Assert(stableBlocked.Reasons.Contains("commercial-readiness-required"), "stable channel should require commercial readiness");
-    Assert(stableAllowed.Allowed, "stable channel should allow stable version after commercial readiness");
+    Assert(stableBlocked.Reasons.Contains("production-readiness-required"), "stable channel should require production readiness");
+    Assert(stableAllowed.Allowed, "stable channel should allow stable version after production readiness");
 }
 
 static void SigtranPackageIntegrityManifestRequiresPackageDigests()
@@ -3888,7 +3894,7 @@ static void SigtranPublicationEvidenceManifestRequiresIntegrityAndReleaseEvidenc
         SigtranPublishChannelKind.Stable,
         packageIntegrityComplete: true,
         supplyChainPromotionReady: false,
-        commercialEvidenceReady: true);
+        releaseEvidenceReady: true);
     SigtranPublicationEvidenceManifest complete = SigtranPublicationEvidenceManifest.CreateCompleteSample();
 
     Assert(!incomplete.IsComplete, "publication evidence should require supply-chain evidence");
@@ -3901,7 +3907,7 @@ static void SigtranPublicationGateBlocksIncompletePublishReadiness()
     SigtranPublishChannel stable = SigtranPublishChannels.GetChannels().Single(static channel => channel.Kind == SigtranPublishChannelKind.Stable);
     SigtranPublicationGateResult result = SigtranPublicationGate.Evaluate(
         SigtranReleasePublishGuard.Evaluate(new(false, false, false, false)),
-        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", commercialReadiness: false),
+        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0-alpha.1", productionReadiness: false),
         SigtranPublicationCredentials.CreateDefaultPolicy(),
         new HashSet<string>(),
         new SigtranPublicationEvidenceManifest("1.0.0-alpha.1", SigtranPublishChannelKind.Stable, true, false, false),
@@ -3921,7 +3927,7 @@ static void SigtranPublicationGateAllowsCompletePublishReadiness()
     HashSet<string> secrets = ["NUGET_API_KEY", "SIGNING_CERTIFICATE", "SIGNING_CERTIFICATE_PASSWORD"];
     SigtranPublicationGateResult result = SigtranPublicationGate.Evaluate(
         SigtranReleasePublishGuard.Evaluate(new(true, true, true, true)),
-        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", commercialReadiness: true),
+        SigtranPublicationChannelPolicy.Evaluate(stable, "1.0.0", productionReadiness: true),
         SigtranPublicationCredentials.CreateDefaultPolicy(),
         secrets,
         SigtranPublicationEvidenceManifest.CreateCompleteSample(),
@@ -3934,7 +3940,7 @@ static void SigtranPublicationGateAllowsCompletePublishReadiness()
 
 static void SigtranPackagePublicationStatusSummarizesReadinessFoundation()
 {
-    SigtranPackagePublicationReadinessReport readiness = SigtranPackagePublicationStatus.GetReadiness();
+    SigtranPackagePublicationReadinessSnapshot readiness = SigtranPackagePublicationStatus.GetReadiness();
     IReadOnlyList<string> capabilities = SigtranPackagePublicationStatus.GetCompletedCapabilities();
 
     AssertEqual(10, SigtranPackagePublicationStatus.CompletedUnitCount, "package publication completed unit count");
@@ -3946,15 +3952,15 @@ static void SigtranPackagePublicationStatusSummarizesReadinessFoundation()
     Assert(!SigtranPackagePublicationStatus.PublicationReady, SigtranPackagePublicationStatus.Describe());
 }
 
-static void SigtranCommercialReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts()
+static void SigtranReleaseExecutionEvidenceTracksPassedAndBlockedArtifacts()
 {
-    SigtranCommercialReleaseEvidenceManifest manifest = SigtranCommercialReleaseEvidenceManifest.CreateCurrentSample();
+    SigtranReleaseRunEvidenceManifest manifest = SigtranReleaseRunEvidenceManifest.CreateCurrentSample();
 
-    Assert(manifest.HasPassedArea(SigtranCommercialReleaseEvidenceArea.LinuxSctp), "commercial release evidence should include Linux SCTP evidence");
-    Assert(manifest.HasBlockers, "commercial release evidence should record the external peer blocker");
-    Assert(manifest.HasDigestCoverage, "commercial release evidence should require digest coverage for passed artifacts");
-    Assert(!manifest.SupportsCommercialPromotion, "commercial release evidence should not promote while external peer is blocked");
-    Assert(manifest.Artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.BlockerReport), "commercial release evidence should include blocker report artifact");
+    Assert(manifest.HasPassedArea(SigtranReleaseRunEvidenceArea.LinuxSctp), "production release evidence should include Linux SCTP evidence");
+    Assert(manifest.HasBlockers, "production release evidence should record the external peer blocker");
+    Assert(manifest.HasDigestCoverage, "production release evidence should require digest coverage for passed artifacts");
+    Assert(!manifest.SupportsProductionPromotion, "production release evidence should not promote while external peer is blocked");
+    Assert(manifest.Artifacts.Any(static artifact => artifact.Kind == SigtranReleaseRunEvidenceKind.BlockerReport), "production release evidence should include blocker report artifact");
 }
 
 static void SigtranLinuxSctpEvidenceRecordsPassingSmokeCapture()
@@ -3981,17 +3987,17 @@ static void SigtranExternalPeerInteropBlockerEvidenceRecordsRetainedFailureConte
     Assert(blocker.RequiredAction.Contains("Retest", StringComparison.OrdinalIgnoreCase), "external peer blocker should describe the next action");
 }
 
-static void SigtranCommercialReleaseArtifactDossierTracksRetainedAndMissingArtifacts()
+static void SigtranReleaseArtifactDossierTracksRetainedAndMissingArtifacts()
 {
-    SigtranCommercialReleaseArtifactDossier dossier = SigtranCommercialReleaseArtifactDossiers.CreateCurrent();
-    IReadOnlyList<SigtranCommercialReleaseArtifactRecord> artifacts = dossier.Snapshot();
+    SigtranReleaseArtifactDossier dossier = SigtranReleaseArtifactDossiers.CreateCurrent();
+    IReadOnlyList<SigtranReleaseArtifactRecord> artifacts = dossier.Snapshot();
 
-    AssertEqual(5, artifacts.Count, "commercial release artifact dossier artifact count");
-    Assert(dossier.HasInteropArtifactSet == false, "commercial release artifact dossier should not count missing trace and comparison as retained");
-    Assert(dossier.HasDigestCoverage, "retained commercial release artifacts should include digest placeholders until real digests are materialized");
-    Assert(dossier.IsReviewReady == false, "commercial release artifact dossier should not be review-ready while trace and comparison are missing");
-    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.Trace && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing SDK trace");
-    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranCommercialReleaseEvidenceKind.ComparisonReport && artifact.Retention == SigtranCommercialReleaseArtifactRetention.Missing), "commercial release artifact dossier should track missing comparison report");
+    AssertEqual(5, artifacts.Count, "production release artifact dossier artifact count");
+    Assert(dossier.HasInteropArtifactSet == false, "production release artifact dossier should not count missing trace and comparison as retained");
+    Assert(dossier.HasDigestCoverage, "retained production release artifacts should include digest placeholders until real digests are materialized");
+    Assert(dossier.IsReviewReady == false, "production release artifact dossier should not be review-ready while trace and comparison are missing");
+    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranReleaseRunEvidenceKind.Trace && artifact.Retention == SigtranReleaseArtifactRetention.Missing), "production release artifact dossier should track missing SDK trace");
+    Assert(artifacts.Any(static artifact => artifact.Kind == SigtranReleaseRunEvidenceKind.ComparisonReport && artifact.Retention == SigtranReleaseArtifactRetention.Missing), "production release artifact dossier should track missing comparison report");
 }
 
 static void SigtranSbomExecutionEvidenceRecordsGeneratedSpdxOutput()
@@ -4016,7 +4022,7 @@ static void SigtranPackageSigningExecutionEvidenceRecordsVerificationBlocker()
     Assert(evidence.VerificationPassed == false, "package signing evidence should record verification failure");
     Assert(evidence.Timestamped == false, "package signing evidence should require timestamping before promotion");
     Assert(evidence.TrustedCertificate == false, "package signing evidence should require trusted certificate chain before promotion");
-    Assert(evidence.SupportsCommercialPromotion == false, "package signing evidence should block commercial promotion until verification passes");
+    Assert(evidence.SupportsProductionPromotion == false, "package signing evidence should block production promotion until verification passes");
 }
 
 static void SigtranProvenanceExecutionEvidenceRecordsPackageAndSbomDigests()
@@ -4041,7 +4047,7 @@ static void SigtranBenchmarkExecutionEvidenceRecordsSmokeWorkloadLimits()
         passedChecks: 200);
 
     Assert(evidence.SmokeOnly, "benchmark evidence should record smoke-only status");
-    Assert(evidence.SupportsCommercialPerformancePromotion == false, "smoke benchmark should not support commercial performance promotion");
+    Assert(evidence.SupportsProductionPerformancePromotion == false, "smoke benchmark should not support production performance promotion");
     AssertEqual(200, evidence.PassedChecks, "benchmark passed check count");
     AssertEqual(64, evidence.ReportSha256.Length, "benchmark report digest length");
 }
@@ -4161,7 +4167,7 @@ static void SigtranSupplyChainReleaseGateAggregatesPromotionEvidence()
         SigtranPublicApiDiff.CreateReleaseDiff("1.0.0", new string('2', 64), addedMembers: 1, removedMembers: 0, changedMembers: 0, breakingChangesApproved: false),
         SigtranReleaseArtifactUploads.CreateDefault(),
         SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0"),
-        commercialEvidenceReady: true);
+        releaseEvidenceReady: true);
     SigtranSupplyChainReleaseGateResult blocked = SigtranSupplyChainReleaseGate.Evaluate(
         SigtranFinalSbom.CreateDefault("1.0.0", new string('a', 64)),
         SigtranTrustedPackageSigning.CreateReleaseReady("1.0.0", new string('b', 64), new string('c', 64), new string('d', 64)),
@@ -4169,12 +4175,12 @@ static void SigtranSupplyChainReleaseGateAggregatesPromotionEvidence()
         SigtranPublicApiDiff.CreateReleaseDiff("1.0.0", new string('2', 64), addedMembers: 1, removedMembers: 0, changedMembers: 0, breakingChangesApproved: false),
         SigtranReleaseArtifactUploads.CreateDefault(),
         SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0"),
-        commercialEvidenceReady: false);
+        releaseEvidenceReady: false);
 
     Assert(ready.CanPromote, ready.Describe());
     AssertEqual(0, ready.Reasons.Count, "ready supply-chain release gate reasons");
     Assert(!blocked.CanPromote, blocked.Describe());
-    Assert(blocked.Reasons.Contains("commercial-evidence-required"), "supply-chain release gate should require commercial evidence");
+    Assert(blocked.Reasons.Contains("release-evidence-required"), "supply-chain release gate should require production evidence");
 }
 
 static void SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers()
@@ -4188,7 +4194,7 @@ static void SigtranSupplyChainReleaseStatusSummarizesExecutionBlockers()
     Assert(capabilities.Contains("final-sweep-validation"), "supply-chain release status should include final validation");
     Assert(capabilities.Contains("documentation"), "supply-chain release status should include documentation");
     Assert(SigtranSupplyChainReleaseStatus.ExecutionFoundationReady, SigtranSupplyChainReleaseStatus.Describe());
-    Assert(!SigtranSupplyChainReleaseStatus.CommercialReleaseReady, SigtranSupplyChainReleaseStatus.Describe());
+    Assert(!SigtranSupplyChainReleaseStatus.ReleaseReady, SigtranSupplyChainReleaseStatus.Describe());
     Assert(blockers.Contains("retained-release-run-artifacts-required"), "supply-chain release status should require retained release artifacts");
 }
 
@@ -4236,7 +4242,7 @@ static void SigtranPrereleasePublicationGateBlocksStableAndUngatedUploads()
 
 static void SigtranReleaseNotesArtifactRendersRcPublicationNotes()
 {
-    SigtranReleaseNotesArtifact artifact = SigtranReleaseNotesArtifacts.CreateReleaseCandidate("1.0.0-rc.1", new string('a', 64));
+    SigtranReleaseNotesArtifact artifact = SigtranReleaseNotesArtifacts.CreatePrerelease("1.0.0-rc.1", new string('a', 64));
     string markdown = artifact.RenderMarkdown();
 
     Assert(artifact.IsReviewReady, "release notes artifact should be review-ready");
@@ -4248,7 +4254,7 @@ static void SigtranReleaseNotesArtifactRendersRcPublicationNotes()
 
 static void SigtranMigrationNotesArtifactDocumentsRcBoundaries()
 {
-    SigtranMigrationNotesArtifact artifact = SigtranMigrationNotesArtifacts.CreateReleaseCandidate("1.0.0-alpha.1", "1.0.0-rc.1", new string('b', 64));
+    SigtranMigrationNotesArtifact artifact = SigtranMigrationNotesArtifacts.CreatePrerelease("1.0.0-alpha.1", "1.0.0-rc.1", new string('b', 64));
     string markdown = artifact.RenderMarkdown();
 
     Assert(artifact.IsReviewReady, "migration notes artifact should be review-ready");
@@ -4257,25 +4263,25 @@ static void SigtranMigrationNotesArtifactDocumentsRcBoundaries()
     Assert(markdown.Contains("SCCP, TCAP, and MAP remain experimental", StringComparison.Ordinal), "migration notes should retain experimental API warning");
 }
 
-static void SigtranFinalCommercialReadinessReportSeparatesRcAndStableGates()
+static void SigtranFinalProductionReadinessSnapshotSeparatesRcAndStableGates()
 {
-    SigtranFinalCommercialReadinessReport report = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+    SigtranFinalProductionReadinessSnapshot report = SigtranFinalProductionReadinessSnapshots.CreatePrerelease(
         "1.0.0-rc.1",
         new string('c', 64),
         new string('d', 64),
         hasNuGetApiKey: true);
     string markdown = report.RenderMarkdown();
 
-    Assert(report.ReleaseCandidateReady, report.Describe());
+    Assert(report.PrereleaseReady, report.Describe());
     Assert(!report.StableReleaseReady, report.Describe());
-    Assert(report.CommercialBlockers.Contains("external-peer-interop"), "final readiness should retain external peer commercial blocker");
+    Assert(report.ProductionBlockers.Contains("external-peer-interop"), "final readiness should retain external peer production blocker");
     Assert(markdown.Contains("## Stable Gate", StringComparison.Ordinal), "final readiness report should render stable gate");
-    Assert(markdown.Contains("Commercial Blockers", StringComparison.Ordinal), "final readiness report should render blockers");
+    Assert(markdown.Contains("Production Blockers", StringComparison.Ordinal), "final readiness report should render blockers");
 }
 
-static void SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence()
+static void SigtranReleaseDecisionRecommendsRcBeforeStableReleaseEvidence()
 {
-    SigtranFinalCommercialReadinessReport report = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+    SigtranFinalProductionReadinessSnapshot report = SigtranFinalProductionReadinessSnapshots.CreatePrerelease(
         "1.0.0-rc.1",
         new string('e', 64),
         new string('f', 64),
@@ -4283,12 +4289,12 @@ static void SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence()
 
     SigtranReleaseDecision decision = SigtranReleaseDecisions.Decide(report);
 
-    AssertEqual(SigtranReleaseDecisionKind.ReleaseCandidate, decision.Kind, "release decision kind");
+    AssertEqual(SigtranReleaseDecisionKind.Prerelease, decision.Kind, "release decision kind");
     Assert(decision.AllowsPublication, decision.Describe());
     Assert(!decision.AllowsStablePublication, decision.Describe());
-    Assert(decision.Reasons.Contains("stable-commercial-blockers-retained"), "release decision should retain stable commercial blocker reason");
+    Assert(decision.Reasons.Contains("stable-release-blockers-retained"), "release decision should retain stable release blocker reason");
 
-    SigtranFinalCommercialReadinessReport blockedReport = SigtranFinalCommercialReadinessReports.CreateReleaseCandidate(
+    SigtranFinalProductionReadinessSnapshot blockedReport = SigtranFinalProductionReadinessSnapshots.CreatePrerelease(
         "1.0.0-rc.1",
         new string('e', 64),
         new string('f', 64),
@@ -4299,9 +4305,9 @@ static void SigtranReleaseDecisionRecommendsRcBeforeStableCommercialEvidence()
     Assert(blocked.Reasons.Contains("prerelease-publication-gate-required"), "blocked decision should explain missing prerelease gate");
 }
 
-static void SigtranReleaseCandidatePublicationEvidenceGatesRcUpload()
+static void SigtranPrereleasePublicationEvidenceGatesRcUpload()
 {
-    SigtranReleaseCandidatePublicationEvidenceManifest manifest = SigtranReleaseCandidatePublicationEvidence.CreateReleaseCandidate(
+    SigtranPrereleasePublicationEvidenceManifest manifest = SigtranPrereleasePublicationEvidence.CreatePrerelease(
         "1.0.0-rc.1",
         new string('1', 64),
         new string('2', 64),
@@ -4315,54 +4321,54 @@ static void SigtranReleaseCandidatePublicationEvidenceGatesRcUpload()
 
     Assert(manifest.HasRequiredArtifacts, "RC publication evidence should include all required artifact kinds");
     Assert(manifest.HasDigestCoverage, "RC publication evidence should have digest coverage");
-    Assert(manifest.CanPublishReleaseCandidate, "RC publication evidence should allow RC publication");
+    Assert(manifest.CanPublishPrerelease, "RC publication evidence should allow RC publication");
     Assert(!manifest.CanPublishStable, "RC publication evidence must not allow stable publication");
-    Assert(manifest.Items.Any(static item => item.Kind == SigtranReleaseCandidatePublicationEvidenceKind.DryRunEvidence), "RC evidence should retain dry-run output");
+    Assert(manifest.Items.Any(static item => item.Kind == SigtranPrereleasePublicationEvidenceKind.DryRunEvidence), "RC evidence should retain dry-run output");
 }
 
-static void SigtranReleaseCandidatePublicationStatusSummarizesRcGate()
+static void SigtranPrereleasePublicationStatusSummarizesRcGate()
 {
-    IReadOnlyList<string> capabilities = SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranReleaseCandidatePublicationStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranPrereleasePublicationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranPrereleasePublicationStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranReleaseCandidatePublicationStatus.CompletedUnitCount, "RC publication completed unit count");
+    AssertEqual(10, SigtranPrereleasePublicationStatus.CompletedUnitCount, "RC publication completed unit count");
     AssertEqual(10, capabilities.Count, "RC publication capability count");
     Assert(capabilities.Contains("workflow-wiring"), "RC publication status should include workflow wiring");
     Assert(capabilities.Contains("final-validation"), "RC publication status should include final validation");
     Assert(blockers.Contains("real-release-workflow-run-artifacts-required"), "RC publication status should retain real workflow artifact blocker");
-    Assert(SigtranReleaseCandidatePublicationStatus.GateFoundationReady, SigtranReleaseCandidatePublicationStatus.Describe());
-    Assert(!SigtranReleaseCandidatePublicationStatus.RealPublicationReady, SigtranReleaseCandidatePublicationStatus.Describe());
-    Assert(!SigtranReleaseCandidatePublicationStatus.StableCommercialPublicationReady, SigtranReleaseCandidatePublicationStatus.Describe());
+    Assert(SigtranPrereleasePublicationStatus.GateFoundationReady, SigtranPrereleasePublicationStatus.Describe());
+    Assert(!SigtranPrereleasePublicationStatus.RealPublicationReady, SigtranPrereleasePublicationStatus.Describe());
+    Assert(!SigtranPrereleasePublicationStatus.StableReleasePublicationReady, SigtranPrereleasePublicationStatus.Describe());
 }
 
-static void SigtranCommercialReleaseExecutionReadinessReportsRemainingBlockers()
+static void SigtranReleaseExecutionReadinessSnapshotsRemainingBlockers()
 {
-    SigtranCommercialReleaseExecutionReadinessReport report = SigtranCommercialReleaseExecutionReadiness.CreateCurrent();
+    SigtranReleaseExecutionReadinessSnapshot report = SigtranReleaseExecutionReadiness.CreateCurrent();
 
-    Assert(report.CommercialReleaseReady == false, report.Describe());
-    Assert(report.PassedCount > 0, "commercial release execution readiness should include passed evidence items");
-    Assert(report.BlockedCount > 0, "commercial release execution readiness should include blocked evidence items");
-    Assert(report.Items.Any(static item => item.Name == "external-peer-interop" && !item.Passed), "commercial release execution readiness should block external peer interop");
-    Assert(report.Items.Any(static item => item.Name == "package-signing" && !item.Passed), "commercial release execution readiness should block incomplete signing verification");
-    Assert(report.Items.Any(static item => item.Name == "performance" && !item.Passed), "commercial release execution readiness should block smoke-only performance evidence");
+    Assert(report.ReleaseReady == false, report.Describe());
+    Assert(report.PassedCount > 0, "production release execution readiness should include passed evidence items");
+    Assert(report.BlockedCount > 0, "production release execution readiness should include blocked evidence items");
+    Assert(report.Items.Any(static item => item.Name == "external-peer-interop" && !item.Passed), "production release execution readiness should block external peer interop");
+    Assert(report.Items.Any(static item => item.Name == "package-signing" && !item.Passed), "production release execution readiness should block incomplete signing verification");
+    Assert(report.Items.Any(static item => item.Name == "performance" && !item.Passed), "production release execution readiness should block smoke-only performance evidence");
 }
 
-static void SigtranCommercialReleaseTargetLockBindsEvidenceToVersionAndCommit()
+static void SigtranReleaseTargetLockBindsEvidenceToVersionAndCommit()
 {
-    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
-    SigtranCommercialReleaseTargetLock symbolic = new("1.0.0-rc.1", "main", "main", "prerelease", "artifacts/commercial-readiness/1.0.0-rc.1");
+    SigtranReleaseTargetLock target = SigtranReleaseTargetLocks.CreatePrerelease("1.0.0-rc.1", "abcdef123456");
+    SigtranReleaseTargetLock symbolic = new("1.0.0-rc.1", "main", "main", "prerelease", "artifacts/production-readiness/1.0.0-rc.1");
 
     Assert(target.IsLocked, target.Describe());
-    Assert(target.IsReleaseCandidate, "target should be a release candidate");
+    Assert(target.IsPrerelease, "target should be a prerelease");
     Assert(target.HasPinnedCommit, "target should require a pinned commit");
     Assert(target.HasVersionedArtifactRoot, "target should use a versioned artifact root");
     Assert(!symbolic.IsLocked, symbolic.Describe());
     Assert(!symbolic.HasPinnedCommit, "symbolic branch names must not satisfy commit pinning");
 }
 
-static void SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness()
+static void SigtranReleaseSecretsGatePublishAndSigningReadiness()
 {
-    SigtranCommercialReleaseSecretReadiness ready = SigtranCommercialReleaseSecrets.Evaluate(
+    SigtranReleaseSecretReadiness ready = SigtranReleaseSecrets.Evaluate(
     [
         "NUGET_API_KEY",
         "SIGNING_CERTIFICATE",
@@ -4370,58 +4376,58 @@ static void SigtranCommercialReleaseSecretsGatePublishAndSigningReadiness()
         "PROVENANCE_ATTESTATION_TOKEN"
     ]);
 
-    SigtranCommercialReleaseSecretReadiness missingSigning = SigtranCommercialReleaseSecrets.Evaluate(
+    SigtranReleaseSecretReadiness missingSigning = SigtranReleaseSecrets.Evaluate(
     [
         "NUGET_API_KEY",
         "PROVENANCE_ATTESTATION_TOKEN"
     ]);
 
     Assert(ready.IsReady, ready.Describe());
-    Assert(ready.Requirements.Any(static requirement => requirement.Purpose == SigtranCommercialReleaseSecretPurpose.PackagePublication), "publish secret should be declared");
-    Assert(ready.Requirements.Count(static requirement => requirement.Purpose == SigtranCommercialReleaseSecretPurpose.PackageSigning) == 2, "signing secrets should be explicit");
+    Assert(ready.Requirements.Any(static requirement => requirement.Purpose == SigtranReleaseSecretPurpose.PackagePublication), "publish secret should be declared");
+    Assert(ready.Requirements.Count(static requirement => requirement.Purpose == SigtranReleaseSecretPurpose.PackageSigning) == 2, "signing secrets should be explicit");
     Assert(!missingSigning.IsReady, missingSigning.Describe());
     Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE"), "signing certificate should be required");
     Assert(missingSigning.MissingSecretNames.Contains("SIGNING_CERTIFICATE_PASSWORD"), "signing password should be required");
 }
 
-static void SigtranCommercialEvidenceRetentionMapBindsArtifactsToReleaseTarget()
+static void SigtranReleaseEvidenceRetentionMapBindsArtifactsToReleaseTarget()
 {
-    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
-    SigtranCommercialEvidenceRetentionMap map = SigtranCommercialEvidenceRetentionMaps.CreateDefault(target);
-    SigtranCommercialEvidenceRetentionMap floatingPathMap = new(
+    SigtranReleaseTargetLock target = SigtranReleaseTargetLocks.CreatePrerelease("1.0.0-rc.1", "abcdef123456");
+    SigtranReleaseEvidenceRetentionMap map = SigtranReleaseEvidenceRetentionMaps.CreateDefault(target);
+    SigtranReleaseEvidenceRetentionMap floatingPathMap = new(
         target,
         [
-            new(SigtranCommercialEvidenceRetentionArea.NativeSctp, "artifacts/latest/native-sctp", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.ExternalPeerInterop, $"{target.ArtifactRoot}/external-peer-interop", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.ProtocolInterop, $"{target.ArtifactRoot}/protocol-interop", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.Performance, $"{target.ArtifactRoot}/performance", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.SupplyChain, $"{target.ArtifactRoot}/supply-chain", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.PublicApi, $"{target.ArtifactRoot}/public-api", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.ReleaseWorkflow, $"{target.ArtifactRoot}/release-workflow", 365, true),
-            new(SigtranCommercialEvidenceRetentionArea.PublicationDossier, $"{target.ArtifactRoot}/publication-dossier", 365, true)
+            new(SigtranReleaseEvidenceRetentionArea.NativeSctp, "artifacts/latest/native-sctp", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.ExternalPeerInterop, $"{target.ArtifactRoot}/external-peer-interop", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.ProtocolInterop, $"{target.ArtifactRoot}/protocol-interop", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.Performance, $"{target.ArtifactRoot}/performance", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.SupplyChain, $"{target.ArtifactRoot}/supply-chain", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.PublicApi, $"{target.ArtifactRoot}/public-api", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.ReleaseWorkflow, $"{target.ArtifactRoot}/release-workflow", 365, true),
+            new(SigtranReleaseEvidenceRetentionArea.PublicationDossier, $"{target.ArtifactRoot}/publication-dossier", 365, true)
         ]);
 
     Assert(map.IsReady, map.Describe());
-    Assert(map.Rules.Count == Enum.GetValues<SigtranCommercialEvidenceRetentionArea>().Length, "retention map should cover every area");
-    Assert(map.Rules.All(static rule => rule.RetentionDays >= 365), "commercial retention should keep evidence for at least one year");
-    Assert(map.Rules.All(static rule => rule.RequiresDigest), "commercial retention should require digest coverage");
+    Assert(map.Rules.Count == Enum.GetValues<SigtranReleaseEvidenceRetentionArea>().Length, "retention map should cover every area");
+    Assert(map.Rules.All(static rule => rule.RetentionDays >= 365), "production retention should keep evidence for at least one year");
+    Assert(map.Rules.All(static rule => rule.RequiresDigest), "production retention should require digest coverage");
     Assert(!floatingPathMap.IsReady, floatingPathMap.Describe());
     Assert(!floatingPathMap.UsesTargetArtifactRoot, "floating paths must not satisfy target-bound retention");
 }
 
-static void SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts()
+static void SigtranReleaseEvidenceChecklistRequiresEssentialArtifacts()
 {
-    SigtranCommercialEvidenceChecklist checklist = SigtranCommercialEvidenceChecklists.CreateDefault();
-    SigtranCommercialEvidenceChecklist missingComparison = new(
+    SigtranReleaseEvidenceChecklist checklist = SigtranReleaseEvidenceChecklists.CreateDefault();
+    SigtranReleaseEvidenceChecklist missingComparison = new(
         checklist.Items
-            .Where(static item => item.Kind != SigtranCommercialEvidenceChecklistKind.ComparisonReport)
+            .Where(static item => item.Kind != SigtranReleaseEvidenceChecklistKind.ComparisonReport)
             .ToArray());
-    SigtranCommercialEvidenceChecklist duplicateId = new(
+    SigtranReleaseEvidenceChecklist duplicateId = new(
         checklist.Items
-            .Append(new SigtranCommercialEvidenceChecklistItem(
+            .Append(new SigtranReleaseEvidenceChecklistItem(
                 "native-sctp-pcap",
-                SigtranCommercialEvidenceRetentionArea.NativeSctp,
-                SigtranCommercialEvidenceChecklistKind.PacketCapture,
+                SigtranReleaseEvidenceRetentionArea.NativeSctp,
+                SigtranReleaseEvidenceChecklistKind.PacketCapture,
                 true,
                 "Duplicate item used to verify identifier validation."))
             .ToArray());
@@ -4435,7 +4441,7 @@ static void SigtranCommercialEvidenceChecklistRequiresEssentialArtifacts()
     Assert(!duplicateId.HasUniqueIds, "checklist item identifiers should be unique");
 }
 
-static void SigtranCommercialReleasePreflightAggregatesLockdownInputs()
+static void SigtranReleasePreflightAggregatesLockdownInputs()
 {
     string[] allSecretNames =
     [
@@ -4445,19 +4451,19 @@ static void SigtranCommercialReleasePreflightAggregatesLockdownInputs()
         "PROVENANCE_ATTESTATION_TOKEN"
     ];
 
-    SigtranCommercialReleasePreflightInput readyInput = SigtranCommercialReleasePreflightChecks.CreateReleaseCandidateInput(
+    SigtranReleasePreflightInput readyInput = SigtranReleasePreflightChecks.CreatePrereleaseInput(
         "1.0.0-rc.1",
         "abcdef123456",
         allSecretNames);
-    SigtranCommercialReleasePreflightReport ready = SigtranCommercialReleasePreflightChecks.Evaluate(readyInput);
+    SigtranReleasePreflightReport ready = SigtranReleasePreflightChecks.Evaluate(readyInput);
 
-    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
-    SigtranCommercialReleaseTargetLock mismatchedRetentionTarget = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.2", "abcdef123456");
-    SigtranCommercialReleasePreflightReport blocked = SigtranCommercialReleasePreflightChecks.Evaluate(new(
+    SigtranReleaseTargetLock target = SigtranReleaseTargetLocks.CreatePrerelease("1.0.0-rc.1", "abcdef123456");
+    SigtranReleaseTargetLock mismatchedRetentionTarget = SigtranReleaseTargetLocks.CreatePrerelease("1.0.0-rc.2", "abcdef123456");
+    SigtranReleasePreflightReport blocked = SigtranReleasePreflightChecks.Evaluate(new(
         target,
-        SigtranCommercialReleaseSecrets.Evaluate(["NUGET_API_KEY"]),
-        SigtranCommercialEvidenceRetentionMaps.CreateDefault(mismatchedRetentionTarget),
-        SigtranCommercialEvidenceChecklists.CreateDefault()));
+        SigtranReleaseSecrets.Evaluate(["NUGET_API_KEY"]),
+        SigtranReleaseEvidenceRetentionMaps.CreateDefault(mismatchedRetentionTarget),
+        SigtranReleaseEvidenceChecklists.CreateDefault()));
 
     Assert(ready.IsReady, ready.Describe());
     Assert(!blocked.IsReady, blocked.Describe());
@@ -4493,9 +4499,9 @@ static void SigtranProtectedReleaseEnvironmentProfileGatesPublicationChannels()
 
 static void SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers()
 {
-    SigtranCommercialReleaseTargetLock target = SigtranCommercialReleaseTargetLocks.CreateReleaseCandidate("1.0.0-rc.1", "abcdef123456");
-    SigtranCommercialEvidenceRetentionMap retentionMap = SigtranCommercialEvidenceRetentionMaps.CreateDefault(target);
-    SigtranCommercialEvidenceChecklist checklist = SigtranCommercialEvidenceChecklists.CreateDefault();
+    SigtranReleaseTargetLock target = SigtranReleaseTargetLocks.CreatePrerelease("1.0.0-rc.1", "abcdef123456");
+    SigtranReleaseEvidenceRetentionMap retentionMap = SigtranReleaseEvidenceRetentionMaps.CreateDefault(target);
+    SigtranReleaseEvidenceChecklist checklist = SigtranReleaseEvidenceChecklists.CreateDefault();
     SigtranEvidenceDossierHandoffPlan plan = SigtranEvidenceDossierHandoffs.CreateDefault(target, retentionMap, checklist);
     SigtranEvidenceDossierHandoffPlan missingDigestManifest = new(
         target,
@@ -4507,7 +4513,7 @@ static void SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers()
         [
             new(
                 "floating-native-sctp",
-                SigtranCommercialEvidenceRetentionArea.NativeSctp,
+                SigtranReleaseEvidenceRetentionArea.NativeSctp,
                 SigtranEvidenceDossierReviewerRole.ProtocolReviewer,
                 "artifacts/latest/native-sctp/floating-native-sctp",
                 requiresDigest: true,
@@ -4526,7 +4532,7 @@ static void SigtranEvidenceDossierHandoffMapsChecklistItemsToReviewers()
     Assert(!floatingHandoff.UsesTargetArtifactRoot, "handoff paths should remain target-bound");
 }
 
-static void SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication()
+static void SigtranReleaseGoNoGoGateSeparatesEvidenceExecutionFromPublication()
 {
     string[] allSecretNames =
     [
@@ -4536,46 +4542,46 @@ static void SigtranCommercialGoNoGoGateSeparatesEvidenceExecutionFromPublication
         "PROVENANCE_ATTESTATION_TOKEN"
     ];
 
-    SigtranCommercialGoNoGoReport current = SigtranCommercialGoNoGoGates.Evaluate(
-        SigtranCommercialGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", allSecretNames));
-    SigtranCommercialGoNoGoReport missingSecrets = SigtranCommercialGoNoGoGates.Evaluate(
-        SigtranCommercialGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", ["NUGET_API_KEY"]));
+    SigtranReleaseGoNoGoReport current = SigtranReleaseGoNoGoGates.Evaluate(
+        SigtranReleaseGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", allSecretNames));
+    SigtranReleaseGoNoGoReport missingSecrets = SigtranReleaseGoNoGoGates.Evaluate(
+        SigtranReleaseGoNoGoGates.CreateCurrentInput("1.0.0-rc.1", "abcdef123456", ["NUGET_API_KEY"]));
 
-    Assert(current.Decision == SigtranCommercialGoNoGoDecision.EvidenceExecutionOnly, current.Describe());
+    Assert(current.Decision == SigtranReleaseGoNoGoDecision.EvidenceExecutionOnly, current.Describe());
     Assert(current.CanStartEvidenceExecution, "complete lockdown inputs should allow evidence-producing execution");
     Assert(!current.CanPublishPackage, "current evidence blockers should prevent RC publication");
     Assert(!current.CanPublishStablePackage, "current evidence blockers should prevent stable publication");
-    Assert(current.Blockers.Contains("commercial-release-evidence-incomplete"), "current gate should name incomplete commercial evidence");
-    Assert(missingSecrets.Decision == SigtranCommercialGoNoGoDecision.NoGo, missingSecrets.Describe());
+    Assert(current.Blockers.Contains("production-release-evidence-incomplete"), "current gate should name incomplete production evidence");
+    Assert(missingSecrets.Decision == SigtranReleaseGoNoGoDecision.NoGo, missingSecrets.Describe());
     Assert(missingSecrets.Blockers.Contains("release-preflight-not-ready"), "missing secrets should block preflight");
 }
 
-static void SigtranCommercialEvidenceReadinessLockdownStatusSummarizesCurrentGate()
+static void SigtranReleaseEvidenceReadinessLockdownStatusSummarizesCurrentGate()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceReadinessLockdownStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceReadinessLockdownStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceReadinessLockdownStatus.GetDefaultBlockers();
 
-    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount == 10, "status should reflect the completed readiness lockdown units");
-    Assert(capabilities.Count == SigtranCommercialEvidenceReadinessLockdownStatus.CompletedUnitCount, "status capability count should match completed units");
-    Assert(capabilities.Contains("commercial-go-no-go-gate"), "status should include go/no-go gate capability");
+    Assert(SigtranReleaseEvidenceReadinessLockdownStatus.CompletedUnitCount == 10, "status should reflect the completed readiness lockdown units");
+    Assert(capabilities.Count == SigtranReleaseEvidenceReadinessLockdownStatus.CompletedUnitCount, "status capability count should match completed units");
+    Assert(capabilities.Contains("production-go-no-go-gate"), "status should include go/no-go gate capability");
     Assert(capabilities.Contains("final-validation"), "status should include final validation capability");
-    Assert(SigtranCommercialEvidenceReadinessLockdownStatus.EvidenceExecutionReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
-    Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.PublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
-    Assert(!SigtranCommercialEvidenceReadinessLockdownStatus.StablePublicationReady, SigtranCommercialEvidenceReadinessLockdownStatus.Describe());
-    Assert(blockers.Contains("commercial-release-evidence-incomplete"), "status should retain evidence blocker");
+    Assert(SigtranReleaseEvidenceReadinessLockdownStatus.EvidenceExecutionReady, SigtranReleaseEvidenceReadinessLockdownStatus.Describe());
+    Assert(!SigtranReleaseEvidenceReadinessLockdownStatus.PublicationReady, SigtranReleaseEvidenceReadinessLockdownStatus.Describe());
+    Assert(!SigtranReleaseEvidenceReadinessLockdownStatus.StablePublicationReady, SigtranReleaseEvidenceReadinessLockdownStatus.Describe());
+    Assert(blockers.Contains("production-release-evidence-incomplete"), "status should retain evidence blocker");
     Assert(!blockers.Contains("final-validation-pending"), "final validation should no longer be a blocker");
 }
 
-static void SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget()
+static void SigtranReleaseEvidenceExecutionRunBindsArtifactsToTarget()
 {
     DateTimeOffset started = new(2026, 06, 22, 10, 30, 00, TimeSpan.FromHours(3.5));
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         started);
-    SigtranCommercialEvidenceExecutionRun floatingRun = new(
+    SigtranReleaseEvidenceExecutionRun floatingRun = new(
         "run-20260622-001",
         run.Target,
         "release-automation",
@@ -4591,55 +4597,55 @@ static void SigtranCommercialEvidenceExecutionRunBindsArtifactsToTarget()
     Assert(!floatingRun.HasRunScopedArtifactRoot, "floating execution artifact roots should be rejected");
 }
 
-static void SigtranCommercialEvidenceExecutionStageCatalogCoversRequiredWork()
+static void SigtranReleaseEvidenceExecutionStageCatalogCoversRequiredWork()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionStageCatalog floatingCatalog = new(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionStageCatalog floatingCatalog = new(
         run,
         catalog.Stages
-            .Select(stage => stage.Kind == SigtranCommercialEvidenceExecutionStageKind.NativeSctpLab
-                ? new SigtranCommercialEvidenceExecutionStage(stage.Id, stage.Kind, stage.Order, "artifacts/latest/native-sctp-lab", stage.Required)
+            .Select(stage => stage.Kind == SigtranReleaseEvidenceExecutionStageKind.NativeSctpLab
+                ? new SigtranReleaseEvidenceExecutionStage(stage.Id, stage.Kind, stage.Order, "artifacts/latest/native-sctp-lab", stage.Required)
                 : stage)
             .ToArray());
 
     Assert(catalog.IsReady, catalog.Describe());
-    Assert(catalog.Stages.Count == Enum.GetValues<SigtranCommercialEvidenceExecutionStageKind>().Length, "stage catalog should cover every stage kind");
+    Assert(catalog.Stages.Count == Enum.GetValues<SigtranReleaseEvidenceExecutionStageKind>().Length, "stage catalog should cover every stage kind");
     Assert(catalog.HasRequiredStageKinds, "stage catalog should include every required stage");
     Assert(catalog.HasUniqueStages, "stage catalog should use unique ids and orders");
     Assert(catalog.UsesRunArtifactRoot, "stage catalog should use run-scoped artifact roots");
-    Assert(catalog.Stages.First().Kind == SigtranCommercialEvidenceExecutionStageKind.ReadinessPreflight, "preflight should be the first stage");
+    Assert(catalog.Stages.First().Kind == SigtranReleaseEvidenceExecutionStageKind.ReadinessPreflight, "preflight should be the first stage");
     Assert(!floatingCatalog.IsReady, floatingCatalog.Describe());
     Assert(!floatingCatalog.UsesRunArtifactRoot, "floating stage roots should be rejected");
 }
 
-static void SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork()
+static void SigtranReleaseEvidenceExecutionCommandPlanCoversStageWork()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionCommandPlan plan = SigtranCommercialEvidenceExecutionCommands.CreateDefault(catalog);
-    SigtranCommercialEvidenceExecutionCommandPlan missingRunId = new(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionCommandPlan plan = SigtranReleaseEvidenceExecutionCommands.CreateDefault(catalog);
+    SigtranReleaseEvidenceExecutionCommandPlan missingRunId = new(
         catalog,
         plan.Commands
             .Select(command => command.StageId == "native-sctp-lab"
-                ? new SigtranCommercialEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, "scripts/run-native-sctp-lab.sh", command.ProducesArtifacts, command.RequiresApproval)
+                ? new SigtranReleaseEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, "scripts/run-native-sctp-lab.sh", command.ProducesArtifacts, command.RequiresApproval)
                 : command)
             .ToArray());
-    SigtranCommercialEvidenceExecutionCommandPlan weakApproval = new(
+    SigtranReleaseEvidenceExecutionCommandPlan weakApproval = new(
         catalog,
         plan.Commands
             .Select(command => command.StageId == "supply-chain-evidence"
-                ? new SigtranCommercialEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, command.CommandLine, command.ProducesArtifacts, requiresApproval: false)
+                ? new SigtranReleaseEvidenceExecutionCommand(command.StageId, command.Order, command.DisplayName, command.CommandLine, command.ProducesArtifacts, requiresApproval: false)
                 : command)
             .ToArray());
 
@@ -4656,15 +4662,15 @@ static void SigtranCommercialEvidenceExecutionCommandPlanCoversStageWork()
     Assert(!weakApproval.RequiresProtectedApproval, "supply-chain command should require approval");
 }
 
-static void SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInputs()
+static void SigtranReleaseEvidenceExecutionEnvironmentContractProtectsRunInputs()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionEnvironmentContract contract = SigtranCommercialEvidenceExecutionEnvironments.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionEnvironmentContract contract = SigtranReleaseEvidenceExecutionEnvironments.CreateDefault(run);
     Dictionary<string, string> completeValues = new(StringComparer.OrdinalIgnoreCase)
     {
         ["SIGTRAN_RUN_ID"] = run.RunId,
@@ -4678,17 +4684,17 @@ static void SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInpu
         ["SIGNING_CERTIFICATE_PASSWORD"] = "present",
         ["PROVENANCE_ATTESTATION_TOKEN"] = "present"
     };
-    SigtranCommercialEvidenceExecutionEnvironmentReadiness ready = contract.Evaluate(completeValues);
+    SigtranReleaseEvidenceExecutionEnvironmentReadiness ready = contract.Evaluate(completeValues);
     Dictionary<string, string> mismatchedValues = new(completeValues, StringComparer.OrdinalIgnoreCase)
     {
         ["SIGTRAN_RUN_ID"] = "run-floating"
     };
-    SigtranCommercialEvidenceExecutionEnvironmentReadiness mismatched = contract.Evaluate(mismatchedValues);
-    SigtranCommercialEvidenceExecutionEnvironmentContract leakingSecret = new(
+    SigtranReleaseEvidenceExecutionEnvironmentReadiness mismatched = contract.Evaluate(mismatchedValues);
+    SigtranReleaseEvidenceExecutionEnvironmentContract leakingSecret = new(
         run,
         contract.Variables
             .Select(variable => variable.Name == "NUGET_API_KEY"
-                ? new SigtranCommercialEvidenceExecutionEnvironmentVariable(variable.Name, variable.Required, variable.Secret, "secret-value", variable.Summary)
+                ? new SigtranReleaseEvidenceExecutionEnvironmentVariable(variable.Name, variable.Required, variable.Secret, "secret-value", variable.Summary)
                 : variable)
             .ToArray());
 
@@ -4703,26 +4709,26 @@ static void SigtranCommercialEvidenceExecutionEnvironmentContractProtectsRunInpu
     Assert(!leakingSecret.ProtectsSecrets, "secret expected values should be rejected");
 }
 
-static void SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutputs()
+static void SigtranReleaseEvidenceExecutionArtifactManifestCoversRetainedOutputs()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionArtifactManifest manifest = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
-    SigtranCommercialEvidenceExecutionArtifactManifest missingSbom = new(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionArtifactManifest manifest = SigtranReleaseEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranReleaseEvidenceExecutionArtifactManifest missingSbom = new(
         catalog,
         manifest.Artifacts
-            .Where(static artifact => artifact.Kind != SigtranCommercialEvidenceChecklistKind.Sbom)
+            .Where(static artifact => artifact.Kind != SigtranReleaseEvidenceChecklistKind.Sbom)
             .ToArray());
-    SigtranCommercialEvidenceExecutionArtifactManifest floatingArtifact = new(
+    SigtranReleaseEvidenceExecutionArtifactManifest floatingArtifact = new(
         catalog,
         manifest.Artifacts
-            .Select(artifact => artifact.Kind == SigtranCommercialEvidenceChecklistKind.PacketCapture
-                ? new SigtranCommercialEvidenceExecutionArtifact(artifact.StageId, artifact.Kind, "artifacts/latest/packet-capture.pcapng", artifact.Required)
+            .Select(artifact => artifact.Kind == SigtranReleaseEvidenceChecklistKind.PacketCapture
+                ? new SigtranReleaseEvidenceExecutionArtifact(artifact.StageId, artifact.Kind, "artifacts/latest/packet-capture.pcapng", artifact.Required)
                 : artifact)
             .ToArray());
 
@@ -4737,29 +4743,29 @@ static void SigtranCommercialEvidenceExecutionArtifactManifestCoversRetainedOutp
     Assert(!floatingArtifact.UsesStageArtifactRoots, "floating artifact paths should be rejected");
 }
 
-static void SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndRedaction()
+static void SigtranReleaseEvidenceExecutionVerificationRequiresDigestsAndRedaction()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionArtifactManifest manifest = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
-    SigtranCommercialEvidenceExecutionVerificationPlan plan = SigtranCommercialEvidenceExecutionVerifications.CreateDefault(manifest);
-    SigtranCommercialEvidenceExecutionVerificationPlan missingDigest = new(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionArtifactManifest manifest = SigtranReleaseEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranReleaseEvidenceExecutionVerificationPlan plan = SigtranReleaseEvidenceExecutionVerifications.CreateDefault(manifest);
+    SigtranReleaseEvidenceExecutionVerificationPlan missingDigest = new(
         manifest,
         plan.Items
-            .Select(item => item.Kind == SigtranCommercialEvidenceChecklistKind.Sbom
-                ? new SigtranCommercialEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, requiresDigest: false, item.RequiresRedactionReview)
+            .Select(item => item.Kind == SigtranReleaseEvidenceChecklistKind.Sbom
+                ? new SigtranReleaseEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, requiresDigest: false, item.RequiresRedactionReview)
                 : item)
             .ToArray());
-    SigtranCommercialEvidenceExecutionVerificationPlan missingRedaction = new(
+    SigtranReleaseEvidenceExecutionVerificationPlan missingRedaction = new(
         manifest,
         plan.Items
-            .Select(item => item.Kind == SigtranCommercialEvidenceChecklistKind.PacketCapture
-                ? new SigtranCommercialEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, item.RequiresDigest, requiresRedactionReview: false)
+            .Select(item => item.Kind == SigtranReleaseEvidenceChecklistKind.PacketCapture
+                ? new SigtranReleaseEvidenceExecutionVerificationItem(item.ArtifactPath, item.Kind, item.RequiresDigest, requiresRedactionReview: false)
                 : item)
             .ToArray());
 
@@ -4773,42 +4779,42 @@ static void SigtranCommercialEvidenceExecutionVerificationRequiresDigestsAndReda
     Assert(!missingRedaction.RequiresRedactionForTraceArtifacts, "missing redaction review should block trace evidence");
 }
 
-static void SigtranCommercialEvidenceExecutionBlockerClassifierCategorizesFailures()
+static void SigtranReleaseEvidenceExecutionBlockerClassifierCategorizesFailures()
 {
-    SigtranCommercialEvidenceExecutionBlockerClassifier classifier = SigtranCommercialEvidenceExecutionBlockers.CreateDefault();
-    SigtranCommercialEvidenceExecutionBlocker missingEnvironment = classifier.Classify("environment-missing");
-    SigtranCommercialEvidenceExecutionBlocker peerUnavailable = classifier.Classify("external-peer-unavailable");
-    SigtranCommercialEvidenceExecutionBlocker nativeSctpUnavailable = classifier.Classify("native-sctp-unavailable");
-    SigtranCommercialEvidenceExecutionBlocker unknown = classifier.Classify("operator-note-required");
+    SigtranReleaseEvidenceExecutionBlockerClassifier classifier = SigtranReleaseEvidenceExecutionBlockers.CreateDefault();
+    SigtranReleaseEvidenceExecutionBlocker missingEnvironment = classifier.Classify("environment-missing");
+    SigtranReleaseEvidenceExecutionBlocker peerUnavailable = classifier.Classify("external-peer-unavailable");
+    SigtranReleaseEvidenceExecutionBlocker nativeSctpUnavailable = classifier.Classify("native-sctp-unavailable");
+    SigtranReleaseEvidenceExecutionBlocker unknown = classifier.Classify("operator-note-required");
 
     Assert(classifier.IsReady, classifier.Describe());
     Assert(classifier.HasUniqueCodes, "blocker classifier should use unique codes");
     Assert(classifier.CoversOperationalKinds, "blocker classifier should cover operational blocker kinds");
-    Assert(missingEnvironment.Kind == SigtranCommercialEvidenceExecutionBlockerKind.Environment, "environment blocker should be classified");
+    Assert(missingEnvironment.Kind == SigtranReleaseEvidenceExecutionBlockerKind.Environment, "environment blocker should be classified");
     Assert(missingEnvironment.Retryable, "missing environment can be retried after correction");
-    Assert(peerUnavailable.Kind == SigtranCommercialEvidenceExecutionBlockerKind.ExternalPeer, "external peer blocker should be classified");
+    Assert(peerUnavailable.Kind == SigtranReleaseEvidenceExecutionBlockerKind.ExternalPeer, "external peer blocker should be classified");
     Assert(peerUnavailable.Retryable, "external peer availability can be retried");
-    Assert(nativeSctpUnavailable.Kind == SigtranCommercialEvidenceExecutionBlockerKind.NativeSctp, "native SCTP blocker should be classified");
+    Assert(nativeSctpUnavailable.Kind == SigtranReleaseEvidenceExecutionBlockerKind.NativeSctp, "native SCTP blocker should be classified");
     Assert(!nativeSctpUnavailable.Retryable, "native SCTP host capability should require host correction");
-    Assert(unknown.Kind == SigtranCommercialEvidenceExecutionBlockerKind.Unknown, "unknown blocker should require manual triage");
+    Assert(unknown.Kind == SigtranReleaseEvidenceExecutionBlockerKind.Unknown, "unknown blocker should require manual triage");
     Assert(!unknown.Retryable, "unknown blocker should not be automatically retried");
 }
 
-static void SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions()
+static void SigtranReleaseEvidenceExecutionRetryPolicyGatesResumeDecisions()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionRetryPolicy policy = SigtranCommercialEvidenceExecutionRetryPolicies.CreateDefault(catalog);
-    SigtranCommercialEvidenceExecutionBlockerClassifier classifier = SigtranCommercialEvidenceExecutionBlockers.CreateDefault();
-    SigtranCommercialEvidenceExecutionRetryDecision peerRetry = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 1);
-    SigtranCommercialEvidenceExecutionRetryDecision peerExhausted = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 3);
-    SigtranCommercialEvidenceExecutionRetryDecision nativeSctp = policy.Decide(classifier.Classify("native-sctp-unavailable"), attemptCount: 0);
-    SigtranCommercialEvidenceExecutionRetryDecision unknown = policy.Decide(classifier.Classify("operator-note-required"), attemptCount: 0);
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionRetryPolicy policy = SigtranReleaseEvidenceExecutionRetryPolicies.CreateDefault(catalog);
+    SigtranReleaseEvidenceExecutionBlockerClassifier classifier = SigtranReleaseEvidenceExecutionBlockers.CreateDefault();
+    SigtranReleaseEvidenceExecutionRetryDecision peerRetry = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 1);
+    SigtranReleaseEvidenceExecutionRetryDecision peerExhausted = policy.Decide(classifier.Classify("external-peer-unavailable"), attemptCount: 3);
+    SigtranReleaseEvidenceExecutionRetryDecision nativeSctp = policy.Decide(classifier.Classify("native-sctp-unavailable"), attemptCount: 0);
+    SigtranReleaseEvidenceExecutionRetryDecision unknown = policy.Decide(classifier.Classify("operator-note-required"), attemptCount: 0);
 
     Assert(policy.IsReady, policy.Describe());
     Assert(policy.CoversKnownBlockers, "retry policy should cover known blocker kinds");
@@ -4823,37 +4829,37 @@ static void SigtranCommercialEvidenceExecutionRetryPolicyGatesResumeDecisions()
     Assert(!unknown.CanRetry, "unknown blockers should not retry automatically");
 }
 
-static void SigtranCommercialEvidenceExecutionStatusSummarizesOrchestrationReadiness()
+static void SigtranReleaseEvidenceExecutionStatusSummarizesOrchestrationReadiness()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceExecutionStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceExecutionStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceExecutionStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranCommercialEvidenceExecutionStatus.CompletedUnitCount, "commercial evidence execution completed unit count");
-    AssertEqual(10, capabilities.Count, "commercial evidence execution capability count");
+    AssertEqual(10, SigtranReleaseEvidenceExecutionStatus.CompletedUnitCount, "production evidence execution completed unit count");
+    AssertEqual(10, capabilities.Count, "production evidence execution capability count");
     Assert(capabilities.Contains("retry-resume-policy"), "execution status should include retry and resume policy");
     Assert(capabilities.Contains("final-validation"), "execution status should include final validation");
     Assert(capabilities.Contains("documentation"), "execution status should include documentation");
-    Assert(SigtranCommercialEvidenceExecutionStatus.ExecutionOrchestrationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
-    Assert(!SigtranCommercialEvidenceExecutionStatus.RetainedExecutionEvidenceReady, SigtranCommercialEvidenceExecutionStatus.Describe());
-    Assert(!SigtranCommercialEvidenceExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceExecutionStatus.Describe());
+    Assert(SigtranReleaseEvidenceExecutionStatus.ExecutionOrchestrationReady, SigtranReleaseEvidenceExecutionStatus.Describe());
+    Assert(!SigtranReleaseEvidenceExecutionStatus.RetainedExecutionEvidenceReady, SigtranReleaseEvidenceExecutionStatus.Describe());
+    Assert(!SigtranReleaseEvidenceExecutionStatus.ProductionPublicationReady, SigtranReleaseEvidenceExecutionStatus.Describe());
     Assert(blockers.Contains("real-execution-artifacts-required"), "execution status should require real retained artifacts");
     Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
 }
 
-static void SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun()
+static void SigtranReleaseEvidenceArtifactIntakeTargetBindsToExecutionRun()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         new DateTimeOffset(2026, 06, 22, 12, 00, 00, TimeSpan.FromHours(3.5)));
-    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+    SigtranReleaseEvidenceArtifactIntakeTarget target = SigtranReleaseEvidenceArtifactIntakes.CreateDefault(
         run,
         "intake-20260622-001",
         "release-review",
         new DateTimeOffset(2026, 06, 22, 13, 00, 00, TimeSpan.FromHours(3.5)));
-    SigtranCommercialEvidenceArtifactIntakeTarget floatingTarget = new(
+    SigtranReleaseEvidenceArtifactIntakeTarget floatingTarget = new(
         "intake-20260622-002",
         run,
         "release-review",
@@ -4867,30 +4873,30 @@ static void SigtranCommercialEvidenceArtifactIntakeTargetBindsToExecutionRun()
     Assert(!floatingTarget.IsReady, "floating dossier roots should not be intake-ready");
 }
 
-static void SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifacts()
+static void SigtranReleaseEvidenceArtifactSourcesCoverExpectedExecutionArtifacts()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionArtifactManifest expected = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
-    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionArtifactManifest expected = SigtranReleaseEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranReleaseEvidenceArtifactIntakeTarget target = SigtranReleaseEvidenceArtifactIntakes.CreateDefault(
         run,
         "intake-20260622-001",
         "release-review",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceArtifactSourceManifest manifest = SigtranCommercialEvidenceArtifactSources.CreateDefault(
+    SigtranReleaseEvidenceArtifactSourceManifest manifest = SigtranReleaseEvidenceArtifactSources.CreateDefault(
         target,
         expected,
         $"{run.RunArtifactRoot}/incoming/intake-20260622-001");
-    SigtranCommercialEvidenceArtifactSourceManifest floatingManifest = new(
+    SigtranReleaseEvidenceArtifactSourceManifest floatingManifest = new(
         target,
         expected,
         [
-            new("native-sctp-lab", SigtranCommercialEvidenceChecklistKind.PacketCapture, "artifacts/latest/packet-capture.pcapng", $"{target.DossierRoot}/native-sctp-lab/packet-capture.pcapng", true)
+            new("native-sctp-lab", SigtranReleaseEvidenceChecklistKind.PacketCapture, "artifacts/latest/packet-capture.pcapng", $"{target.DossierRoot}/native-sctp-lab/packet-capture.pcapng", true)
         ]);
 
     AssertEqual(expected.Artifacts.Count, manifest.Sources.Count, "artifact source count");
@@ -4901,11 +4907,11 @@ static void SigtranCommercialEvidenceArtifactSourcesCoverExpectedExecutionArtifa
     Assert(!floatingManifest.IsReady, "floating source paths should not be source-manifest ready");
 }
 
-static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
+static void SigtranReleaseEvidenceArtifactDigestsCoverRetainedSources()
 {
-    SigtranCommercialEvidenceArtifactSourceManifest sources = CreateDefaultCommercialEvidenceArtifactSourceManifest();
-    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
-    SigtranCommercialEvidenceArtifactDigestManifest invalidDigests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(sources, "abc");
+    SigtranReleaseEvidenceArtifactSourceManifest sources = CreateDefaultReleaseEvidenceArtifactSourceManifest();
+    SigtranReleaseEvidenceArtifactDigestManifest digests = CreateDefaultReleaseEvidenceArtifactDigestManifest();
+    SigtranReleaseEvidenceArtifactDigestManifest invalidDigests = SigtranReleaseEvidenceArtifactDigests.CreateCovered(sources, "abc");
 
     AssertEqual(sources.Sources.Count, digests.Digests.Count, "artifact digest count");
     Assert(digests.IsReady, digests.Describe());
@@ -4915,12 +4921,12 @@ static void SigtranCommercialEvidenceArtifactDigestsCoverRetainedSources()
     Assert(!invalidDigests.IsReady, "invalid SHA-256 values should block digest readiness");
 }
 
-static void SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifacts()
+static void SigtranReleaseEvidenceRedactionReviewsApproveTraceBearingArtifacts()
 {
-    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
-    SigtranCommercialEvidenceRedactionReviewManifest reviews = CreateDefaultCommercialEvidenceRedactionReviewManifest();
-    SigtranCommercialEvidenceRedactionReview firstReview = reviews.Reviews[0];
-    SigtranCommercialEvidenceRedactionReviewManifest rejectedReviews = new(
+    SigtranReleaseEvidenceArtifactDigestManifest digests = CreateDefaultReleaseEvidenceArtifactDigestManifest();
+    SigtranReleaseEvidenceRedactionReviewManifest reviews = CreateDefaultReleaseEvidenceRedactionReviewManifest();
+    SigtranReleaseEvidenceRedactionReview firstReview = reviews.Reviews[0];
+    SigtranReleaseEvidenceRedactionReviewManifest rejectedReviews = new(
         digests,
         [
             new(firstReview.RetainedPath, firstReview.Kind, "release-review", DateTimeOffset.UtcNow, approved: false, "Sensitive data still present.")
@@ -4933,18 +4939,18 @@ static void SigtranCommercialEvidenceRedactionReviewsApproveTraceBearingArtifact
     Assert(!rejectedReviews.IsReady, "rejected redaction review should block readiness");
 }
 
-static void SigtranCommercialEvidenceArtifactCompletenessReportsBlockers()
+static void SigtranReleaseEvidenceArtifactCompletenessReportsBlockers()
 {
-    SigtranCommercialEvidenceArtifactDigestManifest digests = CreateDefaultCommercialEvidenceArtifactDigestManifest();
-    SigtranCommercialEvidenceRedactionReviewManifest reviews = CreateDefaultCommercialEvidenceRedactionReviewManifest();
-    SigtranCommercialEvidenceArtifactCompletenessResult complete = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(reviews);
-    SigtranCommercialEvidenceRedactionReview firstReview = reviews.Reviews[0];
-    SigtranCommercialEvidenceRedactionReviewManifest rejectedReviews = new(
+    SigtranReleaseEvidenceArtifactDigestManifest digests = CreateDefaultReleaseEvidenceArtifactDigestManifest();
+    SigtranReleaseEvidenceRedactionReviewManifest reviews = CreateDefaultReleaseEvidenceRedactionReviewManifest();
+    SigtranReleaseEvidenceArtifactCompletenessResult complete = SigtranReleaseEvidenceArtifactCompleteness.Evaluate(reviews);
+    SigtranReleaseEvidenceRedactionReview firstReview = reviews.Reviews[0];
+    SigtranReleaseEvidenceRedactionReviewManifest rejectedReviews = new(
         digests,
         [
             new(firstReview.RetainedPath, firstReview.Kind, "release-review", DateTimeOffset.UtcNow, approved: false, "Sensitive data still present.")
         ]);
-    SigtranCommercialEvidenceArtifactCompletenessResult blocked = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(rejectedReviews);
+    SigtranReleaseEvidenceArtifactCompletenessResult blocked = SigtranReleaseEvidenceArtifactCompleteness.Evaluate(rejectedReviews);
 
     Assert(complete.IsComplete, complete.Describe());
     AssertEqual(0, complete.Blockers.Count, "complete artifact intake blockers");
@@ -4952,9 +4958,9 @@ static void SigtranCommercialEvidenceArtifactCompletenessReportsBlockers()
     Assert(blocked.Blockers.Contains("redaction-review-incomplete"), "blocked completeness should report redaction review");
 }
 
-static void SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary()
+static void SigtranReleaseEvidenceDossierIntakeReportRendersRetainedSummary()
 {
-    SigtranCommercialEvidenceDossierIntakeReport report = CreateDefaultCommercialEvidenceDossierIntakeReport();
+    SigtranReleaseEvidenceDossierIntakeReport report = CreateDefaultReleaseEvidenceDossierIntakeReport();
     string markdown = report.RenderMarkdown();
 
     Assert(report.IsReady, markdown);
@@ -4964,15 +4970,15 @@ static void SigtranCommercialEvidenceDossierIntakeReportRendersRetainedSummary()
     Assert(markdown.Contains("Complete: `True`", StringComparison.Ordinal), "dossier intake report should include completion state");
 }
 
-static void SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport()
+static void SigtranReleaseEvidencePromotionHandoffIncludesDigestsAndReport()
 {
-    SigtranCommercialEvidenceDossierIntakeReport report = CreateDefaultCommercialEvidenceDossierIntakeReport();
-    SigtranCommercialEvidencePromotionHandoff handoff = SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+    SigtranReleaseEvidenceDossierIntakeReport report = CreateDefaultReleaseEvidenceDossierIntakeReport();
+    SigtranReleaseEvidencePromotionHandoff handoff = SigtranReleaseEvidencePromotionHandoffs.CreateDefault(
         report,
         new string('b', 64),
         "release-review",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidencePromotionHandoff invalidHandoff = SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+    SigtranReleaseEvidencePromotionHandoff invalidHandoff = SigtranReleaseEvidencePromotionHandoffs.CreateDefault(
         report,
         "invalid",
         "release-review",
@@ -4985,15 +4991,15 @@ static void SigtranCommercialEvidencePromotionHandoffIncludesDigestsAndReport()
     Assert(!invalidHandoff.IsReady, "invalid report digest should block promotion handoff readiness");
 }
 
-static void SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun()
+static void SigtranReleaseEvidenceDossierIntakeBridgeBuildsHandoffFromExecutionRun()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceDossierIntakeBridgeResult result = SigtranCommercialEvidenceDossierIntakeBridge.BuildDefault(
+    SigtranReleaseEvidenceDossierIntakeBridgeResult result = SigtranReleaseEvidenceDossierIntakeBridge.BuildDefault(
         run,
         "intake-20260622-001",
         "release-review",
@@ -5008,29 +5014,29 @@ static void SigtranCommercialEvidenceDossierIntakeBridgeBuildsHandoffFromExecuti
     Assert(result.Report.ReportPath.StartsWith(result.Target.DossierRoot, StringComparison.Ordinal), "bridge report should stay under dossier root");
 }
 
-static void SigtranCommercialEvidenceArtifactIntakeStatusSummarizesFoundationReadiness()
+static void SigtranReleaseEvidenceArtifactIntakeStatusSummarizesFoundationReadiness()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceArtifactIntakeStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceArtifactIntakeStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceArtifactIntakeStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranCommercialEvidenceArtifactIntakeStatus.CompletedUnitCount, "artifact intake completed unit count");
+    AssertEqual(10, SigtranReleaseEvidenceArtifactIntakeStatus.CompletedUnitCount, "artifact intake completed unit count");
     AssertEqual(10, capabilities.Count, "artifact intake capability count");
     Assert(capabilities.Contains("execution-dossier-bridge"), "artifact intake status should include execution bridge");
     Assert(capabilities.Contains("final-validation"), "artifact intake status should include final validation");
     Assert(capabilities.Contains("documentation"), "artifact intake status should include documentation");
-    Assert(SigtranCommercialEvidenceArtifactIntakeStatus.ArtifactIntakeFoundationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
-    Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.RealArtifactEvidenceReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
-    Assert(!SigtranCommercialEvidenceArtifactIntakeStatus.CommercialPublicationReady, SigtranCommercialEvidenceArtifactIntakeStatus.Describe());
+    Assert(SigtranReleaseEvidenceArtifactIntakeStatus.ArtifactIntakeFoundationReady, SigtranReleaseEvidenceArtifactIntakeStatus.Describe());
+    Assert(!SigtranReleaseEvidenceArtifactIntakeStatus.RealArtifactEvidenceReady, SigtranReleaseEvidenceArtifactIntakeStatus.Describe());
+    Assert(!SigtranReleaseEvidenceArtifactIntakeStatus.ProductionPublicationReady, SigtranReleaseEvidenceArtifactIntakeStatus.Describe());
     Assert(blockers.Contains("real-artifact-file-evidence-required"), "artifact intake status should require real file evidence");
     Assert(!blockers.Contains("status-final-validation-pending"), "final validation should no longer be a blocker");
 }
 
-static void SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest()
+static void SigtranReleaseEvidenceRetainedFileVerifiesObservedDigest()
 {
-    SigtranCommercialEvidencePromotionHandoff handoff = CreateDefaultCommercialEvidencePromotionHandoff();
-    SigtranCommercialEvidencePromotionHandoffItem item = handoff.Items[0];
-    SigtranCommercialEvidenceRetainedFile file = SigtranCommercialEvidenceRetainedFiles.CreateVerified(item, sizeBytes: 4096, DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceRetainedFile mismatch = new(
+    SigtranReleaseEvidencePromotionHandoff handoff = CreateDefaultReleaseEvidencePromotionHandoff();
+    SigtranReleaseEvidencePromotionHandoffItem item = handoff.Items[0];
+    SigtranReleaseEvidenceRetainedFile file = SigtranReleaseEvidenceRetainedFiles.CreateVerified(item, sizeBytes: 4096, DateTimeOffset.UtcNow);
+    SigtranReleaseEvidenceRetainedFile mismatch = new(
         item.Kind,
         item.RetainedPath,
         item.Sha256,
@@ -5046,13 +5052,13 @@ static void SigtranCommercialEvidenceRetainedFileVerifiesObservedDigest()
     Assert(!mismatch.IsVerified, "digest mismatch should block retained file verification");
 }
 
-static void SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems()
+static void SigtranReleaseEvidenceRetainedFileManifestCoversHandoffItems()
 {
-    SigtranCommercialEvidencePromotionHandoff handoff = CreateDefaultCommercialEvidencePromotionHandoff();
-    SigtranCommercialEvidenceRetainedFileManifest manifest = CreateDefaultCommercialEvidenceRetainedFileManifest();
-    SigtranCommercialEvidenceRetainedFileManifest incomplete = new(
+    SigtranReleaseEvidencePromotionHandoff handoff = CreateDefaultReleaseEvidencePromotionHandoff();
+    SigtranReleaseEvidenceRetainedFileManifest manifest = CreateDefaultReleaseEvidenceRetainedFileManifest();
+    SigtranReleaseEvidenceRetainedFileManifest incomplete = new(
         handoff,
-        [SigtranCommercialEvidenceRetainedFiles.CreateVerified(handoff.Items[0], sizeBytes: 4096, DateTimeOffset.UtcNow)]);
+        [SigtranReleaseEvidenceRetainedFiles.CreateVerified(handoff.Items[0], sizeBytes: 4096, DateTimeOffset.UtcNow)]);
 
     Assert(manifest.IsReady, manifest.Describe());
     AssertEqual(handoff.Items.Count, manifest.Files.Count, "retained file manifest count");
@@ -5062,14 +5068,14 @@ static void SigtranCommercialEvidenceRetainedFileManifestCoversHandoffItems()
     Assert(!incomplete.IsReady, "missing retained files should block manifest readiness");
 }
 
-static void SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers()
+static void SigtranReleaseEvidenceFileVerificationReportIdentifiesBlockers()
 {
-    SigtranCommercialEvidenceRetainedFileManifest verifiedManifest = CreateDefaultCommercialEvidenceRetainedFileManifest();
-    SigtranCommercialEvidencePromotionHandoff handoff = verifiedManifest.Handoff;
-    SigtranCommercialEvidenceFileVerificationReport verifiedReport = SigtranCommercialEvidenceFileVerificationReports.Evaluate(verifiedManifest);
+    SigtranReleaseEvidenceRetainedFileManifest verifiedManifest = CreateDefaultReleaseEvidenceRetainedFileManifest();
+    SigtranReleaseEvidencePromotionHandoff handoff = verifiedManifest.Handoff;
+    SigtranReleaseEvidenceFileVerificationReport verifiedReport = SigtranReleaseEvidenceFileVerificationReports.Evaluate(verifiedManifest);
 
-    SigtranCommercialEvidenceRetainedFile[] mismatchFiles = verifiedManifest.Files.ToArray();
-    SigtranCommercialEvidencePromotionHandoffItem firstItem = handoff.Items[0];
+    SigtranReleaseEvidenceRetainedFile[] mismatchFiles = verifiedManifest.Files.ToArray();
+    SigtranReleaseEvidencePromotionHandoffItem firstItem = handoff.Items[0];
     mismatchFiles[0] = new(
         firstItem.Kind,
         firstItem.RetainedPath,
@@ -5078,7 +5084,7 @@ static void SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers()
         sizeBytes: 4096,
         DateTimeOffset.UtcNow,
         exists: true);
-    SigtranCommercialEvidenceFileVerificationReport mismatchReport = SigtranCommercialEvidenceFileVerificationReports.Evaluate(new(handoff, mismatchFiles));
+    SigtranReleaseEvidenceFileVerificationReport mismatchReport = SigtranReleaseEvidenceFileVerificationReports.Evaluate(new(handoff, mismatchFiles));
 
     Assert(verifiedReport.IsVerified, verifiedReport.Describe());
     AssertEqual(0, verifiedReport.Blockers.Count, "verified retained file report blocker count");
@@ -5087,12 +5093,12 @@ static void SigtranCommercialEvidenceFileVerificationReportIdentifiesBlockers()
     Assert(mismatchReport.Blockers.Contains("retained-file-digest-mismatch"), "retained file report should expose digest mismatch blocker");
 }
 
-static void SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention()
+static void SigtranReleaseEvidenceRetentionLedgerRequiresImmutableRetention()
 {
-    SigtranCommercialEvidenceFileVerificationReport report = CreateDefaultCommercialEvidenceFileVerificationReport();
-    SigtranCommercialEvidenceRetentionLedger ledger = CreateDefaultCommercialEvidenceRetentionLedger(report);
-    SigtranCommercialEvidenceRetentionLedgerEntry[] shortEntries = ledger.Entries.ToArray();
-    SigtranCommercialEvidenceRetentionLedgerEntry first = shortEntries[0];
+    SigtranReleaseEvidenceFileVerificationReport report = CreateDefaultReleaseEvidenceFileVerificationReport();
+    SigtranReleaseEvidenceRetentionLedger ledger = CreateDefaultReleaseEvidenceRetentionLedger(report);
+    SigtranReleaseEvidenceRetentionLedgerEntry[] shortEntries = ledger.Entries.ToArray();
+    SigtranReleaseEvidenceRetentionLedgerEntry first = shortEntries[0];
     shortEntries[0] = new(
         first.Kind,
         first.RetainedPath,
@@ -5101,7 +5107,7 @@ static void SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention()
         first.RetainedAtUtc.AddDays(30),
         first.Reviewer,
         immutableRetention: true);
-    SigtranCommercialEvidenceRetentionLedger shortLedger = new(report, shortEntries, minimumRetentionDays: 365);
+    SigtranReleaseEvidenceRetentionLedger shortLedger = new(report, shortEntries, minimumRetentionDays: 365);
 
     Assert(ledger.IsReady, ledger.Describe());
     AssertEqual(report.Manifest.Files.Count, ledger.Entries.Count, "retention ledger entry count");
@@ -5112,11 +5118,11 @@ static void SigtranCommercialEvidenceRetentionLedgerRequiresImmutableRetention()
     Assert(!shortLedger.AllEntriesReady, "short retention windows should fail entry readiness");
 }
 
-static void SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest()
+static void SigtranReleaseEvidenceIntegritySealVerifiesLedgerDigest()
 {
-    SigtranCommercialEvidenceRetentionLedger ledger = CreateDefaultCommercialEvidenceRetentionLedger();
-    SigtranCommercialEvidenceIntegritySeal seal = CreateDefaultCommercialEvidenceIntegritySeal(ledger);
-    SigtranCommercialEvidenceIntegritySeal mismatch = new(
+    SigtranReleaseEvidenceRetentionLedger ledger = CreateDefaultReleaseEvidenceRetentionLedger();
+    SigtranReleaseEvidenceIntegritySeal seal = CreateDefaultReleaseEvidenceIntegritySeal(ledger);
+    SigtranReleaseEvidenceIntegritySeal mismatch = new(
         ledger,
         seal.SealId,
         "SHA-256",
@@ -5132,11 +5138,11 @@ static void SigtranCommercialEvidenceIntegritySealVerifiesLedgerDigest()
     Assert(!mismatch.MatchesLedgerDigest, "mismatched integrity seal should not match ledger digest");
 }
 
-static void SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts()
+static void SigtranReleaseEvidencePublicationAttachmentsProtectTraceArtifacts()
 {
-    SigtranCommercialEvidenceIntegritySeal seal = CreateDefaultCommercialEvidenceIntegritySeal();
-    SigtranCommercialEvidencePublicationAttachmentManifest manifest = CreateDefaultCommercialEvidencePublicationAttachmentManifest(seal);
-    SigtranCommercialEvidencePublicationAttachmentManifest blocked = SigtranCommercialEvidencePublicationAttachments.CreateDefault(
+    SigtranReleaseEvidenceIntegritySeal seal = CreateDefaultReleaseEvidenceIntegritySeal();
+    SigtranReleaseEvidencePublicationAttachmentManifest manifest = CreateDefaultReleaseEvidencePublicationAttachmentManifest(seal);
+    SigtranReleaseEvidencePublicationAttachmentManifest blocked = SigtranReleaseEvidencePublicationAttachments.CreateDefault(
         seal,
         publishable: true,
         redactionApproved: false);
@@ -5145,16 +5151,16 @@ static void SigtranCommercialEvidencePublicationAttachmentsProtectTraceArtifacts
     AssertEqual(seal.Ledger.Entries.Count, manifest.Attachments.Count, "publication attachment count");
     Assert(manifest.CoversSealedLedgerEntries, "publication attachments should cover sealed ledger entries");
     Assert(manifest.ProtectsTraceBearingArtifacts, "publication attachments should protect trace-bearing artifacts");
-    Assert(manifest.IncludesCommercialReadinessReport, "publication attachments should include commercial readiness report");
+    Assert(manifest.IncludesProductionReadinessSnapshot, "publication attachments should include production readiness report");
     Assert(!blocked.IsReady, "missing redaction approval should block publication attachment readiness");
     Assert(!blocked.ProtectsTraceBearingArtifacts, "blocked attachments should expose trace protection failure");
 }
 
-static void SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval()
+static void SigtranReleaseEvidenceVerifiedPromotionGateRequiresApproval()
 {
-    SigtranCommercialEvidencePublicationAttachmentManifest attachmentManifest = CreateDefaultCommercialEvidencePublicationAttachmentManifest();
-    SigtranCommercialEvidenceVerifiedPromotionGateResult approved = CreateDefaultCommercialEvidenceVerifiedPromotionGate(attachmentManifest);
-    SigtranCommercialEvidenceVerifiedPromotionGateResult blocked = SigtranCommercialEvidenceVerifiedPromotionGates.Evaluate(
+    SigtranReleaseEvidencePublicationAttachmentManifest attachmentManifest = CreateDefaultReleaseEvidencePublicationAttachmentManifest();
+    SigtranReleaseEvidenceVerifiedPromotionGateResult approved = CreateDefaultReleaseEvidenceVerifiedPromotionGate(attachmentManifest);
+    SigtranReleaseEvidenceVerifiedPromotionGateResult blocked = SigtranReleaseEvidenceVerifiedPromotionGates.Evaluate(
         attachmentManifest,
         "release-review",
         DateTimeOffset.UtcNow,
@@ -5164,15 +5170,15 @@ static void SigtranCommercialEvidenceVerifiedPromotionGateRequiresApproval()
     Assert(approved.CanProceedToReleasePublication, "approved evidence should proceed to release publication decision");
     AssertEqual(0, approved.Blockers.Count, "approved promotion blocker count");
     Assert(!blocked.CanPromoteEvidence, "missing approval should block evidence promotion");
-    Assert(blocked.Blockers.Contains("commercial-evidence-approval-missing"), "promotion gate should expose approval blocker");
+    Assert(blocked.Blockers.Contains("release-evidence-approval-missing"), "promotion gate should expose approval blocker");
 }
 
-static void SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution()
+static void SigtranReleaseEvidenceFileVerificationCommandPlanOrdersExecution()
 {
-    SigtranCommercialEvidenceFileVerificationCommandPlan plan = CreateDefaultCommercialEvidenceFileVerificationCommandPlan();
+    SigtranReleaseEvidenceFileVerificationCommandPlan plan = CreateDefaultReleaseEvidenceFileVerificationCommandPlan();
 
     Assert(plan.IsReady, plan.Describe());
-    AssertEqual(Enum.GetValues<SigtranCommercialEvidenceFileVerificationCommandKind>().Length, plan.Commands.Count, "file verification command count");
+    AssertEqual(Enum.GetValues<SigtranReleaseEvidenceFileVerificationCommandKind>().Length, plan.Commands.Count, "file verification command count");
     Assert(plan.UsesDeterministicOrder, "file verification commands should use deterministic order");
     Assert(plan.CoversRequiredCommandKinds, "file verification commands should cover every required command kind");
     Assert(plan.ProducesRequiredArtifacts, "file verification commands should produce required artifacts");
@@ -5180,47 +5186,47 @@ static void SigtranCommercialEvidenceFileVerificationCommandPlanOrdersExecution(
     Assert(plan.Commands[^1].RequiresApproval, "last file verification command should require approval");
 }
 
-static void SigtranCommercialEvidenceFileVerificationStatusSummarizesReadiness()
+static void SigtranReleaseEvidenceFileVerificationStatusSummarizesReadiness()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileVerificationStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceFileVerificationStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceFileVerificationStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranCommercialEvidenceFileVerificationStatus.CompletedUnitCount, "file verification completed unit count");
+    AssertEqual(10, SigtranReleaseEvidenceFileVerificationStatus.CompletedUnitCount, "file verification completed unit count");
     AssertEqual(10, capabilities.Count, "file verification capability count");
     Assert(capabilities.Contains("verified-promotion-gate"), "file verification status should include promotion gate");
     Assert(capabilities.Contains("file-verification-command-plan"), "file verification status should include command plan");
     Assert(capabilities.Contains("status-reporting"), "file verification status should include status reporting");
     Assert(capabilities.Contains("documentation"), "file verification status should include documentation");
-    Assert(SigtranCommercialEvidenceFileVerificationStatus.FileVerificationFoundationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
-    Assert(!SigtranCommercialEvidenceFileVerificationStatus.RealRetainedFileEvidenceReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
-    Assert(!SigtranCommercialEvidenceFileVerificationStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileVerificationStatus.Describe());
+    Assert(SigtranReleaseEvidenceFileVerificationStatus.FileVerificationFoundationReady, SigtranReleaseEvidenceFileVerificationStatus.Describe());
+    Assert(!SigtranReleaseEvidenceFileVerificationStatus.RealRetainedFileEvidenceReady, SigtranReleaseEvidenceFileVerificationStatus.Describe());
+    Assert(!SigtranReleaseEvidenceFileVerificationStatus.ProductionPublicationReady, SigtranReleaseEvidenceFileVerificationStatus.Describe());
     Assert(blockers.Contains("real-retained-file-evidence-required"), "file verification status should require real retained file evidence");
     Assert(!blockers.Contains("status-final-validation-pending"), "file verification status should clear final validation blocker");
 }
 
-static void SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDigest()
+static void SigtranReleaseEvidenceFileSystemObserverComputesRetainedFileDigest()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
         string retainedPath = Path.Combine(tempRoot, "sbom.spdx.json");
-        byte[] content = "sigtran commercial evidence"u8.ToArray();
+        byte[] content = "sigtran production evidence"u8.ToArray();
         File.WriteAllBytes(retainedPath, content);
         string expectedSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(content)).ToLowerInvariant();
-        SigtranCommercialEvidencePromotionHandoffItem item = new(
-            SigtranCommercialEvidenceChecklistKind.Sbom,
+        SigtranReleaseEvidencePromotionHandoffItem item = new(
+            SigtranReleaseEvidenceChecklistKind.Sbom,
             retainedPath,
             expectedSha256,
             requiredForPromotion: true);
 
-        SigtranCommercialEvidenceFileSystemObservation observation = SigtranCommercialEvidenceFileSystemObserver.Observe(
+        SigtranReleaseEvidenceFileSystemObservation observation = SigtranReleaseEvidenceFileSystemObserver.Observe(
             item,
             observedAtUtc: DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceFileSystemObservation missing = SigtranCommercialEvidenceFileSystemObserver.Observe(
-            new SigtranCommercialEvidencePromotionHandoffItem(
-                SigtranCommercialEvidenceChecklistKind.Sbom,
+        SigtranReleaseEvidenceFileSystemObservation missing = SigtranReleaseEvidenceFileSystemObserver.Observe(
+            new SigtranReleaseEvidencePromotionHandoffItem(
+                SigtranReleaseEvidenceChecklistKind.Sbom,
                 Path.Combine(tempRoot, "missing.spdx.json"),
                 expectedSha256,
                 requiredForPromotion: true),
@@ -5232,7 +5238,7 @@ static void SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDiges
         AssertEqual(content.Length, (int)observation.RetainedFile.SizeBytes, "filesystem observation size");
         Assert(!missing.IsVerified, "missing filesystem evidence should not verify");
         Assert(!missing.Exists, "missing filesystem evidence should report missing file");
-        AssertEqual(SigtranCommercialEvidenceFileSystemObserver.MissingFileSha256, missing.RetainedFile.ActualSha256, "missing file digest marker");
+        AssertEqual(SigtranReleaseEvidenceFileSystemObserver.MissingFileSha256, missing.RetainedFile.ActualSha256, "missing file digest marker");
     }
     finally
     {
@@ -5240,21 +5246,21 @@ static void SigtranCommercialEvidenceFileSystemObserverComputesRetainedFileDiges
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFiles()
+static void SigtranReleaseEvidenceFileSystemManifestBuilderObservesHandoffFiles()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        byte[] artifactContent = "verified commercial artifact"u8.ToArray();
-        byte[] reportContent = "verified commercial readiness report"u8.ToArray();
-        SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+        byte[] artifactContent = "verified production artifact"u8.ToArray();
+        byte[] reportContent = "verified production readiness report"u8.ToArray();
+        SigtranReleaseEvidencePromotionHandoff handoff = CreateReleaseEvidencePromotionHandoffWithDigests(
             ComputeSha256Hex(artifactContent),
             ComputeSha256Hex(reportContent));
         IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
 
-        SigtranCommercialEvidenceFileSystemManifestExecution execution = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+        SigtranReleaseEvidenceFileSystemManifestExecution execution = SigtranReleaseEvidenceFileSystemManifestBuilder.Build(
             handoff,
             pathOverrides,
             DateTimeOffset.UtcNow);
@@ -5272,31 +5278,31 @@ static void SigtranCommercialEvidenceFileSystemManifestBuilderObservesHandoffFil
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissingFiles()
+static void SigtranReleaseEvidenceFileSystemVerificationReportIdentifiesMissingFiles()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        byte[] artifactContent = "verified commercial artifact"u8.ToArray();
-        byte[] reportContent = "verified commercial readiness report"u8.ToArray();
-        SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+        byte[] artifactContent = "verified production artifact"u8.ToArray();
+        byte[] reportContent = "verified production readiness report"u8.ToArray();
+        SigtranReleaseEvidencePromotionHandoff handoff = CreateReleaseEvidencePromotionHandoffWithDigests(
             ComputeSha256Hex(artifactContent),
             ComputeSha256Hex(reportContent));
         IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
-        SigtranCommercialEvidenceFileSystemManifestExecution readyManifest = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+        SigtranReleaseEvidenceFileSystemManifestExecution readyManifest = SigtranReleaseEvidenceFileSystemManifestBuilder.Build(
             handoff,
             pathOverrides,
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceFileSystemVerificationExecution readyReport = SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(readyManifest);
+        SigtranReleaseEvidenceFileSystemVerificationExecution readyReport = SigtranReleaseEvidenceFileSystemVerificationReports.Evaluate(readyManifest);
 
         File.Delete(pathOverrides.First().Value);
-        SigtranCommercialEvidenceFileSystemManifestExecution missingManifest = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+        SigtranReleaseEvidenceFileSystemManifestExecution missingManifest = SigtranReleaseEvidenceFileSystemManifestBuilder.Build(
             handoff,
             pathOverrides,
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceFileSystemVerificationExecution missingReport = SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(missingManifest);
+        SigtranReleaseEvidenceFileSystemVerificationExecution missingReport = SigtranReleaseEvidenceFileSystemVerificationReports.Evaluate(missingManifest);
 
         Assert(readyReport.IsReady, readyReport.Describe());
         AssertEqual(handoff.Items.Count, readyReport.ObservationCount, "filesystem verification report observation count");
@@ -5312,17 +5318,17 @@ static void SigtranCommercialEvidenceFileSystemVerificationReportIdentifiesMissi
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports()
+static void SigtranReleaseEvidenceFileSystemArtifactWriterRetainsReports()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemVerificationExecution execution = CreateReadyCommercialEvidenceFileSystemVerificationExecution(tempRoot);
+        SigtranReleaseEvidenceFileSystemVerificationExecution execution = CreateReadyReleaseEvidenceFileSystemVerificationExecution(tempRoot);
         string outputDirectory = Path.Combine(tempRoot, "verification-output");
 
-        SigtranCommercialEvidenceFileSystemArtifactWriteResult writeResult = SigtranCommercialEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
+        SigtranReleaseEvidenceFileSystemArtifactWriteResult writeResult = SigtranReleaseEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
             execution,
             outputDirectory,
             DateTimeOffset.UtcNow);
@@ -5339,16 +5345,16 @@ static void SigtranCommercialEvidenceFileSystemArtifactWriterRetainsReports()
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFiles()
+static void SigtranReleaseEvidenceFileSystemRetentionLedgerCoversVerifiedFiles()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemArtifactWriteResult writeResult = CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(tempRoot);
+        SigtranReleaseEvidenceFileSystemArtifactWriteResult writeResult = CreateReadyReleaseEvidenceFileSystemArtifactWriteResult(tempRoot);
 
-        SigtranCommercialEvidenceFileSystemRetentionLedgerExecution ledgerExecution = SigtranCommercialEvidenceFileSystemRetentionLedgers.Create(
+        SigtranReleaseEvidenceFileSystemRetentionLedgerExecution ledgerExecution = SigtranReleaseEvidenceFileSystemRetentionLedgers.Create(
             writeResult,
             "release-review",
             DateTimeOffset.UtcNow);
@@ -5364,16 +5370,16 @@ static void SigtranCommercialEvidenceFileSystemRetentionLedgerCoversVerifiedFile
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger()
+static void SigtranReleaseEvidenceFileSystemIntegritySealMatchesLedger()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemRetentionLedgerExecution ledgerExecution = CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(tempRoot);
+        SigtranReleaseEvidenceFileSystemRetentionLedgerExecution ledgerExecution = CreateReadyReleaseEvidenceFileSystemRetentionLedgerExecution(tempRoot);
 
-        SigtranCommercialEvidenceFileSystemIntegritySealExecution sealExecution = SigtranCommercialEvidenceFileSystemIntegritySeals.Create(
+        SigtranReleaseEvidenceFileSystemIntegritySealExecution sealExecution = SigtranReleaseEvidenceFileSystemIntegritySeals.Create(
             ledgerExecution,
             DateTimeOffset.UtcNow);
 
@@ -5388,17 +5394,17 @@ static void SigtranCommercialEvidenceFileSystemIntegritySealMatchesLedger()
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence()
+static void SigtranReleaseEvidenceFileSystemPublicationAttachmentsProtectTraceEvidence()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemIntegritySealExecution sealExecution = CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(tempRoot);
+        SigtranReleaseEvidenceFileSystemIntegritySealExecution sealExecution = CreateReadyReleaseEvidenceFileSystemIntegritySealExecution(tempRoot);
 
-        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution execution = SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(sealExecution);
-        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution blocked = SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(
+        SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution execution = SigtranReleaseEvidenceFileSystemPublicationAttachments.Create(sealExecution);
+        SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution blocked = SigtranReleaseEvidenceFileSystemPublicationAttachments.Create(
             sealExecution,
             publishable: true,
             redactionApproved: false);
@@ -5417,20 +5423,20 @@ static void SigtranCommercialEvidenceFileSystemPublicationAttachmentsProtectTrac
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval()
+static void SigtranReleaseEvidenceFileSystemPromotionGateRequiresApproval()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution attachmentExecution = CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(tempRoot);
+        SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution attachmentExecution = CreateReadyReleaseEvidenceFileSystemPublicationAttachmentExecution(tempRoot);
 
-        SigtranCommercialEvidenceFileSystemPromotionExecution approved = SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
+        SigtranReleaseEvidenceFileSystemPromotionExecution approved = SigtranReleaseEvidenceFileSystemPromotions.Evaluate(
             attachmentExecution,
             "release-review",
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceFileSystemPromotionExecution blocked = SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
+        SigtranReleaseEvidenceFileSystemPromotionExecution blocked = SigtranReleaseEvidenceFileSystemPromotions.Evaluate(
             attachmentExecution,
             "release-review",
             DateTimeOffset.UtcNow,
@@ -5441,7 +5447,7 @@ static void SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval()
         Assert(approved.UsesCurrentAttachmentManifest, "filesystem promotion should evaluate the current attachment manifest");
         Assert(approved.CanPromoteEvidence, "approved filesystem evidence should promote");
         Assert(!blocked.IsReady, "missing approval should block filesystem promotion");
-        Assert(blocked.PromotionGate.Blockers.Contains("commercial-evidence-approval-missing"), "filesystem promotion should expose approval blocker");
+        Assert(blocked.PromotionGate.Blockers.Contains("release-evidence-approval-missing"), "filesystem promotion should expose approval blocker");
     }
     finally
     {
@@ -5449,18 +5455,18 @@ static void SigtranCommercialEvidenceFileSystemPromotionGateRequiresApproval()
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutionScript()
+static void SigtranReleaseEvidenceFileSystemCommandMaterializerWritesExecutionScript()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileVerificationCommandPlan plan = SigtranCommercialEvidenceFileVerificationCommands.CreateDefault(
+        SigtranReleaseEvidenceFileVerificationCommandPlan plan = SigtranReleaseEvidenceFileVerificationCommands.CreateDefault(
             Path.Combine(tempRoot, "artifacts"));
-        string scriptPath = Path.Combine(tempRoot, "scripts", "commercial-evidence.sh");
+        string scriptPath = Path.Combine(tempRoot, "scripts", "release-evidence.sh");
 
-        SigtranCommercialEvidenceFileSystemCommandMaterialization materialization = SigtranCommercialEvidenceFileSystemCommandMaterializer.WriteScript(
+        SigtranReleaseEvidenceFileSystemCommandMaterialization materialization = SigtranReleaseEvidenceFileSystemCommandMaterializer.WriteScript(
             plan,
             scriptPath,
             DateTimeOffset.UtcNow);
@@ -5478,33 +5484,33 @@ static void SigtranCommercialEvidenceFileSystemCommandMaterializerWritesExecutio
     }
 }
 
-static void SigtranCommercialEvidenceFileSystemExecutionStatusSummarizesFinalValidation()
+static void SigtranReleaseEvidenceFileSystemExecutionStatusSummarizesFinalValidation()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceFileSystemExecutionStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceFileSystemExecutionStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceFileSystemExecutionStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranCommercialEvidenceFileSystemExecutionStatus.CompletedUnitCount, "filesystem execution completed unit count");
+    AssertEqual(10, SigtranReleaseEvidenceFileSystemExecutionStatus.CompletedUnitCount, "filesystem execution completed unit count");
     AssertEqual(10, capabilities.Count, "filesystem execution capability count");
     Assert(capabilities.Contains("command-materialization"), "filesystem execution status should include command materialization");
     Assert(capabilities.Contains("documentation"), "filesystem execution status should include documentation");
-    Assert(SigtranCommercialEvidenceFileSystemExecutionStatus.ExecutionFoundationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
-    Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
-    Assert(!SigtranCommercialEvidenceFileSystemExecutionStatus.CommercialPublicationReady, SigtranCommercialEvidenceFileSystemExecutionStatus.Describe());
-    Assert(blockers.Contains("real-approved-commercial-run-required"), "filesystem execution status should require a real approved run");
+    Assert(SigtranReleaseEvidenceFileSystemExecutionStatus.ExecutionFoundationReady, SigtranReleaseEvidenceFileSystemExecutionStatus.Describe());
+    Assert(!SigtranReleaseEvidenceFileSystemExecutionStatus.RealApprovedProductionRunReady, SigtranReleaseEvidenceFileSystemExecutionStatus.Describe());
+    Assert(!SigtranReleaseEvidenceFileSystemExecutionStatus.ProductionPublicationReady, SigtranReleaseEvidenceFileSystemExecutionStatus.Describe());
+    Assert(blockers.Contains("real-approved-production-run-required"), "filesystem execution status should require a real approved run");
     Assert(!blockers.Contains("status-final-validation-pending"), "filesystem execution status should clear final validation blocker");
 }
 
-static void SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion()
+static void SigtranReleaseEvidenceApprovedRunTargetBindsFileSystemPromotion()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceFileSystemPromotionExecution promotionExecution = CreateReadyCommercialEvidenceFileSystemPromotionExecution(tempRoot);
+        SigtranReleaseEvidenceFileSystemPromotionExecution promotionExecution = CreateReadyReleaseEvidenceFileSystemPromotionExecution(tempRoot);
         DateTimeOffset startedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
-        SigtranCommercialEvidenceApprovedRunTarget target = SigtranCommercialEvidenceApprovedRunTargets.Create(
-            "commercial-run-20260622-001",
+        SigtranReleaseEvidenceApprovedRunTarget target = SigtranReleaseEvidenceApprovedRunTargets.Create(
+            "production-run-20260622-001",
             "1.0.0-rc.1",
             "abcdef123456",
             tempRoot,
@@ -5512,8 +5518,8 @@ static void SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion()
             startedAt,
             DateTimeOffset.UtcNow,
             promotionExecution);
-        SigtranCommercialEvidenceApprovedRunTarget invalidCommit = SigtranCommercialEvidenceApprovedRunTargets.Create(
-            "commercial-run-20260622-002",
+        SigtranReleaseEvidenceApprovedRunTarget invalidCommit = SigtranReleaseEvidenceApprovedRunTargets.Create(
+            "production-run-20260622-002",
             "1.0.0-rc.1",
             "not-a-commit",
             tempRoot,
@@ -5536,17 +5542,17 @@ static void SigtranCommercialEvidenceApprovedRunTargetBindsFileSystemPromotion()
     }
 }
 
-static void SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApproval()
+static void SigtranReleaseEvidenceRunApprovalChecklistRequiresReviewerApproval()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceApprovedRunTarget target = CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot);
+        SigtranReleaseEvidenceApprovedRunTarget target = CreateReadyReleaseEvidenceApprovedRunTarget(tempRoot);
 
-        SigtranCommercialEvidenceRunApprovalChecklist checklist = SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(target);
-        SigtranCommercialEvidenceRunApprovalChecklist blocked = SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(
+        SigtranReleaseEvidenceRunApprovalChecklist checklist = SigtranReleaseEvidenceRunApprovalChecklists.CreateDefault(target);
+        SigtranReleaseEvidenceRunApprovalChecklist blocked = SigtranReleaseEvidenceRunApprovalChecklists.CreateDefault(
             target,
             reviewerApprovalRecorded: false);
 
@@ -5564,19 +5570,19 @@ static void SigtranCommercialEvidenceRunApprovalChecklistRequiresReviewerApprova
     }
 }
 
-static void SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles()
+static void SigtranReleaseEvidenceRunApprovalManifestRequiresRequiredRoles()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceRunApprovalChecklist checklist = CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot);
+        SigtranReleaseEvidenceRunApprovalChecklist checklist = CreateReadyReleaseEvidenceRunApprovalChecklist(tempRoot);
 
-        SigtranCommercialEvidenceRunApprovalManifest manifest = SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
+        SigtranReleaseEvidenceRunApprovalManifest manifest = SigtranReleaseEvidenceRunApprovalManifests.CreateDefault(
             checklist,
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceRunApprovalManifest blocked = SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
+        SigtranReleaseEvidenceRunApprovalManifest blocked = SigtranReleaseEvidenceRunApprovalManifests.CreateDefault(
             checklist,
             DateTimeOffset.UtcNow,
             securityApproved: false);
@@ -5595,16 +5601,16 @@ static void SigtranCommercialEvidenceRunApprovalManifestRequiresRequiredRoles()
     }
 }
 
-static void SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown()
+static void SigtranReleaseEvidenceRunApprovalReportWriterRetainsMarkdown()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceRunApprovalManifest manifest = CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot);
+        SigtranReleaseEvidenceRunApprovalManifest manifest = CreateReadyReleaseEvidenceRunApprovalManifest(tempRoot);
 
-        SigtranCommercialEvidenceRunApprovalReportWriteResult result = SigtranCommercialEvidenceRunApprovalReportWriters.WriteReport(
+        SigtranReleaseEvidenceRunApprovalReportWriteResult result = SigtranReleaseEvidenceRunApprovalReportWriters.WriteReport(
             manifest,
             Path.Combine(tempRoot, "approval"),
             DateTimeOffset.UtcNow);
@@ -5623,20 +5629,20 @@ static void SigtranCommercialEvidenceRunApprovalReportWriterRetainsMarkdown()
     }
 }
 
-static void SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts()
+static void SigtranReleaseEvidenceApprovedRunPromotionPackageCoversRequiredArtifacts()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceRunApprovalReportWriteResult report = CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot);
+        SigtranReleaseEvidenceRunApprovalReportWriteResult report = CreateReadyReleaseEvidenceRunApprovalReportWriteResult(tempRoot);
 
-        SigtranCommercialEvidenceApprovedRunPromotionPackage package = SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
+        SigtranReleaseEvidenceApprovedRunPromotionPackage package = SigtranReleaseEvidenceApprovedRunPromotionPackages.CreateDefault(
             report,
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceApprovedRunPromotionArtifact firstArtifact = package.Artifacts[0];
-        SigtranCommercialEvidenceApprovedRunPromotionPackage blocked = new(
+        SigtranReleaseEvidenceApprovedRunPromotionArtifact firstArtifact = package.Artifacts[0];
+        SigtranReleaseEvidenceApprovedRunPromotionPackage blocked = new(
             package.PackageId,
             report,
             [new(firstArtifact.Id, firstArtifact.RetainedPath, "not-a-digest", required: true), .. package.Artifacts.Skip(1)],
@@ -5658,21 +5664,21 @@ static void SigtranCommercialEvidenceApprovedRunPromotionPackageCoversRequiredAr
     }
 }
 
-static void SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPolicy()
+static void SigtranReleaseEvidencePublicationHandoffEnforcesChannelVersionPolicy()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceApprovedRunPromotionPackage package = CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot);
+        SigtranReleaseEvidenceApprovedRunPromotionPackage package = CreateReadyReleaseEvidenceApprovedRunPromotionPackage(tempRoot);
 
-        SigtranCommercialEvidencePublicationHandoff beta = SigtranCommercialEvidencePublicationHandoffs.Create(
+        SigtranReleaseEvidencePublicationHandoff beta = SigtranReleaseEvidencePublicationHandoffs.Create(
             package,
             SigtranPublishChannelKind.Beta,
             "release-manager",
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidencePublicationHandoff stable = SigtranCommercialEvidencePublicationHandoffs.Create(
+        SigtranReleaseEvidencePublicationHandoff stable = SigtranReleaseEvidencePublicationHandoffs.Create(
             package,
             SigtranPublishChannelKind.Stable,
             "release-manager",
@@ -5680,10 +5686,10 @@ static void SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPol
 
         Assert(beta.IsReadyForPublicationGate, beta.Describe());
         Assert(beta.ChannelAcceptsPackageVersion, "beta channel should accept prerelease version");
-        Assert(!beta.RequiresCommercialReadiness, "beta channel should not require stable commercial readiness");
+        Assert(!beta.RequiresProductionReadiness, "beta channel should not require stable release readiness");
         Assert(!stable.IsReadyForPublicationGate, "stable handoff should reject prerelease version");
         Assert(!stable.ChannelAcceptsPackageVersion, "stable channel should not accept prerelease version");
-        Assert(stable.RequiresCommercialReadiness, "stable channel should require commercial readiness");
+        Assert(stable.RequiresProductionReadiness, "stable channel should require production readiness");
     }
     finally
     {
@@ -5691,40 +5697,40 @@ static void SigtranCommercialEvidencePublicationHandoffEnforcesChannelVersionPol
     }
 }
 
-static void SigtranCommercialEvidencePublicationHandoffGateReportsBlockers()
+static void SigtranReleaseEvidencePublicationHandoffGateReportsBlockers()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceApprovedRunPromotionPackage package = CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot);
-        SigtranCommercialEvidencePublicationHandoff beta = SigtranCommercialEvidencePublicationHandoffs.Create(
+        SigtranReleaseEvidenceApprovedRunPromotionPackage package = CreateReadyReleaseEvidenceApprovedRunPromotionPackage(tempRoot);
+        SigtranReleaseEvidencePublicationHandoff beta = SigtranReleaseEvidencePublicationHandoffs.Create(
             package,
             SigtranPublishChannelKind.Beta,
             "release-manager",
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidencePublicationHandoff stable = SigtranCommercialEvidencePublicationHandoffs.Create(
+        SigtranReleaseEvidencePublicationHandoff stable = SigtranReleaseEvidencePublicationHandoffs.Create(
             package,
             SigtranPublishChannelKind.Stable,
             "release-manager",
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidencePublicationHandoff noPublish = SigtranCommercialEvidencePublicationHandoffs.Create(
+        SigtranReleaseEvidencePublicationHandoff noPublish = SigtranReleaseEvidencePublicationHandoffs.Create(
             package,
             SigtranPublishChannelKind.Beta,
             "release-manager",
             DateTimeOffset.UtcNow,
             publishRequested: false);
 
-        SigtranCommercialEvidencePublicationHandoffGateResult approved = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(beta, commercialReadinessApproved: false);
-        SigtranCommercialEvidencePublicationHandoffGateResult stableBlocked = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(stable, commercialReadinessApproved: false);
-        SigtranCommercialEvidencePublicationHandoffGateResult noPublishBlocked = SigtranCommercialEvidencePublicationHandoffGates.Evaluate(noPublish, commercialReadinessApproved: false);
+        SigtranReleaseEvidencePublicationHandoffGateResult approved = SigtranReleaseEvidencePublicationHandoffGates.Evaluate(beta, productionReadinessApproved: false);
+        SigtranReleaseEvidencePublicationHandoffGateResult stableBlocked = SigtranReleaseEvidencePublicationHandoffGates.Evaluate(stable, productionReadinessApproved: false);
+        SigtranReleaseEvidencePublicationHandoffGateResult noPublishBlocked = SigtranReleaseEvidencePublicationHandoffGates.Evaluate(noPublish, productionReadinessApproved: false);
 
         Assert(approved.CanProceedToPackagePublicationGate, approved.Describe());
         AssertEqual(0, approved.Blockers.Count, "approved handoff blocker count");
         Assert(!stableBlocked.CanProceedToPackagePublicationGate, "stable handoff should be blocked for prerelease version and readiness");
         Assert(stableBlocked.Blockers.Contains("channel-version-rejected"), "stable handoff should expose channel version blocker");
-        Assert(stableBlocked.Blockers.Contains("stable-commercial-readiness-required"), "stable handoff should expose commercial readiness blocker");
+        Assert(stableBlocked.Blockers.Contains("stable-release-readiness-required"), "stable handoff should expose production readiness blocker");
         Assert(!noPublishBlocked.CanProceedToPackagePublicationGate, "missing publish request should block handoff");
         Assert(noPublishBlocked.Blockers.Contains("publish-not-requested"), "handoff gate should expose publish intent blocker");
     }
@@ -5736,12 +5742,12 @@ static void SigtranCommercialEvidencePublicationHandoffGateReportsBlockers()
 
 static void SigtranPackagePublicationRequestDerivesFromApprovedHandoff()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidencePublicationHandoffGateResult gate = CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot);
+        SigtranReleaseEvidencePublicationHandoffGateResult gate = CreateReadyReleaseEvidencePublicationHandoffGateResult(tempRoot);
 
         SigtranPackagePublicationRequest request = SigtranPackagePublicationRequests.Create(
             gate,
@@ -5753,7 +5759,7 @@ static void SigtranPackagePublicationRequestDerivesFromApprovedHandoff()
         AssertEqual("1.0.0-rc.1", request.PackageVersion, "publication request package version");
         AssertEqual(SigtranPublishChannelKind.Beta, request.Channel.Kind, "publication request channel");
         AssertEqual("release-manager", request.RequestedBy, "publication request requester");
-        AssertEqual("commercial-run-20260622-001", request.RunId, "publication request run id");
+        AssertEqual("production-run-20260622-001", request.RunId, "publication request run id");
         Assert(request.Describe().Contains("packagePublicationRequestReady=True", StringComparison.Ordinal), request.Describe());
     }
     finally
@@ -5764,7 +5770,7 @@ static void SigtranPackagePublicationRequestDerivesFromApprovedHandoff()
 
 static void SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5800,7 +5806,7 @@ static void SigtranPackagePublicationArtifactsBindPackageAndSymbolsDigests()
 
 static void SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5841,7 +5847,7 @@ static void SigtranPackagePublicationCredentialReadinessGatesRequiredSecrets()
 
 static void SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5851,18 +5857,18 @@ static void SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest()
         SigtranPackagePublicationEvidenceAssembly ready = SigtranPackagePublicationEvidenceAssemblies.Assemble(
             credentials,
             supplyChainPromotionReady: true,
-            commercialEvidenceReady: true,
+            releaseEvidenceReady: true,
             DateTimeOffset.UtcNow);
         SigtranPackagePublicationEvidenceAssembly blocked = SigtranPackagePublicationEvidenceAssemblies.Assemble(
             credentials,
             supplyChainPromotionReady: false,
-            commercialEvidenceReady: true,
+            releaseEvidenceReady: true,
             DateTimeOffset.UtcNow);
 
         Assert(ready.IsReadyForPublishGuard, ready.Describe());
         Assert(ready.PackageIntegrityReady, "publication evidence assembly should include package integrity");
         Assert(ready.SupplyChainPromotionReady, "publication evidence assembly should include supply-chain promotion evidence");
-        Assert(ready.CommercialEvidenceReady, "publication evidence assembly should include approved commercial evidence");
+        Assert(ready.ReleaseEvidenceReady, "publication evidence assembly should include approved production evidence");
         Assert(ready.EvidenceManifest.IsComplete, "publication evidence manifest should be complete");
         AssertEqual("1.0.0-rc.1", ready.EvidenceManifest.Version, "publication evidence package version");
         AssertEqual(SigtranPublishChannelKind.Beta, ready.EvidenceManifest.Channel, "publication evidence channel");
@@ -5877,7 +5883,7 @@ static void SigtranPackagePublicationEvidenceAssemblyCreatesGateManifest()
 
 static void SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5911,7 +5917,7 @@ static void SigtranPackagePublicationPublishGuardRequiresManualTaggedRelease()
 
 static void SigtranPackagePublicationChannelPolicyGatesStableReadiness()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5921,25 +5927,25 @@ static void SigtranPackagePublicationChannelPolicyGatesStableReadiness()
             tempRoot,
             SigtranPublishChannelKind.Stable,
             "1.0.0",
-            commercialReadinessApprovedForHandoff: true);
+            productionReadinessApprovedForHandoff: true);
 
         SigtranPackagePublicationChannelPolicyEvaluation beta = SigtranPackagePublicationChannelPolicies.Evaluate(
             betaGuard,
-            commercialReadinessApproved: false,
+            productionReadinessApproved: false,
             DateTimeOffset.UtcNow);
         SigtranPackagePublicationChannelPolicyEvaluation stableBlocked = SigtranPackagePublicationChannelPolicies.Evaluate(
             stableGuard,
-            commercialReadinessApproved: false,
+            productionReadinessApproved: false,
             DateTimeOffset.UtcNow);
         SigtranPackagePublicationChannelPolicyEvaluation stableAllowed = SigtranPackagePublicationChannelPolicies.Evaluate(
             stableGuard,
-            commercialReadinessApproved: true,
+            productionReadinessApproved: true,
             DateTimeOffset.UtcNow);
 
         Assert(beta.IsReadyForPublicationGate, beta.Describe());
         AssertEqual(SigtranPublishChannelKind.Beta, beta.Channel.Kind, "beta channel policy channel");
-        Assert(!stableBlocked.IsReadyForPublicationGate, "stable channel should require commercial readiness approval");
-        Assert(stableBlocked.ChannelDecision.Reasons.Contains("commercial-readiness-required"), "stable channel policy should report commercial readiness blocker");
+        Assert(!stableBlocked.IsReadyForPublicationGate, "stable channel should require production readiness approval");
+        Assert(stableBlocked.ChannelDecision.Reasons.Contains("production-readiness-required"), "stable channel policy should report production readiness blocker");
         Assert(stableAllowed.IsReadyForPublicationGate, stableAllowed.Describe());
         AssertEqual("1.0.0", stableAllowed.PackageVersion, "stable channel policy package version");
     }
@@ -5951,7 +5957,7 @@ static void SigtranPackagePublicationChannelPolicyGatesStableReadiness()
 
 static void SigtranPackagePublicationGateExecutionAggregatesFinalBlockers()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -5983,7 +5989,7 @@ static void SigtranPackagePublicationGateExecutionAggregatesFinalBlockers()
 
 static void SigtranPackagePublicationDryRunRehearsalRetainsSafeReport()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -6011,7 +6017,7 @@ static void SigtranPackagePublicationDryRunRehearsalRetainsSafeReport()
 
 static void SigtranPackagePublicationCommandMaterializationWritesGuardedScript()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
@@ -6090,7 +6096,7 @@ static void SigtranStableReleaseTargetRequiresStableVersionAndMatchingTag()
     Assert(!wrongTag.HasMatchingTag, "wrong tag target should expose tag mismatch");
 }
 
-static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
+static void SigtranStableReleaseDossierEvidenceMapGatesRetainedArtifacts()
 {
     const string digest = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
@@ -6099,13 +6105,13 @@ static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialDossierEvidenceMap missingProtocol = new(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseDossierEvidenceMap missingProtocol = new(
         target,
         map.Items
-            .Where(static item => item.Kind != SigtranStableCommercialDossierEvidenceKind.ProtocolInterop)
+            .Where(static item => item.Kind != SigtranStableReleaseDossierEvidenceKind.ProtocolInterop)
             .ToArray());
-    SigtranStableCommercialDossierEvidenceMap invalidDigest = new(
+    SigtranStableReleaseDossierEvidenceMap invalidDigest = new(
         target,
         [new(
             map.Items[0].Kind,
@@ -6113,11 +6119,11 @@ static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
             "not-a-sha",
             map.Items[0].Required,
             map.Items[0].Summary), .. map.Items.Skip(1)]);
-    SigtranStableCommercialDossierEvidenceMap outsideRoot = new(
+    SigtranStableReleaseDossierEvidenceMap outsideRoot = new(
         target,
         [new(
             map.Items[0].Kind,
-            "artifacts/other/1.0.0/interop/maintained-peer-run-report.md",
+            "artifacts/other/1.0.0/interop/reference-peer-run-report.md",
             map.Items[0].Sha256,
             map.Items[0].Required,
             map.Items[0].Summary), .. map.Items.Skip(1)]);
@@ -6128,14 +6134,14 @@ static void SigtranStableCommercialDossierEvidenceMapGatesRetainedArtifacts()
     Assert(map.HasValidDigests, "stable dossier map should require valid SHA-256 digests");
     Assert(map.PathsStayUnderArtifactRoot, "stable dossier map should stay under target artifact root");
     Assert(!missingProtocol.IsReadyForChecklist, "missing protocol evidence should block checklist readiness");
-    Assert(missingProtocol.MissingRequiredKinds().Contains(SigtranStableCommercialDossierEvidenceKind.ProtocolInterop), "missing protocol evidence should be reported");
+    Assert(missingProtocol.MissingRequiredKinds().Contains(SigtranStableReleaseDossierEvidenceKind.ProtocolInterop), "missing protocol evidence should be reported");
     Assert(!invalidDigest.IsReadyForChecklist, "invalid digest should block checklist readiness");
     Assert(!invalidDigest.HasValidDigests, "invalid digest should be exposed");
     Assert(!outsideRoot.IsReadyForChecklist, "outside-root retained path should block checklist readiness");
     Assert(!outsideRoot.PathsStayUnderArtifactRoot, "outside-root retained path should be exposed");
 }
 
-static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
+static void SigtranStableReleaseReadinessChecklistRequiresApprovedAreas()
 {
     const string digest = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
     SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
@@ -6144,12 +6150,12 @@ static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap invalidMap = new(
+    SigtranStableReleaseDossierEvidenceMap invalidMap = new(
         target,
         [new(
             map.Items[0].Kind,
@@ -6157,8 +6163,8 @@ static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
             "invalid-digest",
             map.Items[0].Required,
             map.Items[0].Summary), .. map.Items.Skip(1)]);
-    SigtranStableCommercialReadinessChecklist invalidMapChecklist = new(invalidMap, checklist.Items);
-    SigtranStableCommercialReadinessChecklist rejectedChecklist = new(
+    SigtranStableReleaseReadinessChecklist invalidMapChecklist = new(invalidMap, checklist.Items);
+    SigtranStableReleaseReadinessChecklist rejectedChecklist = new(
         map,
         [new(
             checklist.Items[0].Area,
@@ -6167,10 +6173,10 @@ static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
             checklist.Items[0].Reviewer,
             checklist.Items[0].ReviewedAtUtc,
             checklist.Items[0].Notes), .. checklist.Items.Skip(1)]);
-    SigtranStableCommercialReadinessChecklist missingArea = new(
+    SigtranStableReleaseReadinessChecklist missingArea = new(
         map,
         checklist.Items
-            .Where(static item => item.Area != SigtranStableCommercialReadinessArea.OperationsCompliance)
+            .Where(static item => item.Area != SigtranStableReleaseReadinessArea.OperationsCompliance)
             .ToArray());
 
     Assert(checklist.IsReadyForDecision, checklist.Describe());
@@ -6187,7 +6193,7 @@ static void SigtranStableCommercialReadinessChecklistRequiresApprovedAreas()
     Assert(missingArea.GetBlockers().Contains("stable-readiness-required-areas-missing"), "missing readiness area should be reported");
 }
 
-static void SigtranStableCommercialReleaseDecisionGatesTagReadiness()
+static void SigtranStableReleaseDecisionGatesTagReadiness()
 {
     const string digest = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
     SigtranStableReleaseTarget target = SigtranStableReleaseTargets.Create(
@@ -6196,12 +6202,12 @@ static void SigtranStableCommercialReleaseDecisionGatesTagReadiness()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReadinessChecklist blockedChecklist = new(
+    SigtranStableReleaseReadinessChecklist blockedChecklist = new(
         map,
         [new(
             checklist.Items[0].Area,
@@ -6211,21 +6217,21 @@ static void SigtranStableCommercialReleaseDecisionGatesTagReadiness()
             checklist.Items[0].ReviewedAtUtc,
             checklist.Items[0].Notes), .. checklist.Items.Skip(1)]);
 
-    SigtranStableCommercialReleaseDecision approved = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision approved = SigtranStableReleaseDecisions.Decide(
         checklist,
         "release-board",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReleaseDecision blocked = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision blocked = SigtranStableReleaseDecisions.Decide(
         blockedChecklist,
         "release-board",
         DateTimeOffset.UtcNow);
 
-    AssertEqual(SigtranStableCommercialReleaseDecisionKind.Approved, approved.Kind, "stable decision approved kind");
+    AssertEqual(SigtranStableReleaseDecisionKind.Approved, approved.Kind, "stable decision approved kind");
     Assert(approved.ApprovesStablePublication, approved.Describe());
     Assert(approved.IsReadyForTagGate, approved.Describe());
     Assert(approved.HasUtcDecisionTime, "stable decision should use UTC time");
-    Assert(approved.Reasons.Contains("stable-commercial-readiness-approved"), "approved stable decision should retain reason");
-    AssertEqual(SigtranStableCommercialReleaseDecisionKind.Blocked, blocked.Kind, "stable decision blocked kind");
+    Assert(approved.Reasons.Contains("stable-release-readiness-approved"), "approved stable decision should retain reason");
+    AssertEqual(SigtranStableReleaseDecisionKind.Blocked, blocked.Kind, "stable decision blocked kind");
     Assert(!blocked.ApprovesStablePublication, "blocked stable decision should not approve publication");
     Assert(!blocked.IsReadyForTagGate, "blocked stable decision should not enter tag gate");
     Assert(blocked.Reasons.Contains("stable-readiness-StableReleaseTarget-not-approved"), "blocked stable decision should retain checklist blocker");
@@ -6240,12 +6246,12 @@ static void SigtranStableTagGateMaterializesGuardedTagCommands()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision decision = SigtranStableReleaseDecisions.Decide(
         checklist,
         "release-board",
         DateTimeOffset.UtcNow);
@@ -6285,12 +6291,12 @@ static void SigtranStablePublicationAuthorizationRequiresProtectedApproval()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision decision = SigtranStableReleaseDecisions.Decide(
         checklist,
         "release-board",
         DateTimeOffset.UtcNow);
@@ -6368,12 +6374,12 @@ static void SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision decision = SigtranStableReleaseDecisions.Decide(
         checklist,
         "release-board",
         DateTimeOffset.UtcNow);
@@ -6414,21 +6420,21 @@ static void SigtranStablePublishExecutionPlanDispatchesGuardedStableWorkflow()
     Assert(!blockedPlan.IsReady, "blocked authorization should block stable publish plan readiness");
 }
 
-static void SigtranStableCommercialReportWriterRetainsFinalReport()
+static void SigtranStableReleaseReportWriterRetainsFinalReport()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-commercial-report-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-release-report-" + Guid.NewGuid().ToString("N"));
     SigtranStablePublishExecutionPlan plan = CreateReadyStablePublishExecutionPlan();
 
     try
     {
-        SigtranStableCommercialReportWriteResult complete = SigtranStableCommercialReportWriters.WriteReport(
+        SigtranStableReleaseReportWriteResult complete = SigtranStableReleaseReportWriters.WriteReport(
             plan,
             Path.Combine(tempRoot, "complete"),
             DateTimeOffset.UtcNow,
             stableTagCreated: true,
             stablePackagePublished: true,
             publicationEvidenceRetained: true);
-        SigtranStableCommercialReportWriteResult evidencePending = SigtranStableCommercialReportWriters.WriteReport(
+        SigtranStableReleaseReportWriteResult evidencePending = SigtranStableReleaseReportWriters.WriteReport(
             plan,
             Path.Combine(tempRoot, "pending"),
             DateTimeOffset.UtcNow,
@@ -6438,14 +6444,14 @@ static void SigtranStableCommercialReportWriterRetainsFinalReport()
         string completeMarkdown = File.ReadAllText(complete.ReportPath);
 
         Assert(complete.IsReadyForAuditTrail, complete.Describe());
-        Assert(complete.StableCommercialReleaseComplete, complete.Describe());
-        Assert(complete.ReportExists, "stable commercial report should exist");
-        Assert(complete.ReportSizeBytes > 0, "stable commercial report should be non-empty");
-        Assert(complete.HasValidReportDigest, "stable commercial report should have valid digest");
-        Assert(complete.HasUtcWriteTime, "stable commercial report should use UTC write time");
-        Assert(completeMarkdown.Contains("Stable commercial release complete: `True`", StringComparison.Ordinal), "stable commercial report should render completion status");
+        Assert(complete.StableReleaseComplete, complete.Describe());
+        Assert(complete.ReportExists, "stable release report should exist");
+        Assert(complete.ReportSizeBytes > 0, "stable release report should be non-empty");
+        Assert(complete.HasValidReportDigest, "stable release report should have valid digest");
+        Assert(complete.HasUtcWriteTime, "stable release report should use UTC write time");
+        Assert(completeMarkdown.Contains("Stable release release complete: `True`", StringComparison.Ordinal), "stable release report should render completion status");
         Assert(evidencePending.IsReadyForAuditTrail, evidencePending.Describe());
-        Assert(!evidencePending.StableCommercialReleaseComplete, "pending report should not claim stable commercial completion");
+        Assert(!evidencePending.StableReleaseComplete, "pending report should not claim stable release completion");
         Assert(evidencePending.GetBlockers().Contains("stable-tag-creation-evidence-required"), "pending report should require stable tag evidence");
         Assert(evidencePending.GetBlockers().Contains("stable-package-publication-evidence-required"), "pending report should require package publication evidence");
         Assert(evidencePending.GetBlockers().Contains("stable-publication-evidence-retention-required"), "pending report should require retained publication evidence");
@@ -6465,12 +6471,12 @@ static SigtranStablePublishExecutionPlan CreateReadyStablePublishExecutionPlan()
         "artifacts/stable/1.0.0",
         "release-manager",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialDossierEvidenceMap map = SigtranStableCommercialDossierEvidenceMaps.CreateComplete(target, digest);
-    SigtranStableCommercialReadinessChecklist checklist = SigtranStableCommercialReadinessChecklists.CreateApproved(
+    SigtranStableReleaseDossierEvidenceMap map = SigtranStableReleaseDossierEvidenceMaps.CreateComplete(target, digest);
+    SigtranStableReleaseReadinessChecklist checklist = SigtranStableReleaseReadinessChecklists.CreateApproved(
         map,
         "chief-architect",
         DateTimeOffset.UtcNow);
-    SigtranStableCommercialReleaseDecision decision = SigtranStableCommercialReleaseDecisions.Decide(
+    SigtranStableReleaseDecision decision = SigtranStableReleaseDecisions.Decide(
         checklist,
         "release-board",
         DateTimeOffset.UtcNow);
@@ -6500,7 +6506,7 @@ static void SigtranStableReleaseAuditTrailCoversFinalGateLifecycle()
 
     try
     {
-        SigtranStableCommercialReportWriteResult report = SigtranStableCommercialReportWriters.WriteReport(
+        SigtranStableReleaseReportWriteResult report = SigtranStableReleaseReportWriters.WriteReport(
             plan,
             tempRoot,
             DateTimeOffset.UtcNow,
@@ -6525,11 +6531,11 @@ static void SigtranStableReleaseAuditTrailCoversFinalGateLifecycle()
                 .ToArray());
 
         Assert(trail.IsReadyForFinalStatus, trail.Describe());
-        Assert(trail.StableCommercialReleaseComplete, "stable audit trail should expose report completion");
+        Assert(trail.StableReleaseComplete, "stable audit trail should expose report completion");
         Assert(trail.HasUniqueEventIds, "stable audit trail should use unique event ids");
         Assert(trail.CoversRequiredEvents, "stable audit trail should cover required events");
         Assert(trail.AllEventsReady, "stable audit trail events should be ready");
-        Assert(trail.Events.Any(static item => item.Kind == SigtranStableReleaseAuditEventKind.CommercialReportRetained), "stable audit trail should retain report event");
+        Assert(trail.Events.Any(static item => item.Kind == SigtranStableReleaseAuditEventKind.ProductionReportRetained), "stable audit trail should retain report event");
         Assert(!invalidDigest.IsReadyForFinalStatus, "invalid audit digest should block final status readiness");
         Assert(invalidDigest.GetBlockers().Contains("stable-audit-events-not-ready"), "invalid audit digest blocker should be reported");
         Assert(!missingEvent.IsReadyForFinalStatus, "missing audit event should block final status readiness");
@@ -6541,14 +6547,14 @@ static void SigtranStableReleaseAuditTrailCoversFinalGateLifecycle()
     }
 }
 
-static void SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelease()
+static void SigtranStableReleaseGateStatusSeparatesFoundationFromRelease()
 {
     string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-stable-status-" + Guid.NewGuid().ToString("N"));
     SigtranStablePublishExecutionPlan plan = CreateReadyStablePublishExecutionPlan();
 
     try
     {
-        SigtranStableCommercialReportWriteResult report = SigtranStableCommercialReportWriters.WriteReport(
+        SigtranStableReleaseReportWriteResult report = SigtranStableReleaseReportWriters.WriteReport(
             plan,
             tempRoot,
             DateTimeOffset.UtcNow,
@@ -6556,26 +6562,26 @@ static void SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelea
             stablePackagePublished: true,
             publicationEvidenceRetained: true);
         SigtranStableReleaseAuditTrail trail = SigtranStableReleaseAuditTrails.CreateDefault(report, DateTimeOffset.UtcNow);
-        SigtranStableCommercialReleaseGateStatusReport releaseReady = SigtranStableCommercialReleaseGateStatus.CreateReport(
+        SigtranStableReleaseGateStatusReport releaseReady = SigtranStableReleaseGateStatus.CreateReport(
             trail,
             retainedReleaseEvidenceVerified: true,
             protectedPublicationRunCompleted: true,
             nugetPublicationVerified: true);
-        SigtranStableCommercialReleaseGateStatusReport evidencePending = SigtranStableCommercialReleaseGateStatus.CreateReport(
+        SigtranStableReleaseGateStatusReport evidencePending = SigtranStableReleaseGateStatus.CreateReport(
             trail,
             retainedReleaseEvidenceVerified: false,
             protectedPublicationRunCompleted: false,
             nugetPublicationVerified: false);
 
-        AssertEqual(10, SigtranStableCommercialReleaseGateStatus.CompletedUnitCount, "stable commercial release gate completed unit count");
-        AssertEqual(10, SigtranStableCommercialReleaseGateStatus.GetCompletedCapabilities().Count, "stable commercial release gate capability count");
-        Assert(SigtranStableCommercialReleaseGateStatus.GetCompletedCapabilities().Contains("documentation-and-final-status"), "stable commercial release gate status should include documentation");
-        Assert(SigtranStableCommercialReleaseGateStatus.FoundationReady, SigtranStableCommercialReleaseGateStatus.Describe());
-        Assert(!SigtranStableCommercialReleaseGateStatus.StableCommercialReleaseReady, SigtranStableCommercialReleaseGateStatus.Describe());
-        Assert(SigtranStableCommercialReleaseGateStatus.GetDefaultCommercialBlockers().Contains("retained-stable-release-evidence-required"), "stable release status should retain evidence blocker");
+        AssertEqual(10, SigtranStableReleaseGateStatus.CompletedUnitCount, "stable release release gate completed unit count");
+        AssertEqual(10, SigtranStableReleaseGateStatus.GetCompletedCapabilities().Count, "stable release release gate capability count");
+        Assert(SigtranStableReleaseGateStatus.GetCompletedCapabilities().Contains("documentation-and-final-status"), "stable release release gate status should include documentation");
+        Assert(SigtranStableReleaseGateStatus.FoundationReady, SigtranStableReleaseGateStatus.Describe());
+        Assert(!SigtranStableReleaseGateStatus.StableReleaseReady, SigtranStableReleaseGateStatus.Describe());
+        Assert(SigtranStableReleaseGateStatus.GetDefaultProductionBlockers().Contains("retained-stable-release-evidence-required"), "stable release status should retain evidence blocker");
         Assert(releaseReady.FoundationReady, releaseReady.Describe());
-        Assert(releaseReady.StableCommercialReleaseReady, releaseReady.Describe());
-        Assert(!evidencePending.StableCommercialReleaseReady, "missing real evidence should block stable commercial release status");
+        Assert(releaseReady.StableReleaseReady, releaseReady.Describe());
+        Assert(!evidencePending.StableReleaseReady, "missing real evidence should block stable release release status");
         Assert(evidencePending.GetBlockers().Contains("retained-stable-release-evidence-required"), "missing retained evidence blocker should be reported");
         Assert(evidencePending.GetBlockers().Contains("protected-stable-publication-run-required"), "missing protected run blocker should be reported");
         Assert(evidencePending.GetBlockers().Contains("actual-nuget-publication-evidence-required"), "missing NuGet evidence blocker should be reported");
@@ -6586,20 +6592,20 @@ static void SigtranStableCommercialReleaseGateStatusSeparatesFoundationFromRelea
     }
 }
 
-static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
+static void SigtranReleaseEvidenceApprovalAuditTrailCoversLifecycle()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidencePublicationHandoffGateResult gate = CreateReadyCommercialEvidencePublicationHandoffGateResult(tempRoot);
+        SigtranReleaseEvidencePublicationHandoffGateResult gate = CreateReadyReleaseEvidencePublicationHandoffGateResult(tempRoot);
 
-        SigtranCommercialEvidenceApprovalAuditTrail trail = SigtranCommercialEvidenceApprovalAuditTrails.CreateDefault(
+        SigtranReleaseEvidenceApprovalAuditTrail trail = SigtranReleaseEvidenceApprovalAuditTrails.CreateDefault(
             gate,
             DateTimeOffset.UtcNow);
-        SigtranCommercialEvidenceApprovalAuditEvent firstEvent = trail.Events[0];
-        SigtranCommercialEvidenceApprovalAuditTrail blocked = new(
+        SigtranReleaseEvidenceApprovalAuditEvent firstEvent = trail.Events[0];
+        SigtranReleaseEvidenceApprovalAuditTrail blocked = new(
             gate,
             [new(firstEvent.Id, firstEvent.Kind, firstEvent.Actor, firstEvent.OccurredAtUtc, "not-a-digest", firstEvent.Description), .. trail.Events.Skip(1)]);
 
@@ -6616,19 +6622,19 @@ static void SigtranCommercialEvidenceApprovalAuditTrailCoversLifecycle()
     }
 }
 
-static void SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript()
+static void SigtranReleaseEvidenceApprovalCommandMaterializerWritesScript()
 {
-    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-commercial-evidence-" + Guid.NewGuid().ToString("N"));
+    string tempRoot = Path.Combine(Path.GetTempPath(), "sigtran-release-evidence-" + Guid.NewGuid().ToString("N"));
     Directory.CreateDirectory(tempRoot);
 
     try
     {
-        SigtranCommercialEvidenceApprovalCommandPlan plan = SigtranCommercialEvidenceApprovalCommands.CreateDefaultPlan(
+        SigtranReleaseEvidenceApprovalCommandPlan plan = SigtranReleaseEvidenceApprovalCommands.CreateDefaultPlan(
             Path.Combine(tempRoot, "approval"),
-            "commercial-run-20260622-001");
-        SigtranCommercialEvidenceApprovalCommandMaterialization materialization = SigtranCommercialEvidenceApprovalCommands.WriteScript(
+            "production-run-20260622-001");
+        SigtranReleaseEvidenceApprovalCommandMaterialization materialization = SigtranReleaseEvidenceApprovalCommands.WriteScript(
             plan,
-            Path.Combine(tempRoot, "scripts", "commercial-evidence-approval.sh"),
+            Path.Combine(tempRoot, "scripts", "release-evidence-approval.sh"),
             DateTimeOffset.UtcNow);
 
         Assert(materialization.IsReady, materialization.Describe());
@@ -6643,49 +6649,49 @@ static void SigtranCommercialEvidenceApprovalCommandMaterializerWritesScript()
     }
 }
 
-static void SigtranCommercialEvidenceApprovalHandoffStatusSummarizesFinalValidation()
+static void SigtranReleaseEvidenceApprovalHandoffStatusSummarizesFinalValidation()
 {
-    IReadOnlyList<string> capabilities = SigtranCommercialEvidenceApprovalHandoffStatus.GetCompletedCapabilities();
-    IReadOnlyList<string> blockers = SigtranCommercialEvidenceApprovalHandoffStatus.GetDefaultBlockers();
+    IReadOnlyList<string> capabilities = SigtranReleaseEvidenceApprovalHandoffStatus.GetCompletedCapabilities();
+    IReadOnlyList<string> blockers = SigtranReleaseEvidenceApprovalHandoffStatus.GetDefaultBlockers();
 
-    AssertEqual(10, SigtranCommercialEvidenceApprovalHandoffStatus.CompletedUnitCount, "approval handoff completed unit count");
+    AssertEqual(10, SigtranReleaseEvidenceApprovalHandoffStatus.CompletedUnitCount, "approval handoff completed unit count");
     AssertEqual(10, capabilities.Count, "approval handoff capability count");
     Assert(capabilities.Contains("command-materialization"), "approval handoff status should include command materialization");
     Assert(capabilities.Contains("documentation"), "approval handoff status should include documentation");
-    Assert(SigtranCommercialEvidenceApprovalHandoffStatus.ApprovalHandoffFoundationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
-    Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.RealApprovedCommercialRunReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
-    Assert(!SigtranCommercialEvidenceApprovalHandoffStatus.PackagePublicationReady, SigtranCommercialEvidenceApprovalHandoffStatus.Describe());
-    Assert(blockers.Contains("real-approved-commercial-run-required"), "approval handoff status should require a real approved run");
+    Assert(SigtranReleaseEvidenceApprovalHandoffStatus.ApprovalHandoffFoundationReady, SigtranReleaseEvidenceApprovalHandoffStatus.Describe());
+    Assert(!SigtranReleaseEvidenceApprovalHandoffStatus.RealApprovedProductionRunReady, SigtranReleaseEvidenceApprovalHandoffStatus.Describe());
+    Assert(!SigtranReleaseEvidenceApprovalHandoffStatus.PackagePublicationReady, SigtranReleaseEvidenceApprovalHandoffStatus.Describe());
+    Assert(blockers.Contains("real-approved-production-run-required"), "approval handoff status should require a real approved run");
     Assert(!blockers.Contains("status-final-validation-pending"), "approval handoff status should clear final validation blocker");
 }
 
-static SigtranCommercialEvidencePublicationHandoffGateResult CreateReadyCommercialEvidencePublicationHandoffGateResult(
+static SigtranReleaseEvidencePublicationHandoffGateResult CreateReadyReleaseEvidencePublicationHandoffGateResult(
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApproved = false)
+    bool productionReadinessApproved = false)
 {
-    return SigtranCommercialEvidencePublicationHandoffGates.Evaluate(
-        SigtranCommercialEvidencePublicationHandoffs.Create(
-            CreateReadyCommercialEvidenceApprovedRunPromotionPackage(tempRoot, packageVersion),
+    return SigtranReleaseEvidencePublicationHandoffGates.Evaluate(
+        SigtranReleaseEvidencePublicationHandoffs.Create(
+            CreateReadyReleaseEvidenceApprovedRunPromotionPackage(tempRoot, packageVersion),
             channelKind,
             "release-manager",
             DateTimeOffset.UtcNow),
-        commercialReadinessApproved);
+        productionReadinessApproved);
 }
 
 static SigtranPackagePublicationRequest CreateReadyPackagePublicationRequest(
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApprovedForHandoff = false)
+    bool productionReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationRequests.Create(
-        CreateReadyCommercialEvidencePublicationHandoffGateResult(
+        CreateReadyReleaseEvidencePublicationHandoffGateResult(
             tempRoot,
             channelKind,
             packageVersion,
-            commercialReadinessApprovedForHandoff),
+            productionReadinessApprovedForHandoff),
         DateTimeOffset.UtcNow);
 }
 
@@ -6706,14 +6712,14 @@ static SigtranPackagePublicationCredentialReadiness CreateReadyPackagePublicatio
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApprovedForHandoff = false)
+    bool productionReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationCredentialReadinessEvaluator.EvaluateDefault(
         CreateReadyPackagePublicationArtifactSet(CreateReadyPackagePublicationRequest(
             tempRoot,
             channelKind,
             packageVersion,
-            commercialReadinessApprovedForHandoff)),
+            productionReadinessApprovedForHandoff)),
         new HashSet<string>(StringComparer.Ordinal)
         {
             "NUGET_API_KEY",
@@ -6727,16 +6733,16 @@ static SigtranPackagePublicationEvidenceAssembly CreateReadyPackagePublicationEv
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApprovedForHandoff = false)
+    bool productionReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationEvidenceAssemblies.Assemble(
         CreateReadyPackagePublicationCredentialReadiness(
             tempRoot,
             channelKind,
             packageVersion,
-            commercialReadinessApprovedForHandoff),
+            productionReadinessApprovedForHandoff),
         supplyChainPromotionReady: true,
-        commercialEvidenceReady: true,
+        releaseEvidenceReady: true,
         DateTimeOffset.UtcNow);
 }
 
@@ -6744,14 +6750,14 @@ static SigtranPackagePublicationPublishGuardEvaluation CreateReadyPackagePublica
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApprovedForHandoff = false)
+    bool productionReadinessApprovedForHandoff = false)
 {
     return SigtranPackagePublicationPublishGuards.Evaluate(
         CreateReadyPackagePublicationEvidenceAssembly(
             tempRoot,
             channelKind,
             packageVersion,
-            commercialReadinessApprovedForHandoff),
+            productionReadinessApprovedForHandoff),
         isManualDispatch: true,
         isVersionTag: true,
         DateTimeOffset.UtcNow);
@@ -6761,16 +6767,16 @@ static SigtranPackagePublicationChannelPolicyEvaluation CreateReadyPackagePublic
     string tempRoot,
     SigtranPublishChannelKind channelKind = SigtranPublishChannelKind.Beta,
     string packageVersion = "1.0.0-rc.1",
-    bool commercialReadinessApprovedForHandoff = false,
-    bool commercialReadinessApprovedForChannel = false)
+    bool productionReadinessApprovedForHandoff = false,
+    bool productionReadinessApprovedForChannel = false)
 {
     return SigtranPackagePublicationChannelPolicies.Evaluate(
         CreateReadyPackagePublicationPublishGuardEvaluation(
             tempRoot,
             channelKind,
             packageVersion,
-            commercialReadinessApprovedForHandoff),
-        commercialReadinessApprovedForChannel,
+            productionReadinessApprovedForHandoff),
+        productionReadinessApprovedForChannel,
         DateTimeOffset.UtcNow);
 }
 
@@ -6791,116 +6797,116 @@ static SigtranPackagePublicationDryRunRehearsal CreateReadyPackagePublicationDry
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceApprovedRunPromotionPackage CreateReadyCommercialEvidenceApprovedRunPromotionPackage(
+static SigtranReleaseEvidenceApprovedRunPromotionPackage CreateReadyReleaseEvidenceApprovedRunPromotionPackage(
     string tempRoot,
     string packageVersion = "1.0.0-rc.1")
 {
-    return SigtranCommercialEvidenceApprovedRunPromotionPackages.CreateDefault(
-        CreateReadyCommercialEvidenceRunApprovalReportWriteResult(tempRoot, packageVersion),
+    return SigtranReleaseEvidenceApprovedRunPromotionPackages.CreateDefault(
+        CreateReadyReleaseEvidenceRunApprovalReportWriteResult(tempRoot, packageVersion),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalReportWriteResult CreateReadyCommercialEvidenceRunApprovalReportWriteResult(
+static SigtranReleaseEvidenceRunApprovalReportWriteResult CreateReadyReleaseEvidenceRunApprovalReportWriteResult(
     string tempRoot,
     string packageVersion = "1.0.0-rc.1")
 {
-    return SigtranCommercialEvidenceRunApprovalReportWriters.WriteReport(
-        CreateReadyCommercialEvidenceRunApprovalManifest(tempRoot, packageVersion),
+    return SigtranReleaseEvidenceRunApprovalReportWriters.WriteReport(
+        CreateReadyReleaseEvidenceRunApprovalManifest(tempRoot, packageVersion),
         Path.Combine(tempRoot, "approval"),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalManifest CreateReadyCommercialEvidenceRunApprovalManifest(
+static SigtranReleaseEvidenceRunApprovalManifest CreateReadyReleaseEvidenceRunApprovalManifest(
     string tempRoot,
     string packageVersion = "1.0.0-rc.1")
 {
-    return SigtranCommercialEvidenceRunApprovalManifests.CreateDefault(
-        CreateReadyCommercialEvidenceRunApprovalChecklist(tempRoot, packageVersion),
+    return SigtranReleaseEvidenceRunApprovalManifests.CreateDefault(
+        CreateReadyReleaseEvidenceRunApprovalChecklist(tempRoot, packageVersion),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRunApprovalChecklist CreateReadyCommercialEvidenceRunApprovalChecklist(
+static SigtranReleaseEvidenceRunApprovalChecklist CreateReadyReleaseEvidenceRunApprovalChecklist(
     string tempRoot,
     string packageVersion = "1.0.0-rc.1")
 {
-    return SigtranCommercialEvidenceRunApprovalChecklists.CreateDefault(CreateReadyCommercialEvidenceApprovedRunTarget(tempRoot, packageVersion));
+    return SigtranReleaseEvidenceRunApprovalChecklists.CreateDefault(CreateReadyReleaseEvidenceApprovedRunTarget(tempRoot, packageVersion));
 }
 
-static SigtranCommercialEvidenceApprovedRunTarget CreateReadyCommercialEvidenceApprovedRunTarget(
+static SigtranReleaseEvidenceApprovedRunTarget CreateReadyReleaseEvidenceApprovedRunTarget(
     string tempRoot,
     string packageVersion = "1.0.0-rc.1")
 {
     DateTimeOffset startedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
 
-    return SigtranCommercialEvidenceApprovedRunTargets.Create(
-        "commercial-run-20260622-001",
+    return SigtranReleaseEvidenceApprovedRunTargets.Create(
+        "production-run-20260622-001",
         packageVersion,
         "abcdef123456",
         tempRoot,
         "release-operator",
         startedAt,
         DateTimeOffset.UtcNow,
-        CreateReadyCommercialEvidenceFileSystemPromotionExecution(tempRoot));
+        CreateReadyReleaseEvidenceFileSystemPromotionExecution(tempRoot));
 }
 
-static SigtranCommercialEvidenceFileSystemPromotionExecution CreateReadyCommercialEvidenceFileSystemPromotionExecution(string tempRoot)
+static SigtranReleaseEvidenceFileSystemPromotionExecution CreateReadyReleaseEvidenceFileSystemPromotionExecution(string tempRoot)
 {
-    return SigtranCommercialEvidenceFileSystemPromotions.Evaluate(
-        CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(tempRoot),
+    return SigtranReleaseEvidenceFileSystemPromotions.Evaluate(
+        CreateReadyReleaseEvidenceFileSystemPublicationAttachmentExecution(tempRoot),
         "release-review",
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceFileSystemPublicationAttachmentExecution CreateReadyCommercialEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)
+static SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution CreateReadyReleaseEvidenceFileSystemPublicationAttachmentExecution(string tempRoot)
 {
-    return SigtranCommercialEvidenceFileSystemPublicationAttachments.Create(
-        CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(tempRoot));
+    return SigtranReleaseEvidenceFileSystemPublicationAttachments.Create(
+        CreateReadyReleaseEvidenceFileSystemIntegritySealExecution(tempRoot));
 }
 
-static SigtranCommercialEvidenceFileSystemIntegritySealExecution CreateReadyCommercialEvidenceFileSystemIntegritySealExecution(string tempRoot)
+static SigtranReleaseEvidenceFileSystemIntegritySealExecution CreateReadyReleaseEvidenceFileSystemIntegritySealExecution(string tempRoot)
 {
-    return SigtranCommercialEvidenceFileSystemIntegritySeals.Create(
-        CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(tempRoot),
+    return SigtranReleaseEvidenceFileSystemIntegritySeals.Create(
+        CreateReadyReleaseEvidenceFileSystemRetentionLedgerExecution(tempRoot),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceFileSystemRetentionLedgerExecution CreateReadyCommercialEvidenceFileSystemRetentionLedgerExecution(string tempRoot)
+static SigtranReleaseEvidenceFileSystemRetentionLedgerExecution CreateReadyReleaseEvidenceFileSystemRetentionLedgerExecution(string tempRoot)
 {
-    return SigtranCommercialEvidenceFileSystemRetentionLedgers.Create(
-        CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(tempRoot),
+    return SigtranReleaseEvidenceFileSystemRetentionLedgers.Create(
+        CreateReadyReleaseEvidenceFileSystemArtifactWriteResult(tempRoot),
         "release-review",
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceFileSystemArtifactWriteResult CreateReadyCommercialEvidenceFileSystemArtifactWriteResult(string tempRoot)
+static SigtranReleaseEvidenceFileSystemArtifactWriteResult CreateReadyReleaseEvidenceFileSystemArtifactWriteResult(string tempRoot)
 {
-    SigtranCommercialEvidenceFileSystemVerificationExecution execution = CreateReadyCommercialEvidenceFileSystemVerificationExecution(tempRoot);
+    SigtranReleaseEvidenceFileSystemVerificationExecution execution = CreateReadyReleaseEvidenceFileSystemVerificationExecution(tempRoot);
 
-    return SigtranCommercialEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
+    return SigtranReleaseEvidenceFileSystemArtifactWriters.WriteVerificationArtifacts(
         execution,
         Path.Combine(tempRoot, "verification-output"),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceFileSystemVerificationExecution CreateReadyCommercialEvidenceFileSystemVerificationExecution(string tempRoot)
+static SigtranReleaseEvidenceFileSystemVerificationExecution CreateReadyReleaseEvidenceFileSystemVerificationExecution(string tempRoot)
 {
-    byte[] artifactContent = "verified commercial artifact"u8.ToArray();
-    byte[] reportContent = "verified commercial readiness report"u8.ToArray();
-    SigtranCommercialEvidencePromotionHandoff handoff = CreateCommercialEvidencePromotionHandoffWithDigests(
+    byte[] artifactContent = "verified production artifact"u8.ToArray();
+    byte[] reportContent = "verified production readiness report"u8.ToArray();
+    SigtranReleaseEvidencePromotionHandoff handoff = CreateReleaseEvidencePromotionHandoffWithDigests(
         ComputeSha256Hex(artifactContent),
         ComputeSha256Hex(reportContent));
     IReadOnlyDictionary<string, string> pathOverrides = MaterializeHandoffFiles(tempRoot, handoff, artifactContent, reportContent);
-    SigtranCommercialEvidenceFileSystemManifestExecution manifestExecution = SigtranCommercialEvidenceFileSystemManifestBuilder.Build(
+    SigtranReleaseEvidenceFileSystemManifestExecution manifestExecution = SigtranReleaseEvidenceFileSystemManifestBuilder.Build(
         handoff,
         pathOverrides,
         DateTimeOffset.UtcNow);
 
-    return SigtranCommercialEvidenceFileSystemVerificationReports.Evaluate(manifestExecution);
+    return SigtranReleaseEvidenceFileSystemVerificationReports.Evaluate(manifestExecution);
 }
 
 static IReadOnlyDictionary<string, string> MaterializeHandoffFiles(
     string tempRoot,
-    SigtranCommercialEvidencePromotionHandoff handoff,
+    SigtranReleaseEvidencePromotionHandoff handoff,
     byte[] artifactContent,
     byte[] reportContent)
 {
@@ -6908,7 +6914,7 @@ static IReadOnlyDictionary<string, string> MaterializeHandoffFiles(
 
     for (int i = 0; i < handoff.Items.Count; i++)
     {
-        SigtranCommercialEvidencePromotionHandoffItem item = handoff.Items[i];
+        SigtranReleaseEvidencePromotionHandoffItem item = handoff.Items[i];
         string path = Path.Combine(tempRoot, $"retained-{i:D2}.bin");
         File.WriteAllBytes(path, item.RetainedPath == handoff.Report.ReportPath ? reportContent : artifactContent);
         paths[item.RetainedPath] = path;
@@ -6917,21 +6923,21 @@ static IReadOnlyDictionary<string, string> MaterializeHandoffFiles(
     return paths;
 }
 
-static SigtranCommercialEvidencePromotionHandoff CreateCommercialEvidencePromotionHandoffWithDigests(
+static SigtranReleaseEvidencePromotionHandoff CreateReleaseEvidencePromotionHandoffWithDigests(
     string artifactSha256,
     string reportSha256)
 {
-    SigtranCommercialEvidenceArtifactDigestManifest digests = SigtranCommercialEvidenceArtifactDigests.CreateCovered(
-        CreateDefaultCommercialEvidenceArtifactSourceManifest(),
+    SigtranReleaseEvidenceArtifactDigestManifest digests = SigtranReleaseEvidenceArtifactDigests.CreateCovered(
+        CreateDefaultReleaseEvidenceArtifactSourceManifest(),
         artifactSha256);
-    SigtranCommercialEvidenceRedactionReviewManifest reviews = SigtranCommercialEvidenceRedactionReviews.CreateApproved(
+    SigtranReleaseEvidenceRedactionReviewManifest reviews = SigtranReleaseEvidenceRedactionReviews.CreateApproved(
         digests,
         "release-review",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceArtifactCompletenessResult completeness = SigtranCommercialEvidenceArtifactCompleteness.Evaluate(reviews);
-    SigtranCommercialEvidenceDossierIntakeReport report = SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(completeness);
+    SigtranReleaseEvidenceArtifactCompletenessResult completeness = SigtranReleaseEvidenceArtifactCompleteness.Evaluate(reviews);
+    SigtranReleaseEvidenceDossierIntakeReport report = SigtranReleaseEvidenceDossierIntakeReports.CreateDefault(completeness);
 
-    return SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
+    return SigtranReleaseEvidencePromotionHandoffs.CreateDefault(
         report,
         reportSha256,
         "release-review",
@@ -6951,105 +6957,105 @@ static void DeleteTempEvidenceRoot(string tempRoot)
     }
 }
 
-static SigtranCommercialEvidenceFileVerificationCommandPlan CreateDefaultCommercialEvidenceFileVerificationCommandPlan()
+static SigtranReleaseEvidenceFileVerificationCommandPlan CreateDefaultReleaseEvidenceFileVerificationCommandPlan()
 {
-    return SigtranCommercialEvidenceFileVerificationCommands.CreateDefault("artifacts/commercial-evidence");
+    return SigtranReleaseEvidenceFileVerificationCommands.CreateDefault("artifacts/release-evidence");
 }
 
-static SigtranCommercialEvidenceVerifiedPromotionGateResult CreateDefaultCommercialEvidenceVerifiedPromotionGate(SigtranCommercialEvidencePublicationAttachmentManifest? attachmentManifest = null)
+static SigtranReleaseEvidenceVerifiedPromotionGateResult CreateDefaultReleaseEvidenceVerifiedPromotionGate(SigtranReleaseEvidencePublicationAttachmentManifest? attachmentManifest = null)
 {
-    return SigtranCommercialEvidenceVerifiedPromotionGates.Evaluate(
-        attachmentManifest ?? CreateDefaultCommercialEvidencePublicationAttachmentManifest(),
+    return SigtranReleaseEvidenceVerifiedPromotionGates.Evaluate(
+        attachmentManifest ?? CreateDefaultReleaseEvidencePublicationAttachmentManifest(),
         "release-review",
         DateTimeOffset.UtcNow,
         evidenceApproved: true);
 }
 
-static SigtranCommercialEvidencePublicationAttachmentManifest CreateDefaultCommercialEvidencePublicationAttachmentManifest(SigtranCommercialEvidenceIntegritySeal? seal = null)
+static SigtranReleaseEvidencePublicationAttachmentManifest CreateDefaultReleaseEvidencePublicationAttachmentManifest(SigtranReleaseEvidenceIntegritySeal? seal = null)
 {
-    return SigtranCommercialEvidencePublicationAttachments.CreateDefault(
-        seal ?? CreateDefaultCommercialEvidenceIntegritySeal());
+    return SigtranReleaseEvidencePublicationAttachments.CreateDefault(
+        seal ?? CreateDefaultReleaseEvidenceIntegritySeal());
 }
 
-static SigtranCommercialEvidenceIntegritySeal CreateDefaultCommercialEvidenceIntegritySeal(SigtranCommercialEvidenceRetentionLedger? ledger = null)
+static SigtranReleaseEvidenceIntegritySeal CreateDefaultReleaseEvidenceIntegritySeal(SigtranReleaseEvidenceRetentionLedger? ledger = null)
 {
-    return SigtranCommercialEvidenceIntegritySeals.CreateDefault(
-        ledger ?? CreateDefaultCommercialEvidenceRetentionLedger(),
+    return SigtranReleaseEvidenceIntegritySeals.CreateDefault(
+        ledger ?? CreateDefaultReleaseEvidenceRetentionLedger(),
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceRetentionLedger CreateDefaultCommercialEvidenceRetentionLedger(SigtranCommercialEvidenceFileVerificationReport? report = null)
+static SigtranReleaseEvidenceRetentionLedger CreateDefaultReleaseEvidenceRetentionLedger(SigtranReleaseEvidenceFileVerificationReport? report = null)
 {
-    return SigtranCommercialEvidenceRetentionLedgers.CreateDefault(
-        report ?? CreateDefaultCommercialEvidenceFileVerificationReport(),
+    return SigtranReleaseEvidenceRetentionLedgers.CreateDefault(
+        report ?? CreateDefaultReleaseEvidenceFileVerificationReport(),
         "release-review",
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceFileVerificationReport CreateDefaultCommercialEvidenceFileVerificationReport()
+static SigtranReleaseEvidenceFileVerificationReport CreateDefaultReleaseEvidenceFileVerificationReport()
 {
-    return SigtranCommercialEvidenceFileVerificationReports.Evaluate(CreateDefaultCommercialEvidenceRetainedFileManifest());
+    return SigtranReleaseEvidenceFileVerificationReports.Evaluate(CreateDefaultReleaseEvidenceRetainedFileManifest());
 }
 
-static SigtranCommercialEvidenceRetainedFileManifest CreateDefaultCommercialEvidenceRetainedFileManifest()
+static SigtranReleaseEvidenceRetainedFileManifest CreateDefaultReleaseEvidenceRetainedFileManifest()
 {
-    return SigtranCommercialEvidenceRetainedFiles.CreateVerifiedManifest(
-        CreateDefaultCommercialEvidencePromotionHandoff(),
+    return SigtranReleaseEvidenceRetainedFiles.CreateVerifiedManifest(
+        CreateDefaultReleaseEvidencePromotionHandoff(),
         sizeBytes: 4096,
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidencePromotionHandoff CreateDefaultCommercialEvidencePromotionHandoff()
+static SigtranReleaseEvidencePromotionHandoff CreateDefaultReleaseEvidencePromotionHandoff()
 {
-    return SigtranCommercialEvidencePromotionHandoffs.CreateDefault(
-        CreateDefaultCommercialEvidenceDossierIntakeReport(),
+    return SigtranReleaseEvidencePromotionHandoffs.CreateDefault(
+        CreateDefaultReleaseEvidenceDossierIntakeReport(),
         new string('b', 64),
         "release-review",
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceDossierIntakeReport CreateDefaultCommercialEvidenceDossierIntakeReport()
+static SigtranReleaseEvidenceDossierIntakeReport CreateDefaultReleaseEvidenceDossierIntakeReport()
 {
-    return SigtranCommercialEvidenceDossierIntakeReports.CreateDefault(CreateDefaultCommercialEvidenceArtifactCompletenessResult());
+    return SigtranReleaseEvidenceDossierIntakeReports.CreateDefault(CreateDefaultReleaseEvidenceArtifactCompletenessResult());
 }
 
-static SigtranCommercialEvidenceArtifactCompletenessResult CreateDefaultCommercialEvidenceArtifactCompletenessResult()
+static SigtranReleaseEvidenceArtifactCompletenessResult CreateDefaultReleaseEvidenceArtifactCompletenessResult()
 {
-    return SigtranCommercialEvidenceArtifactCompleteness.Evaluate(CreateDefaultCommercialEvidenceRedactionReviewManifest());
+    return SigtranReleaseEvidenceArtifactCompleteness.Evaluate(CreateDefaultReleaseEvidenceRedactionReviewManifest());
 }
 
-static SigtranCommercialEvidenceRedactionReviewManifest CreateDefaultCommercialEvidenceRedactionReviewManifest()
+static SigtranReleaseEvidenceRedactionReviewManifest CreateDefaultReleaseEvidenceRedactionReviewManifest()
 {
-    return SigtranCommercialEvidenceRedactionReviews.CreateApproved(
-        CreateDefaultCommercialEvidenceArtifactDigestManifest(),
+    return SigtranReleaseEvidenceRedactionReviews.CreateApproved(
+        CreateDefaultReleaseEvidenceArtifactDigestManifest(),
         "release-review",
         DateTimeOffset.UtcNow);
 }
 
-static SigtranCommercialEvidenceArtifactDigestManifest CreateDefaultCommercialEvidenceArtifactDigestManifest()
+static SigtranReleaseEvidenceArtifactDigestManifest CreateDefaultReleaseEvidenceArtifactDigestManifest()
 {
-    return SigtranCommercialEvidenceArtifactDigests.CreateCovered(
-        CreateDefaultCommercialEvidenceArtifactSourceManifest(),
+    return SigtranReleaseEvidenceArtifactDigests.CreateCovered(
+        CreateDefaultReleaseEvidenceArtifactSourceManifest(),
         new string('a', 64));
 }
 
-static SigtranCommercialEvidenceArtifactSourceManifest CreateDefaultCommercialEvidenceArtifactSourceManifest()
+static SigtranReleaseEvidenceArtifactSourceManifest CreateDefaultReleaseEvidenceArtifactSourceManifest()
 {
-    SigtranCommercialEvidenceExecutionRun run = SigtranCommercialEvidenceExecutionRuns.CreateReleaseCandidateRun(
+    SigtranReleaseEvidenceExecutionRun run = SigtranReleaseEvidenceExecutionRuns.CreatePrereleaseRun(
         "1.0.0-rc.1",
         "abcdef123456",
         "run-20260622-001",
         "release-automation",
         DateTimeOffset.UtcNow);
-    SigtranCommercialEvidenceExecutionStageCatalog catalog = SigtranCommercialEvidenceExecutionStages.CreateDefault(run);
-    SigtranCommercialEvidenceExecutionArtifactManifest expected = SigtranCommercialEvidenceExecutionArtifacts.CreateDefault(catalog);
-    SigtranCommercialEvidenceArtifactIntakeTarget target = SigtranCommercialEvidenceArtifactIntakes.CreateDefault(
+    SigtranReleaseEvidenceExecutionStageCatalog catalog = SigtranReleaseEvidenceExecutionStages.CreateDefault(run);
+    SigtranReleaseEvidenceExecutionArtifactManifest expected = SigtranReleaseEvidenceExecutionArtifacts.CreateDefault(catalog);
+    SigtranReleaseEvidenceArtifactIntakeTarget target = SigtranReleaseEvidenceArtifactIntakes.CreateDefault(
         run,
         "intake-20260622-001",
         "release-review",
         DateTimeOffset.UtcNow);
 
-    return SigtranCommercialEvidenceArtifactSources.CreateDefault(
+    return SigtranReleaseEvidenceArtifactSources.CreateDefault(
         target,
         expected,
         $"{run.RunArtifactRoot}/incoming/intake-20260622-001");
@@ -7060,7 +7066,7 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
     IReadOnlyList<string>[] statusCapabilities =
     [
         SigtranInteroperabilityToolingStatus.GetCompletedCapabilities(),
-        SigtranCommercializationStatus.GetCompletedCapabilities(),
+        SigtranProductionReadinessStatus.GetCompletedCapabilities(),
         SigtranReleaseAutomationStatus.GetCompletedCapabilities(),
         SigtranDeveloperExperienceStatus.GetCompletedCapabilities(),
         SigtranOperationsStatus.GetCompletedCapabilities(),
@@ -7072,18 +7078,18 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
         SigtranNativeSctpLabVerificationStatus.GetCompletedCapabilities(),
         SigtranExternalPeerInteropStatus.GetCompletedCapabilities(),
         SigtranProtocolInteropStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceStatus.GetCompletedCapabilities(),
         SigtranSupplyChainStatus.GetCompletedCapabilities(),
         SigtranReleaseWorkflowStatus.GetCompletedCapabilities(),
         SigtranPackagePublicationStatus.GetCompletedCapabilities(),
         SigtranSupplyChainReleaseStatus.GetCompletedCapabilities(),
-        SigtranReleaseCandidatePublicationStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceExecutionStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceArtifactIntakeStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceFileVerificationStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceFileSystemExecutionStatus.GetCompletedCapabilities(),
-        SigtranCommercialEvidenceApprovalHandoffStatus.GetCompletedCapabilities()
+        SigtranPrereleasePublicationStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceReadinessLockdownStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceExecutionStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceArtifactIntakeStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceFileVerificationStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceFileSystemExecutionStatus.GetCompletedCapabilities(),
+        SigtranReleaseEvidenceApprovalHandoffStatus.GetCompletedCapabilities()
     ];
 
     foreach (IReadOnlyList<string> capabilities in statusCapabilities)
@@ -7093,27 +7099,72 @@ static void SigtranStatusCapabilitiesUseDomainDocumentationLabels()
     }
 }
 
-static SigtranCommercialEvidenceManifest CreateCompleteCommercialEvidenceManifest()
+static void SigtranPublicApiNamingAvoidsProjectPlanTerminology()
 {
-    SigtranCommercialEvidenceManifest manifest = new();
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/native-sctp.pcapng", "SHA256-001"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/native-sctp-sdk.log", "SHA256-002"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/native-sctp-peer.log", "SHA256-003"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.NativeSctp, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/native-sctp-comparison.md", "SHA256-004"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PacketCapture, "artifacts/commercial/external-peer.pcapng", "SHA256-005"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.SdkTrace, "artifacts/commercial/external-peer-sdk.log", "SHA256-006"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerConfiguration, "artifacts/commercial/external-peer.conf", "SHA256-007"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.PeerLog, "artifacts/commercial/external-peer.log", "SHA256-008"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ExternalPeerInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/external-peer-comparison.md", "SHA256-009"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ReferenceVector, "artifacts/commercial/protocol-reference.ber", "SHA256-010"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.SdkVector, "artifacts/commercial/protocol-sdk.ber", "SHA256-011"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ProtocolInterop, SigtranCommercialEvidenceArtifactKind.ComparisonReport, "artifacts/commercial/protocol-comparison.md", "SHA256-012"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ReleaseProvenance, SigtranCommercialEvidenceArtifactKind.ReleaseProvenance, "artifacts/commercial/provenance.json", "SHA256-013"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.ReleaseProvenance, SigtranCommercialEvidenceArtifactKind.PackageManifest, "artifacts/commercial/package-manifest.json", "SHA256-014"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Package, "artifacts/commercial/Sigtran.NET.1.0.0.nupkg", "SHA256-015"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.SymbolPackage, "artifacts/commercial/Sigtran.NET.1.0.0.snupkg", "SHA256-016"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Sbom, "artifacts/commercial/sbom.spdx.json", "SHA256-017"));
-    manifest.Add(new SigtranCommercialEvidenceArtifact(SigtranCommercialEvidenceArea.PackageArtifacts, SigtranCommercialEvidenceArtifactKind.Signature, "artifacts/commercial/package.sig", "SHA256-018"));
+    string[] bannedTokens =
+    [
+        "Com" + "mercial",
+        "Stable" + "Com" + "mercial",
+        "Main" + "tained",
+        "Release" + "Candidate",
+        "Readiness" + "Report",
+        "Road" + "map"
+    ];
+
+    List<string> offenders = [];
+    Assembly sdkAssembly = typeof(ISigtranMessage).Assembly;
+
+    foreach (Type type in sdkAssembly.GetExportedTypes())
+    {
+        AddIfOffender(offenders, type.FullName ?? type.Name, bannedTokens);
+
+        foreach (MemberInfo member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+        {
+            AddIfOffender(offenders, $"{type.FullName}.{member.Name}", bannedTokens);
+
+            if (member is MethodBase method)
+            {
+                foreach (ParameterInfo parameter in method.GetParameters())
+                {
+                    AddIfOffender(offenders, $"{type.FullName}.{method.Name}({parameter.Name})", bannedTokens);
+                }
+            }
+        }
+    }
+
+    AssertEqual("", string.Join(Environment.NewLine, offenders.Order(StringComparer.Ordinal)), "project plan naming offenders");
+}
+
+static void AddIfOffender(List<string> offenders, string name, IReadOnlyList<string> bannedTokens)
+{
+    if (bannedTokens.Any(token => name.Contains(token, StringComparison.Ordinal))
+        || Regex.IsMatch(name, @"Phase\d+", RegexOptions.CultureInvariant))
+    {
+        offenders.Add(name);
+    }
+}
+
+static SigtranReleaseEvidenceManifest CreateCompleteReleaseEvidenceManifest()
+{
+    SigtranReleaseEvidenceManifest manifest = new();
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.NativeSctp, SigtranReleaseEvidenceArtifactKind.PacketCapture, "artifacts/production/native-sctp.pcapng", "SHA256-001"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.NativeSctp, SigtranReleaseEvidenceArtifactKind.SdkTrace, "artifacts/production/native-sctp-sdk.log", "SHA256-002"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.NativeSctp, SigtranReleaseEvidenceArtifactKind.PeerLog, "artifacts/production/native-sctp-peer.log", "SHA256-003"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.NativeSctp, SigtranReleaseEvidenceArtifactKind.ComparisonReport, "artifacts/production/native-sctp-comparison.md", "SHA256-004"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ExternalPeerInterop, SigtranReleaseEvidenceArtifactKind.PacketCapture, "artifacts/production/external-peer.pcapng", "SHA256-005"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ExternalPeerInterop, SigtranReleaseEvidenceArtifactKind.SdkTrace, "artifacts/production/external-peer-sdk.log", "SHA256-006"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ExternalPeerInterop, SigtranReleaseEvidenceArtifactKind.PeerConfiguration, "artifacts/production/external-peer.conf", "SHA256-007"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ExternalPeerInterop, SigtranReleaseEvidenceArtifactKind.PeerLog, "artifacts/production/external-peer.log", "SHA256-008"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ExternalPeerInterop, SigtranReleaseEvidenceArtifactKind.ComparisonReport, "artifacts/production/external-peer-comparison.md", "SHA256-009"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ProtocolInterop, SigtranReleaseEvidenceArtifactKind.ReferenceVector, "artifacts/production/protocol-reference.ber", "SHA256-010"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ProtocolInterop, SigtranReleaseEvidenceArtifactKind.SdkVector, "artifacts/production/protocol-sdk.ber", "SHA256-011"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ProtocolInterop, SigtranReleaseEvidenceArtifactKind.ComparisonReport, "artifacts/production/protocol-comparison.md", "SHA256-012"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ReleaseProvenance, SigtranReleaseEvidenceArtifactKind.ReleaseProvenance, "artifacts/production/provenance.json", "SHA256-013"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.ReleaseProvenance, SigtranReleaseEvidenceArtifactKind.PackageManifest, "artifacts/production/package-manifest.json", "SHA256-014"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.PackageArtifacts, SigtranReleaseEvidenceArtifactKind.Package, "artifacts/production/Sigtran.NET.1.0.0.nupkg", "SHA256-015"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.PackageArtifacts, SigtranReleaseEvidenceArtifactKind.SymbolPackage, "artifacts/production/Sigtran.NET.1.0.0.snupkg", "SHA256-016"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.PackageArtifacts, SigtranReleaseEvidenceArtifactKind.Sbom, "artifacts/production/sbom.spdx.json", "SHA256-017"));
+    manifest.Add(new SigtranReleaseEvidenceArtifact(SigtranReleaseEvidenceArea.PackageArtifacts, SigtranReleaseEvidenceArtifactKind.Signature, "artifacts/production/package.sig", "SHA256-018"));
     return manifest;
 }
 
@@ -7266,9 +7317,9 @@ static void NativeSctpLabProfileIsOptIn()
     }
 }
 
-static void NativeSctpReadinessReportsFoundationAndVerificationGates()
+static void NativeSctpReadinessSnapshotsFoundationAndVerificationGates()
 {
-    NativeSctpReadinessReport report = NativeSctpReadiness.GetReport();
+    NativeSctpReadinessSnapshot report = NativeSctpReadiness.GetReport();
 
     Assert(report.FoundationReady, "native SCTP foundation should be ready");
     Assert(!report.IsProductionReady, "native SCTP production should wait for Linux verification");
@@ -7487,7 +7538,7 @@ static void TcapEvidenceVectorsValidateTransactionBytes()
     AssertSequence([0xCC], result.Parameters.Span, "TCAP evidence result parameters");
 }
 
-static void TcapReadinessReportsFoundationStatus()
+static void TcapReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("TCAP BER foundation", TcapReadiness.ReleaseLabel, "TCAP readiness label");
     AssertEqual(7, TcapReadiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
@@ -7496,7 +7547,7 @@ static void TcapReadinessReportsFoundationStatus()
         TcapReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         TcapReadiness.ProductionGateDescription);
 
-    TcapReadinessReport report = TcapReadiness.GetReport();
+    TcapReadinessSnapshot report = TcapReadiness.GetReport();
     Assert(report.FoundationReady, "TCAP foundation should be ready");
     Assert(!report.IsProductionReady, "TCAP should not claim production readiness without interop vectors");
     AssertEqual(7, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
@@ -7664,7 +7715,7 @@ static void MapSmsEvidenceVectorsValidateOperationBytes()
     AssertEqual("441234", alert!.ServiceCentreAddress.Digits, "MAP alert evidence service centre");
 }
 
-static void MapSmsReadinessReportsFoundationStatus()
+static void MapSmsReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("MAP SMS profile foundation", MapSmsReadiness.ReleaseLabel, "MAP readiness label");
     AssertEqual(8, MapSmsReadiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
@@ -7672,7 +7723,7 @@ static void MapSmsReadinessReportsFoundationStatus()
         MapSmsReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         MapSmsReadiness.ProductionGateDescription);
 
-    MapSmsReadinessReport report = MapSmsReadiness.GetReport();
+    MapSmsReadinessSnapshot report = MapSmsReadiness.GetReport();
     Assert(report.FoundationReady, "MAP SMS foundation should be ready");
     Assert(!report.IsProductionReady, "MAP SMS should not claim production readiness without interop vectors");
     AssertEqual(8, report.FoundationCapabilityCount, "MAP completed foundation capabilities");
@@ -7936,7 +7987,7 @@ static void SccpEvidenceVectorsValidateCodecBytes()
     }
 }
 
-static void SccpReadinessReportsFoundationStatus()
+static void SccpReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("MTP3 and SCCP foundation", SccpReadiness.ReleaseLabel, "SCCP readiness label");
     AssertEqual(6, SccpReadiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
@@ -7944,7 +7995,7 @@ static void SccpReadinessReportsFoundationStatus()
         SccpReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         SccpReadiness.ProductionGateDescription);
 
-    SccpReadinessReport report = SccpReadiness.GetReport();
+    SccpReadinessSnapshot report = SccpReadiness.GetReport();
     Assert(report.FoundationReady, "SCCP foundation should be ready");
     Assert(!report.IsProductionReady, "SCCP should not claim production readiness without interop vectors");
     AssertEqual(6, report.FoundationCapabilityCount, "SCCP completed foundation capabilities");
@@ -8115,7 +8166,7 @@ static void SctpMultiHomingReadinessEvaluatesEndpointSets()
     SctpMultiHomingEndpointSet single = new(
         remoteEndpoints: [new SctpEndpoint("sg-a.example.net", 2905)]);
 
-    SctpMultiHomingReadinessReport singleReport = SctpMultiHomingReadiness.Evaluate(single);
+    SctpMultiHomingReadinessSnapshot singleReport = SctpMultiHomingReadiness.Evaluate(single);
     Assert(!singleReport.IsReady, singleReport.Describe());
     Assert(singleReport.CanUseSingleHomedFallback, singleReport.Describe());
     Assert(singleReport.Warnings.Contains("single-homed-endpoint-set"), singleReport.Describe());
@@ -8132,7 +8183,7 @@ static void SctpMultiHomingReadinessEvaluatesEndpointSets()
             new SctpEndpoint("10.0.0.11", 2905)
         ]);
 
-    SctpMultiHomingReadinessReport readyReport = SctpMultiHomingReadiness.Evaluate(ready);
+    SctpMultiHomingReadinessSnapshot readyReport = SctpMultiHomingReadiness.Evaluate(ready);
     Assert(readyReport.IsReady, readyReport.Describe());
     AssertEqual("sg-a.example.net:2905", ready.PrimaryRemoteEndpoint.ToString(), "SCTP primary remote endpoint");
     Assert(ready.HasMultipleLocalAddresses, ready.Describe());
@@ -8145,7 +8196,7 @@ static void SctpMultiHomingReadinessEvaluatesEndpointSets()
             new SctpEndpoint("SG-A.example.net", 2905)
         ]);
 
-    SctpMultiHomingReadinessReport duplicateReport = SctpMultiHomingReadiness.Evaluate(duplicate);
+    SctpMultiHomingReadinessSnapshot duplicateReport = SctpMultiHomingReadiness.Evaluate(duplicate);
     Assert(!duplicateReport.IsReady, duplicateReport.Describe());
     Assert(duplicateReport.Warnings.Contains("duplicate-endpoint"), duplicateReport.Describe());
 
@@ -8273,7 +8324,7 @@ static void SctpTransportDiagnosticsSnapshotsSummarizeState()
     AssertEqual(SctpTransportDiagnosticState.Healthy, healthy.DiagnosticState, healthy.Describe());
     AssertEqual(1, healthy.AssociationEvents.Count, "SCTP diagnostics event count");
 
-    SctpMultiHomingReadinessReport singleHome = SctpMultiHomingReadiness.Evaluate(new SctpMultiHomingEndpointSet([remote]));
+    SctpMultiHomingReadinessSnapshot singleHome = SctpMultiHomingReadiness.Evaluate(new SctpMultiHomingEndpointSet([remote]));
     SctpTransportDiagnosticsSnapshot degraded = SctpTransportDiagnostics.CreateSnapshot(
         healthyTransport,
         journal,
@@ -8297,7 +8348,7 @@ static void SctpTransportDiagnosticsSnapshotsSummarizeState()
 
 static void SctpProductionHardeningReadinessGatesEvidence()
 {
-    SctpProductionHardeningReadinessReport current = SctpProductionHardeningReadiness.GetReport();
+    SctpProductionHardeningReadinessSnapshot current = SctpProductionHardeningReadiness.GetReport();
     AssertEqual(8, SctpProductionHardeningReadiness.RequiredFoundationCapabilityCount, "SCTP hardening capability count");
     AssertEqual(8, current.FoundationCapabilityCount, "SCTP hardening completed capability count");
     Assert(current.FoundationReady, current.Describe());
@@ -8305,7 +8356,7 @@ static void SctpProductionHardeningReadinessGatesEvidence()
     Assert(!current.ProductionReady, current.Describe());
     Assert(current.Describe().Contains("linuxEvidence=False", StringComparison.Ordinal), current.Describe());
 
-    SctpProductionHardeningReadinessReport evidenced = SctpProductionHardeningReadiness.GetReport(
+    SctpProductionHardeningReadinessSnapshot evidenced = SctpProductionHardeningReadiness.GetReport(
         hasRetainedLinuxSctpEvidence: true,
         hasRetainedExternalPeerEvidence: true);
     Assert(evidenced.FoundationReady, evidenced.Describe());
@@ -8361,14 +8412,14 @@ static void TcpSctpAdapterExposesDevelopmentMetadataAndHealth()
     }
 }
 
-static void SctpTransportReadinessReportsFoundationStatus()
+static void SctpTransportReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("SCTP transport foundation", SctpTransportReadiness.ReleaseLabel, "SCTP readiness label");
     AssertEqual(5, SctpTransportReadiness.RequiredFoundationCapabilityCount, "SCTP foundation capability count");
     Assert(
         SctpTransportReadiness.ProductionGateDescription.Contains("Native SCTP", StringComparison.Ordinal),
         SctpTransportReadiness.ProductionGateDescription);
-    SctpTransportReadinessReport report = SctpTransportReadiness.GetReport();
+    SctpTransportReadinessSnapshot report = SctpTransportReadiness.GetReport();
     AssertEqual(5, report.FoundationCapabilityCount, "Completed SCTP foundation capabilities");
     Assert(report.FoundationReady, "SCTP foundation should be ready");
     Assert(!report.IsProductionReady, "SCTP should not be production-ready without native implementation");
@@ -8443,11 +8494,11 @@ static void M3uaProtocolExposesPublicMetadata()
     Assert(capabilities.SupportsTransportSession, "capabilities should include transport session");
 }
 
-static void M3uaAlphaReadinessReportDescribesReleaseGate()
+static void M3uaAlphaReadinessSnapshotDescribesReleaseGate()
 {
     AssertEqual("M3UA alpha", M3uaAlphaReadiness.ReleaseLabel, "alpha release label");
     AssertEqual(3, M3uaAlphaReadiness.RequiredVerificationCommandCount, "alpha verification command count");
-    M3uaAlphaReadinessReport report = M3uaAlphaReadiness.GetReport();
+    M3uaAlphaReadinessSnapshot report = M3uaAlphaReadiness.GetReport();
     Assert(report.IsReady, "M3UA alpha readiness report should be ready");
     Assert(report.HasPackageMetadata, "alpha report package metadata");
     Assert(report.RequiresXmlDocumentation, "alpha report XML docs");

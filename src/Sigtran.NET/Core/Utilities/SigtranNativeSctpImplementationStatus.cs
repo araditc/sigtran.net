@@ -17,7 +17,7 @@ public static class SigtranNativeSctpImplementationStatus
         "native-sctp-listener",
         "native-sctp-lab-profile",
         "native-sctp-readiness-report",
-        "commercial-readiness-integration",
+        "production-readiness-integration",
         "documentation"
     ];
 
@@ -38,7 +38,7 @@ public static class SigtranNativeSctpImplementationStatus
     /// <returns>The native SCTP implementation status summary.</returns>
     public static string Describe()
     {
-        NativeSctpReadinessReport readiness = NativeSctpReadiness.GetReport();
+        NativeSctpReadinessSnapshot readiness = NativeSctpReadiness.GetReport();
         return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={readiness.FoundationReady} productionReady={readiness.IsProductionReady}";
     }
 }

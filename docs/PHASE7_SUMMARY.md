@@ -1,10 +1,10 @@
 # Phase 7 Summary
 
-Commercialization and Release Hardening is foundation-complete.
+ProductionReadiness and Release Hardening is foundation-complete.
 
 ## Completed Units
 
-1. Commercial readiness gates
+1. Production readiness gates
 2. Native SCTP support matrix
 3. External interoperability evidence registry
 4. Release candidate manifest
@@ -19,7 +19,7 @@ Commercialization and Release Hardening is foundation-complete.
 
 The SDK can now publish governed release candidates after internal verification.
 
-Commercial production readiness is still blocked until these external gates are complete:
+Production production readiness is still blocked until these external gates are complete:
 
 - Native SCTP implementation and verification
 - External interoperability lab evidence
@@ -28,13 +28,13 @@ Commercial production readiness is still blocked until these external gates are 
 
 ## API Entry Points
 
-- `SigtranCommercialReadiness`
+- `SigtranProductionReadiness`
 - `SigtranNativeSctpSupport`
 - `SigtranInteropEvidenceRegistry`
-- `SigtranReleaseCandidate`
+- `SigtranPrerelease`
 - `SigtranPackageGovernance`
 - `SigtranSecurityPolicy`
 - `SigtranCompatibility`
 - `SigtranObservability`
 - `SigtranDeploymentProfiles`
-- `SigtranCommercializationStatus`
+- `SigtranProductionReadinessStatus`

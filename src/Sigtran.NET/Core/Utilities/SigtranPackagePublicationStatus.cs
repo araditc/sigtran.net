@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package publication readiness.
 /// </summary>
-public sealed class SigtranPackagePublicationReadinessReport
+public sealed class SigtranPackagePublicationReadinessSnapshot
 {
     /// <summary>Creates a package publication readiness report.</summary>
     /// <param name="versionPolicyReady">Whether version policy is ready.</param>
@@ -15,7 +15,7 @@ public sealed class SigtranPackagePublicationReadinessReport
     /// <param name="integrityManifestReady">Whether package integrity manifest is ready.</param>
     /// <param name="evidenceManifestReady">Whether publication evidence manifest is ready.</param>
     /// <param name="publicationGateReady">Whether publication gate is ready.</param>
-    public SigtranPackagePublicationReadinessReport(
+    public SigtranPackagePublicationReadinessSnapshot(
         bool versionPolicyReady,
         bool metadataReady,
         bool layoutReady,
@@ -113,7 +113,7 @@ public static class SigtranPackagePublicationStatus
 
     /// <summary>Returns the current package publication readiness report.</summary>
     /// <returns>The current package publication readiness report.</returns>
-    public static SigtranPackagePublicationReadinessReport GetReadiness()
+    public static SigtranPackagePublicationReadinessSnapshot GetReadiness()
     {
         SigtranNuGetMetadataContract metadata = SigtranNuGetMetadata.CreateDefaultContract();
         string projectXml = File.Exists("src/Sigtran.NET/Sigtran.NET.csproj")
@@ -125,8 +125,8 @@ public static class SigtranPackagePublicationStatus
             metadataReady: metadata.IsPublicationReady && metadata.GetMissingProperties(projectXml).Count == 0,
             layoutReady: SigtranPackageLayouts.CreateDefault().IncludesRequiredArtifacts,
             dryRunReady: SigtranNuGetPublishPlans.CreateDryRun().IsDryRunSafe,
-            credentialPolicyReady: SigtranPublicationCredentials.CreateDefaultPolicy().RequiresCommercialSecrets,
-            channelPolicyReady: SigtranPublishChannels.GetChannels().Any(static channel => channel.Kind == SigtranPublishChannelKind.Stable && channel.RequiresCommercialReadiness),
+            credentialPolicyReady: SigtranPublicationCredentials.CreateDefaultPolicy().RequiresProductionSecrets,
+            channelPolicyReady: SigtranPublishChannels.GetChannels().Any(static channel => channel.Kind == SigtranPublishChannelKind.Stable && channel.RequiresProductionReadiness),
             integrityManifestReady: SigtranPackageIntegrityManifest.CreateCompleteSample().IsComplete,
             evidenceManifestReady: SigtranPublicationEvidenceManifest.CreateCompleteSample().IsComplete,
             publicationGateReady: Capabilities.Contains("publication-gate"));

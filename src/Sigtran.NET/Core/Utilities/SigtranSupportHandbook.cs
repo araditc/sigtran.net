@@ -11,8 +11,8 @@ public enum SigtranSupportChannel
     /// <summary>Private security disclosure support channel.</summary>
     PrivateSecurity,
 
-    /// <summary>Commercial support support channel.</summary>
-    Commercial
+    /// <summary>Production support support channel.</summary>
+    Production
 }
 
 /// <summary>
@@ -54,7 +54,7 @@ public static class SigtranSupportHandbook
         [
             new SigtranSupportRule(SigtranSupportChannel.GitHubIssues, "Public bugs, questions, and feature requests.", escalatesIncidents: false),
             new SigtranSupportRule(SigtranSupportChannel.PrivateSecurity, "Security reports and coordinated disclosure.", escalatesIncidents: true),
-            new SigtranSupportRule(SigtranSupportChannel.Commercial, "Enterprise support, interoperability incidents, and release escalations.", escalatesIncidents: true)
+            new SigtranSupportRule(SigtranSupportChannel.Production, "Enterprise support, interoperability incidents, and release escalations.", escalatesIncidents: true)
         ];
     }
 }

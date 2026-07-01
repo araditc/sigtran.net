@@ -25,6 +25,6 @@ Phase 32 moves SCCP, TCAP, and MAP SMS from foundation-only protocol layers towa
 
 The completed status is SDK evidence-backed but not production evidence-ready. The remaining blocker is `external-protocol-interoperability-evidence-required`.
 
-## Commercial Gate
+## Production Gate
 
-Internal vectors prove that current SDK encoders and decoders are deterministic for the covered SCCP, TCAP, and MAP SMS surfaces. They do not replace external PCAP, peer logs, SDK traces, reference vectors, or comparison reports. Commercial promotion still depends on retained, digest-covered evidence from maintained external SIGTRAN peer runs.
+Internal vectors prove that current SDK encoders and decoders are deterministic for the covered SCCP, TCAP, and MAP SMS surfaces. They do not replace external PCAP, peer logs, SDK traces, reference vectors, or comparison reports. Production promotion still depends on retained, digest-covered evidence from reference external SIGTRAN peer runs.

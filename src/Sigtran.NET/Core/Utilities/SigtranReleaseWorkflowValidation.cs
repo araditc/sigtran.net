@@ -44,7 +44,7 @@ public static class SigtranReleaseWorkflowValidation
         "tags:",
         "dotnet-version: 10.0.x",
         "SIGTRAN_SUPPLY_CHAIN: true",
-        "SIGTRAN_COMMERCIAL_EVIDENCE: true",
+        "SIGTRAN_RELEASE_EVIDENCE: true",
         "SIGTRAN_DRY_RUN_ARTIFACT_ROOT",
         "SIGTRAN_RELEASE_CHANNEL",
         "TIMESTAMP_AUTHORITY",

@@ -33,7 +33,7 @@ Use `M3uaDiagnostics.TryValidateSupportedPacket` for a fast packet-level alpha g
 `M3uaAlphaReadiness.GetReport()` returns a framework-neutral alpha readiness report covering package metadata, XML documentation enforcement, M3UA protocol coverage, transport abstraction availability, and the experimental status of SCCP/TCAP/MAP.
 
 ```csharp
-M3uaAlphaReadinessReport report = M3uaAlphaReadiness.GetReport();
+M3uaAlphaReadinessSnapshot report = M3uaAlphaReadiness.GetReport();
 if (!report.IsReady)
 {
     throw new InvalidOperationException(report.Describe());

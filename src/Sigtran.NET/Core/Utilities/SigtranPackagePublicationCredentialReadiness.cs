@@ -54,7 +54,7 @@ public sealed class SigtranPackagePublicationCredentialReadiness
 
     /// <summary>Whether credential readiness can move into evidence assembly.</summary>
     public bool IsReadyForEvidenceAssembly => ArtifactSet.IsReadyForCredentialEvaluation
-        && CredentialPolicy.RequiresCommercialSecrets
+        && CredentialPolicy.RequiresProductionSecrets
         && HasRequiredSecrets
         && HasUtcEvaluationTime;
 

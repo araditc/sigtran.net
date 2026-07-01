@@ -95,7 +95,7 @@ The command plan records which command requires signing secrets and keeps upload
 - Public API diff artifact.
 - Release artifact upload manifest.
 - Supply-chain release command plan.
-- Commercial evidence readiness.
+- Production evidence readiness.
 
 The gate keeps supply-chain completeness separate from commercial release readiness. Even complete SBOM, signing, provenance, API diff, and upload evidence cannot be promoted unless commercial evidence is also ready.
 
@@ -120,7 +120,7 @@ The gate keeps supply-chain completeness separate from commercial release readin
 
 - Completed execution capabilities.
 - Foundation readiness.
-- Commercial release readiness.
+- Production release readiness.
 - Default blockers.
 
 The status is foundation-ready after the workflow execution contract is present, but commercial release readiness remains false until a real release run retains digest-covered SBOM, signing, timestamp, provenance, API diff, digest, package, symbol, upload, and commercial evidence artifacts.
@@ -129,7 +129,7 @@ The status is foundation-ready after the workflow execution contract is present,
 
 The final unit completes the status count and records `final-sweep-validation` as the final capability.
 
-Phase 34 is foundation-complete for supply-chain release execution. The SDK now has contracts and workflow wiring for final SBOM, trusted timestamped signing verification, GitHub attestations, public API diff, digest manifests, artifact upload, and release gates. Commercial publication still requires a real release workflow run with retained digest-covered artifacts and complete commercial evidence.
+Phase 34 is foundation-complete for supply-chain release execution. The SDK now has contracts and workflow wiring for final SBOM, trusted timestamped signing verification, GitHub attestations, public API diff, digest manifests, artifact upload, and release gates. Production publication still requires a real release workflow run with retained digest-covered artifacts and complete commercial evidence.
 
 ## Validation
 

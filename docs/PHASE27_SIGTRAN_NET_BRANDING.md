@@ -30,4 +30,4 @@ The rename must also pass a repository sweep that rejects previous non-canonical
 
 ## Next Units
 
-The maintained external peer lab continues in [Phase 27 Maintained External Peer Lab](PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md).
+The reference external peer lab continues in [Phase 27 Reference External Peer Lab](PHASE27_MAINTAINED_EXTERNAL_PEER_LAB.md).

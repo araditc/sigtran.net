@@ -1,4 +1,4 @@
-# Phase 38 Summary - Commercial Evidence Artifact Intake
+# Phase 38 Summary - Production Evidence Artifact Intake
 
 Phase 38 prepares the SDK to receive real execution artifacts and convert them into a retained commercial dossier.
 

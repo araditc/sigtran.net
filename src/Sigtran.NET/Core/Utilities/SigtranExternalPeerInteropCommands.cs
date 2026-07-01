@@ -49,8 +49,8 @@ public sealed class SigtranExternalPeerInteropCommandSet
     /// <summary>The required environment variables.</summary>
     public IReadOnlyList<string> RequiredEnvironmentVariables { get; }
 
-    /// <summary>Whether the command set covers the commercial external peer lab workflow.</summary>
-    public bool IsCommercialLabCommandSet => RequiresExternalPeer
+    /// <summary>Whether the command set covers the production external peer lab workflow.</summary>
+    public bool IsProductionLabCommandSet => RequiresExternalPeer
         && RequiresPacketCapture
         && RequiresSdkTrace
         && RequiresComparisonReport

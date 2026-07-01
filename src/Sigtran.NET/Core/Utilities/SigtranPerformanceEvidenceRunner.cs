@@ -109,14 +109,14 @@ public sealed class SigtranPerformanceEvidenceRunnerPlan
     /// <summary>Whether the command plan contains every required command kind.</summary>
     public bool CoversRequiredCommands => RequiredKinds.All(kind => _commands.Any(command => command.Kind == kind));
 
-    /// <summary>Whether the runner plan is executable for commercial evidence collection.</summary>
-    public bool IsCommercialRunnerPlan => RequiresSelfHostedRunner && RequiresPeerTraffic && CoversRequiredCommands;
+    /// <summary>Whether the runner plan is executable for production evidence collection.</summary>
+    public bool IsProductionRunnerPlan => RequiresSelfHostedRunner && RequiresPeerTraffic && CoversRequiredCommands;
 
     /// <summary>Formats a compact runner plan summary.</summary>
     /// <returns>The runner plan summary.</returns>
     public string Describe()
     {
-        return $"run={RunId} commands={_commands.Length} selfHosted={RequiresSelfHostedRunner} peerTraffic={RequiresPeerTraffic} ready={IsCommercialRunnerPlan}";
+        return $"run={RunId} commands={_commands.Length} selfHosted={RequiresSelfHostedRunner} peerTraffic={RequiresPeerTraffic} ready={IsProductionRunnerPlan}";
     }
 
     private static readonly SigtranPerformanceEvidenceRunnerCommandKind[] RequiredKinds =
@@ -170,7 +170,7 @@ public sealed class SigtranPerformanceEvidenceCiHandoff
 
     /// <summary>Whether the CI handoff is ready for real evidence execution.</summary>
     public bool IsReady => ManualTriggerOnly
-        && RunnerPlan.IsCommercialRunnerPlan
+        && RunnerPlan.IsProductionRunnerPlan
         && _artifactPatterns.Length >= 4
         && _artifactPatterns.All(pattern => pattern.StartsWith(RunnerPlan.ArtifactRoot, StringComparison.Ordinal));
 }

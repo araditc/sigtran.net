@@ -49,13 +49,13 @@ Every throughput target requires benchmark evidence before it can be used in pro
 
 ## Load-Test Plan
 
-`SigtranLoadTestPlans.CreateCommercialDefault()` defines warmup, sustained, and peak stages.
+`SigtranLoadTestPlans.CreateProductionDefault()` defines warmup, sustained, and peak stages.
 
 The commercial load-test plan requires native SCTP and an external peer stack because local in-memory or TCP-only tests are not enough for production telecom claims.
 
 ## Resource Budget
 
-`SigtranResourceBudgets.CreateCommercialDefault()` defines allocation, working-set, CPU, and allocation-tracking expectations.
+`SigtranResourceBudgets.CreateProductionDefault()` defines allocation, working-set, CPU, and allocation-tracking expectations.
 
 The default target keeps hot-path allocations explicit and requires allocation tracking during benchmark evidence collection.
 

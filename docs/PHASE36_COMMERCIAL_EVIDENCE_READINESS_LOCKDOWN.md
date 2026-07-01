@@ -1,12 +1,12 @@
-# Phase 36 Commercial Evidence Readiness Lockdown
+# Phase 36 Production Evidence Readiness Lockdown
 
 Phase 36 locks the evidence-readiness prerequisites required before real lab execution and RC publication. The phase does not manufacture passing evidence. It makes the release target, secrets, artifact roots, checklists, preflight, and go/no-go decision explicit and testable before evidence-producing work begins.
 
-The public APIs use domain names such as `SigtranCommercialReleaseTargetLocks`; phase numbers are intentionally kept out of source type names.
+The public APIs use domain names such as `SigtranReleaseTargetLocks`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Release Target Lock
 
-`SigtranCommercialReleaseTargetLocks` defines the immutable release target used to bind retained evidence:
+`SigtranReleaseTargetLocks` defines the immutable release target used to bind retained evidence:
 
 - Release-candidate package version.
 - Pinned source commit.
@@ -18,7 +18,7 @@ The target is locked only when it is a release candidate, the commit is pinned, 
 
 ## Unit 2 - Required Secrets Readiness
 
-`SigtranCommercialReleaseSecrets` defines the protected secret contract without exposing secret values:
+`SigtranReleaseSecrets` defines the protected secret contract without exposing secret values:
 
 - `NUGET_API_KEY` for package publication.
 - `SIGNING_CERTIFICATE` for trusted package signing material.
@@ -29,7 +29,7 @@ The readiness evaluator accepts only secret names and reports missing requiremen
 
 ## Unit 3 - Evidence Artifact Retention Map
 
-`SigtranCommercialEvidenceRetentionMaps` defines the retained artifact roots required for commercial evidence capture:
+`SigtranReleaseEvidenceRetentionMaps` defines the retained artifact roots required for commercial evidence capture:
 
 - Native SCTP evidence.
 - External peer interoperability evidence.
@@ -42,9 +42,9 @@ The readiness evaluator accepts only secret names and reports missing requiremen
 
 Every path must live under the release target artifact root, keep artifacts for at least one year, and require digest coverage. Floating paths such as `artifacts/latest/...` are intentionally rejected because they cannot prove which release target produced the evidence.
 
-## Unit 4 - Commercial Evidence Checklist
+## Unit 4 - Production Evidence Checklist
 
-`SigtranCommercialEvidenceChecklists` defines the mandatory checklist for evidence-producing execution:
+`SigtranReleaseEvidenceChecklists` defines the mandatory checklist for evidence-producing execution:
 
 - Native SCTP packet capture.
 - External peer log, SDK trace, and configuration.
@@ -59,12 +59,12 @@ The checklist validates unique item identifiers, mandatory coverage for every re
 
 ## Unit 5 - Release Preflight Inputs
 
-`SigtranCommercialReleasePreflightChecks` aggregates the lockdown inputs before evidence-producing work starts:
+`SigtranReleasePreflightChecks` aggregates the lockdown inputs before evidence-producing work starts:
 
 - Release target lock.
 - Protected release secret readiness.
 - Evidence retention map.
-- Commercial evidence checklist.
+- Production evidence checklist.
 
 The preflight report returns stable blocker identifiers for unlocked targets, missing secrets, incomplete retention maps, target mismatches between the release lock and retention map, and incomplete checklists. A passing preflight means the execution inputs are ready; it does not mean lab evidence or publication evidence already passed.
 
@@ -90,28 +90,28 @@ The profile validates channel coverage, dry-run non-publication, stable publicat
 
 The handoff plan is still a readiness artifact. It defines how the evidence will be reviewed once real retained artifacts exist.
 
-## Unit 8 - Commercial Go/No-Go Gate
+## Unit 8 - Production Go/No-Go Gate
 
-`SigtranCommercialGoNoGoGates` separates three decisions:
+`SigtranReleaseGoNoGoGates` separates three decisions:
 
 - `NoGo` when lockdown inputs are incomplete.
 - `EvidenceExecutionOnly` when lockdown inputs are ready but real commercial evidence is still incomplete.
-- `ReleaseCandidate` or `Stable` only when retained commercial release evidence is complete.
+- `Prerelease` or `Stable` only when retained commercial release evidence is complete.
 
 This intentionally prevents the SDK from treating readiness foundation as publication evidence. With the current retained evidence state, the gate can allow evidence-producing execution but continues to block RC and stable publication until the commercial evidence dossier is complete.
 
 ## Unit 9 - Readiness Lockdown Status
 
-`SigtranCommercialEvidenceReadinessLockdownStatus` exposes domain-based status reporting for the completed readiness-lockdown capabilities:
+`SigtranReleaseEvidenceReadinessLockdownStatus` exposes domain-based status reporting for the completed readiness-lockdown capabilities:
 
 - Release target lock.
 - Release secret readiness.
 - Evidence retention map.
-- Commercial evidence checklist.
+- Production evidence checklist.
 - Release preflight.
 - Protected release environments.
 - Evidence dossier handoff.
-- Commercial go/no-go gate.
+- Production go/no-go gate.
 - Documentation and status reporting.
 
 The current status is ready to start evidence-producing execution, but it continues to block RC and stable publication because commercial release evidence is incomplete.

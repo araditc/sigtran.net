@@ -17,7 +17,7 @@ The plan wires together:
 - Package signing.
 - Signature verification.
 - Provenance attestation.
-- Commercial evidence verification.
+- Production evidence verification.
 
 The plan uses `SigtranSbom.CreateDefaultPlan()` and `SigtranPackageSigning.CreateDefaultPlan()` so release-security execution stays aligned with the existing SBOM and signing policies.
 
@@ -41,7 +41,7 @@ All retained artifacts must have digests before a supply-chain promotion can be 
 - Complete supply-chain artifacts.
 - Complete artifact digests.
 - Release provenance references.
-- Commercial evidence readiness.
+- Production evidence readiness.
 
 This keeps supply-chain automation separate from commercial evidence. Both must be ready before a commercial release can be promoted.
 

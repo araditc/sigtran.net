@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SCCP, TCAP, and MAP SMS interoperability vector readiness.
 /// </summary>
-public sealed class SigtranProtocolInteropReadinessReport
+public sealed class SigtranProtocolInteropReadinessSnapshot
 {
     /// <summary>Creates a protocol interop readiness report.</summary>
     /// <param name="hasVectorCatalog">Whether vector catalog is available.</param>
@@ -15,7 +15,7 @@ public sealed class SigtranProtocolInteropReadinessReport
     /// <param name="hasRunReports">Whether run report support is available.</param>
     /// <param name="hasEvidenceRegistry">Whether evidence registry is available.</param>
     /// <param name="hasCompletePassingEvidence">Whether complete passing evidence exists.</param>
-    public SigtranProtocolInteropReadinessReport(
+    public SigtranProtocolInteropReadinessSnapshot(
         bool hasVectorCatalog,
         bool hasReferences,
         bool hasArtifactManifest,
@@ -78,13 +78,13 @@ public static class SigtranProtocolInteropReadiness
 {
     /// <summary>Returns the current protocol interoperability readiness report.</summary>
     /// <returns>The current protocol interoperability readiness report.</returns>
-    public static SigtranProtocolInteropReadinessReport GetReport()
+    public static SigtranProtocolInteropReadinessSnapshot GetReport()
     {
         return new(
             hasVectorCatalog: SigtranProtocolInteropVectorCatalog.GetVectors().Count > 0,
             hasReferences: SigtranProtocolInteropReferences.GetReferences().Count > 0,
             hasArtifactManifest: true,
-            hasComparisonRules: SigtranProtocolInteropComparisonRules.CreateDefault().IsCommercialValidationReady,
+            hasComparisonRules: SigtranProtocolInteropComparisonRules.CreateDefault().IsProductionValidationReady,
             hasRunPlan: SigtranProtocolInteropRunPlans.CreateDefault().IsExecutable,
             hasCommandSet: SigtranProtocolInteropCommands.CreateDefault().Commands.Count > 0,
             hasRunReports: true,

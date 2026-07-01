@@ -60,12 +60,12 @@ public static class SigtranPackagePublicationChannelPolicies
 {
     /// <summary>Evaluates channel policy for a guarded package publication.</summary>
     /// <param name="publishGuardEvaluation">The package publication publish guard evaluation.</param>
-    /// <param name="commercialReadinessApproved">Whether commercial readiness is approved for the requested channel.</param>
+    /// <param name="productionReadinessApproved">Whether production readiness is approved for the requested channel.</param>
     /// <param name="evaluatedAtUtc">The UTC evaluation time.</param>
     /// <returns>The package publication channel policy evaluation.</returns>
     public static SigtranPackagePublicationChannelPolicyEvaluation Evaluate(
         SigtranPackagePublicationPublishGuardEvaluation publishGuardEvaluation,
-        bool commercialReadinessApproved,
+        bool productionReadinessApproved,
         DateTimeOffset evaluatedAtUtc)
     {
         ArgumentNullException.ThrowIfNull(publishGuardEvaluation);
@@ -73,7 +73,7 @@ public static class SigtranPackagePublicationChannelPolicies
         SigtranPublicationChannelDecision decision = SigtranPublicationChannelPolicy.Evaluate(
             request.Channel,
             request.PackageVersion,
-            commercialReadinessApproved);
+            productionReadinessApproved);
 
         return new(publishGuardEvaluation, decision, evaluatedAtUtc);
     }

@@ -1,12 +1,12 @@
-# Phase 38 Commercial Evidence Artifact Intake
+# Phase 38 Production Evidence Artifact Intake
 
 Phase 38 turns governed execution outputs into a retained, reviewable commercial evidence dossier. It does not manufacture passing evidence. It defines how real artifacts from an execution run are received, checked, digested, redaction-reviewed, completed, and handed off for promotion.
 
-Public APIs use domain names such as `SigtranCommercialEvidenceArtifactIntakes`; phase numbers are intentionally kept out of source type names.
+Public APIs use domain names such as `SigtranReleaseEvidenceArtifactIntakes`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Artifact Intake Target
 
-`SigtranCommercialEvidenceArtifactIntakes` creates an intake target bound to:
+`SigtranReleaseEvidenceArtifactIntakes` creates an intake target bound to:
 
 - The execution run that produced the artifacts.
 - A stable intake identifier.
@@ -18,7 +18,7 @@ Floating dossier roots such as `artifacts/latest/...` are rejected because comme
 
 ## Unit 2 - Artifact Source Manifest
 
-`SigtranCommercialEvidenceArtifactSources` registers received artifacts against the expected execution artifact manifest:
+`SigtranReleaseEvidenceArtifactSources` registers received artifacts against the expected execution artifact manifest:
 
 - Every required expected artifact must have a source entry.
 - Source paths must be concrete and must not use floating `artifacts/latest` aliases.
@@ -29,7 +29,7 @@ The source manifest is the handoff from execution outputs into dossier intake. I
 
 ## Unit 3 - Artifact Digest Manifest
 
-`SigtranCommercialEvidenceArtifactDigests` records SHA-256 coverage for retained sources:
+`SigtranReleaseEvidenceArtifactDigests` records SHA-256 coverage for retained sources:
 
 - Every registered source must have a digest entry.
 - Each digest entry keeps the stage id, artifact kind, source path, retained path, and SHA-256 value together.
@@ -40,7 +40,7 @@ The digest manifest is required before redaction review and promotion handoff be
 
 ## Unit 4 - Redaction Review Manifest
 
-`SigtranCommercialEvidenceRedactionReviews` records reviewer approval for trace-bearing artifacts:
+`SigtranReleaseEvidenceRedactionReviews` records reviewer approval for trace-bearing artifacts:
 
 - Packet captures.
 - Peer logs.
@@ -53,7 +53,7 @@ Each required review records the retained path, artifact kind, reviewer identity
 
 ## Unit 5 - Artifact Completeness Evaluation
 
-`SigtranCommercialEvidenceArtifactCompleteness` evaluates whether intake can move into dossier reporting:
+`SigtranReleaseEvidenceArtifactCompleteness` evaluates whether intake can move into dossier reporting:
 
 - Source registration must be complete.
 - Digest coverage must be complete.
@@ -63,7 +63,7 @@ The evaluator returns explicit blocker codes such as `artifact-source-registrati
 
 ## Unit 6 - Dossier Intake Report
 
-`SigtranCommercialEvidenceDossierIntakeReports` creates a retained Markdown report for the intake:
+`SigtranReleaseEvidenceDossierIntakeReports` creates a retained Markdown report for the intake:
 
 - Execution run identifier.
 - Intake identifier.
@@ -76,7 +76,7 @@ The report path must be under the intake dossier root. This gives release operat
 
 ## Unit 7 - Promotion Handoff
 
-`SigtranCommercialEvidencePromotionHandoffs` prepares intake output for commercial evidence promotion:
+`SigtranReleaseEvidencePromotionHandoffs` prepares intake output for commercial evidence promotion:
 
 - Every digest-covered retained artifact is included.
 - The dossier intake report is included.
@@ -87,7 +87,7 @@ The handoff does not publish a package. It creates a verified package of intake 
 
 ## Unit 8 - Execution-To-Dossier Bridge
 
-`SigtranCommercialEvidenceDossierIntakeBridge` assembles the default intake pipeline from a governed execution run:
+`SigtranReleaseEvidenceDossierIntakeBridge` assembles the default intake pipeline from a governed execution run:
 
 - Expected execution artifact manifest.
 - Intake target.
@@ -102,13 +102,13 @@ The bridge is intentionally a contract builder, not a file executor. Real artifa
 
 ## Unit 9 - Artifact Intake Status
 
-`SigtranCommercialEvidenceArtifactIntakeStatus` exposes the current artifact intake state:
+`SigtranReleaseEvidenceArtifactIntakeStatus` exposes the current artifact intake state:
 
 - Completed intake capabilities.
 - Default commercial publication blockers.
 - Artifact intake foundation readiness.
 - Real artifact evidence readiness.
-- Commercial publication readiness.
+- Production publication readiness.
 
 The status keeps foundation readiness separate from commercial publication readiness. Real file evidence remains a blocker until retained artifacts are captured, reviewed, and approved.
 

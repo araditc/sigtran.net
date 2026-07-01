@@ -24,6 +24,6 @@ The completed default status is foundation-ready but not production performance-
 
 The SDK can accept and evaluate a real retained performance report, but it does not claim production performance until peer benchmark artifacts and commercial readiness are both present.
 
-## Commercial Gate
+## Production Gate
 
-Commercial performance claims require a retained report created from real peer traffic. The report must include digest-covered artifacts, passing warmup/sustained/peak stages, P95/P99 latency within budget, CPU/memory/allocation within budget, failover recovery within budget, and zero message loss.
+Production performance claims require a retained report created from real peer traffic. The report must include digest-covered artifacts, passing warmup/sustained/peak stages, P95/P99 latency within budget, CPU/memory/allocation within budget, failover recovery within budget, and zero message loss.

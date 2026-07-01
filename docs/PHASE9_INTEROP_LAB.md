@@ -9,7 +9,7 @@ Phase 9 captures real interoperability evidence from native SCTP and peer-stack 
 | Id | Peer | Purpose |
 | --- | --- | --- |
 | `linux-native-sctp-loopback` | `linux-kernel-sctp` | Validate native SCTP loopback socket, connect, accept, send, receive, and health |
-| `external-peer-m3ua-asp-to-sg` | `external-sigtran-peer` | Validate M3UA ASP-to-SG lifecycle and DATA against a maintained external peer |
+| `external-peer-m3ua-asp-to-sg` | `external-sigtran-peer` | Validate M3UA ASP-to-SG lifecycle and DATA against a reference external peer |
 | `map-sms-trace-comparison` | `operator-or-simulator-peer` | Validate MAP SMS traces against a real peer or approved simulator profile |
 
 Every scenario defines required artifacts such as PCAP captures, SDK traces, peer configuration, peer logs, and comparison reports.
@@ -35,7 +35,7 @@ A manifest satisfies a scenario only when every required artifact name is presen
 
 ## External Peer Template
 
-`SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for a maintained external peer.
+`SigtranInteropPeerProfiles.CreateExternalPeerM3uaAspToSgTemplate()` creates the repeatable M3UA ASP-to-SG lab template for a reference external peer.
 
 The template expects SCTP/M3UA transport and captures the ordered lifecycle from `ASPUP` through `ASPDN_ACK`. Legacy OpenSS7/IPSS7 references remain in `REFERENCES.md` for comparison notes, but they do not define the public peer contract.
 
@@ -71,9 +71,9 @@ Foundation readiness is true when the SDK has scenario catalog, manifests, run r
 
 Production readiness remains false until passing external evidence is captured and registered.
 
-## Commercial Gate
+## Production Gate
 
-`SigtranCommercialReadiness.GetReport()` uses the Phase 9 lab production gate for external interoperability evidence.
+`SigtranProductionReadiness.GetReport()` uses the Phase 9 lab production gate for external interoperability evidence.
 
 This keeps commercial readiness blocked until the lab foundation is ready and at least one passing external evidence set is promoted.
 

@@ -38,8 +38,8 @@ public enum SigtranReleaseWorkflowStageKind
     /// <summary>Run supply-chain automation.</summary>
     SupplyChain,
 
-    /// <summary>Verify commercial evidence.</summary>
-    CommercialEvidence,
+    /// <summary>Verify production evidence.</summary>
+    ReleaseEvidence,
 
     /// <summary>Publish the package.</summary>
     Publish
@@ -119,8 +119,8 @@ public sealed class SigtranReleaseWorkflowPlan
     /// <summary>Whether the workflow requires supply-chain automation.</summary>
     public bool RequiresSupplyChain => Stages.Any(static stage => stage.Kind == SigtranReleaseWorkflowStageKind.SupplyChain);
 
-    /// <summary>Whether the workflow requires commercial evidence verification.</summary>
-    public bool RequiresCommercialEvidence => Stages.Any(static stage => stage.Kind == SigtranReleaseWorkflowStageKind.CommercialEvidence);
+    /// <summary>Whether the workflow requires production evidence verification.</summary>
+    public bool RequiresReleaseEvidence => Stages.Any(static stage => stage.Kind == SigtranReleaseWorkflowStageKind.ReleaseEvidence);
 
     /// <summary>Whether the workflow has a publish stage.</summary>
     public bool HasPublishStage => Stages.Any(static stage => stage.Kind == SigtranReleaseWorkflowStageKind.Publish);
@@ -136,7 +136,7 @@ public sealed class SigtranReleaseWorkflowPlan
     public bool IsRenderable => Triggers.Count > 0
         && Stages.Count > 0
         && RequiresSupplyChain
-        && RequiresCommercialEvidence
+        && RequiresReleaseEvidence
         && HasPublishStage;
 }
 
@@ -145,9 +145,9 @@ public sealed class SigtranReleaseWorkflowPlan
 /// </summary>
 public static class SigtranReleaseWorkflows
 {
-    /// <summary>Creates the commercial release workflow plan.</summary>
-    /// <returns>The commercial release workflow plan.</returns>
-    public static SigtranReleaseWorkflowPlan CreateCommercialReleasePlan()
+    /// <summary>Creates the production release workflow plan.</summary>
+    /// <returns>The production release workflow plan.</returns>
+    public static SigtranReleaseWorkflowPlan CreateReleasePlan()
     {
         return new(
             "release",
@@ -161,7 +161,7 @@ public static class SigtranReleaseWorkflows
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Test, "Test", "dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Pack, "Pack", "dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.SupplyChain, "Supply chain", "SIGTRAN_SUPPLY_CHAIN=true dotnet sigtran-supply-chain artifacts/supply-chain", ["SIGNING_CERTIFICATE", "SIGNING_CERTIFICATE_PASSWORD"]),
-                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.CommercialEvidence, "Commercial evidence", "SIGTRAN_COMMERCIAL_EVIDENCE=true dotnet sigtran-evidence-verify artifacts/commercial-evidence"),
+                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.ReleaseEvidence, "Production evidence", "SIGTRAN_RELEASE_EVIDENCE=true dotnet sigtran-evidence-verify artifacts/release-evidence"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Publish, "Publish", "dotnet nuget push src/Sigtran.NET/bin/Release/Sigtran.NET.*.nupkg --source nuget.org --api-key <secret>", ["NUGET_API_KEY"])
             ]);
     }

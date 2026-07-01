@@ -41,7 +41,7 @@ public static class SigtranSupplyChainReleaseGate
     /// <param name="apiDiff">The public API diff artifact.</param>
     /// <param name="uploads">The release artifact upload manifest.</param>
     /// <param name="commands">The supply-chain release command plan.</param>
-    /// <param name="commercialEvidenceReady">Whether commercial evidence is ready.</param>
+    /// <param name="releaseEvidenceReady">Whether production evidence is ready.</param>
     /// <returns>The supply-chain release gate result.</returns>
     public static SigtranSupplyChainReleaseGateResult Evaluate(
         SigtranFinalSbomArtifact sbom,
@@ -50,7 +50,7 @@ public static class SigtranSupplyChainReleaseGate
         SigtranPublicApiDiffArtifact apiDiff,
         SigtranReleaseArtifactUploadManifest uploads,
         SigtranSupplyChainReleaseCommandPlan commands,
-        bool commercialEvidenceReady)
+        bool releaseEvidenceReady)
     {
         ArgumentNullException.ThrowIfNull(sbom);
         ArgumentNullException.ThrowIfNull(signing);
@@ -90,9 +90,9 @@ public static class SigtranSupplyChainReleaseGate
             reasons.Add("supply-chain-release-command-plan-required");
         }
 
-        if (!commercialEvidenceReady)
+        if (!releaseEvidenceReady)
         {
-            reasons.Add("commercial-evidence-required");
+            reasons.Add("release-evidence-required");
         }
 
         return new SigtranSupplyChainReleaseGateResult(reasons.Count == 0, reasons);

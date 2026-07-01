@@ -1,12 +1,12 @@
-# Phase 41 Approved Commercial Run Publication Handoff
+# Phase 41 Approved Production Run Publication Handoff
 
 Phase 41 defines the governed approval path after filesystem-backed evidence has been verified. It does not create commercial evidence by itself. It records when a real evidence run is ready for approval, how reviewers approve it, and how the approved result is handed to release publication gates.
 
-Public APIs use domain names such as `SigtranCommercialEvidenceApprovedRunTarget`; phase numbers are intentionally kept out of source type names.
+Public APIs use domain names such as `SigtranReleaseEvidenceApprovedRunTarget`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Approved Run Target
 
-`SigtranCommercialEvidenceApprovedRunTarget` binds a filesystem-backed promotion execution to a reviewable commercial evidence run:
+`SigtranReleaseEvidenceApprovedRunTarget` binds a filesystem-backed promotion execution to a reviewable commercial evidence run:
 
 - Stable run id.
 - Package version and source commit.
@@ -19,7 +19,7 @@ This unit establishes the identity that later approval, audit, and publication h
 
 ## Unit 2 - Approval Checklist
 
-`SigtranCommercialEvidenceRunApprovalChecklist` records required approval criteria before reviewer manifest creation:
+`SigtranReleaseEvidenceRunApprovalChecklist` records required approval criteria before reviewer manifest creation:
 
 - Run target identity is ready.
 - Filesystem-backed promotion execution is ready.
@@ -33,7 +33,7 @@ This unit turns commercial run approval into an explicit checklist with blocker 
 
 ## Unit 3 - Reviewer Approval Manifest
 
-`SigtranCommercialEvidenceRunApprovalManifest` records reviewer approval for a ready checklist:
+`SigtranReleaseEvidenceRunApprovalManifest` records reviewer approval for a ready checklist:
 
 - Deterministic checklist SHA-256 digest.
 - Release reviewer approval.
@@ -46,7 +46,7 @@ This unit makes commercial approval auditable and role-aware before any publicat
 
 ## Unit 4 - Approval Report Writer
 
-`SigtranCommercialEvidenceRunApprovalReportWriters` renders and retains a Markdown approval report:
+`SigtranReleaseEvidenceRunApprovalReportWriters` renders and retains a Markdown approval report:
 
 - Run id, package version, source commit, and artifact root.
 - Checklist digest and manifest readiness.
@@ -58,7 +58,7 @@ This unit turns approval data into a retained report artifact that later promoti
 
 ## Unit 5 - Evidence Promotion Package
 
-`SigtranCommercialEvidenceApprovedRunPromotionPackage` collects the approved run artifacts required for publication handoff:
+`SigtranReleaseEvidenceApprovedRunPromotionPackage` collects the approved run artifacts required for publication handoff:
 
 - Retained approval report.
 - Integrity seal artifact reference.
@@ -70,20 +70,20 @@ This unit gives the publication handoff a single approved package contract inste
 
 ## Unit 6 - Publication Handoff
 
-`SigtranCommercialEvidencePublicationHandoff` connects an approved run promotion package to publication channel intent:
+`SigtranReleaseEvidencePublicationHandoff` connects an approved run promotion package to publication channel intent:
 
 - Requested publication channel.
 - Requester identity.
 - UTC handoff creation time.
 - Explicit publish request flag.
 - Channel acceptance of package version.
-- Commercial readiness requirement visibility.
+- Production readiness requirement visibility.
 
 This unit keeps RC and stable publication boundaries explicit before a final publication gate evaluates the handoff.
 
 ## Unit 7 - Publication Handoff Gate
 
-`SigtranCommercialEvidencePublicationHandoffGates` evaluates handoff blockers:
+`SigtranReleaseEvidencePublicationHandoffGates` evaluates handoff blockers:
 
 - Promotion package readiness.
 - Explicit publish request.
@@ -95,7 +95,7 @@ This unit gives release operators actionable blockers before package publication
 
 ## Unit 8 - Approval Audit Trail
 
-`SigtranCommercialEvidenceApprovalAuditTrail` records digest-covered lifecycle events:
+`SigtranReleaseEvidenceApprovalAuditTrail` records digest-covered lifecycle events:
 
 - Run target.
 - Approval checklist.
@@ -109,7 +109,7 @@ This unit gives the approval path a retained audit chain that can be reviewed be
 
 ## Unit 9 - Command Materialization And Interim Status
 
-`SigtranCommercialEvidenceApprovalCommands` materializes the approval handoff workflow:
+`SigtranReleaseEvidenceApprovalCommands` materializes the approval handoff workflow:
 
 - Run target creation.
 - Approval checklist generation.
@@ -120,7 +120,7 @@ This unit gives the approval path a retained audit chain that can be reviewed be
 - Handoff gate evaluation.
 - Approval audit trail writing.
 
-`SigtranCommercialEvidenceApprovalHandoffStatus` reports the first nine completed capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
+`SigtranReleaseEvidenceApprovalHandoffStatus` reports the first nine completed capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
 
 ## Unit 10 - Final Validation And Documentation
 

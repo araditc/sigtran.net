@@ -1,11 +1,11 @@
 # Phase 27 Summary
 
-Phase 27 completed the maintained external peer lab foundation with package-neutral public naming. The SDK now has contracts for binding, prerequisites, configuration, artifacts, commands, traffic vectors, evidence promotion, CI policy, and status reporting.
+Phase 27 completed the reference external peer lab foundation with package-neutral public naming. The SDK now has contracts for binding, prerequisites, configuration, artifacts, commands, traffic vectors, evidence promotion, CI policy, and status reporting.
 
 ## Completed
 
 - Canonical SDK identity is `Sigtran.NET`.
-- Maintained peer lab binding is package-neutral.
+- Reference peer lab binding is package-neutral.
 - Host prerequisites are modeled before execution.
 - Lab configuration can be validated from environment values.
 - Retained artifact paths are deterministic.
@@ -15,9 +15,9 @@ Phase 27 completed the maintained external peer lab foundation with package-neut
 - CI policy is manual and self-hosted for real lab runs.
 - Status reporting separates foundation readiness from commercial evidence readiness.
 
-## Commercial Readiness
+## Production Readiness
 
-The foundation is complete, but commercial readiness is still blocked until a real maintained external peer lab run produces retained PCAP, peer log, peer configuration, SDK trace, comparison report, run report, and SHA-256 digests.
+The foundation is complete, but commercial readiness is still blocked until a real reference external peer lab run produces retained PCAP, peer log, peer configuration, SDK trace, comparison report, run report, and SHA-256 digests.
 
 ## Validation
 

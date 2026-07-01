@@ -65,6 +65,6 @@ public sealed class SigtranExternalPeerInteropRunReport
         && Plan.IsExecutable
         && Manifest.IsComplete;
 
-    /// <summary>Whether the run has passing, digest-covered commercial review evidence.</summary>
-    public bool HasCommercialReviewReadyEvidence => HasPassingEvidence && Manifest.IsReviewReady;
+    /// <summary>Whether the run has passing, digest-covered production review evidence.</summary>
+    public bool HasProductionReviewReadyEvidence => HasPassingEvidence && Manifest.IsReviewReady;
 }

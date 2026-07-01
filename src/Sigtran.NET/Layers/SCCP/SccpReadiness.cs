@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCCP;
 /// <summary>
 /// Readiness report for the MTP3 and SCCP phase.
 /// </summary>
-public readonly struct SccpReadinessReport
+public readonly struct SccpReadinessSnapshot
 {
     /// <summary>Creates a SCCP readiness report.</summary>
     /// <param name="hasMtp3Routing">Whether MTP3 SIO and routing labels are available.</param>
@@ -13,7 +13,7 @@ public readonly struct SccpReadinessReport
     /// <param name="hasServiceMessages">Whether UDTS return-cause messages are available.</param>
     /// <param name="hasRoutingApis">Whether route-on-SSN and route-on-GT APIs are available.</param>
     /// <param name="hasInteropVectors">Whether external interoperability vectors are present.</param>
-    public SccpReadinessReport(
+    public SccpReadinessSnapshot(
         bool hasMtp3Routing,
         bool hasPartyAddressing,
         bool hasConnectionlessCodecs,
@@ -93,7 +93,7 @@ public static class SccpReadiness
 
     /// <summary>Builds the current SCCP readiness report.</summary>
     /// <returns>The current SCCP readiness report.</returns>
-    public static SccpReadinessReport GetReport()
+    public static SccpReadinessSnapshot GetReport()
     {
         return new(
             hasMtp3Routing: true,

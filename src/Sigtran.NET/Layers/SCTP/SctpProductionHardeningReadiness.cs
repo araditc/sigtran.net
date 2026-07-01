@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Reports native SCTP production hardening readiness.
 /// </summary>
-public sealed class SctpProductionHardeningReadinessReport
+public sealed class SctpProductionHardeningReadinessSnapshot
 {
     /// <summary>Creates an SCTP production hardening readiness report.</summary>
     /// <param name="hasStreamAndPpidFraming">Whether outbound stream and PPID framing is available.</param>
@@ -16,7 +16,7 @@ public sealed class SctpProductionHardeningReadinessReport
     /// <param name="hasTransportDiagnostics">Whether transport diagnostics snapshots are available.</param>
     /// <param name="hasRetainedLinuxSctpEvidence">Whether retained Linux SCTP evidence is available.</param>
     /// <param name="hasRetainedExternalPeerEvidence">Whether retained external peer evidence is available.</param>
-    public SctpProductionHardeningReadinessReport(
+    public SctpProductionHardeningReadinessSnapshot(
         bool hasStreamAndPpidFraming,
         bool hasAssociationLifecycleJournal,
         bool hasReconnectSchedule,
@@ -118,7 +118,7 @@ public static class SctpProductionHardeningReadiness
     /// <param name="hasRetainedLinuxSctpEvidence">Whether retained Linux SCTP evidence is available.</param>
     /// <param name="hasRetainedExternalPeerEvidence">Whether retained external peer evidence is available.</param>
     /// <returns>The current SCTP production hardening readiness report.</returns>
-    public static SctpProductionHardeningReadinessReport GetReport(
+    public static SctpProductionHardeningReadinessSnapshot GetReport(
         bool hasRetainedLinuxSctpEvidence = false,
         bool hasRetainedExternalPeerEvidence = false)
     {

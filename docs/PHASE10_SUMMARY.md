@@ -19,7 +19,7 @@ Phase 10 adds the release automation and supply-chain foundation for SIGTRAN.NET
 
 The Phase 10 SDK foundation is complete.
 
-`SigtranReleaseAutomationStatus.FoundationReady` is expected to be true. `CommercialStableReleaseReady` remains false until the wider commercial gates are satisfied, including native SCTP lab verification, external interoperability evidence, real signing, and real SBOM generation.
+`SigtranReleaseAutomationStatus.FoundationReady` is expected to be true. `ProductionStableReleaseReady` remains false until the wider commercial gates are satisfied, including native SCTP lab verification, external interoperability evidence, real signing, and real SBOM generation.
 
 ## Production Gate
 

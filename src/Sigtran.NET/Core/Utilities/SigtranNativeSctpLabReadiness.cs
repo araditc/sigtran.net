@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes native SCTP lab verification readiness.
 /// </summary>
-public sealed class SigtranNativeSctpLabReadinessReport
+public sealed class SigtranNativeSctpLabReadinessSnapshot
 {
     /// <summary>Creates a native SCTP lab readiness report.</summary>
     /// <param name="hasScenarioCatalog">Whether scenario catalog is available.</param>
@@ -13,7 +13,7 @@ public sealed class SigtranNativeSctpLabReadinessReport
     /// <param name="hasRunReports">Whether run reports are available.</param>
     /// <param name="hasEvidenceRegistry">Whether evidence registry is available.</param>
     /// <param name="hasCompletePassingEvidence">Whether complete passing evidence exists.</param>
-    public SigtranNativeSctpLabReadinessReport(
+    public SigtranNativeSctpLabReadinessSnapshot(
         bool hasScenarioCatalog,
         bool hasArtifactManifest,
         bool hasRunPlan,
@@ -66,7 +66,7 @@ public static class SigtranNativeSctpLabReadiness
 {
     /// <summary>Returns the current native SCTP lab readiness report.</summary>
     /// <returns>The current native SCTP lab readiness report.</returns>
-    public static SigtranNativeSctpLabReadinessReport GetReport()
+    public static SigtranNativeSctpLabReadinessSnapshot GetReport()
     {
         return new(
             hasScenarioCatalog: SigtranNativeSctpLabScenarios.GetScenarios().Count > 0,

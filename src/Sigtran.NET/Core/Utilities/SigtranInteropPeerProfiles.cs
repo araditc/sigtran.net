@@ -23,8 +23,8 @@ public enum SigtranInteropPeerRole
 /// </summary>
 public enum SigtranInteropPeerSupportModel
 {
-    /// <summary>The peer stack is maintained and suitable for current commercial lab runs.</summary>
-    MaintainedPeerStack,
+    /// <summary>The peer stack is reference and suitable for current production lab runs.</summary>
+    ReferencePeerStack,
 
     /// <summary>The peer stack is retained for historical or legacy evidence only.</summary>
     LegacyReference,
@@ -32,7 +32,7 @@ public enum SigtranInteropPeerSupportModel
     /// <summary>The peer stack is provided by an operator, vendor, or customer lab.</summary>
     OperatorProvided,
 
-    /// <summary>The peer stack is a simulator and cannot independently prove commercial interoperability.</summary>
+    /// <summary>The peer stack is a simulator and cannot independently prove production interoperability.</summary>
     Simulator
 }
 
@@ -56,7 +56,7 @@ public sealed class SigtranInteropPeerProfile
         string referenceUrl,
         string transport,
         string? notes = null,
-        SigtranInteropPeerSupportModel supportModel = SigtranInteropPeerSupportModel.MaintainedPeerStack)
+        SigtranInteropPeerSupportModel supportModel = SigtranInteropPeerSupportModel.ReferencePeerStack)
     {
         Id = string.IsNullOrWhiteSpace(id) ? throw new ArgumentException("Peer id is required.", nameof(id)) : id;
         Role = role;
@@ -88,8 +88,8 @@ public sealed class SigtranInteropPeerProfile
     /// <summary>The support model used for release evidence.</summary>
     public SigtranInteropPeerSupportModel SupportModel { get; }
 
-    /// <summary>Whether the profile can be used as a maintained commercial interop candidate.</summary>
-    public bool IsMaintainedCommercialCandidate => SupportModel == SigtranInteropPeerSupportModel.MaintainedPeerStack
+    /// <summary>Whether the profile can be used as a reference production interop candidate.</summary>
+    public bool IsReferencePeerCandidate => SupportModel == SigtranInteropPeerSupportModel.ReferencePeerStack
         && Role == SigtranInteropPeerRole.SignallingGateway
         && Transport.Contains("M3UA", StringComparison.OrdinalIgnoreCase);
 
@@ -152,8 +152,8 @@ public sealed class SigtranInteropLabTemplate
 /// </summary>
 public static class SigtranInteropPeerProfiles
 {
-    /// <summary>The maintained external peer reference URL used by the default lab profile.</summary>
-    public const string MaintainedPeerReferenceUrl = "https://osmocom.org/projects/osmo-stp/wiki";
+    /// <summary>The reference external peer reference URL used by the default lab profile.</summary>
+    public const string ReferencePeerReferenceUrl = "https://osmocom.org/projects/osmo-stp/wiki";
 
     /// <summary>Creates the default external Signalling Gateway peer profile.</summary>
     /// <returns>The default external peer profile.</returns>
@@ -162,10 +162,10 @@ public static class SigtranInteropPeerProfiles
         return new(
             "external-sigtran-sg",
             SigtranInteropPeerRole.SignallingGateway,
-            "Maintained SIGTRAN peer",
-            MaintainedPeerReferenceUrl,
+            "Reference SIGTRAN peer",
+            ReferencePeerReferenceUrl,
             "SCTP/M3UA",
-            "Bind this profile to a maintained lab package outside the SDK contract.");
+            "Bind this profile to a reference lab package outside the SDK contract.");
     }
 
     /// <summary>Creates the default external peer M3UA ASP-to-SG lab template.</summary>

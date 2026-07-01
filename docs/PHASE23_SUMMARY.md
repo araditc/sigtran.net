@@ -21,7 +21,7 @@ The release workflow foundation is complete.
 
 `SigtranReleaseWorkflowStatus.OrchestrationReady` is expected to be true. Release promotion remains blocked until commercial evidence and supply-chain promotion evidence are real and retained.
 
-## Next Commercial Blockers
+## Next Production Blockers
 
 - Real supply-chain artifact generation.
 - Real package signing and timestamping.

@@ -30,9 +30,9 @@ public static class SigtranPublicationChannelPolicy
     /// <summary>Evaluates whether a package version can use a publication channel.</summary>
     /// <param name="channel">The publication channel.</param>
     /// <param name="version">The package version.</param>
-    /// <param name="commercialReadiness">Whether commercial readiness is complete.</param>
+    /// <param name="productionReadiness">Whether production readiness is complete.</param>
     /// <returns>The channel decision.</returns>
-    public static SigtranPublicationChannelDecision Evaluate(SigtranPublishChannel channel, string version, bool commercialReadiness)
+    public static SigtranPublicationChannelDecision Evaluate(SigtranPublishChannel channel, string version, bool productionReadiness)
     {
         ArgumentNullException.ThrowIfNull(channel);
 
@@ -47,9 +47,9 @@ public static class SigtranPublicationChannelPolicy
             reasons.Add("channel-version-mismatch");
         }
 
-        if (channel.RequiresCommercialReadiness && !commercialReadiness)
+        if (channel.RequiresProductionReadiness && !productionReadiness)
         {
-            reasons.Add("commercial-readiness-required");
+            reasons.Add("production-readiness-required");
         }
 
         return new SigtranPublicationChannelDecision(reasons.Count == 0, reasons);

@@ -79,7 +79,7 @@ public static class SigtranMigrationNotesArtifacts
     /// <param name="toVersion">The target version.</param>
     /// <param name="sha256">The retained migration notes SHA-256 digest.</param>
     /// <returns>The default RC migration notes artifact.</returns>
-    public static SigtranMigrationNotesArtifact CreateReleaseCandidate(string fromVersion, string toVersion, string sha256)
+    public static SigtranMigrationNotesArtifact CreatePrerelease(string fromVersion, string toVersion, string sha256)
     {
         return new(
             fromVersion,

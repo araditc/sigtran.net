@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes configuration and environment readiness.
 /// </summary>
-public sealed class SigtranConfigurationReadinessReport
+public sealed class SigtranConfigurationReadinessSnapshot
 {
     /// <summary>Creates a configuration readiness report.</summary>
     /// <param name="hasSchema">Whether configuration schema is available.</param>
@@ -12,15 +12,15 @@ public sealed class SigtranConfigurationReadinessReport
     /// <param name="hasSecretPolicy">Whether secret policy is available.</param>
     /// <param name="hasTransportConfiguration">Whether transport configuration is available.</param>
     /// <param name="hasRoutingConfiguration">Whether routing configuration is available.</param>
-    /// <param name="commercialReady">Whether wider commercial readiness is complete.</param>
-    public SigtranConfigurationReadinessReport(
+    /// <param name="productionReady">Whether wider production readiness is complete.</param>
+    public SigtranConfigurationReadinessSnapshot(
         bool hasSchema,
         bool hasValidation,
         bool hasEnvironmentMatrix,
         bool hasSecretPolicy,
         bool hasTransportConfiguration,
         bool hasRoutingConfiguration,
-        bool commercialReady)
+        bool productionReady)
     {
         HasSchema = hasSchema;
         HasValidation = hasValidation;
@@ -28,7 +28,7 @@ public sealed class SigtranConfigurationReadinessReport
         HasSecretPolicy = hasSecretPolicy;
         HasTransportConfiguration = hasTransportConfiguration;
         HasRoutingConfiguration = hasRoutingConfiguration;
-        CommercialReady = commercialReady;
+        ProductionReady = productionReady;
     }
 
     /// <summary>Whether configuration schema is available.</summary>
@@ -49,8 +49,8 @@ public sealed class SigtranConfigurationReadinessReport
     /// <summary>Whether routing configuration is available.</summary>
     public bool HasRoutingConfiguration { get; }
 
-    /// <summary>Whether wider commercial readiness is complete.</summary>
-    public bool CommercialReady { get; }
+    /// <summary>Whether wider production readiness is complete.</summary>
+    public bool ProductionReady { get; }
 
     /// <summary>Whether the configuration foundation is ready.</summary>
     public bool FoundationReady => HasSchema
@@ -61,7 +61,7 @@ public sealed class SigtranConfigurationReadinessReport
         && HasRoutingConfiguration;
 
     /// <summary>Whether production configuration claims are ready.</summary>
-    public bool ProductionConfigurationReady => FoundationReady && CommercialReady;
+    public bool ProductionConfigurationReady => FoundationReady && ProductionReady;
 }
 
 /// <summary>
@@ -71,7 +71,7 @@ public static class SigtranConfigurationReadiness
 {
     /// <summary>Returns the current configuration readiness report.</summary>
     /// <returns>The current configuration readiness report.</returns>
-    public static SigtranConfigurationReadinessReport GetReport()
+    public static SigtranConfigurationReadinessSnapshot GetReport()
     {
         string[] requiredKeys = SigtranConfigurationSchema.GetFields()
             .Where(field => field.Required)
@@ -85,6 +85,6 @@ public static class SigtranConfigurationReadiness
             hasSecretPolicy: SigtranSecretPolicies.CreateDefault().IsProductionSafe,
             hasTransportConfiguration: SigtranTransportConfigurations.CreateNativeSctpDefault().IsSigtranReady,
             hasRoutingConfiguration: SigtranRoutingConfigurations.CreateEnterpriseDefault().IsEnterpriseReady,
-            commercialReady: SigtranCommercialReadiness.GetReport().CommercialReady);
+            productionReady: SigtranProductionReadiness.GetReport().ProductionReady);
     }
 }

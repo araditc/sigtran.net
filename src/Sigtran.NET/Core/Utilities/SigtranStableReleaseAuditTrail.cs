@@ -8,13 +8,13 @@ public enum SigtranStableReleaseAuditEventKind
     /// <summary>Stable release target was locked.</summary>
     StableTargetLocked,
 
-    /// <summary>Commercial dossier evidence was mapped.</summary>
+    /// <summary>Production dossier evidence was mapped.</summary>
     DossierEvidenceMapped,
 
-    /// <summary>Stable commercial readiness checklist was approved.</summary>
+    /// <summary>Stable release readiness checklist was approved.</summary>
     ReadinessChecklistApproved,
 
-    /// <summary>Stable commercial release decision was recorded.</summary>
+    /// <summary>Stable release release decision was recorded.</summary>
     ReleaseDecisionRecorded,
 
     /// <summary>Stable tag gate was evaluated.</summary>
@@ -26,10 +26,10 @@ public enum SigtranStableReleaseAuditEventKind
     /// <summary>Stable publish execution plan was prepared.</summary>
     PublishPlanPrepared,
 
-    /// <summary>Final stable commercial report was retained.</summary>
-    CommercialReportRetained,
+    /// <summary>Final stable release report was retained.</summary>
+    ProductionReportRetained,
 
-    /// <summary>Stable commercial completion was evaluated.</summary>
+    /// <summary>Stable release completion was evaluated.</summary>
     StableCompletionEvaluated
 }
 
@@ -97,10 +97,10 @@ public sealed class SigtranStableReleaseAuditEvent
 public sealed class SigtranStableReleaseAuditTrail
 {
     /// <summary>Creates a stable release audit trail.</summary>
-    /// <param name="report">The retained stable commercial report.</param>
+    /// <param name="report">The retained stable release report.</param>
     /// <param name="events">The stable release audit events.</param>
     public SigtranStableReleaseAuditTrail(
-        SigtranStableCommercialReportWriteResult report,
+        SigtranStableReleaseReportWriteResult report,
         IReadOnlyList<SigtranStableReleaseAuditEvent> events)
     {
         Report = report ?? throw new ArgumentNullException(nameof(report));
@@ -108,8 +108,8 @@ public sealed class SigtranStableReleaseAuditTrail
         Events = events.Count == 0 ? throw new ArgumentException("At least one stable release audit event is required.", nameof(events)) : events.ToArray();
     }
 
-    /// <summary>The retained stable commercial report.</summary>
-    public SigtranStableCommercialReportWriteResult Report { get; }
+    /// <summary>The retained stable release report.</summary>
+    public SigtranStableReleaseReportWriteResult Report { get; }
 
     /// <summary>The stable release audit events.</summary>
     public IReadOnlyList<SigtranStableReleaseAuditEvent> Events { get; }
@@ -127,8 +127,8 @@ public sealed class SigtranStableReleaseAuditTrail
     /// <summary>Whether every audit event is ready for retention.</summary>
     public bool AllEventsReady => Events.All(static item => item.IsReady);
 
-    /// <summary>Whether the stable commercial release is complete according to the retained report.</summary>
-    public bool StableCommercialReleaseComplete => Report.StableCommercialReleaseComplete;
+    /// <summary>Whether the stable release release is complete according to the retained report.</summary>
+    public bool StableReleaseComplete => Report.StableReleaseComplete;
 
     /// <summary>Whether the audit trail is ready for final status evaluation.</summary>
     public bool IsReadyForFinalStatus => Report.IsReadyForAuditTrail
@@ -144,7 +144,7 @@ public sealed class SigtranStableReleaseAuditTrail
 
         if (!Report.IsReadyForAuditTrail)
         {
-            blockers.Add("stable-commercial-report-not-ready");
+            blockers.Add("stable-release-report-not-ready");
         }
 
         if (!HasUniqueEventIds)
@@ -170,7 +170,7 @@ public sealed class SigtranStableReleaseAuditTrail
     /// <returns>The stable release audit trail summary.</returns>
     public string Describe()
     {
-        return $"stableReleaseAuditTrailReady={IsReadyForFinalStatus} complete={StableCommercialReleaseComplete} events={Events.Count}";
+        return $"stableReleaseAuditTrailReady={IsReadyForFinalStatus} complete={StableReleaseComplete} events={Events.Count}";
     }
 }
 
@@ -180,11 +180,11 @@ public sealed class SigtranStableReleaseAuditTrail
 public static class SigtranStableReleaseAuditTrails
 {
     /// <summary>Creates the default stable release audit trail from a retained report.</summary>
-    /// <param name="report">The retained stable commercial report.</param>
+    /// <param name="report">The retained stable release report.</param>
     /// <param name="occurredAtUtc">The UTC audit event time.</param>
     /// <returns>The stable release audit trail.</returns>
     public static SigtranStableReleaseAuditTrail CreateDefault(
-        SigtranStableCommercialReportWriteResult report,
+        SigtranStableReleaseReportWriteResult report,
         DateTimeOffset occurredAtUtc)
     {
         ArgumentNullException.ThrowIfNull(report);
@@ -194,14 +194,14 @@ public static class SigtranStableReleaseAuditTrails
         return new(report,
         [
             new("stable-target-locked", SigtranStableReleaseAuditEventKind.StableTargetLocked, actor, occurredAtUtc, digest, "Stable release target was locked."),
-            new("dossier-evidence-mapped", SigtranStableReleaseAuditEventKind.DossierEvidenceMapped, actor, occurredAtUtc, digest, "Stable commercial dossier evidence map was reviewed."),
-            new("readiness-checklist-approved", SigtranStableReleaseAuditEventKind.ReadinessChecklistApproved, actor, occurredAtUtc, digest, "Stable commercial readiness checklist was approved."),
-            new("release-decision-recorded", SigtranStableReleaseAuditEventKind.ReleaseDecisionRecorded, actor, occurredAtUtc, digest, "Stable commercial release decision was recorded."),
+            new("dossier-evidence-mapped", SigtranStableReleaseAuditEventKind.DossierEvidenceMapped, actor, occurredAtUtc, digest, "Stable release dossier evidence map was reviewed."),
+            new("readiness-checklist-approved", SigtranStableReleaseAuditEventKind.ReadinessChecklistApproved, actor, occurredAtUtc, digest, "Stable release readiness checklist was approved."),
+            new("release-decision-recorded", SigtranStableReleaseAuditEventKind.ReleaseDecisionRecorded, actor, occurredAtUtc, digest, "Stable release release decision was recorded."),
             new("tag-gate-evaluated", SigtranStableReleaseAuditEventKind.TagGateEvaluated, actor, occurredAtUtc, digest, "Stable tag gate was evaluated."),
             new("publication-authorized", SigtranStableReleaseAuditEventKind.PublicationAuthorized, actor, occurredAtUtc, digest, "Protected stable publication authorization was recorded."),
             new("publish-plan-prepared", SigtranStableReleaseAuditEventKind.PublishPlanPrepared, actor, occurredAtUtc, digest, "Stable publish execution plan was prepared."),
-            new("commercial-report-retained", SigtranStableReleaseAuditEventKind.CommercialReportRetained, actor, occurredAtUtc, digest, "Final stable commercial report was retained."),
-            new("stable-completion-evaluated", SigtranStableReleaseAuditEventKind.StableCompletionEvaluated, actor, occurredAtUtc, digest, "Stable commercial release completion was evaluated.")
+            new("production-report-retained", SigtranStableReleaseAuditEventKind.ProductionReportRetained, actor, occurredAtUtc, digest, "Final stable release report was retained."),
+            new("stable-completion-evaluated", SigtranStableReleaseAuditEventKind.StableCompletionEvaluated, actor, occurredAtUtc, digest, "Stable release release completion was evaluated.")
         ]);
     }
 }

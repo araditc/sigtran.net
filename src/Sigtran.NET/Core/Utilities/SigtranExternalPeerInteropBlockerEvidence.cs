@@ -42,7 +42,7 @@ public sealed class SigtranExternalPeerInteropBlocker
     /// <summary>The required action before retesting.</summary>
     public string RequiredAction { get; }
 
-    /// <summary>Whether the blocker prevents external peer commercial evidence promotion.</summary>
+    /// <summary>Whether the blocker prevents external peer production evidence promotion.</summary>
     public bool BlocksInteropPromotion => true;
 
     /// <summary>Formats a compact blocker summary.</summary>
@@ -66,6 +66,6 @@ public static class SigtranExternalPeerInteropBlockerEvidence
             "Ubuntu 22.04.1 VM, Linux 5.15.0-181-generic",
             "/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log",
             "OpenSS7 Fast STREAMS configure requires the legacy open_softirq kernel symbol, which is not present in the VM kernel System.map.",
-            "Retest OpenSS7/IPSS7 on a Linux 4.x-era kernel supported by OpenSS7 or replace the peer with a maintained SIGTRAN interoperability target.");
+            "Retest OpenSS7/IPSS7 on a Linux 4.x-era kernel supported by OpenSS7 or replace the peer with a reference SIGTRAN interoperability target.");
     }
 }

@@ -1,23 +1,23 @@
 namespace Sigtran.NET.Core.Utilities;
 
 /// <summary>
-/// Describes a package publication request derived from an approved commercial evidence handoff.
+/// Describes a package publication request derived from an approved production evidence handoff.
 /// </summary>
 public sealed class SigtranPackagePublicationRequest
 {
     /// <summary>Creates a package publication request.</summary>
-    /// <param name="handoffGate">The approved commercial evidence handoff gate result.</param>
+    /// <param name="handoffGate">The approved production evidence handoff gate result.</param>
     /// <param name="requestedAtUtc">The UTC publication request time.</param>
     public SigtranPackagePublicationRequest(
-        SigtranCommercialEvidencePublicationHandoffGateResult handoffGate,
+        SigtranReleaseEvidencePublicationHandoffGateResult handoffGate,
         DateTimeOffset requestedAtUtc)
     {
         HandoffGate = handoffGate ?? throw new ArgumentNullException(nameof(handoffGate));
         RequestedAtUtc = requestedAtUtc.Offset == TimeSpan.Zero ? requestedAtUtc : requestedAtUtc.ToUniversalTime();
     }
 
-    /// <summary>The approved commercial evidence handoff gate result.</summary>
-    public SigtranCommercialEvidencePublicationHandoffGateResult HandoffGate { get; }
+    /// <summary>The approved production evidence handoff gate result.</summary>
+    public SigtranReleaseEvidencePublicationHandoffGateResult HandoffGate { get; }
 
     /// <summary>The UTC publication request time.</summary>
     public DateTimeOffset RequestedAtUtc { get; }
@@ -31,7 +31,7 @@ public sealed class SigtranPackagePublicationRequest
     /// <summary>The requester identity from the handoff.</summary>
     public string RequestedBy => HandoffGate.Handoff.RequestedBy;
 
-    /// <summary>The commercial evidence run identifier.</summary>
+    /// <summary>The production evidence run identifier.</summary>
     public string RunId => HandoffGate.Handoff.PromotionPackage.ApprovalReport.Manifest.Checklist.Target.RunId;
 
     /// <summary>The approved promotion package identifier.</summary>
@@ -60,12 +60,12 @@ public sealed class SigtranPackagePublicationRequest
 /// </summary>
 public static class SigtranPackagePublicationRequests
 {
-    /// <summary>Creates a package publication request from an approved commercial evidence handoff gate.</summary>
-    /// <param name="handoffGate">The approved commercial evidence handoff gate result.</param>
+    /// <summary>Creates a package publication request from an approved production evidence handoff gate.</summary>
+    /// <param name="handoffGate">The approved production evidence handoff gate result.</param>
     /// <param name="requestedAtUtc">The UTC publication request time.</param>
     /// <returns>The package publication request.</returns>
     public static SigtranPackagePublicationRequest Create(
-        SigtranCommercialEvidencePublicationHandoffGateResult handoffGate,
+        SigtranReleaseEvidencePublicationHandoffGateResult handoffGate,
         DateTimeOffset requestedAtUtc)
     {
         return new(handoffGate, requestedAtUtc);

@@ -1,6 +1,6 @@
 # Phase 29 Summary
 
-Phase 29 completed the maintained external peer lab runner materialization foundation. The SDK now has package-neutral contracts for preparing deterministic runner inputs, validating preflight readiness, mapping expected outputs, collecting retained artifacts, applying digest coverage, and handing passing comparison output into the maintained peer evidence bundle.
+Phase 29 completed the reference external peer lab runner materialization foundation. The SDK now has package-neutral contracts for preparing deterministic runner inputs, validating preflight readiness, mapping expected outputs, collecting retained artifacts, applying digest coverage, and handing passing comparison output into the reference peer evidence bundle.
 
 ## Completed Capabilities
 
@@ -15,9 +15,9 @@ Phase 29 completed the maintained external peer lab runner materialization found
 - Runner workflow readiness.
 - Runner status reporting.
 
-## Commercial Readiness Position
+## Production Readiness Position
 
-The runner foundation is complete. Commercial release readiness still requires a real maintained peer lab execution on a suitable Linux host with retained artifacts:
+The runner foundation is complete. Production release readiness still requires a real reference peer lab execution on a suitable Linux host with retained artifacts:
 
 - PCAP.
 - Peer log.

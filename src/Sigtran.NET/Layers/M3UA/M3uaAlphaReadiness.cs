@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.M3UA;
 /// <summary>
 /// Snapshot of the SDK conditions required for the M3UA-focused alpha release.
 /// </summary>
-public readonly struct M3uaAlphaReadinessReport
+public readonly struct M3uaAlphaReadinessSnapshot
 {
     /// <summary>Creates an alpha readiness report.</summary>
     /// <param name="hasPackageMetadata">Whether package metadata is configured.</param>
@@ -11,7 +11,7 @@ public readonly struct M3uaAlphaReadinessReport
     /// <param name="hasM3uaProtocolCoverage">Whether the M3UA alpha protocol families are implemented.</param>
     /// <param name="hasTransportAbstraction">Whether an M3UA transport-session abstraction is available.</param>
     /// <param name="marksUpperLayersExperimental">Whether SCCP, TCAP, and MAP are explicitly treated as experimental.</param>
-    public M3uaAlphaReadinessReport(
+    public M3uaAlphaReadinessSnapshot(
         bool hasPackageMetadata,
         bool requiresXmlDocumentation,
         bool hasM3uaProtocolCoverage,
@@ -73,7 +73,7 @@ public static class M3uaAlphaReadiness
     /// Builds the current M3UA alpha readiness report.
     /// </summary>
     /// <returns>The current M3UA alpha readiness report.</returns>
-    public static M3uaAlphaReadinessReport GetReport()
+    public static M3uaAlphaReadinessSnapshot GetReport()
     {
         M3uaProtocolCapabilities capabilities = M3uaProtocol.Capabilities;
         return new(

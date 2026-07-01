@@ -1,4 +1,4 @@
-# Phase 35 Summary - RC Publish And Commercial Gate
+# Phase 35 Summary - RC Publish And Production Gate
 
 Phase 35 builds the SDK contracts needed to rehearse and gate RC publication without weakening the commercial stable-release gate.
 
@@ -9,7 +9,7 @@ Phase 35 builds the SDK contracts needed to rehearse and gate RC publication wit
 - Retained release notes artifact with versioned Markdown path, digest coverage, publishable change summary, breaking-change section, and migration notes link.
 - Retained migration notes artifact with versioned Markdown path, digest coverage, migration entries, code-sample requirement, and experimental SCCP/TCAP/MAP boundary statement.
 - Final commercial readiness report that separates RC prerelease readiness from stable commercial release readiness and retains current commercial blockers.
-- RC versus stable decision model that recommends `ReleaseCandidate`, `Stable`, or `Blocked` from retained readiness evidence.
+- RC versus stable decision model that recommends `Prerelease`, `Stable`, or `Blocked` from retained readiness evidence.
 - RC publication evidence manifest that requires package, symbols, dry-run, notes, migration, readiness, decision, and digest artifacts before upload.
 - Release workflow channel wiring for `dry-run`, `prerelease`, and `stable`, including retained dry-run evidence and an explicit RC publication gate.
 - RC publication status summary that separates gate foundation readiness from real publication execution and stable commercial readiness.

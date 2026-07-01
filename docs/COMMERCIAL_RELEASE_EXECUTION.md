@@ -1,6 +1,6 @@
-# Commercial Release Execution
+# Production Release Execution
 
-This document is the release-day runbook for closing SIGTRAN.NET commercial readiness evidence. It separates local evidence that can be generated from the repository from evidence that requires external systems, protected secrets, or a real maintained SIGTRAN peer.
+This document is the release-day runbook for closing SIGTRAN.NET commercial readiness evidence. It separates local evidence that can be generated from the repository from evidence that requires external systems, protected secrets, or a real reference SIGTRAN peer.
 
 ## Runner
 
@@ -31,7 +31,7 @@ The runner performs these local release-day checks:
 
 `LocalEvidenceReady` means build, tests, package creation, SBOM, public API baseline, smoke benchmark, and provenance generation passed for the current repository state.
 
-`CommercialReady` is stricter. It must stay false until all commercial blockers are cleared with retained evidence. Use `-EvidenceManifestPath` to bind reviewed external evidence into the runner:
+`ProductionReady` is stricter. It must stay false until all commercial blockers are cleared with retained evidence. Use `-EvidenceManifestPath` to bind reviewed external evidence into the runner:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\run-commercial-release-readiness.ps1 `
@@ -41,10 +41,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\run-commercial-release
 
 The manifest can close evidence-only blockers such as external peer, production benchmark, and internal RC signing evidence when retained artifact paths and digests have been reviewed. It cannot replace protected release dispatch or NuGet publication evidence.
 
-Commercial readiness requires:
+Production readiness requires:
 
 - Trusted timestamped package signing is verified.
-- A maintained external SIGTRAN peer run produces retained PCAP, peer logs, SDK traces, configuration, comparison report, run report, and digests.
+- A reference external SIGTRAN peer run produces retained PCAP, peer logs, SDK traces, configuration, comparison report, run report, and digests.
 - Native SCTP behavior is verified with retained Linux peer traffic evidence.
 - Production peer benchmark evidence is retained with latency, resource, and failover observations.
 - Release dispatch and artifact upload are executed from the protected release workflow.
@@ -96,7 +96,7 @@ Retained VM evidence run:
 | TShark comparison SHA-256 | `abe082aea2423d53f6e78c814a5c408e0f77b4c06604316e3879bd977f369deb` |
 | Run report SHA-256 | `0933d0ce1d95dd494f1a89c0f2bd84c81bc89a96a36eeb62e118c6302cf9f1b4` |
 
-This closes the SDK native SCTP loopback evidence gap. It does not close the maintained external peer interoperability gap because both endpoints are the SDK lab executable on the same Linux host.
+This closes the SDK native SCTP loopback evidence gap. It does not close the reference external peer interoperability gap because both endpoints are the SDK lab executable on the same Linux host.
 
 ## External Peer Evidence
 
@@ -130,7 +130,7 @@ This benchmark closes the smoke-only evidence gap for the RC gate. It is still s
 
 ## Signing And Publication
 
-Commercial package signing requires a code-signing certificate, timestamp authority, and retained verification evidence. The internal RC signing helper creates self-signed RC evidence for dry-runs:
+Production package signing requires a code-signing certificate, timestamp authority, and retained verification evidence. The internal RC signing helper creates self-signed RC evidence for dry-runs:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\eng\new-internal-signing-evidence.ps1 `

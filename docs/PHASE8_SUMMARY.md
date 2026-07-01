@@ -12,7 +12,7 @@ Native SCTP Production Transport is foundation-complete.
 6. Native SCTP server listener
 7. Opt-in native SCTP lab profile
 8. Native SCTP readiness report
-9. Commercial readiness integration
+9. Production readiness integration
 10. Final Phase 8 status and documentation alignment
 
 ## Current Release Position

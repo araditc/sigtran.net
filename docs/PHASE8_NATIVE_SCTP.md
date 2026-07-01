@@ -90,11 +90,11 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 `NativeSctpReadiness.GetReport()` summarizes Phase 8 native SCTP status.
 
 ```csharp
-NativeSctpReadinessReport report = NativeSctpReadiness.GetReport();
+NativeSctpReadinessSnapshot report = NativeSctpReadiness.GetReport();
 bool foundationReady = report.FoundationReady;
 bool productionReady = report.IsProductionReady;
 ```
 
 The native SCTP foundation is ready when platform probe, socket factory, connection planner, socket adapter, connector, listener, and lab profile are present. Production readiness remains false until Linux SCTP verification passes.
 
-`SigtranNativeSctpSupport.IsImplementationFoundationReady()` now reflects this Phase 8 foundation status, while commercial readiness remains tied to `NativeSctpReadinessReport.IsProductionReady`.
+`SigtranNativeSctpSupport.IsImplementationFoundationReady()` now reflects this Phase 8 foundation status, while commercial readiness remains tied to `NativeSctpReadinessSnapshot.IsProductionReady`.

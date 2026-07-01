@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK-side and external readiness for SCCP, TCAP, and MAP SMS protocol evidence.
 /// </summary>
-public sealed class SigtranProtocolEvidenceReadinessReport
+public sealed class SigtranProtocolEvidenceReadinessSnapshot
 {
     private readonly string[] _blockers;
 
@@ -19,7 +19,7 @@ public sealed class SigtranProtocolEvidenceReadinessReport
     /// <param name="hasTraceValidation">Whether ordered trace validation passes for SDK evidence frames.</param>
     /// <param name="hasMismatchClassification">Whether mismatch classification is available and clean for SDK evidence frames.</param>
     /// <param name="hasExternalInteroperabilityEvidence">Whether retained external interoperability evidence is available.</param>
-    public SigtranProtocolEvidenceReadinessReport(
+    public SigtranProtocolEvidenceReadinessSnapshot(
         bool hasSccpFoundation,
         bool hasTcapFoundation,
         bool hasMapSmsFoundation,
@@ -128,7 +128,7 @@ public static class SigtranProtocolEvidenceReadiness
     /// <summary>Builds the current protocol evidence readiness report.</summary>
     /// <param name="hasExternalInteroperabilityEvidence">Whether retained external interoperability evidence is available.</param>
     /// <returns>The current protocol evidence readiness report.</returns>
-    public static SigtranProtocolEvidenceReadinessReport GetReport(bool hasExternalInteroperabilityEvidence = false)
+    public static SigtranProtocolEvidenceReadinessSnapshot GetReport(bool hasExternalInteroperabilityEvidence = false)
     {
         SigtranProtocolEvidenceBundleReport bundle = SigtranProtocolEvidenceBundle.Create();
         SigtranProtocolEvidenceTraceReport trace = SigtranProtocolEvidenceTraceValidator.Validate(

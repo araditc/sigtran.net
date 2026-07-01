@@ -1,6 +1,6 @@
 # Phase 28 Summary
 
-Phase 28 completed the maintained external peer lab automation foundation. The SDK now has package-neutral contracts for turning the maintained peer lab foundation into deterministic run inputs, retained evidence handoff, and commercial readiness checks.
+Phase 28 completed the reference external peer lab automation foundation. The SDK now has package-neutral contracts for turning the reference peer lab foundation into deterministic run inputs, retained evidence handoff, and commercial readiness checks.
 
 ## Completed Capabilities
 
@@ -8,16 +8,16 @@ Phase 28 completed the maintained external peer lab automation foundation. The S
 - Deterministic environment file rendering.
 - Artifact digest manifest handoff.
 - Ordered command script rendering.
-- Maintained peer comparison reporting.
-- Maintained peer run reporting.
+- Reference peer comparison reporting.
+- Reference peer run reporting.
 - Evidence bundle handoff to promotion reports.
 - Manual self-hosted workflow template rendering.
-- Commercial readiness bridge evaluation.
+- Production readiness bridge evaluation.
 - Automation status reporting.
 
-## Commercial Readiness Position
+## Production Readiness Position
 
-The automation foundation is complete. Commercial release readiness still requires a real maintained peer lab execution that produces digest-covered retained artifacts:
+The automation foundation is complete. Production release readiness still requires a real reference peer lab execution that produces digest-covered retained artifacts:
 
 - PCAP.
 - Peer log.

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Readiness report for native SCTP implementation.
 /// </summary>
-public sealed class NativeSctpReadinessReport
+public sealed class NativeSctpReadinessSnapshot
 {
     /// <summary>Creates a native SCTP readiness report.</summary>
     /// <param name="hasPlatformProbe">Whether platform probing is available.</param>
@@ -14,7 +14,7 @@ public sealed class NativeSctpReadinessReport
     /// <param name="hasListener">Whether server listener support is available.</param>
     /// <param name="hasLabProfile">Whether lab profile support is available.</param>
     /// <param name="hasLinuxVerification">Whether Linux native SCTP verification has passed.</param>
-    public NativeSctpReadinessReport(
+    public NativeSctpReadinessSnapshot(
         bool hasPlatformProbe,
         bool hasSocketFactory,
         bool hasConnectionPlanner,
@@ -97,7 +97,7 @@ public static class NativeSctpReadiness
 
     /// <summary>Returns the current native SCTP readiness report.</summary>
     /// <returns>The current native SCTP readiness report.</returns>
-    public static NativeSctpReadinessReport GetReport()
+    public static NativeSctpReadinessSnapshot GetReport()
     {
         return new(
             hasPlatformProbe: true,

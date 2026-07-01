@@ -1,4 +1,4 @@
-# Phase 42 - Commercial Package Publication Gate Integration
+# Phase 42 - Production Package Publication Gate Integration
 
 Phase 42 connects an approved commercial evidence publication handoff to the package publication gate. It does not publish packages by itself. The phase prepares request, package artifact, credential, evidence, release guard, channel policy, gate execution, dry-run, command, and status contracts so a release workflow can decide whether publication is allowed from retained evidence.
 
@@ -14,14 +14,14 @@ The first public RC package was later published by protected workflow run `28290
 | 4 | Publication evidence assembly from approved run and artifacts | Complete |
 | 5 | Release publish guard bridge | Complete |
 | 6 | Publication channel policy evaluation bridge | Complete |
-| 7 | Commercial package publication gate execution | Complete |
+| 7 | Production package publication gate execution | Complete |
 | 8 | Dry-run publication rehearsal artifact | Complete |
 | 9 | Guarded publish command materialization | Complete |
 | 10 | Status reporting, final documentation, README alignment, validation, commit, and push | Complete |
 
 ## Current Capability
 
-`SigtranPackagePublicationRequest` turns a `SigtranCommercialEvidencePublicationHandoffGateResult` into a package publication request. The request preserves the package version, publication channel, requester identity, commercial evidence run id, approved promotion package id, and UTC request time.
+`SigtranPackagePublicationRequest` turns a `SigtranReleaseEvidencePublicationHandoffGateResult` into a package publication request. The request preserves the package version, publication channel, requester identity, commercial evidence run id, approved promotion package id, and UTC request time.
 
 The request can only move to package artifact binding when the upstream handoff gate allows evaluation and the request time is normalized to UTC. This keeps package publication blocked when approval handoff evidence is incomplete.
 
@@ -43,6 +43,6 @@ The request can only move to package artifact binding when the upstream handoff 
 
 `SigtranPackagePublicationIntegrationStatus` reports the ten completed integration capabilities and keeps publication readiness separate from foundation readiness. The default stable status still blocks stable publication until retained stable release evidence exists and an approved protected stable publication run is executed.
 
-## Commercial Gate Position
+## Production Gate Position
 
 Phase 42 is foundation-complete. It establishes the handoff-to-publication request boundary, digest-covered package artifact binding, secret-name based credential readiness, publication evidence assembly, release publish guard evaluation, channel policy evaluation, final package publication gate execution, retained dry-run rehearsal, guarded publish command materialization, and status reporting. RC package publication is complete for `1.0.0-rc.1`; stable package publication remains blocked until retained stable release evidence exists and a protected approved stable publication run is executed.

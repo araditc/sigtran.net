@@ -49,16 +49,16 @@ public sealed class SigtranPerformanceEvidenceReport
         && _latencyReports.All(static report => report.Passed);
 
     /// <summary>Whether the report can be published as release-grade performance evidence.</summary>
-    public bool Publishable => RunPlan.SupportsCommercialEvidence
+    public bool Publishable => RunPlan.SupportsReleaseEvidence
         && LatencyEvidencePassed
         && ResourceReport.Passed
-        && ResilienceEvidence.SupportsCommercialEvidence;
+        && ResilienceEvidence.SupportsReleaseEvidence;
 
     /// <summary>Formats a compact performance evidence report summary.</summary>
     /// <returns>The performance evidence report summary.</returns>
     public string Describe()
     {
-        return $"run={RunPlan.RunId} publishable={Publishable} latency={LatencyEvidencePassed} resource={ResourceReport.Passed} resilience={ResilienceEvidence.SupportsCommercialEvidence}";
+        return $"run={RunPlan.RunId} publishable={Publishable} latency={LatencyEvidencePassed} resource={ResourceReport.Passed} resilience={ResilienceEvidence.SupportsReleaseEvidence}";
     }
 
     /// <summary>Renders the performance evidence report as Markdown.</summary>
@@ -76,10 +76,10 @@ public sealed class SigtranPerformanceEvidenceReport
         builder.AppendLine();
         builder.AppendLine("| Area | Passed |");
         builder.AppendLine("| --- | --- |");
-        builder.AppendLine($"| Workload and artifacts | `{RunPlan.SupportsCommercialEvidence}` |");
+        builder.AppendLine($"| Workload and artifacts | `{RunPlan.SupportsReleaseEvidence}` |");
         builder.AppendLine($"| Latency P95/P99 | `{LatencyEvidencePassed}` |");
         builder.AppendLine($"| CPU memory allocation | `{ResourceReport.Passed}` |");
-        builder.AppendLine($"| Resilience failover | `{ResilienceEvidence.SupportsCommercialEvidence}` |");
+        builder.AppendLine($"| Resilience failover | `{ResilienceEvidence.SupportsReleaseEvidence}` |");
         builder.AppendLine();
         builder.AppendLine("## Latency");
         builder.AppendLine();
@@ -132,7 +132,7 @@ public static class SigtranPerformanceEvidenceReports
         return new(
             runPlan,
             SigtranPerformanceLatencyEvidenceEvaluator.Evaluate(latencyEvidence),
-            SigtranPerformanceResourceEvidenceEvaluator.EvaluateCommercial(resourceEvidence),
+            SigtranPerformanceResourceEvidenceEvaluator.EvaluateProduction(resourceEvidence),
             resilienceEvidence,
             generatedUtc);
     }

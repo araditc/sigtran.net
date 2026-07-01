@@ -8,7 +8,7 @@ public enum SigtranPerformanceEvidenceStageKind
     /// <summary>Warmup traffic used to stabilize connections, JIT behavior, and buffers.</summary>
     Warmup = 0,
 
-    /// <summary>Sustained traffic used for steady-state commercial performance evidence.</summary>
+    /// <summary>Sustained traffic used for steady-state production performance evidence.</summary>
     Sustained = 1,
 
     /// <summary>Peak traffic used to prove short burst capacity and queue behavior.</summary>
@@ -67,7 +67,7 @@ public sealed class SigtranPerformanceEvidenceStage
     /// <summary>Whether sent and received message counters match.</summary>
     public bool HasNoMessageLoss => SentMessages == ReceivedMessages;
 
-    /// <summary>Whether the stage passes commercial workload checks.</summary>
+    /// <summary>Whether the stage passes production workload checks.</summary>
     public bool Passed => MeetsThroughputTarget && HasNoMessageLoss;
 
     /// <summary>Formats a compact stage evidence summary.</summary>
@@ -120,8 +120,8 @@ public sealed class SigtranPerformanceEvidenceWorkload
     /// <summary>Whether all stages passed throughput and message-loss checks.</summary>
     public bool AllStagesPassed => _stages.All(static stage => stage.Passed);
 
-    /// <summary>Whether the workload can support commercial performance evidence.</summary>
-    public bool SupportsCommercialEvidence => RequiresPeerTraffic && HasRequiredStageCoverage && AllStagesPassed;
+    /// <summary>Whether the workload can support production performance evidence.</summary>
+    public bool SupportsReleaseEvidence => RequiresPeerTraffic && HasRequiredStageCoverage && AllStagesPassed;
 
     /// <summary>Formats a compact workload evidence summary.</summary>
     /// <returns>The workload evidence summary.</returns>
@@ -136,13 +136,13 @@ public sealed class SigtranPerformanceEvidenceWorkload
 /// </summary>
 public static class SigtranPerformanceEvidenceWorkloads
 {
-    /// <summary>Creates the expected commercial peer-traffic workload from the default load-test plan.</summary>
-    /// <returns>The expected commercial peer-traffic workload.</returns>
-    public static SigtranPerformanceEvidenceWorkload CreateExpectedCommercialPeerTraffic()
+    /// <summary>Creates the expected production peer-traffic workload from the default load-test plan.</summary>
+    /// <returns>The expected production peer-traffic workload.</returns>
+    public static SigtranPerformanceEvidenceWorkload CreateExpectedProductionPeerTraffic()
     {
-        SigtranLoadTestPlan plan = SigtranLoadTestPlans.CreateCommercialDefault();
+        SigtranLoadTestPlan plan = SigtranLoadTestPlans.CreateProductionDefault();
         return new(
-            "commercial-peer-traffic",
+            "production-peer-traffic",
             plan.Stages.Select(ToExpectedStage).ToArray(),
             requiresPeerTraffic: plan.RequiresExternalPeer);
     }

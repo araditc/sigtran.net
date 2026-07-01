@@ -171,7 +171,7 @@ Global title routes use longest-prefix matching. SSN routes can optionally inclu
 `SccpReadiness.GetReport()` reports the current Phase 3 status. The SDK foundation is ready when MTP3 routing, party addressing, UDT/XUDT/LUDT codecs, segmentation, service messages, and routing APIs are present.
 
 ```csharp
-SccpReadinessReport report = SccpReadiness.GetReport();
+SccpReadinessSnapshot report = SccpReadiness.GetReport();
 bool foundationReady = report.FoundationReady;
 ```
 

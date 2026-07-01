@@ -40,7 +40,7 @@ public sealed class SigtranSbomExecutionEvidence
     /// <summary>The number of package files covered by the SBOM.</summary>
     public int PackageFileCount { get; }
 
-    /// <summary>Whether the SBOM evidence is suitable for commercial review.</summary>
+    /// <summary>Whether the SBOM evidence is suitable for production review.</summary>
     public bool IsReviewReady => Format == SigtranSbomFormat.SpdxJson
         && ToolName.Contains("generate-sbom", StringComparison.OrdinalIgnoreCase)
         && OutputPath.EndsWith(".spdx.json", StringComparison.OrdinalIgnoreCase)

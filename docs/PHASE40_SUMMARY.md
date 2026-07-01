@@ -1,4 +1,4 @@
-# Phase 40 Summary - Commercial Evidence Filesystem Execution
+# Phase 40 Summary - Production Evidence Filesystem Execution
 
 Phase 40 prepares the SDK to run commercial evidence file verification against real retained files on disk.
 
@@ -17,4 +17,4 @@ Phase 40 prepares the SDK to run commercial evidence file verification against r
 
 ## Readiness Position
 
-The phase foundation is complete. Filesystem observation, manifest execution, report execution, artifact writing, ledger execution, seal execution, publication attachment execution, promotion execution, command materialization, status reporting, documentation, and final validation are complete. Commercial publication remains blocked until a real approved commercial run is retained and approved.
+The phase foundation is complete. Filesystem observation, manifest execution, report execution, artifact writing, ledger execution, seal execution, publication attachment execution, promotion execution, command materialization, status reporting, documentation, and final validation are complete. Production publication remains blocked until a real approved commercial run is retained and approved.

@@ -58,8 +58,8 @@ public sealed class SigtranPackageSigningExecutionEvidence
     /// <summary>Whether the signing certificate chains to a trusted provider.</summary>
     public bool TrustedCertificate { get; }
 
-    /// <summary>Whether the signed package can support commercial promotion.</summary>
-    public bool SupportsCommercialPromotion => SigningSucceeded
+    /// <summary>Whether the signed package can support production promotion.</summary>
+    public bool SupportsProductionPromotion => SigningSucceeded
         && VerificationPassed
         && Timestamped
         && TrustedCertificate

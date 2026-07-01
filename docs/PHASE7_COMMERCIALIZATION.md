@@ -1,22 +1,22 @@
-# Phase 7 Commercialization
+# Phase 7 ProductionReadiness
 
 Phase 7 is the final roadmap phase for turning the SDK foundation into a commercially usable release.
 
 See [Phase 7 Summary](PHASE7_SUMMARY.md) for the completed unit inventory and remaining external production gates.
 
-## Commercial Readiness Gate
+## Production Readiness Gate
 
-`SigtranCommercialReadiness.GetReport()` separates internal release readiness from commercial production readiness.
+`SigtranProductionReadiness.GetReport()` separates internal release readiness from commercial production readiness.
 
 ```csharp
-SigtranCommercialReadinessReport report = SigtranCommercialReadiness.GetReport();
+SigtranProductionReadinessSnapshot report = SigtranProductionReadiness.GetReport();
 bool canPublishCandidate = report.InternalReleaseReady;
-bool canClaimCommercialProduction = report.CommercialReady;
+bool canClaimProduction = report.ProductionReady;
 ```
 
 Internal release readiness is currently available because SDK foundations, interoperability tooling, and CI verification are present.
 
-Commercial readiness remains blocked until native SCTP verification, external interoperability evidence, and release governance are complete.
+Production readiness remains blocked until native SCTP verification, external interoperability evidence, and release governance are complete.
 
 ## Native SCTP Support Matrix
 
@@ -30,7 +30,7 @@ Commercial readiness remains blocked until native SCTP verification, external in
 
 Linux is the target for native SCTP lab verification. Windows and macOS remain supported through transport contracts and development adapters until a production provider is selected and verified.
 
-Phase 8 adds the native SCTP implementation foundation and exposes it through `SigtranNativeSctpSupport.IsImplementationFoundationReady()`. Commercial readiness still requires Linux verification through `NativeSctpReadinessReport.IsProductionReady`.
+Phase 8 adds the native SCTP implementation foundation and exposes it through `SigtranNativeSctpSupport.IsImplementationFoundationReady()`. Production readiness still requires Linux verification through `NativeSctpReadinessSnapshot.IsProductionReady`.
 
 ## External Interoperability Evidence
 
@@ -46,15 +46,15 @@ registry.Add(new SigtranInteropEvidenceItem(
     SigtranInteropEvidenceResult.Passed));
 ```
 
-The current registry is intentionally empty until real lab artifacts are added. Commercial readiness requires at least one passing external evidence item, and later release policies should require multiple peer stacks and scenarios.
+The current registry is intentionally empty until real lab artifacts are added. Production readiness requires at least one passing external evidence item, and later release policies should require multiple peer stacks and scenarios.
 
 ## Release Candidate Manifest
 
-`SigtranReleaseCandidate.Create(version, commitSha)` creates an auditable release snapshot.
+`SigtranPrerelease.Create(version, commitSha)` creates an auditable release snapshot.
 
 ```csharp
-SigtranReleaseCandidateManifest manifest =
-    SigtranReleaseCandidate.Create("1.0.0-alpha.1", "abcdef0");
+SigtranPrereleaseManifest manifest =
+    SigtranPrerelease.Create("1.0.0-alpha.1", "abcdef0");
 ```
 
 Release candidates can be published after internal gates pass. Promotion to commercial production remains blocked until the commercial readiness report is fully green.
@@ -63,9 +63,9 @@ Release candidates can be published after internal gates pass. Promotion to comm
 
 `SigtranPackageGovernance.CreateCurrentPolicy()` describes the package metadata already present: license, README, repository metadata, and symbols.
 
-`SigtranPackageGovernance.CreateCommercialTargetPolicy()` adds the commercial governance target: package signing and SBOM publication.
+`SigtranPackageGovernance.CreateProductionTargetPolicy()` adds the commercial governance target: package signing and SBOM publication.
 
-Commercial release governance remains incomplete until signing and SBOM automation are added to the release pipeline.
+Production release governance remains incomplete until signing and SBOM automation are added to the release pipeline.
 
 ## Security Policy
 

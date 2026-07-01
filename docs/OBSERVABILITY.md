@@ -1,6 +1,6 @@
 # Observability
 
-Commercial SIGTRAN deployments need repeatable metrics, traces, and health signals.
+Production SIGTRAN deployments need repeatable metrics, traces, and health signals.
 
 `SigtranObservability.CreateDefaultProfile()` exposes the current SDK observability profile.
 

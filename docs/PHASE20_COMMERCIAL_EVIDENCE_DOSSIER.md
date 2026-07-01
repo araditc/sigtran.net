@@ -1,14 +1,14 @@
-# Phase 20 Commercial Evidence Dossier
+# Phase 20 Production Evidence Dossier
 
 Phase 20 adds the commercial evidence dossier foundation for SIGTRAN.NET.
 
 Earlier phases created separate foundations for native SCTP verification, external peer execution, protocol interop vectors, release provenance, package governance, SBOM policy, and signing policy. This phase introduces a single evidence bundle contract that can collect those artifacts into one release dossier.
 
-The public APIs use domain names such as `SigtranCommercialEvidenceStatus`; phase numbers are intentionally kept out of source type names.
+The public APIs use domain names such as `SigtranReleaseEvidenceStatus`; phase numbers are intentionally kept out of source type names.
 
 ## Requirements
 
-`SigtranCommercialEvidenceRequirements.GetRequirements()` defines five production claim areas:
+`SigtranReleaseEvidenceRequirements.GetRequirements()` defines five production claim areas:
 
 - Native SCTP Linux kernel peer-traffic evidence.
 - External peer M3UA ASP-to-SG evidence.
@@ -20,25 +20,25 @@ These requirements make the remaining commercial blockers explicit and reviewabl
 
 ## Artifacts
 
-`SigtranCommercialEvidenceArtifact` records an evidence area, artifact kind, path, and optional SHA-256 digest.
+`SigtranReleaseEvidenceArtifact` records an evidence area, artifact kind, path, and optional SHA-256 digest.
 
 The artifact kinds cover packet captures, SDK traces, peer configuration, peer logs, reference vectors, SDK vectors, comparison reports, provenance, package manifests, packages, SBOMs, and signatures.
 
 ## Manifest
 
-`SigtranCommercialEvidenceManifest` stores retained artifacts and can evaluate whether all required artifacts are present for one requirement or for the complete requirement set.
+`SigtranReleaseEvidenceManifest` stores retained artifacts and can evaluate whether all required artifacts are present for one requirement or for the complete requirement set.
 
 The manifest also checks digest coverage. A bundle without digests cannot support a commercial evidence claim.
 
 ## Bundle
 
-`SigtranCommercialEvidenceBundle` combines a release version, requirements, and a manifest.
+`SigtranReleaseEvidenceBundle` combines a release version, requirements, and a manifest.
 
 A bundle is complete only when all requirements are satisfied and every retained artifact has a digest.
 
 ## Gate
 
-`SigtranCommercialEvidenceGate.Evaluate()` checks both the retained evidence bundle and the underlying verification claims:
+`SigtranReleaseEvidenceGate.Evaluate()` checks both the retained evidence bundle and the underlying verification claims:
 
 - Complete commercial evidence artifacts.
 - Complete commercial evidence digests.
@@ -51,15 +51,15 @@ This keeps a complete-looking artifact folder from being treated as production e
 
 ## Readiness
 
-`SigtranCommercialEvidenceReadiness.GetReport()` separates foundation readiness from current commercial evidence readiness.
+`SigtranReleaseEvidenceReadiness.GetReport()` separates foundation readiness from current commercial evidence readiness.
 
 The foundation is ready. Current commercial evidence readiness remains false until real evidence from the required labs and release process is retained.
 
 ## CI Profile
 
-`SigtranCommercialEvidenceCi.CreateDefault()` defines an opt-in commercial evidence profile.
+`SigtranReleaseEvidenceCi.CreateDefault()` defines an opt-in commercial evidence profile.
 
-The profile is enabled by `SIGTRAN_COMMERCIAL_EVIDENCE` and uses `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT` for retained dossier artifacts.
+The profile is enabled by `SIGTRAN_RELEASE_EVIDENCE` and uses `SIGTRAN_RELEASE_EVIDENCE_ROOT` for retained dossier artifacts.
 
 ## Naming Cleanup
 
@@ -69,4 +69,4 @@ This keeps source metadata aligned with the project rule that public SDK naming 
 
 ## Status
 
-`SigtranCommercialEvidenceStatus.Describe()` summarizes the dossier foundation and keeps commercial evidence readiness false until retained artifacts and verification gates are complete.
+`SigtranReleaseEvidenceStatus.Describe()` summarizes the dossier foundation and keeps commercial evidence readiness false until retained artifacts and verification gates are complete.

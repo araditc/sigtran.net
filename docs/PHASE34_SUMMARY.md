@@ -19,4 +19,4 @@ Phase 34 upgrades supply-chain release execution with concrete contracts for fin
 
 The phase is foundation-complete. The release execution foundation now has final SBOM, trusted timestamped signing, provenance attestation, public API diff, release artifact upload, command-plan, promotion-gate, concrete workflow execution, status, and final validation contracts.
 
-Commercial release execution is still not complete until a real release workflow run retains digest-covered package, symbol, SBOM, signing, timestamp, provenance, public API diff, digest, upload, and commercial evidence artifacts.
+Production release execution is still not complete until a real release workflow run retains digest-covered package, symbol, SBOM, signing, timestamp, provenance, public API diff, digest, upload, and commercial evidence artifacts.

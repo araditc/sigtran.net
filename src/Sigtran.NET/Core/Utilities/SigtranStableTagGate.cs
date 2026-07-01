@@ -75,7 +75,7 @@ public sealed class SigtranStableTagCommandPlan
     /// <param name="decision">The approved stable release decision.</param>
     /// <param name="commands">The ordered tag commands.</param>
     public SigtranStableTagCommandPlan(
-        SigtranStableCommercialReleaseDecision decision,
+        SigtranStableReleaseDecision decision,
         IReadOnlyList<SigtranStableTagCommand> commands)
     {
         Decision = decision ?? throw new ArgumentNullException(nameof(decision));
@@ -84,7 +84,7 @@ public sealed class SigtranStableTagCommandPlan
     }
 
     /// <summary>The approved stable release decision.</summary>
-    public SigtranStableCommercialReleaseDecision Decision { get; }
+    public SigtranStableReleaseDecision Decision { get; }
 
     /// <summary>The ordered tag commands.</summary>
     public IReadOnlyList<SigtranStableTagCommand> Commands { get; }
@@ -204,7 +204,7 @@ public static class SigtranStableTagGates
     /// <summary>Creates the stable tag command plan for an approved stable decision.</summary>
     /// <param name="decision">The approved stable release decision.</param>
     /// <returns>The stable tag command plan.</returns>
-    public static SigtranStableTagCommandPlan CreateCommandPlan(SigtranStableCommercialReleaseDecision decision)
+    public static SigtranStableTagCommandPlan CreateCommandPlan(SigtranStableReleaseDecision decision)
     {
         ArgumentNullException.ThrowIfNull(decision);
         SigtranStableReleaseTarget target = decision.Checklist.EvidenceMap.Target;
@@ -214,7 +214,7 @@ public static class SigtranStableTagGates
             [
                 new(SigtranStableTagCommandKind.ValidateStableDecision, 1, "validate-stable-decision", "test \"${SIGTRAN_STABLE_DECISION_APPROVED:-false}\" = \"true\"", requiresApprovedDecision: true),
                 new(SigtranStableTagCommandKind.VerifySourceCommit, 2, "verify-source-commit", $"git rev-parse --verify {target.SourceCommit}^{{commit}}", requiresApprovedDecision: true),
-                new(SigtranStableTagCommandKind.CreateAnnotatedTag, 3, "create-annotated-tag", $"git tag -a {target.TargetTag} {target.SourceCommit} -m \"Sigtran.NET {target.Version} stable commercial release\"", requiresApprovedDecision: true),
+                new(SigtranStableTagCommandKind.CreateAnnotatedTag, 3, "create-annotated-tag", $"git tag -a {target.TargetTag} {target.SourceCommit} -m \"Sigtran.NET {target.Version} stable release release\"", requiresApprovedDecision: true),
                 new(SigtranStableTagCommandKind.VerifyTagCommit, 4, "verify-tag-commit", $"test \"$(git rev-list -n 1 {target.TargetTag})\" = \"{target.SourceCommit}\"", requiresApprovedDecision: true),
                 new(SigtranStableTagCommandKind.PushTag, 5, "push-stable-tag", $"git push origin {target.TargetTag}", requiresApprovedDecision: true)
             ]);
@@ -226,7 +226,7 @@ public static class SigtranStableTagGates
     /// <param name="existingTagConflict">Whether the stable tag already exists for another target.</param>
     /// <returns>The stable tag gate result.</returns>
     public static SigtranStableTagGateResult Evaluate(
-        SigtranStableCommercialReleaseDecision decision,
+        SigtranStableReleaseDecision decision,
         bool protectedTagPolicyConfirmed,
         bool existingTagConflict)
     {

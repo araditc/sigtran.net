@@ -22,7 +22,7 @@ Events that must be backed by artifacts set `RequiresEvidence` to true.
 
 ## Evidence Retention
 
-`SigtranEvidenceRetentionPolicies.CreateCommercialDefault()` defines commercial evidence retention expectations:
+`SigtranEvidenceRetentionPolicies.CreateProductionDefault()` defines commercial evidence retention expectations:
 
 - Three-year retention.
 - Immutable storage.
@@ -59,9 +59,9 @@ The compliance foundation is ready when the catalog, audit events, retention pol
 
 `SigtranComplianceCi.CreateDefault()` reuses the official build, test, and pack commands while requiring compliance readiness.
 
-## Commercial Gate
+## Production Gate
 
-`SigtranComplianceCommercialGate.Evaluate()` makes the compliance contribution to commercial readiness explicit.
+`SigtranComplianceProductionGate.Evaluate()` makes the compliance contribution to commercial readiness explicit.
 
 The current gate should report compliance foundation readiness as true, while enterprise compliance claims remain false until commercial readiness is complete.
 

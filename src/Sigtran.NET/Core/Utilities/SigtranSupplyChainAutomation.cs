@@ -97,7 +97,7 @@ public sealed class SigtranSupplyChainAutomationPlan
     public IReadOnlyList<SigtranSupplyChainStep> Steps { get; }
 
     /// <summary>Whether the plan has enough information to run in release CI.</summary>
-    public bool IsExecutable => SbomPlan.IsRequiredForCommercialRelease
+    public bool IsExecutable => SbomPlan.IsRequiredForRelease
         && SigningPlan.HasSigningMaterialReferences
         && Steps.Any(static step => step.Kind == SigtranSupplyChainStepKind.GenerateSbom)
         && Steps.Any(static step => step.Kind == SigtranSupplyChainStepKind.SignPackage)
@@ -132,7 +132,7 @@ public static class SigtranSupplyChainAutomation
                 new SigtranSupplyChainStep(SigtranSupplyChainStepKind.SignPackage, "Sign package", "dotnet nuget sign src/Sigtran.NET/bin/Release/Sigtran.NET.*.nupkg --certificate-subject-name \"SIGTRAN.NET release signing\" --timestamper https://timestamp.digicert.com", requiresSecret: true),
                 new SigtranSupplyChainStep(SigtranSupplyChainStepKind.VerifySignature, "Verify signature", "dotnet nuget verify src/Sigtran.NET/bin/Release/Sigtran.NET.*.nupkg --all", requiresSecret: false),
                 new SigtranSupplyChainStep(SigtranSupplyChainStepKind.CreateProvenance, "Create provenance", "dotnet sigtran-provenance create artifacts/supply-chain/provenance.json", requiresSecret: false),
-                new SigtranSupplyChainStep(SigtranSupplyChainStepKind.VerifyEvidence, "Verify evidence dossier", "dotnet sigtran-evidence-verify artifacts/commercial-evidence", requiresSecret: false)
+                new SigtranSupplyChainStep(SigtranSupplyChainStepKind.VerifyEvidence, "Verify evidence dossier", "dotnet sigtran-evidence-verify artifacts/release-evidence", requiresSecret: false)
             ]);
     }
 }

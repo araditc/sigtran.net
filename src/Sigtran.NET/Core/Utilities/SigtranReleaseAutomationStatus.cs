@@ -37,14 +37,14 @@ public static class SigtranReleaseAutomationStatus
         && SigtranReleaseAutomation.CreateDefaultPlan().Steps.Count > 0
         && SigtranReleaseCiProfiles.CreateDefault().IsRunnable;
 
-    /// <summary>Whether the SDK can publish a commercial stable release.</summary>
-    public static bool CommercialStableReleaseReady => FoundationReady
-        && SigtranCommercialReadiness.GetReport().CommercialReady;
+    /// <summary>Whether the SDK can publish a production stable release.</summary>
+    public static bool ProductionStableReleaseReady => FoundationReady
+        && SigtranProductionReadiness.GetReport().ProductionReady;
 
     /// <summary>Formats a compact release automation status summary.</summary>
     /// <returns>The release automation status summary.</returns>
     public static string Describe()
     {
-        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} commercialStableReady={CommercialStableReleaseReady}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={FoundationReady} productionStableReady={ProductionStableReleaseReady}";
     }
 }

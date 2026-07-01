@@ -35,8 +35,8 @@ public static class SigtranReleaseWorkflowEnvironment
             new("DOTNET_NOLOGO", "true"),
             new("SIGTRAN_SUPPLY_CHAIN", "true"),
             new("SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT", "artifacts/supply-chain"),
-            new("SIGTRAN_COMMERCIAL_EVIDENCE", "true"),
-            new("SIGTRAN_COMMERCIAL_EVIDENCE_ROOT", "artifacts/commercial-evidence")
+            new("SIGTRAN_RELEASE_EVIDENCE", "true"),
+            new("SIGTRAN_RELEASE_EVIDENCE_ROOT", "artifacts/release-evidence")
         ];
     }
 

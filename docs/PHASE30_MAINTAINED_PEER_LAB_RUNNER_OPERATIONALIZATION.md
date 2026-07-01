@@ -1,10 +1,10 @@
-# Phase 30 Maintained Peer Lab Runner Operationalization
+# Phase 30 Reference Peer Lab Runner Operationalization
 
-Phase 30 turns the maintained peer lab runner materialization contracts into operational handoff contracts. The goal is to make a real runner reviewable around file creation, execution logs, command outcomes, artifact verification, provenance, failure handling, retry policy, and evidence packaging without claiming that planned artifacts are real lab evidence.
+Phase 30 turns the reference peer lab runner materialization contracts into operational handoff contracts. The goal is to make a real runner reviewable around file creation, execution logs, command outcomes, artifact verification, provenance, failure handling, retry policy, and evidence packaging without claiming that planned artifacts are real lab evidence.
 
 ## Unit 1 - File Materialization
 
-`SigtranMaintainedPeerLabRunnerFileMaterializationPlan` now describes the directories and input files a runner must create before executing peer traffic. It records:
+`SigtranReferencePeerLabRunnerFileMaterializationPlan` now describes the directories and input files a runner must create before executing peer traffic. It records:
 
 - Required workspace directories.
 - Environment and command script input files.
@@ -15,7 +15,7 @@ The plan does not write files. It renders the deterministic operation that a rea
 
 ## Unit 2 - Execution Log
 
-`SigtranMaintainedPeerLabRunnerExecutionLog` now records timestamped runner events with package-neutral event kinds. It supports:
+`SigtranReferencePeerLabRunnerExecutionLog` now records timestamped runner events with package-neutral event kinds. It supports:
 
 - Runner lifecycle events.
 - Command start and completion events.
@@ -27,7 +27,7 @@ The log contract gives real runner output a structured shape without implying th
 
 ## Unit 3 - Command Outcomes
 
-`SigtranMaintainedPeerLabRunnerCommandOutcomeReport` now aggregates execution logs into per-command outcomes. It records:
+`SigtranReferencePeerLabRunnerCommandOutcomeReport` now aggregates execution logs into per-command outcomes. It records:
 
 - Start and completion timestamps.
 - Command-level error detection.
@@ -39,7 +39,7 @@ This makes a runner log reviewable by command before artifact verification start
 
 ## Unit 4 - Artifact Verification
 
-`SigtranMaintainedPeerLabRunnerArtifactVerificationReport` now cross-checks retained runner artifacts against digest evidence. It records:
+`SigtranReferencePeerLabRunnerArtifactVerificationReport` now cross-checks retained runner artifacts against digest evidence. It records:
 
 - Per-artifact retained state.
 - Digest presence and SHA-256 validity.
@@ -52,7 +52,7 @@ This keeps artifact handoff separate from execution status: a command can pass w
 
 ## Unit 5 - Runner Provenance
 
-`SigtranMaintainedPeerLabRunnerProvenanceReport` now records the runner evidence source identity. It includes:
+`SigtranReferencePeerLabRunnerProvenanceReport` now records the runner evidence source identity. It includes:
 
 - Run id.
 - SDK name and version.
@@ -67,7 +67,7 @@ This report makes evidence packages traceable to source and host identity while 
 
 ## Unit 6 - Failure Classification
 
-`SigtranMaintainedPeerLabRunnerFailureReport` now classifies runner blockers into stable categories. It covers:
+`SigtranReferencePeerLabRunnerFailureReport` now classifies runner blockers into stable categories. It covers:
 
 - Preflight failures.
 - Command execution failures.
@@ -78,11 +78,11 @@ This report makes evidence packages traceable to source and host identity while 
 - Run report failures.
 - Markdown rendering for failure triage.
 
-This gives operator and CI handoff a deterministic diagnosis surface when a maintained peer run cannot be promoted.
+This gives operator and CI handoff a deterministic diagnosis surface when a reference peer run cannot be promoted.
 
 ## Unit 7 - Retry Policy
 
-`SigtranMaintainedPeerLabRunnerRetryPolicy` now defines which classified failures can be retried. It records:
+`SigtranReferencePeerLabRunnerRetryPolicy` now defines which classified failures can be retried. It records:
 
 - Failure-kind retry rules.
 - Maximum attempt counts.
@@ -94,7 +94,7 @@ The default policy treats command and selected comparison failures as potentiall
 
 ## Unit 8 - Evidence Package Manifest
 
-`SigtranMaintainedPeerLabRunnerEvidencePackageManifest` now gathers verified runner outputs into a reviewable handoff package. It records:
+`SigtranReferencePeerLabRunnerEvidencePackageManifest` now gathers verified runner outputs into a reviewable handoff package. It records:
 
 - Retained artifact package items.
 - Digest manifest package item.
@@ -107,10 +107,10 @@ The package manifest only becomes ready when artifacts, digest coverage, provena
 
 ## Unit 9 - Operator Handoff
 
-`SigtranMaintainedPeerLabRunnerOperatorHandoffReport` now converts package and retry state into an operator-facing decision. It records:
+`SigtranReferencePeerLabRunnerOperatorHandoffReport` now converts package and retry state into an operator-facing decision. It records:
 
 - Operator review readiness.
-- Commercial promotion readiness.
+- Production promotion readiness.
 - Recommended action.
 - Package readiness.
 - Retry readiness.
@@ -120,16 +120,16 @@ The handoff recommends evidence promotion only when the package is ready, retry 
 
 ## Unit 10 - Operations Status
 
-`SigtranMaintainedPeerLabRunnerOperationsStatus` now summarizes the completed operationalization foundation. It records:
+`SigtranReferencePeerLabRunnerOperationsStatus` now summarizes the completed operationalization foundation. It records:
 
 - Completed operations capability count.
 - Foundation readiness.
 - Runner evidence readiness.
 - Operator handoff readiness.
 - Current blocker identifiers.
-- Commercial readiness gating.
+- Production readiness gating.
 
-This status makes the runner operations layer foundation-ready while keeping the commercial claim blocked until real retained maintained-peer evidence is produced and handed off.
+This status makes the runner operations layer foundation-ready while keeping the commercial claim blocked until real retained reference-peer evidence is produced and handed off.
 
 ## Validation
 

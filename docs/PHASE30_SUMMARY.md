@@ -1,6 +1,6 @@
 # Phase 30 Summary
 
-Phase 30 completed the maintained external peer lab runner operationalization foundation. The SDK now has package-neutral contracts for materializing runner files, recording execution logs, aggregating command outcomes, verifying retained artifacts, recording provenance, classifying failures, applying retry policy, assembling evidence packages, and producing operator handoff reports.
+Phase 30 completed the reference external peer lab runner operationalization foundation. The SDK now has package-neutral contracts for materializing runner files, recording execution logs, aggregating command outcomes, verifying retained artifacts, recording provenance, classifying failures, applying retry policy, assembling evidence packages, and producing operator handoff reports.
 
 ## Completed Capabilities
 
@@ -15,9 +15,9 @@ Phase 30 completed the maintained external peer lab runner operationalization fo
 - Runner operator handoff report.
 - Runner operations status reporting.
 
-## Commercial Readiness Position
+## Production Readiness Position
 
-The runner operations foundation is complete. Commercial release readiness still requires a real maintained peer lab execution on a suitable Linux host with retained, digest-covered artifacts:
+The runner operations foundation is complete. Production release readiness still requires a real reference peer lab execution on a suitable Linux host with retained, digest-covered artifacts:
 
 - PCAP.
 - Peer log.

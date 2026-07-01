@@ -101,8 +101,8 @@ public sealed class SigtranPerformanceResilienceEvidence
     /// <summary>Whether no benchmark messages were lost during failover.</summary>
     public bool HasNoMessageLoss => LostMessages == 0;
 
-    /// <summary>Whether the resilience evidence supports commercial failover claims.</summary>
-    public bool SupportsCommercialEvidence => HasRequiredEvents && RecoveryWithinBudget && HasNoMessageLoss;
+    /// <summary>Whether the resilience evidence supports production failover claims.</summary>
+    public bool SupportsReleaseEvidence => HasRequiredEvents && RecoveryWithinBudget && HasNoMessageLoss;
 
     /// <summary>Formats a compact resilience evidence summary.</summary>
     /// <returns>The resilience evidence summary.</returns>

@@ -1,7 +1,7 @@
 namespace Sigtran.NET.Core.Utilities;
 
 /// <summary>
-/// Describes package governance requirements for commercial release.
+/// Describes package governance requirements for production release.
 /// </summary>
 public sealed class SigtranPackageGovernancePolicy
 {
@@ -46,7 +46,7 @@ public sealed class SigtranPackageGovernancePolicy
     /// <summary>Whether an SBOM is required.</summary>
     public bool RequiresSbom { get; }
 
-    /// <summary>Whether all commercial governance requirements are satisfied by the current package configuration.</summary>
+    /// <summary>Whether all production governance requirements are satisfied by the current package configuration.</summary>
     public bool IsSatisfiedByCurrentPackage => RequiresLicense && RequiresReadme && RequiresRepositoryMetadata && RequiresSymbols && !RequiresPackageSigning && !RequiresSbom;
 
     /// <summary>Formats a compact governance summary.</summary>
@@ -75,9 +75,9 @@ public static class SigtranPackageGovernance
             requiresSbom: false);
     }
 
-    /// <summary>Creates the target commercial package governance policy.</summary>
-    /// <returns>The target commercial package governance policy.</returns>
-    public static SigtranPackageGovernancePolicy CreateCommercialTargetPolicy()
+    /// <summary>Creates the target production package governance policy.</summary>
+    /// <returns>The target production package governance policy.</returns>
+    public static SigtranPackageGovernancePolicy CreateProductionTargetPolicy()
     {
         return new(
             requiresLicense: true,

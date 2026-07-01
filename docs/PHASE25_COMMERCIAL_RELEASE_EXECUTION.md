@@ -1,4 +1,4 @@
-# Phase 25 Commercial Release Execution And Evidence
+# Phase 25 Production Release Execution And Evidence
 
 Phase 25 converts the commercial readiness foundations into retained execution evidence.
 
@@ -6,7 +6,7 @@ The phase is intentionally evidence-driven. Source APIs keep domain names and do
 
 ## Unit 1 - Execution Evidence Manifest
 
-`SigtranCommercialReleaseEvidenceManifest` records retained artifacts by area, kind, status, path, digest, and review note.
+`SigtranReleaseEvidenceManifest` records retained artifacts by area, kind, status, path, digest, and review note.
 
 Current retained evidence includes:
 
@@ -45,7 +45,7 @@ Current blocker:
 - Environment: Ubuntu 22.04.1 VM, Linux `5.15.0-181-generic`.
 - Log: `/home/ammar/sigtran-lab/artifacts/logs/openss7-configure.log`.
 - Failure: OpenSS7 Fast STREAMS configure requires the legacy `open_softirq` kernel symbol, which is not present in the VM kernel `System.map`.
-- Required action: retest the retained legacy peer only as historical comparison evidence, or replace the commercial gate with a maintained SIGTRAN interoperability target.
+- Required action: retest the retained legacy peer only as historical comparison evidence, or replace the commercial gate with a reference SIGTRAN interoperability target.
 
 Retained OpenSS7/IPSS7 execution artifacts:
 
@@ -58,7 +58,7 @@ The blocker intentionally prevents interoperability promotion until a passing ex
 
 ## Unit 4 - Artifact Dossier
 
-`SigtranCommercialReleaseArtifactDossier` tracks the concrete artifact set required for commercial release review.
+`SigtranReleaseArtifactDossier` tracks the concrete artifact set required for commercial release review.
 
 Current retained items:
 
@@ -110,7 +110,7 @@ Current signing evidence:
 - Sign log: `artifacts/signing/sign-package.log`.
 - Verify log: `artifacts/signing/verify-package.log`.
 
-Signing succeeded, but package verification is not commercial-ready yet. The retained verification log reports an untrusted signing certificate and missing timestamp. Commercial release requires a trusted production certificate chain and timestamped package signature.
+Signing succeeded, but package verification is not commercial-ready yet. The retained verification log reports an untrusted signing certificate and missing timestamp. Production release requires a trusted production certificate chain and timestamped package signature.
 
 ## Unit 7 - Provenance Attestation Evidence
 
@@ -149,7 +149,7 @@ Benchmark evidence fields:
 - Duration in milliseconds.
 - Passed workload checks.
 
-This is smoke-level benchmark evidence only. Commercial performance promotion still requires peer traffic, sustained load, latency percentiles, resource profile, and comparison against the targets documented in the performance phase.
+This is smoke-level benchmark evidence only. Production performance promotion still requires peer traffic, sustained load, latency percentiles, resource profile, and comparison against the targets documented in the performance phase.
 
 ## Unit 9 - Public API Baseline Evidence
 
@@ -167,11 +167,11 @@ Baseline evidence fields:
 - Baseline SHA-256.
 - Documented public member count.
 
-This artifact is the input for public API diff review. Commercial release still requires storing the baseline with release evidence and comparing it against future release candidates.
+This artifact is the input for public API diff review. Production release still requires storing the baseline with release evidence and comparing it against future release candidates.
 
-## Unit 10 - Commercial Release Execution Readiness
+## Unit 10 - Production Release Execution Readiness
 
-`SigtranCommercialReleaseExecutionReadiness` aggregates the execution evidence into one final readiness report.
+`SigtranReleaseExecutionReadiness` aggregates the execution evidence into one final readiness report.
 
 Current passed execution items:
 
@@ -182,7 +182,7 @@ Current passed execution items:
 
 Current blockers:
 
-- External peer interoperability remains blocked until a maintained peer run produces PCAP, peer logs, SDK traces, configuration, and comparison evidence. The retained legacy OpenSS7/IPSS7 attempt remains blocked by Linux 5.15 `open_softirq` compatibility.
+- External peer interoperability remains blocked until a reference peer run produces PCAP, peer logs, SDK traces, configuration, and comparison evidence. The retained legacy OpenSS7/IPSS7 attempt remains blocked by Linux 5.15 `open_softirq` compatibility.
 - Artifact dossier is missing SDK trace and comparison report from a passing external peer run.
 - Package signing produced a signed package, but verification still requires a trusted timestamped production signature.
 - Performance evidence is smoke-only and does not prove commercial peer/load targets.

@@ -129,7 +129,7 @@ public sealed class SigtranStablePublishExecutionPlan
     /// <summary>Whether the plan retains publication evidence after publication.</summary>
     public bool RetainsPublicationEvidence => Commands.Any(static command =>
         command.Kind == SigtranStablePublishExecutionCommandKind.RetainPublicationEvidence
-        && command.CommandText.Contains("commercial-readiness", StringComparison.Ordinal));
+        && command.CommandText.Contains("production-readiness", StringComparison.Ordinal));
 
     /// <summary>Whether the plan is ready for protected stable publication execution.</summary>
     public bool IsReady => Authorization.IsReadyForPublishPlan
@@ -171,7 +171,7 @@ public static class SigtranStablePublishExecutionPlans
                 new(SigtranStablePublishExecutionCommandKind.DownloadReleaseArtifacts, 4, "download-stable-release-artifacts", $"gh run download --dir {target.ArtifactRoot}/release-workflow", requiresAuthorization: true, requiresSecret: false),
                 new(SigtranStablePublishExecutionCommandKind.VerifyPackage, 5, "verify-stable-package", $"dotnet nuget verify {packagePath} --all", requiresAuthorization: true, requiresSecret: false),
                 new(SigtranStablePublishExecutionCommandKind.PublishPackage, 6, "publish-stable-package", $"dotnet nuget push {packagePath} --api-key ${{NUGET_API_KEY:?missing NuGet API key}} --source https://api.nuget.org/v3/index.json --skip-duplicate", requiresAuthorization: true, requiresSecret: true),
-                new(SigtranStablePublishExecutionCommandKind.RetainPublicationEvidence, 7, "retain-stable-publication-evidence", $"test -s {target.ArtifactRoot}/commercial-readiness/final-commercial-readiness-report.md", requiresAuthorization: true, requiresSecret: false)
+                new(SigtranStablePublishExecutionCommandKind.RetainPublicationEvidence, 7, "retain-stable-publication-evidence", $"test -s {target.ArtifactRoot}/production-readiness/final-production-readiness-report.md", requiresAuthorization: true, requiresSecret: false)
             ]);
     }
 }

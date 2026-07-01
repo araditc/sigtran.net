@@ -1,7 +1,7 @@
 namespace Sigtran.NET.Core.Utilities;
 
 /// <summary>
-/// Describes SDK observability signals for commercial deployments.
+/// Describes SDK observability signals for production deployments.
 /// </summary>
 public sealed class SigtranObservabilityProfile
 {
@@ -40,7 +40,7 @@ public sealed class SigtranObservabilityProfile
 }
 
 /// <summary>
-/// Provides observability profiles for commercial deployments.
+/// Provides observability profiles for production deployments.
 /// </summary>
 public static class SigtranObservability
 {

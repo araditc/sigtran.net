@@ -61,7 +61,7 @@ public sealed class SigtranFinalSbomArtifact
     /// <summary>Whether the SBOM digest has been retained.</summary>
     public bool HasDigest => Sha256 is not null;
 
-    /// <summary>Whether the artifact represents the final commercial SBOM shape.</summary>
+    /// <summary>Whether the artifact represents the final production SBOM shape.</summary>
     public bool IsFinalReleaseArtifact => Format == SigtranSbomFormat.SpdxJson
         && PackageId == "Sigtran.NET"
         && PackagePath.EndsWith($".{Version}.nupkg", StringComparison.Ordinal)

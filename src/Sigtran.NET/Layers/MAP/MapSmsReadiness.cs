@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.MAP;
 /// <summary>
 /// Readiness report for the MAP SMS profile foundation phase.
 /// </summary>
-public readonly struct MapSmsReadinessReport
+public readonly struct MapSmsReadinessSnapshot
 {
     /// <summary>Creates a MAP SMS readiness report.</summary>
     /// <param name="hasOperationMetadata">Whether operation metadata is available.</param>
@@ -15,7 +15,7 @@ public readonly struct MapSmsReadinessReport
     /// <param name="hasErrorsAndExtensions">Whether error mapping and extension containers are available.</param>
     /// <param name="hasTcapClientFacade">Whether the TCAP client facade is available.</param>
     /// <param name="hasInteropVectors">Whether external MAP SMS interoperability vectors are present.</param>
-    public MapSmsReadinessReport(
+    public MapSmsReadinessSnapshot(
         bool hasOperationMetadata,
         bool hasAddressPrimitives,
         bool hasForwardSmCodecs,
@@ -107,7 +107,7 @@ public static class MapSmsReadiness
 
     /// <summary>Builds the current MAP SMS readiness report.</summary>
     /// <returns>The current MAP SMS readiness report.</returns>
-    public static MapSmsReadinessReport GetReport()
+    public static MapSmsReadinessSnapshot GetReport()
     {
         return new(
             hasOperationMetadata: true,

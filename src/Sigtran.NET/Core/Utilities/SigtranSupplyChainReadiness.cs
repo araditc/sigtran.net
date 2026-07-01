@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes supply-chain automation readiness.
 /// </summary>
-public sealed class SigtranSupplyChainReadinessReport
+public sealed class SigtranSupplyChainReadinessSnapshot
 {
     /// <summary>Creates a supply-chain readiness report.</summary>
     /// <param name="hasAutomationPlan">Whether the automation plan is available.</param>
@@ -11,7 +11,7 @@ public sealed class SigtranSupplyChainReadinessReport
     /// <param name="hasGateEvaluator">Whether gate evaluation is available.</param>
     /// <param name="hasCiProfile">Whether CI metadata is available.</param>
     /// <param name="hasCurrentPromotionEvidence">Whether current promotion evidence is available.</param>
-    public SigtranSupplyChainReadinessReport(
+    public SigtranSupplyChainReadinessSnapshot(
         bool hasAutomationPlan,
         bool hasArtifactManifest,
         bool hasGateEvaluator,
@@ -43,7 +43,7 @@ public sealed class SigtranSupplyChainReadinessReport
     /// <summary>Whether the supply-chain automation foundation is ready.</summary>
     public bool FoundationReady => HasAutomationPlan && HasArtifactManifest && HasGateEvaluator && HasCiProfile;
 
-    /// <summary>Whether a commercial release can currently be promoted.</summary>
+    /// <summary>Whether a production release can currently be promoted.</summary>
     public bool PromotionReady => FoundationReady && HasCurrentPromotionEvidence;
 }
 
@@ -54,7 +54,7 @@ public static class SigtranSupplyChainReadiness
 {
     /// <summary>Returns the current supply-chain readiness report.</summary>
     /// <returns>The current supply-chain readiness report.</returns>
-    public static SigtranSupplyChainReadinessReport GetReport()
+    public static SigtranSupplyChainReadinessSnapshot GetReport()
     {
         return new(
             hasAutomationPlan: SigtranSupplyChainAutomation.CreateDefaultPlan().IsExecutable,

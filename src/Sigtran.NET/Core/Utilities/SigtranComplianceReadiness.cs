@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes enterprise compliance readiness.
 /// </summary>
-public sealed class SigtranComplianceReadinessReport
+public sealed class SigtranComplianceReadinessSnapshot
 {
     /// <summary>Creates a compliance readiness report.</summary>
     /// <param name="hasCapabilityCatalog">Whether the compliance capability catalog is available.</param>
@@ -12,15 +12,15 @@ public sealed class SigtranComplianceReadinessReport
     /// <param name="hasLicensePolicy">Whether license compliance policy is available.</param>
     /// <param name="hasDataHandlingRules">Whether data handling rules are available.</param>
     /// <param name="hasExportControlPolicy">Whether export-control policy is available.</param>
-    /// <param name="commercialReady">Whether wider commercial readiness is complete.</param>
-    public SigtranComplianceReadinessReport(
+    /// <param name="productionReady">Whether wider production readiness is complete.</param>
+    public SigtranComplianceReadinessSnapshot(
         bool hasCapabilityCatalog,
         bool hasAuditEvents,
         bool hasRetentionPolicy,
         bool hasLicensePolicy,
         bool hasDataHandlingRules,
         bool hasExportControlPolicy,
-        bool commercialReady)
+        bool productionReady)
     {
         HasCapabilityCatalog = hasCapabilityCatalog;
         HasAuditEvents = hasAuditEvents;
@@ -28,7 +28,7 @@ public sealed class SigtranComplianceReadinessReport
         HasLicensePolicy = hasLicensePolicy;
         HasDataHandlingRules = hasDataHandlingRules;
         HasExportControlPolicy = hasExportControlPolicy;
-        CommercialReady = commercialReady;
+        ProductionReady = productionReady;
     }
 
     /// <summary>Whether the compliance capability catalog is available.</summary>
@@ -49,8 +49,8 @@ public sealed class SigtranComplianceReadinessReport
     /// <summary>Whether export-control policy is available.</summary>
     public bool HasExportControlPolicy { get; }
 
-    /// <summary>Whether wider commercial readiness is complete.</summary>
-    public bool CommercialReady { get; }
+    /// <summary>Whether wider production readiness is complete.</summary>
+    public bool ProductionReady { get; }
 
     /// <summary>Whether the compliance foundation is ready.</summary>
     public bool FoundationReady => HasCapabilityCatalog
@@ -61,7 +61,7 @@ public sealed class SigtranComplianceReadinessReport
         && HasExportControlPolicy;
 
     /// <summary>Whether enterprise compliance is ready for production claims.</summary>
-    public bool EnterpriseComplianceReady => FoundationReady && CommercialReady;
+    public bool EnterpriseComplianceReady => FoundationReady && ProductionReady;
 }
 
 /// <summary>
@@ -71,15 +71,15 @@ public static class SigtranComplianceReadiness
 {
     /// <summary>Returns the current compliance readiness report.</summary>
     /// <returns>The current compliance readiness report.</returns>
-    public static SigtranComplianceReadinessReport GetReport()
+    public static SigtranComplianceReadinessSnapshot GetReport()
     {
         return new(
             hasCapabilityCatalog: SigtranCompliance.GetCapabilities().Count > 0,
             hasAuditEvents: SigtranAuditEvents.GetDefinitions().Count > 0,
-            hasRetentionPolicy: SigtranEvidenceRetentionPolicies.CreateCommercialDefault().IsCommercialEvidencePolicy,
-            hasLicensePolicy: SigtranLicenseCompliance.CreateCurrentPolicy().IsCommercialReady,
+            hasRetentionPolicy: SigtranEvidenceRetentionPolicies.CreateProductionDefault().IsReleaseEvidencePolicy,
+            hasLicensePolicy: SigtranLicenseCompliance.CreateCurrentPolicy().IsProductionReady,
             hasDataHandlingRules: SigtranDataHandling.GetRules().Any(rule => rule.Sensitivity == SigtranDataSensitivity.Confidential && rule.RequiresRedaction),
-            hasExportControlPolicy: SigtranExportControlPolicies.CreateDefault().HasCommercialControls,
-            commercialReady: SigtranCommercialReadiness.GetReport().CommercialReady);
+            hasExportControlPolicy: SigtranExportControlPolicies.CreateDefault().HasProductionControls,
+            productionReady: SigtranProductionReadiness.GetReport().ProductionReady);
     }
 }

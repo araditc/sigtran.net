@@ -1,36 +1,36 @@
-# Phase 40 Commercial Evidence Filesystem Execution
+# Phase 40 Production Evidence Filesystem Execution
 
 Phase 40 turns the file verification contracts from Phase 39 into filesystem-backed execution helpers. It still does not manufacture commercial evidence. It reads retained files from disk, computes real SHA-256 digests, and feeds the existing verification, retention, sealing, attachment, and promotion-gate contracts.
 
-Public APIs use domain names such as `SigtranCommercialEvidenceFileSystemObserver`; phase numbers are intentionally kept out of source type names.
+Public APIs use domain names such as `SigtranReleaseEvidenceFileSystemObserver`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Filesystem Observation
 
-`SigtranCommercialEvidenceFileSystemObserver` observes a promotion handoff item against the local filesystem:
+`SigtranReleaseEvidenceFileSystemObserver` observes a promotion handoff item against the local filesystem:
 
 - Reads the retained file path or an explicit local path override.
 - Reports existence and file size.
 - Computes the actual SHA-256 digest for existing files.
 - Uses a deterministic missing-file digest marker for absent files.
-- Produces a `SigtranCommercialEvidenceRetainedFile` so the Phase 39 verification pipeline can evaluate the observation.
+- Produces a `SigtranReleaseEvidenceRetainedFile` so the Phase 39 verification pipeline can evaluate the observation.
 
 The observer is the first executable bridge from retained dossier paths to real file verification.
 
 ## Unit 2 - Filesystem Manifest Execution
 
-`SigtranCommercialEvidenceFileSystemManifestBuilder` observes every promotion handoff item and creates a retained file manifest from real filesystem observations:
+`SigtranReleaseEvidenceFileSystemManifestBuilder` observes every promotion handoff item and creates a retained file manifest from real filesystem observations:
 
 - Observes every handoff item.
 - Supports local filesystem path overrides keyed by retained dossier path.
 - Preserves retained path identity while reading from mounted or copied local files.
-- Builds `SigtranCommercialEvidenceRetainedFileManifest` from observed files.
+- Builds `SigtranReleaseEvidenceRetainedFileManifest` from observed files.
 - Reports whether all handoff items were covered, all files existed, and all digests matched.
 
 This unit lets the verification pipeline evaluate a complete retained handoff using real files rather than synthetic in-memory retained file entries.
 
 ## Unit 3 - Filesystem Verification Report Execution
 
-`SigtranCommercialEvidenceFileSystemVerificationReports` evaluates a filesystem-built retained file manifest and returns a verification execution result:
+`SigtranReleaseEvidenceFileSystemVerificationReports` evaluates a filesystem-built retained file manifest and returns a verification execution result:
 
 - Keeps the original filesystem observation set.
 - Reuses the retained file verification report from Phase 39.
@@ -41,7 +41,7 @@ This unit is the first end-to-end filesystem verification pass: observe files, b
 
 ## Unit 4 - Verification Artifact Writing
 
-`SigtranCommercialEvidenceFileSystemArtifactWriters` writes filesystem verification artifacts to disk:
+`SigtranReleaseEvidenceFileSystemArtifactWriters` writes filesystem verification artifacts to disk:
 
 - Markdown verification report.
 - Tab-separated observation manifest.
@@ -52,7 +52,7 @@ This unit gives release operators retained files they can attach to the commerci
 
 ## Unit 5 - Retention Ledger Execution
 
-`SigtranCommercialEvidenceFileSystemRetentionLedgers` creates a retention ledger from filesystem verification output:
+`SigtranReleaseEvidenceFileSystemRetentionLedgers` creates a retention ledger from filesystem verification output:
 
 - Requires written verification artifacts.
 - Uses the filesystem-backed verification report.
@@ -64,7 +64,7 @@ This unit connects real file verification output to the commercial evidence rete
 
 ## Unit 6 - Integrity Seal Execution
 
-`SigtranCommercialEvidenceFileSystemIntegritySeals` creates an integrity seal from the filesystem-backed retention ledger:
+`SigtranReleaseEvidenceFileSystemIntegritySeals` creates an integrity seal from the filesystem-backed retention ledger:
 
 - Requires ready retention ledger execution.
 - Computes the deterministic aggregate SHA-256 ledger digest.
@@ -75,7 +75,7 @@ This unit gives filesystem-backed evidence the same integrity seal contract used
 
 ## Unit 7 - Publication Attachment Execution
 
-`SigtranCommercialEvidenceFileSystemPublicationAttachments` creates release dossier attachments from the filesystem-backed integrity seal:
+`SigtranReleaseEvidenceFileSystemPublicationAttachments` creates release dossier attachments from the filesystem-backed integrity seal:
 
 - Requires the filesystem-backed integrity seal execution to be ready.
 - Creates publication attachments from sealed ledger entries.
@@ -87,7 +87,7 @@ This unit connects sealed filesystem evidence to release dossier attachment plan
 
 ## Unit 8 - Promotion Gate Execution
 
-`SigtranCommercialEvidenceFileSystemPromotions` evaluates filesystem-backed publication attachments against the verified promotion gate:
+`SigtranReleaseEvidenceFileSystemPromotions` evaluates filesystem-backed publication attachments against the verified promotion gate:
 
 - Requires publication attachment execution to be ready.
 - Evaluates the current attachment manifest and seal digest.
@@ -99,7 +99,7 @@ This unit makes the filesystem-backed evidence path promotion-aware while preser
 
 ## Unit 9 - Command Materialization And Interim Status
 
-`SigtranCommercialEvidenceFileSystemCommandMaterializer` writes a retained shell script from the commercial evidence file verification command plan:
+`SigtranReleaseEvidenceFileSystemCommandMaterializer` writes a retained shell script from the commercial evidence file verification command plan:
 
 - Preserves deterministic command order.
 - Writes the script to a retained filesystem path.
@@ -107,7 +107,7 @@ This unit makes the filesystem-backed evidence path promotion-aware while preser
 - Includes every command from the command plan.
 - Keeps the promotion gate command visible as the explicit approval step.
 
-`SigtranCommercialEvidenceFileSystemExecutionStatus` reports the first nine completed filesystem execution capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
+`SigtranReleaseEvidenceFileSystemExecutionStatus` reports the first nine completed filesystem execution capabilities and keeps `status-final-validation-pending` as a blocker until the final unit completes.
 
 ## Unit 10 - Final Validation And Documentation
 
@@ -119,7 +119,7 @@ The final unit completes the filesystem execution foundation:
 - Aligns README, phase index, roadmap, and phase summary.
 - Validates the full solution with build, tests, and package generation.
 
-Commercial publication remains blocked until a real approved commercial run provides retained evidence files and release approval.
+Production publication remains blocked until a real approved commercial run provides retained evidence files and release approval.
 
 ## Validation
 

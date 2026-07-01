@@ -41,8 +41,8 @@ jobs:
       DOTNET_NOLOGO: true
       SIGTRAN_SUPPLY_CHAIN: true
       SIGTRAN_SUPPLY_CHAIN_ARTIFACT_ROOT: artifacts/supply-chain
-      SIGTRAN_COMMERCIAL_EVIDENCE: true
-      SIGTRAN_COMMERCIAL_EVIDENCE_ROOT: artifacts/commercial-evidence
+      SIGTRAN_RELEASE_EVIDENCE: true
+      SIGTRAN_RELEASE_EVIDENCE_ROOT: artifacts/release-evidence
       SIGTRAN_DRY_RUN_ARTIFACT_ROOT: artifacts/release-dry-run
       TIMESTAMP_AUTHORITY: ${{ vars.TIMESTAMP_AUTHORITY || 'http://timestamp.sectigo.com' }}
 
@@ -280,11 +280,11 @@ jobs:
           esac
           test -f "$SIGTRAN_DRY_RUN_ARTIFACT_ROOT/$RELEASE_VERSION/release-dry-run.md"
 
-      - name: Commercial Evidence
+      - name: Production Evidence
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         run: |
-          echo "Commercial evidence verification requires retained native SCTP, external peer, protocol vector, provenance, and package artifacts."
-          test -d "$SIGTRAN_COMMERCIAL_EVIDENCE_ROOT"
+          echo "Production evidence verification requires retained native SCTP, external peer, protocol vector, provenance, and package artifacts."
+          test -d "$SIGTRAN_RELEASE_EVIDENCE_ROOT"
 
       - name: Publish
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel != 'dry-run' && inputs.publish == true }}

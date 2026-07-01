@@ -9,9 +9,9 @@ Public SDK source names must describe the telecom domain and release gate, not a
 Use names such as:
 
 - External peer.
-- Maintained peer.
+- Reference peer.
 - Interop evidence.
-- Commercial readiness.
+- Production readiness.
 
 Do not introduce public SDK names that include a peer package or implementation name.
 
@@ -19,7 +19,7 @@ Do not introduce public SDK names that include a peer package or implementation 
 
 The retained OpenSS7/IPSS7 VM attempt remains useful historical evidence because it documents a real Linux kernel compatibility blocker. It does not define the permanent commercial interoperability gate.
 
-Future commercial interop evidence should be captured against a maintained external SIGTRAN peer that satisfies the selection policy in `SigtranMaintainedPeerSelectionPolicy`.
+Future commercial interop evidence should be captured against a reference external SIGTRAN peer that satisfies the selection policy in `SigtranReferencePeerSelectionPolicy`.
 
 ## Lab Package Selection
 

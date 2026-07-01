@@ -75,7 +75,7 @@ function Invoke-ReadinessStep {
     param(
         [string]$Name,
         [scriptblock]$Action,
-        [string]$CommercialBlocker
+        [string]$ProductionBlocker
     )
 
     $logPath = Join-Path $logRoot "$Name.log"
@@ -100,7 +100,7 @@ function Invoke-ReadinessStep {
         Passed = $passed
         DurationMilliseconds = $stopwatch.ElapsedMilliseconds
         LogPath = Get-RelativePath -Path $logPath
-        CommercialBlocker = if ($passed) { $null } else { $CommercialBlocker }
+        ProductionBlocker = if ($passed) { $null } else { $ProductionBlocker }
         Error = $errorMessage
     }
 }
@@ -137,50 +137,50 @@ $provenancePath = Join-Path $root "artifacts/provenance/Sigtran.NET.provenance.j
 $signingPackagePath = Join-Path $root "artifacts/signing/Sigtran.NET.$Version.nupkg"
 
 $steps = @()
-$steps += Invoke-ReadinessStep -Name "build" -CommercialBlocker "build-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "build" -ProductionBlocker "build-failed" -Action {
     dotnet build (Join-Path $root $SolutionPath) -c Release
     Assert-LastExitCode "dotnet build"
 }
 
-$steps += Invoke-ReadinessStep -Name "test" -CommercialBlocker "tests-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "test" -ProductionBlocker "tests-failed" -Action {
     dotnet run --project (Join-Path $root $TestProjectPath) -c Release
     Assert-LastExitCode "dotnet test workload"
 }
 
-$steps += Invoke-ReadinessStep -Name "pack" -CommercialBlocker "pack-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "pack" -ProductionBlocker "pack-failed" -Action {
     dotnet pack (Join-Path $root $ProjectPath) -c Release /p:Version=$Version
     Assert-LastExitCode "dotnet pack"
 }
 
-$steps += Invoke-ReadinessStep -Name "sbom" -CommercialBlocker "sbom-generation-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "sbom" -ProductionBlocker "sbom-generation-failed" -Action {
     powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "eng/generate-sbom.ps1") -CreatedUtc ([DateTimeOffset]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
     Assert-LastExitCode "SBOM generation"
 }
 
-$steps += Invoke-ReadinessStep -Name "public-api-baseline" -CommercialBlocker "public-api-baseline-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "public-api-baseline" -ProductionBlocker "public-api-baseline-failed" -Action {
     powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "eng/generate-public-api-baseline.ps1")
     Assert-LastExitCode "public API baseline generation"
 }
 
-$steps += Invoke-ReadinessStep -Name "smoke-benchmark" -CommercialBlocker "benchmark-generation-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "smoke-benchmark" -ProductionBlocker "benchmark-generation-failed" -Action {
     powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "eng/run-benchmark.ps1")
     Assert-LastExitCode "smoke benchmark"
 }
 
-$steps += Invoke-ReadinessStep -Name "provenance" -CommercialBlocker "provenance-generation-failed" -Action {
+$steps += Invoke-ReadinessStep -Name "provenance" -ProductionBlocker "provenance-generation-failed" -Action {
     New-Item -ItemType Directory -Force -Path (Split-Path $signingPackagePath -Parent) | Out-Null
     Copy-Item -Force $packagePath $signingPackagePath
     powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "eng/generate-provenance.ps1") -PackagePath "artifacts/signing/Sigtran.NET.$Version.nupkg"
     Assert-LastExitCode "provenance generation"
 }
 
-$steps += Invoke-ReadinessStep -Name "signature-verification" -CommercialBlocker "trusted-timestamped-package-signing-required" -Action {
+$steps += Invoke-ReadinessStep -Name "signature-verification" -ProductionBlocker "trusted-timestamped-package-signing-required" -Action {
     dotnet nuget verify $packagePath --all
     Assert-LastExitCode "package signature verification"
 }
 
 if (!$SkipVmProbe) {
-    $steps += Invoke-ReadinessStep -Name "linux-vm-ssh-probe" -CommercialBlocker "linux-vm-key-based-ssh-required" -Action {
+    $steps += Invoke-ReadinessStep -Name "linux-vm-ssh-probe" -ProductionBlocker "linux-vm-key-based-ssh-required" -Action {
         if (!(Test-Path $SshKeyPath)) {
             throw "SSH key was not found at $SshKeyPath."
         }
@@ -191,7 +191,7 @@ if (!$SkipVmProbe) {
 }
 
 $releaseDispatchBlocker = if ($hasReleaseDispatchEvidence) { $null } else { "github-cli-or-release-dispatch-access-required" }
-$steps += Invoke-ReadinessStep -Name "github-cli-probe" -CommercialBlocker $releaseDispatchBlocker -Action {
+$steps += Invoke-ReadinessStep -Name "github-cli-probe" -ProductionBlocker $releaseDispatchBlocker -Action {
     $gh = Get-Command gh -ErrorAction Stop
     & $gh.Source auth status
     Assert-LastExitCode "GitHub CLI auth status"
@@ -207,7 +207,7 @@ $evidence = @(
 ) | Where-Object { $null -ne $_ }
 
 $commercialBlockers = @(
-    $steps | Where-Object { !$_.Passed -and ![string]::IsNullOrWhiteSpace($_.CommercialBlocker) } | ForEach-Object { $_.CommercialBlocker }
+    $steps | Where-Object { !$_.Passed -and ![string]::IsNullOrWhiteSpace($_.ProductionBlocker) } | ForEach-Object { $_.ProductionBlocker }
 )
 
 if (!$hasExternalPeerEvidence -and $commercialBlockers -notcontains "maintained-external-peer-evidence-required") {
@@ -234,22 +234,22 @@ $result = [ordered]@{
     EvidenceManifestPath = if ([string]::IsNullOrWhiteSpace($EvidenceManifestPath)) { $null } else { $EvidenceManifestPath }
     EvidenceManifest = $evidenceManifest
     LocalEvidenceReady = $localEvidenceReady
-    CommercialReady = $commercialReady
+    ProductionReady = $commercialReady
     Steps = $steps
     Evidence = $evidence
-    CommercialBlockers = $commercialBlockers
+    ProductionBlockers = $commercialBlockers
 }
 
 $result | ConvertTo-Json -Depth 20 | Set-Content -Path $jsonPath -Encoding UTF8
 
 $builder = [System.Text.StringBuilder]::new()
-[void]$builder.AppendLine("# SIGTRAN.NET Commercial Release Readiness Run")
+[void]$builder.AppendLine("# SIGTRAN.NET Production Release Readiness Run")
 [void]$builder.AppendLine()
 [void]$builder.AppendLine(("- Run id: ``{0}``" -f $runId))
 [void]$builder.AppendLine(("- Source commit: ``{0}``" -f $sourceCommit))
 [void]$builder.AppendLine(("- Evidence manifest: ``{0}``" -f $(if ([string]::IsNullOrWhiteSpace($EvidenceManifestPath)) { "not-provided" } else { $EvidenceManifestPath })))
 [void]$builder.AppendLine(("- Local evidence ready: ``{0}``" -f $localEvidenceReady))
-[void]$builder.AppendLine(("- Commercial ready: ``{0}``" -f $commercialReady))
+[void]$builder.AppendLine(("- Production ready: ``{0}``" -f $commercialReady))
 [void]$builder.AppendLine()
 [void]$builder.AppendLine("## Steps")
 [void]$builder.AppendLine()
@@ -269,7 +269,7 @@ foreach ($item in $evidence) {
 }
 
 [void]$builder.AppendLine()
-[void]$builder.AppendLine("## Commercial Blockers")
+[void]$builder.AppendLine("## Production Blockers")
 [void]$builder.AppendLine()
 foreach ($blocker in $commercialBlockers) {
     [void]$builder.AppendLine(("- ``{0}``" -f $blocker))
@@ -282,6 +282,6 @@ $builder.ToString() | Set-Content -Path $reportPath -Encoding UTF8
     ReportPath = Get-RelativePath -Path $reportPath
     JsonPath = Get-RelativePath -Path $jsonPath
     LocalEvidenceReady = $localEvidenceReady
-    CommercialReady = $commercialReady
-    CommercialBlockers = $commercialBlockers
+    ProductionReady = $commercialReady
+    ProductionBlockers = $commercialBlockers
 } | ConvertTo-Json -Depth 10

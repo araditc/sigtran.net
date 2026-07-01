@@ -1,4 +1,4 @@
-# Phase 35 RC Publish And Commercial Gate
+# Phase 35 RC Publish And Production Gate
 
 Phase 35 adds the release-candidate publication and final commercial gate foundation for Sigtran.NET. It covers dry-run release rehearsal, gated NuGet prerelease publication, final commercial readiness reporting, release notes, migration notes, and the RC-versus-stable decision.
 
@@ -53,9 +53,9 @@ The artifact is review-ready only when release notes are publishable, the retain
 
 The artifact is review-ready only when the notes are versioned, digest-covered, Markdown-based, code-sample aware, and explicit about experimental protocol surfaces.
 
-## Unit 5 - Final Commercial Readiness Report
+## Unit 5 - Final Production Readiness Report
 
-`SigtranFinalCommercialReadinessReports` aggregates the RC and stable gates into one retained commercial readiness report:
+`SigtranFinalProductionReadinessSnapshots` aggregates the RC and stable gates into one retained commercial readiness report:
 
 - Dry-run release rehearsal readiness.
 - Gated NuGet prerelease publication readiness.
@@ -64,21 +64,21 @@ The artifact is review-ready only when the notes are versioned, digest-covered, 
 - Stable commercial release readiness.
 - Retained commercial blockers such as external peer interop, package signing verification, and production performance evidence.
 
-The report intentionally separates `ReleaseCandidateReady` from `StableReleaseReady`. A release candidate can pass the prerelease gate while stable publication remains blocked until commercial evidence is complete.
+The report intentionally separates `PrereleaseReady` from `StableReleaseReady`. A release candidate can pass the prerelease gate while stable publication remains blocked until commercial evidence is complete.
 
 ## Unit 6 - RC Versus Stable Decision
 
 `SigtranReleaseDecisions` evaluates the final readiness report and returns one of three outcomes:
 
 - `Blocked` when the RC gate itself is incomplete.
-- `ReleaseCandidate` when prerelease publication is allowed but stable commercial evidence is still incomplete.
+- `Prerelease` when prerelease publication is allowed but stable commercial evidence is still incomplete.
 - `Stable` when both RC and stable commercial gates are ready.
 
-The current decision is `ReleaseCandidate` for `Sigtran.NET` version `1.0.0-rc.1`, because the dry-run, prerelease, release notes, migration notes, supply-chain foundations, and retained prerelease publication evidence are present while stable commercial blockers remain retained. This prevents accidental stable publication.
+The current decision is `Prerelease` for `Sigtran.NET` version `1.0.0-rc.1`, because the dry-run, prerelease, release notes, migration notes, supply-chain foundations, and retained prerelease publication evidence are present while stable commercial blockers remain retained. This prevents accidental stable publication.
 
 ## Unit 7 - RC Publication Evidence Manifest
 
-`SigtranReleaseCandidatePublicationEvidence` defines the retained evidence manifest for RC upload review:
+`SigtranPrereleasePublicationEvidence` defines the retained evidence manifest for RC upload review:
 
 - Package and symbol package artifacts.
 - Dry-run release evidence.
@@ -87,7 +87,7 @@ The current decision is `ReleaseCandidate` for `Sigtran.NET` version `1.0.0-rc.1
 - Release decision record.
 - Digest manifest.
 
-The manifest allows RC publication only when the release decision is `ReleaseCandidate`, every required artifact kind is present, and every required artifact has SHA-256 digest coverage. It does not allow stable publication unless the decision is `Stable`.
+The manifest allows RC publication only when the release decision is `Prerelease`, every required artifact kind is present, and every required artifact has SHA-256 digest coverage. It does not allow stable publication unless the decision is `Stable`.
 
 ## Unit 8 - Release Workflow Dry-Run And Prerelease Wiring
 
@@ -101,7 +101,7 @@ The workflow uploads package, symbols, supply-chain evidence, and dry-run eviden
 
 ## Unit 9 - RC Publication Status Summary
 
-`SigtranReleaseCandidatePublicationStatus` summarizes the RC publication gate:
+`SigtranPrereleasePublicationStatus` summarizes the RC publication gate:
 
 - Completed RC gate capabilities.
 - Default blockers that remain for real publication and stable promotion.
@@ -111,7 +111,7 @@ The workflow uploads package, symbols, supply-chain evidence, and dry-run eviden
 
 The current status marks the RC gate foundation as ready and the first public RC publication complete for `Sigtran.NET` version `1.0.0-rc.1`. Stable publication remains blocked by commercial evidence, trusted stable signing, and protected stable publication requirements.
 
-## Unit 10 - Final Validation And Commercial Gate Report
+## Unit 10 - Final Validation And Production Gate Report
 
 The final unit closes the phase with:
 

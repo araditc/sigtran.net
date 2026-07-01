@@ -26,17 +26,17 @@ public sealed class SigtranPublishChannel
     /// <summary>Creates a publication channel.</summary>
     /// <param name="kind">The channel kind.</param>
     /// <param name="feedName">The feed name.</param>
-    /// <param name="requiresCommercialReadiness">Whether commercial readiness is required.</param>
+    /// <param name="requiresProductionReadiness">Whether production readiness is required.</param>
     /// <param name="allowsPrereleaseVersions">Whether prerelease versions are allowed.</param>
     public SigtranPublishChannel(
         SigtranPublishChannelKind kind,
         string feedName,
-        bool requiresCommercialReadiness,
+        bool requiresProductionReadiness,
         bool allowsPrereleaseVersions)
     {
         Kind = kind;
         FeedName = string.IsNullOrWhiteSpace(feedName) ? throw new ArgumentException("Feed name is required.", nameof(feedName)) : feedName;
-        RequiresCommercialReadiness = requiresCommercialReadiness;
+        RequiresProductionReadiness = requiresProductionReadiness;
         AllowsPrereleaseVersions = allowsPrereleaseVersions;
     }
 
@@ -46,8 +46,8 @@ public sealed class SigtranPublishChannel
     /// <summary>The feed name.</summary>
     public string FeedName { get; }
 
-    /// <summary>Whether commercial readiness is required.</summary>
-    public bool RequiresCommercialReadiness { get; }
+    /// <summary>Whether production readiness is required.</summary>
+    public bool RequiresProductionReadiness { get; }
 
     /// <summary>Whether prerelease versions are allowed.</summary>
     public bool AllowsPrereleaseVersions { get; }
@@ -78,10 +78,10 @@ public static class SigtranPublishChannels
     {
         return
         [
-            new SigtranPublishChannel(SigtranPublishChannelKind.Internal, "internal", requiresCommercialReadiness: false, allowsPrereleaseVersions: true),
-            new SigtranPublishChannel(SigtranPublishChannelKind.Alpha, "nuget-alpha", requiresCommercialReadiness: false, allowsPrereleaseVersions: true),
-            new SigtranPublishChannel(SigtranPublishChannelKind.Beta, "nuget-beta", requiresCommercialReadiness: false, allowsPrereleaseVersions: true),
-            new SigtranPublishChannel(SigtranPublishChannelKind.Stable, "nuget.org", requiresCommercialReadiness: true, allowsPrereleaseVersions: false)
+            new SigtranPublishChannel(SigtranPublishChannelKind.Internal, "internal", requiresProductionReadiness: false, allowsPrereleaseVersions: true),
+            new SigtranPublishChannel(SigtranPublishChannelKind.Alpha, "nuget-alpha", requiresProductionReadiness: false, allowsPrereleaseVersions: true),
+            new SigtranPublishChannel(SigtranPublishChannelKind.Beta, "nuget-beta", requiresProductionReadiness: false, allowsPrereleaseVersions: true),
+            new SigtranPublishChannel(SigtranPublishChannelKind.Stable, "nuget.org", requiresProductionReadiness: true, allowsPrereleaseVersions: false)
         ];
     }
 }

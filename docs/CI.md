@@ -86,11 +86,11 @@ Phase 19 adds `SigtranProtocolInteropCi.CreateDefault()` as the metadata contrac
 
 The profile is opt-in and enabled by `SIGTRAN_PROTOCOL_INTEROP`. Real runs require retained external reference vectors and SDK-generated vectors under `SIGTRAN_PROTOCOL_VECTOR_ROOT`, plus comparison reports for every required vector.
 
-## Commercial Evidence CI
+## Production Evidence CI
 
-Phase 20 adds `SigtranCommercialEvidenceCi.CreateDefault()` as the metadata contract for commercial evidence dossier verification.
+Phase 20 adds `SigtranReleaseEvidenceCi.CreateDefault()` as the metadata contract for commercial evidence dossier verification.
 
-The profile is opt-in and enabled by `SIGTRAN_COMMERCIAL_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_COMMERCIAL_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, external peer evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.
+The profile is opt-in and enabled by `SIGTRAN_RELEASE_EVIDENCE`. Real runs require retained dossier artifacts under `SIGTRAN_RELEASE_EVIDENCE_ROOT`, complete digest coverage, native SCTP evidence, external peer evidence, protocol vector evidence, release provenance, SBOM, and package signing artifacts.
 
 ## Supply Chain CI
 
@@ -100,7 +100,7 @@ The profile is opt-in and enabled by `SIGTRAN_SUPPLY_CHAIN`. Real runs require r
 
 ## Release Workflow Orchestration
 
-Phase 22 Part 1 adds `SigtranReleaseWorkflows.CreateCommercialReleasePlan()` as the metadata contract for the commercial release workflow.
+Phase 22 Part 1 adds `SigtranReleaseWorkflows.CreateReleasePlan()` as the metadata contract for the commercial release workflow.
 
 The contract requires manual dispatch and version tag triggers, restore/build/test/pack stages, supply-chain automation, commercial evidence verification, and package publishing with required signing and NuGet secrets. The concrete release workflow now lives in `.github/workflows/release.yml` and is validated by the release workflow tests.
 

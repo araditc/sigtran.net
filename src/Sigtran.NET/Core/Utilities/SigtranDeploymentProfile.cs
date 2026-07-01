@@ -1,7 +1,7 @@
 namespace Sigtran.NET.Core.Utilities;
 
 /// <summary>
-/// Describes a commercial deployment profile.
+/// Describes a production deployment profile.
 /// </summary>
 public sealed class SigtranDeploymentProfile
 {
@@ -59,12 +59,12 @@ public sealed class SigtranDeploymentProfile
 /// </summary>
 public static class SigtranDeploymentProfiles
 {
-    /// <summary>Creates the recommended commercial deployment profile.</summary>
-    /// <returns>The commercial deployment profile.</returns>
-    public static SigtranDeploymentProfile CreateCommercialLinuxProfile()
+    /// <summary>Creates the recommended production deployment profile.</summary>
+    /// <returns>The production deployment profile.</returns>
+    public static SigtranDeploymentProfile CreateProductionLinuxProfile()
     {
         return new(
-            "commercial-linux",
+            "production-linux",
             SigtranOperatingSystemFamily.Linux,
             requiresNativeSctp: true,
             requiresExternalEvidence: true,

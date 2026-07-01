@@ -39,7 +39,7 @@ public sealed class SigtranReleaseWorkflowFileContract
     public bool IsValidationReady => Path.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
         && RequiredStageNames.Count > 0
         && RequiredStageNames.Contains("Supply Chain")
-        && RequiredStageNames.Contains("Commercial Evidence")
+        && RequiredStageNames.Contains("Production Evidence")
         && RequiredStageNames.Contains("Publish");
 }
 
@@ -64,7 +64,7 @@ public static class SigtranReleaseWorkflowFiles
                 "Test",
                 "Pack",
                 "Supply Chain",
-                "Commercial Evidence",
+                "Production Evidence",
                 "Publish"
             ]);
     }

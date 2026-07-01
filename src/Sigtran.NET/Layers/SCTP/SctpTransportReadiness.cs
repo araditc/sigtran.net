@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Readiness report for the SCTP transport phase.
 /// </summary>
-public readonly struct SctpTransportReadinessReport
+public readonly struct SctpTransportReadinessSnapshot
 {
     /// <summary>Creates an SCTP transport readiness report.</summary>
     /// <param name="hasMetadataContract">Whether stream and PPID metadata contracts are available.</param>
@@ -12,7 +12,7 @@ public readonly struct SctpTransportReadinessReport
     /// <param name="hasReconnectPolicy">Whether reconnect policy is modeled.</param>
     /// <param name="hasDevelopmentAdapter">Whether a development adapter is available.</param>
     /// <param name="hasNativeSctpImplementation">Whether a native production SCTP implementation is available.</param>
-    public SctpTransportReadinessReport(
+    public SctpTransportReadinessSnapshot(
         bool hasMetadataContract,
         bool hasAssociationLifecycleModel,
         bool hasConnectionOptions,
@@ -91,7 +91,7 @@ public static class SctpTransportReadiness
     /// Builds the current SCTP transport readiness report.
     /// </summary>
     /// <returns>The current SCTP transport readiness report.</returns>
-    public static SctpTransportReadinessReport GetReport()
+    public static SctpTransportReadinessSnapshot GetReport()
     {
         return new(
             hasMetadataContract: true,

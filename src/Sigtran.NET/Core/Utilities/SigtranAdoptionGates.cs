@@ -11,21 +11,21 @@ public sealed class SigtranAdoptionGateReport
     /// <param name="hasConfigurationProfiles">Whether configuration profiles are available.</param>
     /// <param name="hasTroubleshooting">Whether troubleshooting guidance is available.</param>
     /// <param name="hasApiReferenceIndex">Whether API reference index is available.</param>
-    /// <param name="commercialReady">Whether the SDK is commercially ready.</param>
+    /// <param name="productionReady">Whether the SDK is productionly ready.</param>
     public SigtranAdoptionGateReport(
         bool hasQuickstart,
         bool hasSamples,
         bool hasConfigurationProfiles,
         bool hasTroubleshooting,
         bool hasApiReferenceIndex,
-        bool commercialReady)
+        bool productionReady)
     {
         HasQuickstart = hasQuickstart;
         HasSamples = hasSamples;
         HasConfigurationProfiles = hasConfigurationProfiles;
         HasTroubleshooting = hasTroubleshooting;
         HasApiReferenceIndex = hasApiReferenceIndex;
-        CommercialReady = commercialReady;
+        ProductionReady = productionReady;
     }
 
     /// <summary>Whether quickstart material is available.</summary>
@@ -43,14 +43,14 @@ public sealed class SigtranAdoptionGateReport
     /// <summary>Whether API reference index is available.</summary>
     public bool HasApiReferenceIndex { get; }
 
-    /// <summary>Whether the SDK is commercially ready.</summary>
-    public bool CommercialReady { get; }
+    /// <summary>Whether the SDK is productionly ready.</summary>
+    public bool ProductionReady { get; }
 
     /// <summary>Whether developer adoption foundations are ready.</summary>
     public bool DeveloperAdoptionReady => HasQuickstart && HasSamples && HasConfigurationProfiles && HasTroubleshooting && HasApiReferenceIndex;
 
     /// <summary>Whether enterprise production adoption is ready.</summary>
-    public bool EnterpriseProductionReady => DeveloperAdoptionReady && CommercialReady;
+    public bool EnterpriseProductionReady => DeveloperAdoptionReady && ProductionReady;
 }
 
 /// <summary>
@@ -68,6 +68,6 @@ public static class SigtranAdoptionGates
             hasConfigurationProfiles: SigtranConfigurationProfiles.GetProfiles().Count > 0,
             hasTroubleshooting: SigtranTroubleshooting.GetEntries().Count > 0,
             hasApiReferenceIndex: SigtranApiReferenceIndex.GetEntries().Count > 0,
-            commercialReady: SigtranCommercialReadiness.GetReport().CommercialReady);
+            productionReady: SigtranProductionReadiness.GetReport().ProductionReady);
     }
 }

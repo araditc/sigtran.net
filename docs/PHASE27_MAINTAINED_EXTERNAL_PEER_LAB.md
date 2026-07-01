@@ -1,6 +1,6 @@
-# Phase 27 Maintained External Peer Lab
+# Phase 27 Reference External Peer Lab
 
-Phase 27 turns the external peer decision into a package-neutral lab contract. The SDK must describe what it needs from a maintained SIGTRAN peer without naming one implementation in public type names or release gates.
+Phase 27 turns the external peer decision into a package-neutral lab contract. The SDK must describe what it needs from a reference SIGTRAN peer without naming one implementation in public type names or release gates.
 
 ## Unit 1 - Canonical SDK Name
 
@@ -8,34 +8,34 @@ Phase 27 turns the external peer decision into a package-neutral lab contract. T
 
 See [Phase 27 Sigtran.NET Branding](PHASE27_SIGTRAN_NET_BRANDING.md) for the focused rename record.
 
-## Unit 2 - Maintained Peer Lab Binding Catalog
+## Unit 2 - Reference Peer Lab Binding Catalog
 
-`SigtranMaintainedPeerLabBindings` now provides a package-neutral binding catalog for the maintained external peer lab. The default binding records:
+`SigtranReferencePeerLabBindings` now provides a package-neutral binding catalog for the reference external peer lab. The default binding records:
 
 - The selected external SIGTRAN peer profile.
 - The package id and version placeholders that a real lab can replace.
 - The artifact root used by retained evidence.
 - The required environment variables consumed by lab scripts.
-- The maintained peer selection criteria satisfied by the binding.
+- The reference peer selection criteria satisfied by the binding.
 
-The public API keeps selected package details in values and configuration, not in class names. This preserves the ability to bind a modern maintained peer package later without coupling the SDK contract to a specific project.
+The public API keeps selected package details in values and configuration, not in class names. This preserves the ability to bind a modern reference peer package later without coupling the SDK contract to a specific project.
 
 ## Unit 3 - Host Prerequisite Model
 
-`SigtranMaintainedPeerLabPrerequisites` now defines the package-neutral host checks that must be satisfied before a maintained peer lab run can claim execution readiness:
+`SigtranReferencePeerLabPrerequisites` now defines the package-neutral host checks that must be satisfied before a reference peer lab run can claim execution readiness:
 
 - Linux host or VM with kernel SCTP support.
 - Native SCTP tools and kernel module availability.
 - Packet capture tooling.
 - .NET 10 SDK or runtime for the SDK lab runner.
-- Maintained external peer package installed outside the SDK.
+- Reference external peer package installed outside the SDK.
 - Writable retained artifact storage.
 
 The prerequisite report separates foundation code readiness from actual lab readiness. A commercial claim still requires a real host report with every prerequisite satisfied and retained alongside the run evidence.
 
 ## Unit 4 - Lab Configuration Contract
 
-`SigtranMaintainedPeerLabConfiguration` now captures the ASP-to-SG lab configuration used by maintained external peer runs:
+`SigtranReferencePeerLabConfiguration` now captures the ASP-to-SG lab configuration used by reference external peer runs:
 
 - Peer name.
 - Local and remote SCTP endpoints.
@@ -50,7 +50,7 @@ The helper can create the default lab configuration or parse environment values 
 
 ## Unit 5 - Retained Artifact Plan
 
-`SigtranMaintainedPeerLabArtifactPlans` now defines the retained artifact layout for each maintained peer lab run. The default plan creates deterministic paths for:
+`SigtranReferencePeerLabArtifactPlans` now defines the retained artifact layout for each reference peer lab run. The default plan creates deterministic paths for:
 
 - PCAP capture.
 - Peer log.
@@ -63,11 +63,11 @@ This unit still describes expected artifacts, not proof that they exist. Promoti
 
 ## Unit 6 - Command Plan
 
-`SigtranMaintainedPeerLabCommandPlans` now defines the ordered execution plan for a maintained peer lab run:
+`SigtranReferencePeerLabCommandPlans` now defines the ordered execution plan for a reference peer lab run:
 
 - Prepare artifact directories and retained configuration.
 - Capture SCTP packets.
-- Start or verify the maintained external peer.
+- Start or verify the reference external peer.
 - Run SDK-side traffic.
 - Compare traces.
 - Collect the run report.
@@ -76,7 +76,7 @@ The command plan is intentionally package-neutral. Real deployments can map `ext
 
 ## Unit 7 - Traffic Vector Catalog
 
-`SigtranMaintainedPeerLabTrafficVectors` now defines the expected maintained peer traffic sequence for comparison:
+`SigtranReferencePeerLabTrafficVectors` now defines the expected reference peer traffic sequence for comparison:
 
 - M3UA ASP lifecycle.
 - M3UA heartbeat and acknowledgement.
@@ -86,7 +86,7 @@ The catalog flattens these vectors into an ordered expected message sequence so 
 
 ## Unit 8 - Evidence Promotion Gate
 
-`SigtranMaintainedPeerLabEvidenceReport` now separates planned execution from promotable evidence. Promotion requires:
+`SigtranReferencePeerLabEvidenceReport` now separates planned execution from promotable evidence. Promotion requires:
 
 - Host prerequisites ready.
 - Lab configuration valid.
@@ -98,20 +98,20 @@ This keeps commercial readiness honest: a command plan or artifact plan is not t
 
 ## Unit 9 - CI Profile
 
-`SigtranMaintainedPeerLabCi` now defines the CI execution policy for the maintained peer lab:
+`SigtranReferencePeerLabCi` now defines the CI execution policy for the reference peer lab:
 
 - Manual dispatch only.
 - Self-hosted Linux runner required.
 - Environment variables required for peer binding and SCTP endpoints.
 - Artifact upload patterns for PCAP, logs, config, traces, comparison, and reports.
 
-The profile is deliberately not safe for default pull request CI because it depends on native SCTP, packet capture permissions, retained artifacts, and a configured maintained peer package.
+The profile is deliberately not safe for default pull request CI because it depends on native SCTP, packet capture permissions, retained artifacts, and a configured reference peer package.
 
 ## Unit 10 - Status And Readiness
 
-`SigtranMaintainedPeerLabStatus` now reports the completed foundation capabilities and separates foundation readiness from commercial evidence readiness.
+`SigtranReferencePeerLabStatus` now reports the completed foundation capabilities and separates foundation readiness from commercial evidence readiness.
 
-The foundation report is ready because the SDK has package-neutral contracts for binding, prerequisites, configuration, artifacts, commands, vectors, promotion, and CI policy. It is not commercial-ready until a real maintained peer run is retained with digest-covered artifacts and passing comparison.
+The foundation report is ready because the SDK has package-neutral contracts for binding, prerequisites, configuration, artifacts, commands, vectors, promotion, and CI policy. It is not commercial-ready until a real reference peer run is retained with digest-covered artifacts and passing comparison.
 
 ## Environment Contract
 
@@ -154,4 +154,4 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-The tests verify that the default binding satisfies the maintained peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, the traffic vector catalog yields a comparable expected message sequence, evidence promotion is blocked without complete digest-covered artifacts, CI remains manual/self-hosted for real lab execution, and final status separates foundation readiness from commercial evidence readiness.
+The tests verify that the default binding satisfies the reference peer selection policy, public binding summaries remain package-neutral, host prerequisite reports identify missing lab capabilities, environment-derived lab configuration is validated before use, the artifact plan covers every required retained evidence path, the command plan covers every required execution step, the traffic vector catalog yields a comparable expected message sequence, evidence promotion is blocked without complete digest-covered artifacts, CI remains manual/self-hosted for real lab execution, and final status separates foundation readiness from commercial evidence readiness.

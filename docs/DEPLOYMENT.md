@@ -2,9 +2,9 @@
 
 SIGTRAN.NET separates local development from commercial production deployment.
 
-## Commercial Linux
+## Production Linux
 
-`SigtranDeploymentProfiles.CreateCommercialLinuxProfile()` describes the recommended commercial target:
+`SigtranDeploymentProfiles.CreateProductionLinuxProfile()` describes the recommended commercial target:
 
 - Linux platform
 - Native SCTP required

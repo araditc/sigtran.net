@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes performance and capacity readiness.
 /// </summary>
-public sealed class SigtranPerformanceReadinessReport
+public sealed class SigtranPerformanceReadinessSnapshot
 {
     /// <summary>Creates a performance readiness report.</summary>
     /// <param name="hasCapabilityCatalog">Whether the performance capability catalog is available.</param>
@@ -14,8 +14,8 @@ public sealed class SigtranPerformanceReadinessReport
     /// <param name="hasLoadTestPlan">Whether a load-test plan is available.</param>
     /// <param name="hasResourceBudget">Whether a resource budget is available.</param>
     /// <param name="hasBenchmarkEvidence">Whether real benchmark evidence has been captured.</param>
-    /// <param name="commercialReady">Whether wider commercial readiness is complete.</param>
-    public SigtranPerformanceReadinessReport(
+    /// <param name="productionReady">Whether wider production readiness is complete.</param>
+    public SigtranPerformanceReadinessSnapshot(
         bool hasCapabilityCatalog,
         bool hasBenchmarkScenarios,
         bool hasCapacityProfile,
@@ -24,7 +24,7 @@ public sealed class SigtranPerformanceReadinessReport
         bool hasLoadTestPlan,
         bool hasResourceBudget,
         bool hasBenchmarkEvidence,
-        bool commercialReady)
+        bool productionReady)
     {
         HasCapabilityCatalog = hasCapabilityCatalog;
         HasBenchmarkScenarios = hasBenchmarkScenarios;
@@ -34,7 +34,7 @@ public sealed class SigtranPerformanceReadinessReport
         HasLoadTestPlan = hasLoadTestPlan;
         HasResourceBudget = hasResourceBudget;
         HasBenchmarkEvidence = hasBenchmarkEvidence;
-        CommercialReady = commercialReady;
+        ProductionReady = productionReady;
     }
 
     /// <summary>Whether the performance capability catalog is available.</summary>
@@ -61,8 +61,8 @@ public sealed class SigtranPerformanceReadinessReport
     /// <summary>Whether real benchmark evidence has been captured.</summary>
     public bool HasBenchmarkEvidence { get; }
 
-    /// <summary>Whether wider commercial readiness is complete.</summary>
-    public bool CommercialReady { get; }
+    /// <summary>Whether wider production readiness is complete.</summary>
+    public bool ProductionReady { get; }
 
     /// <summary>Whether the performance foundation is ready.</summary>
     public bool FoundationReady => HasCapabilityCatalog
@@ -74,7 +74,7 @@ public sealed class SigtranPerformanceReadinessReport
         && HasResourceBudget;
 
     /// <summary>Whether production performance claims are ready.</summary>
-    public bool ProductionPerformanceReady => FoundationReady && HasBenchmarkEvidence && CommercialReady;
+    public bool ProductionPerformanceReady => FoundationReady && HasBenchmarkEvidence && ProductionReady;
 }
 
 /// <summary>
@@ -84,7 +84,7 @@ public static class SigtranPerformanceReadiness
 {
     /// <summary>Returns the current performance readiness report.</summary>
     /// <returns>The current performance readiness report.</returns>
-    public static SigtranPerformanceReadinessReport GetReport()
+    public static SigtranPerformanceReadinessSnapshot GetReport()
     {
         return new(
             hasCapabilityCatalog: SigtranPerformance.GetCapabilities().Count > 0,
@@ -92,9 +92,9 @@ public static class SigtranPerformanceReadiness
             hasCapacityProfile: SigtranCapacityProfiles.CreateEnterpriseDefault().IsEnterpriseSized,
             hasThroughputTargets: SigtranThroughputTargets.GetTargets().All(target => target.RequiresBenchmarkEvidence),
             hasLatencyBudgets: SigtranLatencyBudgets.GetBudgets().Count > 0,
-            hasLoadTestPlan: SigtranLoadTestPlans.CreateCommercialDefault().RequiresNativeSctp,
-            hasResourceBudget: SigtranResourceBudgets.CreateCommercialDefault().IsCommercialBenchmarkBudget,
+            hasLoadTestPlan: SigtranLoadTestPlans.CreateProductionDefault().RequiresNativeSctp,
+            hasResourceBudget: SigtranResourceBudgets.CreateProductionDefault().IsProductionBenchmarkBudget,
             hasBenchmarkEvidence: false,
-            commercialReady: SigtranCommercialReadiness.GetReport().CommercialReady);
+            productionReady: SigtranProductionReadiness.GetReport().ProductionReady);
     }
 }

@@ -141,6 +141,7 @@ Start here:
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Quality and contribution rules](docs/QUALITY.md)
+- [API naming policy](docs/API_NAMING.md)
 - [Security policy](SECURITY.md)
 
 Release and governance:
@@ -148,7 +149,7 @@ Release and governance:
 - [Changelog](CHANGELOG.md)
 - [v0.1.0-alpha release notes](docs/releases/v0.1.0-alpha.md)
 - [Alpha release checklist](docs/ALPHA_RELEASE.md)
-- [Commercial readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
+- [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 
 ---
 

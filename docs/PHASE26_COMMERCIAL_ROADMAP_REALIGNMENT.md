@@ -1,8 +1,8 @@
-# Phase 26 Commercial Roadmap Realignment
+# Phase 26 API Naming Alignment
 
 Phase 26 realigns commercial interoperability around package-neutral external SIGTRAN peer evidence.
 
-The SDK source API must not depend on a specific peer package name. Product names such as OpenSS7/IPSS7 or Osmocom may appear in retained lab notes, configuration examples, and artifact evidence, but public SDK contracts use domain names such as external peer, maintained peer, interoperability evidence, and commercial readiness.
+The SDK source API must not depend on a specific peer package name. Product names such as OpenSS7/IPSS7 or Osmocom may appear in retained lab notes, configuration examples, and artifact evidence, but public SDK contracts use domain names such as external peer, reference peer, interoperability evidence, and commercial readiness.
 
 ## Unit 1 - Package Neutral Source Contracts
 
@@ -21,26 +21,26 @@ Renamed source surfaces:
 - `SigtranExternalPeerInteropReadiness`
 - `SigtranExternalPeerInteropStatus`
 
-Commercial evidence now uses `ExternalPeerInterop` as the evidence area. The retained OpenSS7/IPSS7 failure remains valid blocker evidence, but it is represented as one external peer trial rather than as the SDK's permanent interoperability gate.
+Production evidence now uses `ExternalPeerInterop` as the evidence area. The retained OpenSS7/IPSS7 failure remains valid blocker evidence, but it is represented as one external peer trial rather than as the SDK's permanent interoperability gate.
 
 ## Unit 2 - External Peer Profile Model
 
-`SigtranInteropPeerProfile` now records `SupportModel` so release evidence can distinguish maintained peer stacks, legacy references, operator-provided peers, and simulators.
+`SigtranInteropPeerProfile` now records `SupportModel` so release evidence can distinguish reference peer stacks, legacy references, operator-provided peers, and simulators.
 
 The default profile is package-neutral:
 
 - Stable id: `external-sigtran-sg`.
-- Product label: maintained SIGTRAN peer.
+- Product label: reference SIGTRAN peer.
 - Transport: `SCTP/M3UA`.
-- Support model: maintained peer stack.
+- Support model: reference peer stack.
 
-`IsMaintainedCommercialCandidate` is true only for a maintained Signalling Gateway profile with M3UA transport. This keeps simulator and legacy evidence useful for development without allowing it to satisfy the commercial peer gate.
+`IsReferencePeerCandidate` is true only for a reference Signalling Gateway profile with M3UA transport. This keeps simulator and legacy evidence useful for development without allowing it to satisfy the commercial peer gate.
 
-## Unit 3 - Maintained Peer Selection Policy
+## Unit 3 - Reference Peer Selection Policy
 
-`SigtranMaintainedPeerSelectionPolicy` defines package-neutral criteria that a lab package must satisfy before it can back commercial external peer evidence:
+`SigtranReferencePeerSelectionPolicy` defines package-neutral criteria that a lab package must satisfy before it can back commercial external peer evidence:
 
-- Maintained upstream or active distribution packaging.
+- Reference upstream or active distribution packaging.
 - Current Linux support without legacy kernel requirements.
 - Native SCTP support.
 - M3UA ASP-to-SG lifecycle and DATA coverage.
@@ -63,7 +63,7 @@ The policy evaluates a `SigtranInteropPeerProfile` plus explicitly satisfied cri
 - Required tools such as `dotnet`, `tcpdump`, `tshark`, and SCTP tooling.
 - Stable artifact root under `artifacts/external-peer`.
 
-`CanProduceCommercialArtifacts` is true only when the environment can produce the artifact classes needed by commercial review. This keeps a simple transport smoke test separate from a commercial interoperability lab.
+`CanProduceProductionArtifacts` is true only when the environment can produce the artifact classes needed by commercial review. This keeps a simple transport smoke test separate from a commercial interoperability lab.
 
 ## Unit 5 - Digest Covered External Peer Artifacts
 
@@ -85,22 +85,22 @@ The required artifact kinds are packet capture, SDK trace, peer configuration, p
 
 The command set requires external peer execution, packet capture, SDK trace capture, and comparison report generation. `SigtranExternalPeerInteropRunPlan` now includes the command set and is executable only when the environment, configuration, trace expectations, and commercial lab commands are all present.
 
-## Unit 7 - Commercial Readiness Aggregation
+## Unit 7 - Production Readiness Aggregation
 
-`SigtranExternalPeerCommercialReadiness` aggregates maintained peer selection, lab environment capability, executable run plan, and commercial-review-ready evidence.
+`SigtranExternalPeerProductionReadiness` aggregates reference peer selection, lab environment capability, executable run plan, and commercial-review-ready evidence.
 
-The current report remains blocked because no real maintained peer package has been selected and no passing digest-covered external peer evidence is retained. A commercial claim requires all of the following:
+The current report remains blocked because no real reference peer package has been selected and no passing digest-covered external peer evidence is retained. A commercial claim requires all of the following:
 
-- Maintained peer selection policy passes.
+- Reference peer selection policy passes.
 - Lab environment can produce commercial artifacts.
 - Run plan is executable.
 - Evidence registry contains passing, digest-covered artifacts.
 
-## Unit 8 - Commercial Release Gate Alignment
+## Unit 8 - Production Release Gate Alignment
 
-Commercial evidence and release execution readiness now use `externalPeerInteropVerified` and `external-peer-interop` instead of package-specific gate names.
+Production evidence and release execution readiness now use `externalPeerInteropVerified` and `external-peer-interop` instead of package-specific gate names.
 
-`SigtranCommercialReleaseExecutionReadiness` now consumes `SigtranExternalPeerCommercialReadiness.CreateCurrent()` so the release decision is based on maintained peer selection, lab environment, run plan, and review-ready evidence. Retained legacy blocker notes remain evidence context, not public gate names.
+`SigtranReleaseExecutionReadiness` now consumes `SigtranExternalPeerProductionReadiness.CreateCurrent()` so the release decision is based on reference peer selection, lab environment, run plan, and review-ready evidence. Retained legacy blocker notes remain evidence context, not public gate names.
 
 ## Unit 9 - Migration Notes And Public Labels
 
@@ -110,19 +110,19 @@ Public labels, CI variables, status capability names, and README roadmap text no
 
 ## Unit 10 - Final Realignment Status
 
-`SigtranCommercialRoadmapRealignmentStatus` summarizes the completed package-neutral realignment work without using a roadmap phase number or peer package name in the source API.
+`SigtranApiNamingAlignmentStatus` summarizes the completed package-neutral realignment work without using a roadmap phase number or peer package name in the source API.
 
 The status report checks:
 
 - Ten completed package-neutral realignment capabilities.
 - Public contract names do not include package-specific peer fragments.
-- Maintained peer selection policy is available.
+- Reference peer selection policy is available.
 - External peer execution foundation is ready.
-- Commercial release gates use `external-peer-interop`.
-- Commercial release remains blocked until maintained peer selection and digest-covered external peer evidence are retained.
+- Production release gates use `external-peer-interop`.
+- Production release remains blocked until reference peer selection and digest-covered external peer evidence are retained.
 
 ## Final Status
 
-The commercial roadmap realignment foundation is complete.
+The API naming alignment foundation is complete.
 
-The next implementation work should execute a maintained external SIGTRAN peer lab and attach review-ready evidence. The default lab may use a maintained package, but the SDK API remains independent of that package.
+The next implementation work should execute a reference external SIGTRAN peer lab and attach review-ready evidence. The default lab may use a reference package, but the SDK API remains independent of that package.

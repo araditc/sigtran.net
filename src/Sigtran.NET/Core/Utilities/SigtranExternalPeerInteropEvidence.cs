@@ -25,8 +25,8 @@ public sealed class SigtranExternalPeerInteropEvidenceRegistry
     /// <summary>Whether passing external peer ASP-to-SG evidence exists.</summary>
     public bool HasPassingAspToSgEvidence => _reports.Any(static report => report.HasPassingEvidence);
 
-    /// <summary>Whether passing external peer evidence is ready for commercial review.</summary>
-    public bool HasCommercialReviewReadyEvidence => _reports.Any(static report => report.HasCommercialReviewReadyEvidence);
+    /// <summary>Whether passing external peer evidence is ready for production review.</summary>
+    public bool HasProductionReviewReadyEvidence => _reports.Any(static report => report.HasProductionReviewReadyEvidence);
 }
 
 /// <summary>

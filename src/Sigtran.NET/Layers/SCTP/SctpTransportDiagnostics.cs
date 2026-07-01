@@ -32,7 +32,7 @@ public sealed class SctpTransportDiagnosticsSnapshot
     public SctpTransportDiagnosticsSnapshot(
         SctpTransportHealth health,
         IReadOnlyList<SctpAssociationJournalEntry> associationEvents,
-        SctpMultiHomingReadinessReport? multiHomingReport = null,
+        SctpMultiHomingReadinessSnapshot? multiHomingReport = null,
         SctpBackpressureDecision? lastBackpressureDecision = null,
         SctpRecoveryDecision? lastRecoveryDecision = null,
         SctpOperationCancellationBudget? activeOperationBudget = null)
@@ -55,7 +55,7 @@ public sealed class SctpTransportDiagnosticsSnapshot
     public IReadOnlyList<SctpAssociationJournalEntry> AssociationEvents => _associationEvents.ToArray();
 
     /// <summary>The optional multi-homing readiness report.</summary>
-    public SctpMultiHomingReadinessReport? MultiHomingReport { get; }
+    public SctpMultiHomingReadinessSnapshot? MultiHomingReport { get; }
 
     /// <summary>The optional latest backpressure decision.</summary>
     public SctpBackpressureDecision? LastBackpressureDecision { get; }
@@ -124,7 +124,7 @@ public static class SctpTransportDiagnostics
     public static SctpTransportDiagnosticsSnapshot CreateSnapshot(
         SctpTransportHealth health,
         SctpAssociationJournal associationJournal,
-        SctpMultiHomingReadinessReport? multiHomingReport = null,
+        SctpMultiHomingReadinessSnapshot? multiHomingReport = null,
         SctpBackpressureDecision? lastBackpressureDecision = null,
         SctpRecoveryDecision? lastRecoveryDecision = null,
         SctpOperationCancellationBudget? activeOperationBudget = null)

@@ -105,12 +105,12 @@ public sealed class SigtranPerformanceResourceBudgetReport
 /// </summary>
 public static class SigtranPerformanceResourceEvidenceEvaluator
 {
-    /// <summary>Evaluates measured resource evidence against the commercial resource budget.</summary>
+    /// <summary>Evaluates measured resource evidence against the production resource budget.</summary>
     /// <param name="evidence">The measured resource evidence.</param>
     /// <returns>The resource budget report.</returns>
-    public static SigtranPerformanceResourceBudgetReport EvaluateCommercial(SigtranPerformanceResourceEvidence evidence)
+    public static SigtranPerformanceResourceBudgetReport EvaluateProduction(SigtranPerformanceResourceEvidence evidence)
     {
         ArgumentNullException.ThrowIfNull(evidence);
-        return new(evidence, SigtranResourceBudgets.CreateCommercialDefault());
+        return new(evidence, SigtranResourceBudgets.CreateProductionDefault());
     }
 }

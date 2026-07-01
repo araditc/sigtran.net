@@ -62,9 +62,9 @@ The current foundation is ready. Production readiness remains false until comple
 
 The profile is enabled by `SIGTRAN_NATIVE_SCTP_LAB` and stores artifacts under `SIGTRAN_NATIVE_SCTP_ARTIFACT_ROOT`.
 
-## Commercial Gate
+## Production Gate
 
-`SigtranNativeSctpLabCommercialGate.Evaluate()` makes native SCTP production verification explicit.
+`SigtranNativeSctpLabProductionGate.Evaluate()` makes native SCTP production verification explicit.
 
 The gate remains closed until complete passing evidence exists.
 

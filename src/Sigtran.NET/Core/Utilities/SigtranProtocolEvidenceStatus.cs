@@ -106,7 +106,7 @@ public static class SigtranProtocolEvidenceStatus
     /// <returns>The current protocol evidence status report.</returns>
     public static SigtranProtocolEvidenceStatusReport GetStatus(bool hasExternalInteroperabilityEvidence = false)
     {
-        SigtranProtocolEvidenceReadinessReport readiness = SigtranProtocolEvidenceReadiness.GetReport(hasExternalInteroperabilityEvidence);
+        SigtranProtocolEvidenceReadinessSnapshot readiness = SigtranProtocolEvidenceReadiness.GetReport(hasExternalInteroperabilityEvidence);
         return new(
             StatusLabel,
             CompletedUnitCount,

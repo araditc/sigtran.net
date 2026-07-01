@@ -40,14 +40,14 @@ public static class SigtranReleaseWorkflowArtifacts
             new("nuget-packages", "src/Sigtran.NET/bin/Release/*.nupkg", 90),
             new("symbol-packages", "src/Sigtran.NET/bin/Release/*.snupkg", 90),
             new("supply-chain", "artifacts/supply-chain", 180),
-            new("commercial-evidence", "artifacts/commercial-evidence", 180)
+            new("release-evidence", "artifacts/release-evidence", 180)
         ];
     }
 
-    /// <summary>Returns whether the default rules retain commercial evidence.</summary>
-    /// <returns>True when commercial evidence is retained; otherwise false.</returns>
-    public static bool RetainsCommercialEvidence()
+    /// <summary>Returns whether the default rules retain production evidence.</summary>
+    /// <returns>True when production evidence is retained; otherwise false.</returns>
+    public static bool RetainsReleaseEvidence()
     {
-        return GetDefaultRules().Any(static rule => string.Equals(rule.Name, "commercial-evidence", StringComparison.Ordinal));
+        return GetDefaultRules().Any(static rule => string.Equals(rule.Name, "release-evidence", StringComparison.Ordinal));
     }
 }

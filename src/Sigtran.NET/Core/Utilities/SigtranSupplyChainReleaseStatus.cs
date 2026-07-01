@@ -22,7 +22,7 @@ public static class SigtranSupplyChainReleaseStatus
     private static readonly string[] DefaultBlockers =
     [
         "retained-release-run-artifacts-required",
-        "commercial-evidence-required"
+        "release-evidence-required"
     ];
 
     /// <summary>The status label.</summary>
@@ -50,14 +50,14 @@ public static class SigtranSupplyChainReleaseStatus
         && SigtranSupplyChainReleaseCommands.CreateDefault("1.0.0").IsComplete
         && SigtranReleaseArtifactUploads.CreateDefault().HasPromotionArtifacts;
 
-    /// <summary>Whether the default status can promote a commercial release.</summary>
-    public static bool CommercialReleaseReady => ExecutionFoundationReady
+    /// <summary>Whether the default status can promote a production release.</summary>
+    public static bool ReleaseReady => ExecutionFoundationReady
         && DefaultBlockers.Length == 0;
 
     /// <summary>Formats a compact supply-chain release execution summary.</summary>
     /// <returns>The supply-chain release execution summary.</returns>
     public static string Describe()
     {
-        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={ExecutionFoundationReady} commercialReleaseReady={CommercialReleaseReady} blockers={DefaultBlockers.Length}";
+        return $"{StatusLabel}: completedUnits={CompletedUnitCount} capabilities={Capabilities.Length} foundationReady={ExecutionFoundationReady} releaseReady={ReleaseReady} blockers={DefaultBlockers.Length}";
     }
 }

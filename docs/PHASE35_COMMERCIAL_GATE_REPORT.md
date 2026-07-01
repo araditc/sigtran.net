@@ -1,4 +1,4 @@
-# Phase 35 Commercial Gate Report
+# Phase 35 Production Gate Report
 
 This report captures the release-candidate publication and commercial gate position for Sigtran.NET after Phase 35.
 
@@ -19,7 +19,7 @@ The current SDK foundation produced a real RC decision and the protected prerele
 
 Stable commercial publication is not approved yet.
 
-## Stable Commercial Blockers
+## Stable Production Blockers
 
 - Stable release workflow artifacts must be retained for the intended stable version.
 - Stable publication secrets must be available only inside the protected stable release environment.

@@ -74,12 +74,12 @@ public sealed class SigtranLoadTestPlan
 /// </summary>
 public static class SigtranLoadTestPlans
 {
-    /// <summary>Creates the default commercial load-test plan.</summary>
-    /// <returns>The default commercial load-test plan.</returns>
-    public static SigtranLoadTestPlan CreateCommercialDefault()
+    /// <summary>Creates the default production load-test plan.</summary>
+    /// <returns>The default production load-test plan.</returns>
+    public static SigtranLoadTestPlan CreateProductionDefault()
     {
         return new(
-            "commercial-load-test",
+            "production-load-test",
             [
                 new("warmup", TimeSpan.FromMinutes(5), 5000),
                 new("sustained", TimeSpan.FromMinutes(30), 25000),

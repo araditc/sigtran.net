@@ -44,8 +44,8 @@ public sealed class SigtranPackagePublicationEvidenceAssembly
     /// <summary>Whether supply-chain promotion evidence is complete.</summary>
     public bool SupplyChainPromotionReady => EvidenceManifest.SupplyChainPromotionReady;
 
-    /// <summary>Whether commercial evidence is complete.</summary>
-    public bool CommercialEvidenceReady => EvidenceManifest.CommercialEvidenceReady;
+    /// <summary>Whether production evidence is complete.</summary>
+    public bool ReleaseEvidenceReady => EvidenceManifest.ReleaseEvidenceReady;
 
     /// <summary>Whether assembled evidence can move into release publish guard evaluation.</summary>
     public bool IsReadyForPublishGuard => CredentialReadiness.IsReadyForEvidenceAssembly
@@ -56,7 +56,7 @@ public sealed class SigtranPackagePublicationEvidenceAssembly
     /// <returns>The package publication evidence assembly summary.</returns>
     public string Describe()
     {
-        return $"packagePublicationEvidenceReady={IsReadyForPublishGuard} integrity={PackageIntegrityReady} supplyChain={SupplyChainPromotionReady} commercialEvidence={CommercialEvidenceReady}";
+        return $"packagePublicationEvidenceReady={IsReadyForPublishGuard} integrity={PackageIntegrityReady} supplyChain={SupplyChainPromotionReady} productionEvidence={ReleaseEvidenceReady}";
     }
 }
 
@@ -68,28 +68,28 @@ public static class SigtranPackagePublicationEvidenceAssemblies
     /// <summary>Assembles package publication evidence from credential readiness and retained evidence gates.</summary>
     /// <param name="credentialReadiness">The package publication credential readiness.</param>
     /// <param name="supplyChainPromotionReady">Whether supply-chain promotion evidence is ready.</param>
-    /// <param name="commercialEvidenceReady">Whether commercial evidence is ready.</param>
+    /// <param name="releaseEvidenceReady">Whether production evidence is ready.</param>
     /// <param name="assembledAtUtc">The UTC assembly time.</param>
     /// <returns>The package publication evidence assembly.</returns>
     public static SigtranPackagePublicationEvidenceAssembly Assemble(
         SigtranPackagePublicationCredentialReadiness credentialReadiness,
         bool supplyChainPromotionReady,
-        bool commercialEvidenceReady,
+        bool releaseEvidenceReady,
         DateTimeOffset assembledAtUtc)
     {
         ArgumentNullException.ThrowIfNull(credentialReadiness);
         SigtranPackageIntegrityManifest integrityManifest = credentialReadiness.ArtifactSet.ToIntegrityManifest();
         bool packageIntegrityComplete = credentialReadiness.ArtifactSet.IsReadyForCredentialEvaluation
             && integrityManifest.IsComplete;
-        bool approvedCommercialEvidenceReady = credentialReadiness.ArtifactSet.Request.HandoffGateAllowsPackageEvaluation
-            && commercialEvidenceReady;
+        bool approvedReleaseEvidenceReady = credentialReadiness.ArtifactSet.Request.HandoffGateAllowsPackageEvaluation
+            && releaseEvidenceReady;
 
         SigtranPublicationEvidenceManifest evidenceManifest = new(
             credentialReadiness.ArtifactSet.Request.PackageVersion,
             credentialReadiness.ArtifactSet.Request.Channel.Kind,
             packageIntegrityComplete,
             supplyChainPromotionReady,
-            approvedCommercialEvidenceReady);
+            approvedReleaseEvidenceReady);
 
         return new(credentialReadiness, integrityManifest, evidenceManifest, assembledAtUtc);
     }

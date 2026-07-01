@@ -38,13 +38,13 @@ public static class SigtranSupplyChainGate
     /// <param name="plan">The supply-chain automation plan.</param>
     /// <param name="manifest">The supply-chain artifact manifest.</param>
     /// <param name="provenance">The release provenance.</param>
-    /// <param name="commercialEvidenceReady">Whether commercial evidence is ready.</param>
+    /// <param name="releaseEvidenceReady">Whether production evidence is ready.</param>
     /// <returns>The supply-chain gate result.</returns>
     public static SigtranSupplyChainGateResult Evaluate(
         SigtranSupplyChainAutomationPlan plan,
         SigtranSupplyChainArtifactManifest manifest,
         SigtranReleaseProvenance provenance,
-        bool commercialEvidenceReady)
+        bool releaseEvidenceReady)
     {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(manifest);
@@ -71,9 +71,9 @@ public static class SigtranSupplyChainGate
             reasons.Add("release-provenance-incomplete");
         }
 
-        if (!commercialEvidenceReady)
+        if (!releaseEvidenceReady)
         {
-            reasons.Add("commercial-evidence-required");
+            reasons.Add("release-evidence-required");
         }
 
         return new SigtranSupplyChainGateResult(reasons.Count == 0, reasons);

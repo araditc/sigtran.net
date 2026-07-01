@@ -75,8 +75,8 @@ public sealed class SigtranExternalPeerInteropEnvironment
     /// <summary>Whether the environment has the minimum external peer lab prerequisites.</summary>
     public bool HasMinimumLabPrerequisites => RequiresLinux && RequiresNativeSctp && RequiresExternalPeer && RequiresPacketCapture;
 
-    /// <summary>Whether the environment can produce commercial interop evidence artifacts.</summary>
-    public bool CanProduceCommercialArtifacts => HasMinimumLabPrerequisites
+    /// <summary>Whether the environment can produce production interop evidence artifacts.</summary>
+    public bool CanProduceProductionArtifacts => HasMinimumLabPrerequisites
         && RequiresSdkTrace
         && RequiresPeerConfiguration
         && RequiresPeerLog

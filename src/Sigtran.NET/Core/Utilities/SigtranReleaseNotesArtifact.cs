@@ -66,7 +66,7 @@ public static class SigtranReleaseNotesArtifacts
     /// <param name="version">The RC version.</param>
     /// <param name="sha256">The retained release notes SHA-256 digest.</param>
     /// <returns>The default RC release notes artifact.</returns>
-    public static SigtranReleaseNotesArtifact CreateReleaseCandidate(string version, string sha256)
+    public static SigtranReleaseNotesArtifact CreatePrerelease(string version, string sha256)
     {
         SigtranReleaseNotes notes = SigtranReleaseNotesFactory.CreateAlpha(version);
         return new(

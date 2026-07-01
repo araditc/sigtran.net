@@ -12,7 +12,7 @@ Phase 16 adds the configuration, policy, and environment-readiness foundation fo
 6. Routing configuration.
 7. Configuration readiness report.
 8. Configuration CI profile.
-9. Commercial configuration gate.
+9. Production configuration gate.
 10. Phase status and documentation.
 
 ## Current State

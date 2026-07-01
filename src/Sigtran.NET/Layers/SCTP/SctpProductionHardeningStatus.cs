@@ -97,7 +97,7 @@ public static class SctpProductionHardeningStatus
     /// <returns>The current status report.</returns>
     public static SctpProductionHardeningStatusReport GetStatus()
     {
-        SctpProductionHardeningReadinessReport readiness = SctpProductionHardeningReadiness.GetReport();
+        SctpProductionHardeningReadinessSnapshot readiness = SctpProductionHardeningReadiness.GetReport();
         return new(
             StatusLabel,
             CompletedUnitCount,
@@ -107,7 +107,7 @@ public static class SctpProductionHardeningStatus
             GetBlockers(readiness));
     }
 
-    private static IReadOnlyList<string> GetBlockers(SctpProductionHardeningReadinessReport readiness)
+    private static IReadOnlyList<string> GetBlockers(SctpProductionHardeningReadinessSnapshot readiness)
     {
         List<string> blockers = [];
         if (!readiness.HasRetainedLinuxSctpEvidence)

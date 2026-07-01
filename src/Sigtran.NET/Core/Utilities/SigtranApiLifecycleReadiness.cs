@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes API lifecycle readiness.
 /// </summary>
-public sealed class SigtranApiLifecycleReadinessReport
+public sealed class SigtranApiLifecycleReadinessSnapshot
 {
     /// <summary>Creates an API lifecycle readiness report.</summary>
     /// <param name="hasSurfaceCatalog">Whether an API surface catalog is available.</param>
@@ -13,8 +13,8 @@ public sealed class SigtranApiLifecycleReadinessReport
     /// <param name="hasMigrationGuides">Whether migration guide entries are available.</param>
     /// <param name="hasBreakingChangeReview">Whether breaking-change review policy is available.</param>
     /// <param name="hasPublicApiBaseline">Whether a public API baseline is available.</param>
-    /// <param name="commercialReady">Whether wider commercial readiness is complete.</param>
-    public SigtranApiLifecycleReadinessReport(
+    /// <param name="productionReady">Whether wider production readiness is complete.</param>
+    public SigtranApiLifecycleReadinessSnapshot(
         bool hasSurfaceCatalog,
         bool hasStabilityContracts,
         bool hasVersionMatrix,
@@ -22,7 +22,7 @@ public sealed class SigtranApiLifecycleReadinessReport
         bool hasMigrationGuides,
         bool hasBreakingChangeReview,
         bool hasPublicApiBaseline,
-        bool commercialReady)
+        bool productionReady)
     {
         HasSurfaceCatalog = hasSurfaceCatalog;
         HasStabilityContracts = hasStabilityContracts;
@@ -31,7 +31,7 @@ public sealed class SigtranApiLifecycleReadinessReport
         HasMigrationGuides = hasMigrationGuides;
         HasBreakingChangeReview = hasBreakingChangeReview;
         HasPublicApiBaseline = hasPublicApiBaseline;
-        CommercialReady = commercialReady;
+        ProductionReady = productionReady;
     }
 
     /// <summary>Whether an API surface catalog is available.</summary>
@@ -55,8 +55,8 @@ public sealed class SigtranApiLifecycleReadinessReport
     /// <summary>Whether a public API baseline is available.</summary>
     public bool HasPublicApiBaseline { get; }
 
-    /// <summary>Whether wider commercial readiness is complete.</summary>
-    public bool CommercialReady { get; }
+    /// <summary>Whether wider production readiness is complete.</summary>
+    public bool ProductionReady { get; }
 
     /// <summary>Whether the API lifecycle foundation is ready.</summary>
     public bool FoundationReady => HasSurfaceCatalog
@@ -68,7 +68,7 @@ public sealed class SigtranApiLifecycleReadinessReport
         && HasPublicApiBaseline;
 
     /// <summary>Whether stable API lifecycle claims are ready.</summary>
-    public bool StableApiLifecycleReady => FoundationReady && CommercialReady;
+    public bool StableApiLifecycleReady => FoundationReady && ProductionReady;
 }
 
 /// <summary>
@@ -78,7 +78,7 @@ public static class SigtranApiLifecycleReadiness
 {
     /// <summary>Returns the current API lifecycle readiness report.</summary>
     /// <returns>The current API lifecycle readiness report.</returns>
-    public static SigtranApiLifecycleReadinessReport GetReport()
+    public static SigtranApiLifecycleReadinessSnapshot GetReport()
     {
         return new(
             hasSurfaceCatalog: SigtranApiSurfaceCatalog.GetSurfaces().Count > 0,
@@ -86,8 +86,8 @@ public static class SigtranApiLifecycleReadiness
             hasVersionMatrix: SigtranApiVersionMatrix.GetEntries().Count > 0,
             hasDeprecationPolicy: SigtranDeprecationPolicies.CreateStableDefault().IsStableLifecyclePolicy,
             hasMigrationGuides: SigtranMigrationGuides.GetEntries().All(entry => entry.RequiresCodeSamples),
-            hasBreakingChangeReview: SigtranBreakingChangeReview.CreateDefault().IsCommercialApiGovernanceReady,
+            hasBreakingChangeReview: SigtranBreakingChangeReview.CreateDefault().IsProductionApiGovernanceReady,
             hasPublicApiBaseline: SigtranPublicApiBaseline.CreateCurrent().CoversKnownSurfaces,
-            commercialReady: SigtranCommercialReadiness.GetReport().CommercialReady);
+            productionReady: SigtranProductionReadiness.GetReport().ProductionReady);
     }
 }

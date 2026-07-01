@@ -38,13 +38,13 @@ public static class SigtranReleasePromotionGate
     /// <param name="publishGuard">The publish guard result.</param>
     /// <param name="workflowOrchestrationReady">Whether workflow orchestration is ready.</param>
     /// <param name="supplyChainPromotionReady">Whether supply-chain promotion is ready.</param>
-    /// <param name="commercialEvidenceReady">Whether commercial evidence is ready.</param>
+    /// <param name="releaseEvidenceReady">Whether production evidence is ready.</param>
     /// <returns>The promotion gate result.</returns>
     public static SigtranReleasePromotionGateResult Evaluate(
         SigtranReleasePublishGuardResult publishGuard,
         bool workflowOrchestrationReady,
         bool supplyChainPromotionReady,
-        bool commercialEvidenceReady)
+        bool releaseEvidenceReady)
     {
         ArgumentNullException.ThrowIfNull(publishGuard);
 
@@ -64,9 +64,9 @@ public static class SigtranReleasePromotionGate
             reasons.Add("supply-chain-promotion-required");
         }
 
-        if (!commercialEvidenceReady)
+        if (!releaseEvidenceReady)
         {
-            reasons.Add("commercial-evidence-required");
+            reasons.Add("release-evidence-required");
         }
 
         return new SigtranReleasePromotionGateResult(reasons.Count == 0, reasons);

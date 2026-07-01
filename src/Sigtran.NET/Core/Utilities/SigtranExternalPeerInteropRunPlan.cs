@@ -41,11 +41,11 @@ public sealed class SigtranExternalPeerInteropRunPlan
     public SigtranExternalPeerInteropCommandSet CommandSet { get; }
 
     /// <summary>Whether the run plan has the required execution contracts.</summary>
-    public bool IsExecutable => Environment.CanProduceCommercialArtifacts
+    public bool IsExecutable => Environment.CanProduceProductionArtifacts
         && Configuration.IsAspToSgReady
         && Expectations.CoversAspLifecycle
         && Expectations.RequiresDataTransfer
-        && CommandSet.IsCommercialLabCommandSet;
+        && CommandSet.IsProductionLabCommandSet;
 }
 
 /// <summary>

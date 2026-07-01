@@ -86,7 +86,7 @@ public sealed class SigtranExternalPeerInteropArtifactManifest
     /// <summary>Returns whether every retained artifact has a SHA-256 digest.</summary>
     public bool AllArtifactsHaveDigests => _artifacts.Count > 0 && _artifacts.All(static artifact => artifact.HasDigest);
 
-    /// <summary>Returns whether the manifest is complete and digest-covered for commercial review.</summary>
+    /// <summary>Returns whether the manifest is complete and digest-covered for production review.</summary>
     public bool IsReviewReady => IsComplete && AllArtifactsHaveDigests;
 
     /// <summary>Returns the required artifact kinds missing from the manifest.</summary>

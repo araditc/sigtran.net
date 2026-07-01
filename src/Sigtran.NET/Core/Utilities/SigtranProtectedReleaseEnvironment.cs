@@ -11,7 +11,7 @@ public enum SigtranProtectedReleaseChannel
     /// <summary>Prerelease publication for release-candidate packages.</summary>
     Prerelease,
 
-    /// <summary>Stable publication for commercially ready packages.</summary>
+    /// <summary>Stable publication for productionly ready packages.</summary>
     Stable
 }
 

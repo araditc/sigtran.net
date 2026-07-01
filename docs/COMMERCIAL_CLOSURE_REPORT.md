@@ -1,4 +1,4 @@
-# Commercial Closure Report
+# Production Closure Report
 
 Status: public RC prerelease publication is closed; stable commercial publication is still gated.
 

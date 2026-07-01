@@ -1,12 +1,12 @@
-# Phase 37 Commercial Evidence Execution Orchestration
+# Phase 37 Production Evidence Execution Orchestration
 
 Phase 37 turns the readiness lockdown from Phase 36 into a governed execution package for real evidence-producing work. It does not create fake passing artifacts. It defines the run identity, stages, commands, environment contracts, artifact collection, verification, blocker handling, retry/resume behavior, and status reporting needed to run a real commercial evidence cycle.
 
-Public APIs use domain names such as `SigtranCommercialEvidenceExecutionRuns`; phase numbers are intentionally kept out of source type names.
+Public APIs use domain names such as `SigtranReleaseEvidenceExecutionRuns`; phase numbers are intentionally kept out of source type names.
 
 ## Unit 1 - Evidence Execution Run Identity
 
-`SigtranCommercialEvidenceExecutionRuns` creates a release-candidate evidence execution run bound to:
+`SigtranReleaseEvidenceExecutionRuns` creates a release-candidate evidence execution run bound to:
 
 - Locked release target.
 - Stable run identifier.
@@ -18,7 +18,7 @@ Floating roots such as `artifacts/latest/...` are rejected because retained evid
 
 ## Unit 2 - Evidence Execution Stage Catalog
 
-`SigtranCommercialEvidenceExecutionStages` defines the required execution stages:
+`SigtranReleaseEvidenceExecutionStages` defines the required execution stages:
 
 - Readiness preflight.
 - Native SCTP lab.
@@ -33,7 +33,7 @@ The stage catalog validates required stage coverage, unique stage identifiers an
 
 ## Unit 3 - Operator Command Plan
 
-`SigtranCommercialEvidenceExecutionCommands` maps each execution stage to one operator-facing command:
+`SigtranReleaseEvidenceExecutionCommands` maps each execution stage to one operator-facing command:
 
 - Commands follow the deterministic stage order.
 - Every command carries the execution run identifier.
@@ -44,7 +44,7 @@ The command plan is a runbook contract. It defines what should be run and how ar
 
 ## Unit 4 - Execution Environment Contract
 
-`SigtranCommercialEvidenceExecutionEnvironments` defines the variables required by a governed evidence execution:
+`SigtranReleaseEvidenceExecutionEnvironments` defines the variables required by a governed evidence execution:
 
 - Run identity: `SIGTRAN_RUN_ID`, `SIGTRAN_ARTIFACT_ROOT`, `SIGTRAN_RELEASE_VERSION`, and `SIGTRAN_SOURCE_COMMIT`.
 - Lab inputs: `SIGTRAN_PEER_CONFIG` and `SIGTRAN_CAPTURE_INTERFACE`.
@@ -54,7 +54,7 @@ The contract validates run identity values, reports missing or mismatched variab
 
 ## Unit 5 - Artifact Collection Manifest
 
-`SigtranCommercialEvidenceExecutionArtifacts` defines the retained outputs expected from the run:
+`SigtranReleaseEvidenceExecutionArtifacts` defines the retained outputs expected from the run:
 
 - Packet capture.
 - Peer logs, SDK traces, and configuration.
@@ -68,7 +68,7 @@ The manifest validates checklist coverage, known stage ownership, unique paths, 
 
 ## Unit 6 - Digest And Redaction Verification Plan
 
-`SigtranCommercialEvidenceExecutionVerifications` defines review requirements for each retained artifact:
+`SigtranReleaseEvidenceExecutionVerifications` defines review requirements for each retained artifact:
 
 - Every artifact requires digest verification.
 - Packet captures, logs, SDK traces, configurations, comparison reports, and benchmark reports require redaction review.
@@ -78,7 +78,7 @@ This plan keeps evidence review auditable and prevents sensitive telecom traces 
 
 ## Unit 7 - Execution Blocker Classifier
 
-`SigtranCommercialEvidenceExecutionBlockers` classifies execution failures into stable categories:
+`SigtranReleaseEvidenceExecutionBlockers` classifies execution failures into stable categories:
 
 - Readiness preflight.
 - Environment.
@@ -94,7 +94,7 @@ Each blocker declares whether it is retryable after correction. Unknown blockers
 
 ## Unit 8 - Retry And Resume Policy
 
-`SigtranCommercialEvidenceExecutionRetryPolicies` maps blocker kinds to retry decisions:
+`SigtranReleaseEvidenceExecutionRetryPolicies` maps blocker kinds to retry decisions:
 
 - Environment, command, external peer, artifact, digest, and redaction blockers can be retried within bounded attempt counts.
 - Native SCTP host blockers, protected approval blockers, unknown blockers, and failed preflight blockers require manual correction.
@@ -104,13 +104,13 @@ The policy prevents endless retries and keeps host capability, approval, and unk
 
 ## Unit 9 - Execution Orchestration Status
 
-`SigtranCommercialEvidenceExecutionStatus` exposes the current orchestration state:
+`SigtranReleaseEvidenceExecutionStatus` exposes the current orchestration state:
 
 - Completed orchestration capabilities.
 - Default publication blockers.
 - Execution orchestration readiness.
 - Retained evidence readiness.
-- Commercial publication readiness.
+- Production publication readiness.
 
 The status is intentionally conservative. The orchestration contracts are ready, but publication is still blocked until real retained execution artifacts exist.
 

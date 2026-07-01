@@ -1,4 +1,4 @@
-# SIGTRAN.NET Commercial Readiness Report
+# SIGTRAN.NET Production Readiness Report
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
@@ -14,7 +14,7 @@ Status: public RC prerelease publication is closed; stable commercial publicatio
 - Smoke benchmark report generation is executable.
 - Public API baseline generation is executable.
 - Stable commercial release gate foundation is complete: target lock, dossier map, reviewed checklist, stable decision, tag gate, protected authorization, guarded publish plan, final report writer, audit trail, and final status reporting are available.
-- Commercial release-day readiness runner is available and produces timestamped local evidence reports for build, tests, package creation, SBOM, public API baseline, smoke benchmark, provenance, signing verification, VM SSH probing, and GitHub release-dispatch probing.
+- Production release-day readiness runner is available and produces timestamped local evidence reports for build, tests, package creation, SBOM, public API baseline, smoke benchmark, provenance, signing verification, VM SSH probing, and GitHub release-dispatch probing.
 - External peer SCTP/M3UA run `commercial-external-peer-20260627T111932Z` passed on host `sigtrannet` against an independent C SCTP peer. Retained artifacts include PCAP, external peer log, SDK trace, TShark decode, M3UA field comparison, configuration, run report, summary JSON, and digest manifest.
 - External peer evidence digests: PCAP `2d4313440e665ddd9686bc3be3937810921d11c6d4ed2e6b4746a71d31f79416`, SDK trace `11a6da80dffc786ba66667ca0c85cc7b68fa5eb0f24316c5d47ea5ea2bb842fb`, peer log `50509d0ca7013c4496516daaec327eb269393c8fccc2036869db1bca2794c897`, TShark decode `a728d708de5f55022b776405bb7b2ffd6f12cc5239c4cdd54c9f0b36fad4712e`.
 - Peer traffic benchmark `commercial-peer-benchmark-20260627T112215Z` passed with warmup, sustained, and peak stages against the independent C SCTP peer. Sustained stage: `20` runs, `0` failures, average `647.2 ms`, P95 `660 ms`, P99 `665 ms`, max RSS `50732 KB`. Peak stage: `5` concurrent runs, `0` failures, P95/P99 `769 ms`.
@@ -22,16 +22,16 @@ Status: public RC prerelease publication is closed; stable commercial publicatio
 - Protected release workflow dry-run `28289987418` passed on commit `fd1224143361307673e4ec7b14e732098aa78a5e` with `publish=false`. It uploaded `sigtran-package`, `sigtran-symbols`, `sigtran-supply-chain`, and `sigtran-release-dry-run` artifacts and retained package, SBOM, signing verification, timestamp, digest, API diff, dry-run, and local provenance marker evidence.
 - Protected prerelease publication workflow `28290586511` passed on commit `914fc333fc3b99184af9781d25585928583a3239` with `publish=true`. It pushed `Sigtran.NET.1.0.0-rc.1.nupkg` and `Sigtran.NET.1.0.0-rc.1.snupkg` to NuGet.org, uploaded package, symbols, supply-chain, and dry-run artifacts, and retained publication evidence at `docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json`.
 - NuGet.org visibility and restore evidence passed for `Sigtran.NET` version `1.0.0-rc.1`: the package page returned HTTP 200, the flat-container index includes `1.0.0-rc.1`, the flat-container package returned HTTP 200, and a clean `dotnet add package Sigtran.NET --version 1.0.0-rc.1` restore succeeded.
-- Final local readiness run `20260627T130623Z` evaluated the retained evidence manifest and reported `LocalEvidenceReady=true`, `CommercialReady=true`, and no commercial blockers for the internal RC gate.
+- Final local readiness run `20260627T130623Z` evaluated the retained evidence manifest and reported `LocalEvidenceReady=true`, `ProductionReady=true`, and no commercial blockers for the internal RC gate.
 
-## Remaining Commercial Blockers
+## Remaining Production Blockers
 
 - The current benchmark is real Linux SCTP peer traffic evidence, but it is single-host loopback. Do not use it for broad operator capacity claims until an operator-sized deployment benchmark is retained.
 - Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
 
-## Commercial Decision
+## Production Decision
 
 Do not publish this SDK as stable commercially production-ready yet.
 

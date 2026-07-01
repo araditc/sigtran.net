@@ -26,7 +26,7 @@ public static class SigtranPackagePublicationIntegrationStatus
     ];
 
     /// <summary>The status label.</summary>
-    public const string StatusLabel = "Commercial Package Publication Gate Integration";
+    public const string StatusLabel = "Production Package Publication Gate Integration";
 
     /// <summary>The number of completed package publication integration work units.</summary>
     public const int CompletedUnitCount = 10;
@@ -47,7 +47,7 @@ public static class SigtranPackagePublicationIntegrationStatus
 
     /// <summary>Whether package publication gate integration foundation is ready.</summary>
     public static bool FoundationReady => Capabilities.Length == CompletedUnitCount
-        && SigtranPublicationCredentials.CreateDefaultPolicy().RequiresCommercialSecrets
+        && SigtranPublicationCredentials.CreateDefaultPolicy().RequiresProductionSecrets
         && SigtranNuGetPublishPlans.CreateDryRun().IsDryRunSafe
         && SigtranNuGetPublishPlans.CreatePublish().IsPublishCapable;
 

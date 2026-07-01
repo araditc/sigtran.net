@@ -24,17 +24,17 @@ public sealed class SigtranPackageSigningPlan
     /// <param name="mode">The signing mode.</param>
     /// <param name="certificateSubject">The expected certificate subject.</param>
     /// <param name="timestampAuthorityUrl">The timestamp authority URL.</param>
-    /// <param name="isRequiredForCommercialRelease">Whether signing is required for commercial release.</param>
+    /// <param name="isRequiredForRelease">Whether signing is required for production release.</param>
     public SigtranPackageSigningPlan(
         SigtranPackageSigningMode mode,
         string certificateSubject,
         string timestampAuthorityUrl,
-        bool isRequiredForCommercialRelease)
+        bool isRequiredForRelease)
     {
         Mode = mode;
         CertificateSubject = string.IsNullOrWhiteSpace(certificateSubject) ? throw new ArgumentException("Certificate subject is required.", nameof(certificateSubject)) : certificateSubject;
         TimestampAuthorityUrl = string.IsNullOrWhiteSpace(timestampAuthorityUrl) ? throw new ArgumentException("Timestamp authority URL is required.", nameof(timestampAuthorityUrl)) : timestampAuthorityUrl;
-        IsRequiredForCommercialRelease = isRequiredForCommercialRelease;
+        IsRequiredForRelease = isRequiredForRelease;
     }
 
     /// <summary>The signing mode.</summary>
@@ -46,8 +46,8 @@ public sealed class SigtranPackageSigningPlan
     /// <summary>The timestamp authority URL.</summary>
     public string TimestampAuthorityUrl { get; }
 
-    /// <summary>Whether signing is required for commercial release.</summary>
-    public bool IsRequiredForCommercialRelease { get; }
+    /// <summary>Whether signing is required for production release.</summary>
+    public bool IsRequiredForRelease { get; }
 
     /// <summary>Whether the plan has signing material references.</summary>
     public bool HasSigningMaterialReferences => Mode != SigtranPackageSigningMode.None
@@ -58,7 +58,7 @@ public sealed class SigtranPackageSigningPlan
     /// <returns>The signing summary.</returns>
     public string Describe()
     {
-        return $"mode={Mode} certificate={CertificateSubject} timestamp={TimestampAuthorityUrl} required={IsRequiredForCommercialRelease}";
+        return $"mode={Mode} certificate={CertificateSubject} timestamp={TimestampAuthorityUrl} required={IsRequiredForRelease}";
     }
 }
 
@@ -67,14 +67,14 @@ public sealed class SigtranPackageSigningPlan
 /// </summary>
 public static class SigtranPackageSigning
 {
-    /// <summary>Creates the default commercial package signing plan.</summary>
-    /// <returns>The default commercial package signing plan.</returns>
+    /// <summary>Creates the default production package signing plan.</summary>
+    /// <returns>The default production package signing plan.</returns>
     public static SigtranPackageSigningPlan CreateDefaultPlan()
     {
         return new(
             SigtranPackageSigningMode.Author,
             "SIGTRAN.NET release signing",
             "http://timestamp.sectigo.com",
-            isRequiredForCommercialRelease: true);
+            isRequiredForRelease: true);
     }
 }

@@ -99,7 +99,7 @@ public sealed class SctpMultiHomingEndpointSet
 /// <summary>
 /// Reports whether an SCTP endpoint set is ready for multi-homing.
 /// </summary>
-public sealed class SctpMultiHomingReadinessReport
+public sealed class SctpMultiHomingReadinessSnapshot
 {
     private readonly string[] _warnings;
 
@@ -107,7 +107,7 @@ public sealed class SctpMultiHomingReadinessReport
     /// <param name="endpointSet">The evaluated endpoint set.</param>
     /// <param name="isReady">Whether the endpoint set is multi-homing ready.</param>
     /// <param name="warnings">Warnings that explain non-ready or degraded configuration.</param>
-    public SctpMultiHomingReadinessReport(
+    public SctpMultiHomingReadinessSnapshot(
         SctpMultiHomingEndpointSet endpointSet,
         bool isReady,
         IReadOnlyList<string> warnings)
@@ -146,7 +146,7 @@ public static class SctpMultiHomingReadiness
     /// <summary>Evaluates an SCTP endpoint set for multi-homing readiness.</summary>
     /// <param name="endpointSet">The endpoint set to evaluate.</param>
     /// <returns>The multi-homing readiness report.</returns>
-    public static SctpMultiHomingReadinessReport Evaluate(SctpMultiHomingEndpointSet endpointSet)
+    public static SctpMultiHomingReadinessSnapshot Evaluate(SctpMultiHomingEndpointSet endpointSet)
     {
         ArgumentNullException.ThrowIfNull(endpointSet);
 

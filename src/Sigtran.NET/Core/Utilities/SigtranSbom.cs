@@ -21,17 +21,17 @@ public sealed class SigtranSbomPlan
     /// <param name="format">The SBOM format.</param>
     /// <param name="outputPath">The expected output path.</param>
     /// <param name="toolName">The generation tool name.</param>
-    /// <param name="isRequiredForCommercialRelease">Whether SBOM is required for commercial release.</param>
+    /// <param name="isRequiredForRelease">Whether SBOM is required for production release.</param>
     public SigtranSbomPlan(
         SigtranSbomFormat format,
         string outputPath,
         string toolName,
-        bool isRequiredForCommercialRelease)
+        bool isRequiredForRelease)
     {
         Format = format;
         OutputPath = string.IsNullOrWhiteSpace(outputPath) ? throw new ArgumentException("Output path is required.", nameof(outputPath)) : outputPath;
         ToolName = string.IsNullOrWhiteSpace(toolName) ? throw new ArgumentException("Tool name is required.", nameof(toolName)) : toolName;
-        IsRequiredForCommercialRelease = isRequiredForCommercialRelease;
+        IsRequiredForRelease = isRequiredForRelease;
     }
 
     /// <summary>The SBOM format.</summary>
@@ -43,14 +43,14 @@ public sealed class SigtranSbomPlan
     /// <summary>The generation tool name.</summary>
     public string ToolName { get; }
 
-    /// <summary>Whether SBOM is required for commercial release.</summary>
-    public bool IsRequiredForCommercialRelease { get; }
+    /// <summary>Whether SBOM is required for production release.</summary>
+    public bool IsRequiredForRelease { get; }
 
     /// <summary>Formats a compact SBOM summary.</summary>
     /// <returns>The SBOM summary.</returns>
     public string Describe()
     {
-        return $"format={Format} tool={ToolName} output={OutputPath} required={IsRequiredForCommercialRelease}";
+        return $"format={Format} tool={ToolName} output={OutputPath} required={IsRequiredForRelease}";
     }
 }
 
@@ -59,14 +59,14 @@ public sealed class SigtranSbomPlan
 /// </summary>
 public static class SigtranSbom
 {
-    /// <summary>Creates the default commercial SBOM plan.</summary>
-    /// <returns>The default commercial SBOM plan.</returns>
+    /// <summary>Creates the default production SBOM plan.</summary>
+    /// <returns>The default production SBOM plan.</returns>
     public static SigtranSbomPlan CreateDefaultPlan()
     {
         return new(
             SigtranSbomFormat.SpdxJson,
             "artifacts/sbom/Sigtran.NET.spdx.json",
             "Microsoft.Sbom.Tool",
-            isRequiredForCommercialRelease: true);
+            isRequiredForRelease: true);
     }
 }

@@ -19,7 +19,7 @@ param(
     [string]$ProjectPath = "src/Sigtran.NET/Sigtran.NET.csproj",
     [string]$ArtifactRoot = "artifacts/internal-signing",
     [string]$TimestampAuthority = "http://timestamp.sectigo.com",
-    [string]$CertificateSubject = "CN=Sigtran.NET Internal Commercial RC Signing, O=SIGTRAN.NET contributors",
+    [string]$CertificateSubject = "CN=Sigtran.NET Internal Production RC Signing, O=SIGTRAN.NET contributors",
     [switch]$TrustCurrentUserRoot
 )
 

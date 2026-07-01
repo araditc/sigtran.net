@@ -62,7 +62,7 @@ public static class SigtranHealthChecks
             new SigtranHealthCheckDefinition("m3ua-asp-state", SigtranHealthCheckArea.M3uaSession, "ASP state, heartbeat, and acknowledgement counters."),
             new SigtranHealthCheckDefinition("m3ua-routing", SigtranHealthCheckArea.Routing, "Routing context, DPC, and route table match."),
             new SigtranHealthCheckDefinition("interop-evidence", SigtranHealthCheckArea.Evidence, "Promoted external interoperability evidence."),
-            new SigtranHealthCheckDefinition("release-readiness", SigtranHealthCheckArea.Release, "Release gate and commercial readiness reports.")
+            new SigtranHealthCheckDefinition("release-readiness", SigtranHealthCheckArea.Release, "Release gate and production readiness reports.")
         ];
     }
 }

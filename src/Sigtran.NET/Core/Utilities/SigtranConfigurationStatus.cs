@@ -15,7 +15,7 @@ public static class SigtranConfigurationStatus
         "routing-configuration",
         "configuration-readiness-report",
         "configuration-ci-profile",
-        "commercial-configuration-gate",
+        "production-configuration-gate",
         "documentation"
     ];
 

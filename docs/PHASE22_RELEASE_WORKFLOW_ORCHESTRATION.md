@@ -8,7 +8,7 @@ The public APIs use domain names such as `SigtranReleaseWorkflowStatus`; phase n
 
 ## Part 1 - Workflow Contract
 
-`SigtranReleaseWorkflows.CreateCommercialReleasePlan()` defines the commercial release workflow contract.
+`SigtranReleaseWorkflows.CreateReleasePlan()` defines the commercial release workflow contract.
 
 The contract includes:
 
@@ -16,7 +16,7 @@ The contract includes:
 - Checkout and .NET setup stages.
 - Restore, build, test, and pack stages.
 - Supply-chain automation stage.
-- Commercial evidence verification stage.
+- Production evidence verification stage.
 - Package publish stage.
 - Required secret names for signing and publishing.
 

@@ -15,7 +15,7 @@ public static class SigtranComplianceStatus
         "export-control-policy",
         "compliance-readiness-report",
         "compliance-ci-profile",
-        "commercial-compliance-gate",
+        "production-compliance-gate",
         "documentation"
     ];
 

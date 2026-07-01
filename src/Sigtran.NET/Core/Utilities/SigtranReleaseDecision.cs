@@ -8,10 +8,10 @@ public enum SigtranReleaseDecisionKind
     /// <summary>Publication is blocked.</summary>
     Blocked,
 
-    /// <summary>Release candidate publication is allowed.</summary>
-    ReleaseCandidate,
+    /// <summary>Prerelease publication is allowed.</summary>
+    Prerelease,
 
-    /// <summary>Stable commercial publication is allowed.</summary>
+    /// <summary>Stable release publication is allowed.</summary>
     Stable
 }
 
@@ -53,7 +53,7 @@ public sealed class SigtranReleaseDecision
     /// <summary>Whether any NuGet publication is allowed.</summary>
     public bool AllowsPublication => Kind != SigtranReleaseDecisionKind.Blocked;
 
-    /// <summary>Whether stable commercial publication is allowed.</summary>
+    /// <summary>Whether stable release publication is allowed.</summary>
     public bool AllowsStablePublication => Kind == SigtranReleaseDecisionKind.Stable;
 
     /// <summary>Formats a compact decision summary.</summary>
@@ -70,23 +70,23 @@ public sealed class SigtranReleaseDecision
 public static class SigtranReleaseDecisions
 {
     /// <summary>Decides whether to publish an RC, publish stable, or block publication.</summary>
-    /// <param name="report">The final commercial readiness report.</param>
+    /// <param name="report">The final production readiness report.</param>
     /// <returns>The release decision.</returns>
-    public static SigtranReleaseDecision Decide(SigtranFinalCommercialReadinessReport report)
+    public static SigtranReleaseDecision Decide(SigtranFinalProductionReadinessSnapshot report)
     {
         ArgumentNullException.ThrowIfNull(report);
 
         if (report.StableReleaseReady)
         {
-            return new(report.Version, SigtranReleaseDecisionKind.Stable, "nuget.org", ["stable-commercial-release-ready"]);
+            return new(report.Version, SigtranReleaseDecisionKind.Stable, "nuget.org", ["stable-release-release-ready"]);
         }
 
-        if (report.ReleaseCandidateReady)
+        if (report.PrereleaseReady)
         {
-            string[] reasons = report.CommercialBlockers.Count == 0
-                ? ["stable-commercial-readiness-required"]
-                : ["stable-commercial-blockers-retained", .. report.CommercialBlockers];
-            return new(report.Version, SigtranReleaseDecisionKind.ReleaseCandidate, "nuget-prerelease", reasons);
+            string[] reasons = report.ProductionBlockers.Count == 0
+                ? ["stable-release-readiness-required"]
+                : ["stable-release-blockers-retained", .. report.ProductionBlockers];
+            return new(report.Version, SigtranReleaseDecisionKind.Prerelease, "nuget-prerelease", reasons);
         }
 
         return new(
@@ -96,7 +96,7 @@ public static class SigtranReleaseDecisions
             GetBlockedReasons(report));
     }
 
-    private static IReadOnlyList<string> GetBlockedReasons(SigtranFinalCommercialReadinessReport report)
+    private static IReadOnlyList<string> GetBlockedReasons(SigtranFinalProductionReadinessSnapshot report)
     {
         List<string> reasons = [];
 
@@ -125,7 +125,7 @@ public static class SigtranReleaseDecisions
             reasons.Add("supply-chain-release-foundation-required");
         }
 
-        reasons.AddRange(report.CommercialBlockers.Select(static blocker => $"commercial-blocker:{blocker}"));
+        reasons.AddRange(report.ProductionBlockers.Select(static blocker => $"production-blocker:{blocker}"));
         return reasons.Count == 0 ? ["publication-gate-required"] : reasons;
     }
 }
