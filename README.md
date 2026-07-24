@@ -12,17 +12,24 @@ Repository: <https://github.com/araditc/sigtran.net>
 
 ## Status
 
-SIGTRAN.NET is currently in an **alpha / preview** track.
+SIGTRAN.NET is currently in a **public release-candidate** track. Version
+`1.0.0-rc.1` has been published and restored from NuGet.org.
 
-The first production-oriented milestone is **M3UA over a transport abstraction**. SCTP, SCCP, TCAP, and MAP foundations are present in the project roadmap and implementation work, but production claims remain gated until retained interoperability evidence, Linux SCTP validation, external peer testing, and stable release governance are complete.
+Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
+the SDK readiness APIs through a common verification catalog. Full stable-product
+readiness remains gated on the M3UA runtime service, M2PA, stateful SCCP/TCAP/MAP
+services, operator-sized performance evidence, trusted signing, and stable release
+execution.
 
-For the current public alpha preparation, see:
+For release history and governance, see:
 
 - [Changelog](CHANGELOG.md)
 - [v0.1.0-alpha release notes](docs/releases/v0.1.0-alpha.md)
-- [Publish v0.1.0-alpha preview release checklist](https://github.com/araditc/sigtran.net/issues/1)
+- [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 
-> Alpha notice: SIGTRAN.NET is not yet a production-ready telecom signaling stack. Use it for evaluation, protocol review, experimentation, testing, and contribution until production evidence is complete.
+> RC notice: use the package for controlled integration and lab traffic. Do not
+> claim a complete operator-grade SS7 stack until the remaining runtime, protocol,
+> capacity, and stable-release gates are closed.
 
 ---
 
@@ -36,14 +43,17 @@ The .NET ecosystem has historically had limited native, open-source tooling for 
 
 ## Current Engineering Focus
 
-The current alpha track focuses on:
+The current RC engineering track focuses on:
 
 - M3UA framing, parsing, routing, diagnostics, and ASP state handling.
 - Transport abstraction for SIGTRAN workloads.
 - Official layer contracts from SCTP through MAP SMS for dependency-injected applications.
-- Linux native SCTP production transport hardening with retained stream/PPID metadata validation evidence.
-- SCTP direction, including Linux native SCTP validation.
-- SCCP, TCAP, and MAP foundations for future standards-oriented layers.
+- Linux native SCTP production transport with retained stream/PPID metadata,
+  reconnect, metrics, and graceful-shutdown evidence.
+- External SCTP/M3UA peer validation with PCAP, SDK trace, peer log, and TShark
+  comparison evidence.
+- Stateful SCCP, TCAP, and MAP SMS service layers.
+- M2PA as a parallel MTP2 path.
 - Byte-level tests and protocol validation.
 - Wireshark-friendly diagnostics and trace-oriented tooling.
 - Interoperability lab planning and external peer validation.
@@ -55,11 +65,12 @@ The current alpha track focuses on:
 
 | Area | Current Direction |
 | --- | --- |
-| M3UA | First production-oriented milestone; framing, parsing, routing, ASP state, diagnostics, and management flows are the main focus. |
-| SCTP | Transport abstraction is in place; native Linux SCTP loopback evidence validates stream id, PPID, receive metadata, reconnect, metrics, and graceful shutdown. |
-| SCCP | Foundation work exists and is moving toward standards-oriented validation. |
-| TCAP | Foundation work exists and requires retained interoperability and MAP profile validation. |
-| MAP | SMS-oriented MAP foundations are part of the roadmap and require external validation before production claims. |
+| M3UA | Codec, routing, ASP state, diagnostics, and external peer evidence are available; production runtime orchestration is the next gate. |
+| SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
+| M2PA | Official MTP2 contract exists; production M2PA runtime is planned. |
+| SCCP | Connectionless codec and routing foundation exists; a stateful service layer and external evidence remain. |
+| TCAP | BER and transaction foundations exist; production dialogue management and external evidence remain. |
+| MAP | SMS codec and facade foundations exist; stateful service workflows and external evidence remain. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
 
 ---
@@ -139,6 +150,7 @@ Start here:
 - [M3UA implementation notes](docs/M3UA.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
 - [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
+- [Phase 46 evidence and readiness reconciliation](docs/PHASE46_EVIDENCE_READINESS_RECONCILIATION.md)
 - [SCCP](docs/SCCP.md)
 - [TCAP](docs/TCAP.md)
 - [MAP SMS profile](docs/MAP.md)
@@ -189,12 +201,18 @@ Stable production support requires:
 
 - Retained Linux SCTP verification evidence.
 - External SIGTRAN peer interoperability evidence.
-- Protocol trace validation.
+- Production M3UA and M2PA runtime paths.
+- Stateful SCCP, TCAP, and MAP SMS service validation.
+- End-to-end protocol trace validation.
+- Operator-sized capacity and resilience evidence.
+- Trusted package signing and provenance.
 - Stable package publication evidence.
 - Stable API lifecycle validation.
 - Security, release, compliance, and operations review.
 
-Until those gates are complete, the project should be treated as alpha / preview infrastructure.
+The Linux SCTP and external M3UA evidence gates are complete. Until the remaining
+gates are complete, the package should be treated as release-candidate
+infrastructure for controlled integrations.
 
 ---
 

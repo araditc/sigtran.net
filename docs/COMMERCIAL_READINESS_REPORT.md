@@ -2,6 +2,10 @@
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
+The readiness APIs now consume `SigtranVerificationCatalogs.CreateCurrent()`.
+Native Linux SCTP and external SCTP/M3UA evidence report passing status from their
+retained manifests instead of stale hard-coded flags.
+
 ## Passed Evidence
 
 - SDK codebase builds, tests, and packs successfully.
@@ -23,6 +27,11 @@ Status: public RC prerelease publication is closed; stable commercial publicatio
 - Protected prerelease publication workflow `28290586511` passed on commit `914fc333fc3b99184af9781d25585928583a3239` with `publish=true`. It pushed `Sigtran.NET.1.0.0-rc.1.nupkg` and `Sigtran.NET.1.0.0-rc.1.snupkg` to NuGet.org, uploaded package, symbols, supply-chain, and dry-run artifacts, and retained publication evidence at `docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json`.
 - NuGet.org visibility and restore evidence passed for `Sigtran.NET` version `1.0.0-rc.1`: the package page returned HTTP 200, the flat-container index includes `1.0.0-rc.1`, the flat-container package returned HTTP 200, and a clean `dotnet add package Sigtran.NET --version 1.0.0-rc.1` restore succeeded.
 - Final local readiness run `20260627T130623Z` evaluated the retained evidence manifest and reported `LocalEvidenceReady=true`, `ProductionReady=true`, and no commercial blockers for the internal RC gate.
+- Native SCTP transport run `phase45-native-sctp-20260701T103951Z` passed on
+  kernel `5.15.0-181-generic` with stream `1`, PPID `3`, receive metadata,
+  reconnect, queue metrics, and graceful shutdown validation. PCAP and SDK trace
+  SHA-256 values are retained in
+  `docs/evidence/PHASE45_NATIVE_SCTP_20260701T103951Z.json`.
 
 ## Remaining Production Blockers
 
@@ -30,6 +39,13 @@ Status: public RC prerelease publication is closed; stable commercial publicatio
 - Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
+- A production M3UA runtime service still needs lifecycle orchestration, failover,
+  bounded queueing, restart handling, and runtime observability.
+- M2PA is not yet available as a production `IMtp2Link` path.
+- SCCP, TCAP, and MAP SMS require stateful service/session implementations and
+  independent end-to-end peer evidence.
+- The retained benchmark is not an operator-sized multi-host capacity or soak
+  result.
 
 ## Production Decision
 

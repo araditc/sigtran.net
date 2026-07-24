@@ -87,6 +87,16 @@ public static class SigtranInteropLabReadiness
     /// <returns>The current interoperability lab readiness report.</returns>
     public static SigtranInteropLabReadinessSnapshot GetReport()
     {
+        return GetReport(SigtranVerificationCatalogs.CreateCurrent());
+    }
+
+    /// <summary>Returns interoperability lab readiness from retained verification evidence.</summary>
+    /// <param name="verificationCatalog">The retained verification catalog.</param>
+    /// <returns>The interoperability lab readiness report.</returns>
+    public static SigtranInteropLabReadinessSnapshot GetReport(
+        SigtranVerificationCatalog verificationCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(verificationCatalog);
         return new(
             hasScenarioCatalog: SigtranInteropLabScenarios.GetScenarios().Count > 0,
             hasArtifactManifests: true,
@@ -95,6 +105,9 @@ public static class SigtranInteropLabReadiness
             hasTraceComparison: true,
             hasEvidencePromotion: true,
             hasCiProfile: SigtranInteropLabCiProfiles.CreateDefault().Commands.Count > 0,
-            hasPassingExternalEvidence: SigtranInteropEvidence.CreateCurrentRegistry().HasPassingEvidence());
+            hasPassingExternalEvidence:
+                verificationCatalog.HasPassingEvidence(SigtranVerificationArea.ExternalSctpPeer)
+                && verificationCatalog.HasPassingEvidence(
+                    SigtranVerificationArea.M3uaPeerInteroperability));
     }
 }

@@ -1,3 +1,5 @@
+using Sigtran.NET.Core.Utilities;
+
 namespace Sigtran.NET.Layers.SCTP;
 
 /// <summary>
@@ -99,6 +101,16 @@ public static class NativeSctpReadiness
     /// <returns>The current native SCTP readiness report.</returns>
     public static NativeSctpReadinessSnapshot GetReport()
     {
+        return GetReport(SigtranVerificationCatalogs.CreateCurrent());
+    }
+
+    /// <summary>Returns native SCTP readiness from retained verification evidence.</summary>
+    /// <param name="verificationCatalog">The retained verification catalog.</param>
+    /// <returns>The native SCTP readiness report.</returns>
+    public static NativeSctpReadinessSnapshot GetReport(
+        SigtranVerificationCatalog verificationCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(verificationCatalog);
         return new(
             hasPlatformProbe: true,
             hasSocketFactory: true,
@@ -107,6 +119,7 @@ public static class NativeSctpReadiness
             hasConnector: true,
             hasListener: true,
             hasLabProfile: true,
-            hasLinuxVerification: false);
+            hasLinuxVerification: verificationCatalog.HasPassingEvidence(
+                SigtranVerificationArea.NativeLinuxSctp));
     }
 }

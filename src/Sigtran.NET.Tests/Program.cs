@@ -354,6 +354,7 @@ Run("SIGTRAN production evidence approval command materializer writes script", S
 Run("SIGTRAN production evidence approval handoff status summarizes final validation", SigtranReleaseEvidenceApprovalHandoffStatusSummarizesFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("SIGTRAN public API naming avoids project plan terminology", SigtranPublicApiNamingAvoidsProjectPlanTerminology);
+Run("SIGTRAN verification catalog reconciles retained evidence", SigtranVerificationCatalogReconcilesRetainedEvidence);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
 Run("Native SCTP connection planner resolves endpoints", NativeSctpConnectionPlannerResolvesEndpoints);
@@ -611,10 +612,10 @@ static void SigtranInteroperabilityReadinessSnapshotsFoundationStatus()
     SigtranInteroperabilityReadinessSnapshot report = SigtranInteroperabilityReadiness.GetReport();
 
     Assert(report.FoundationReady, "interoperability tooling foundation should be ready");
-    Assert(!report.IsProductionReady, "interoperability tooling should wait for external lab evidence");
+    Assert(report.IsProductionReady, "interoperability tooling should consume retained external lab evidence");
     AssertEqual(8, report.FoundationCapabilityCount, "interoperability foundation capability count");
     AssertEqual(SigtranInteroperabilityReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "interoperability required capability count");
-    Assert(report.Describe().Contains("externalLab=False", StringComparison.Ordinal), report.Describe());
+    Assert(report.Describe().Contains("externalLab=True", StringComparison.Ordinal), report.Describe());
 }
 
 static void SigtranInteroperabilityToolingStatusSummarizesCompletedTooling()
@@ -633,9 +634,14 @@ static void SigtranProductionReadinessSnapshotsReleaseGates()
     SigtranProductionReadinessSnapshot report = SigtranProductionReadiness.GetReport();
 
     Assert(report.InternalReleaseReady, "production readiness should see internal release foundation");
-    Assert(!report.ProductionReady, "production readiness should wait for external gates");
-    Assert(report.Describe().Contains("nativeSctp=False", StringComparison.Ordinal), report.Describe());
-    Assert(report.Describe().Contains("externalInterop=False", StringComparison.Ordinal), report.Describe());
+    Assert(!report.ProductionReady, "production readiness should wait for runtime and release gates");
+    Assert(report.HasNativeSctpVerification, report.Describe());
+    Assert(report.HasExternalInteroperabilityEvidence, report.Describe());
+    Assert(!report.HasReleaseGovernance, report.Describe());
+    Assert(report.ProductionBlockers.Contains("m2pa-runtime-required"), report.Describe());
+    Assert(report.ProductionBlockers.Contains("operator-performance-evidence-required"), report.Describe());
+    Assert(report.Describe().Contains("nativeSctp=True", StringComparison.Ordinal), report.Describe());
+    Assert(report.Describe().Contains("externalInterop=True", StringComparison.Ordinal), report.Describe());
 }
 
 static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
@@ -644,10 +650,11 @@ static void SigtranNativeSctpSupportMatrixReportsVerificationStatus()
 
     AssertEqual(3, matrix.Count, "native SCTP support matrix count");
     AssertEqual(SigtranOperatingSystemFamily.Linux, matrix[0].OperatingSystem, "native SCTP Linux row");
-    AssertEqual(SigtranNativeSctpSupportStatus.VerificationRequired, matrix[0].Status, "native SCTP Linux status");
+    AssertEqual(SigtranNativeSctpSupportStatus.ProductionVerified, matrix[0].Status, "native SCTP Linux status");
     AssertEqual(SigtranNativeSctpSupportStatus.ContractOnly, matrix[1].Status, "native SCTP Windows status");
     Assert(SigtranNativeSctpSupport.IsImplementationFoundationReady(), "native SCTP implementation foundation should be ready");
-    Assert(!SigtranNativeSctpSupport.IsProductionVerified(), "native SCTP should not be production verified yet");
+    Assert(SigtranNativeSctpSupport.IsProductionVerified(SigtranOperatingSystemFamily.Linux), "native SCTP should be verified on Linux");
+    Assert(!SigtranNativeSctpSupport.IsProductionVerified(), "native SCTP should not claim verification on every platform");
 }
 
 static void SigtranInteropEvidenceRegistryTracksLabResults()
@@ -1838,8 +1845,8 @@ static void SigtranInteropLabReadinessSnapshotsFoundationAndEvidenceGates()
     SigtranInteropLabReadinessSnapshot report = SigtranInteropLabReadiness.GetReport();
 
     Assert(report.FoundationReady, report.Describe());
-    Assert(!report.HasPassingExternalEvidence, "external lab evidence should stay false until real artifacts are added");
-    Assert(!report.ProductionReady, report.Describe());
+    Assert(report.HasPassingExternalEvidence, "external lab evidence should consume retained artifacts");
+    Assert(report.ProductionReady, report.Describe());
     Assert(report.Describe().Contains("foundationReady=True", StringComparison.Ordinal), report.Describe());
 }
 
@@ -1849,7 +1856,7 @@ static void SigtranProductionReadinessUsesInteropLabProductionGate()
     SigtranProductionReadinessSnapshot production = SigtranProductionReadiness.GetReport();
 
     AssertEqual(labReadiness.ProductionReady, production.HasExternalInteroperabilityEvidence, "production external interop gate");
-    Assert(!production.HasExternalInteroperabilityEvidence, "production readiness should wait for real lab evidence");
+    Assert(production.HasExternalInteroperabilityEvidence, "production readiness should consume retained peer evidence");
     Assert(!production.ProductionReady, production.Describe());
 }
 
@@ -1861,7 +1868,7 @@ static void SigtranInteropLabStatusSummarizesInteropLabFoundation()
     AssertEqual(10, capabilities.Count, "interoperability lab capability count");
     Assert(capabilities.Contains("production-readiness-gate-integration"), "interoperability lab status should include production readiness integration");
     Assert(SigtranInteropLabStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
-    Assert(SigtranInteropLabStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
+    Assert(SigtranInteropLabStatus.Describe().Contains("productionReady=True", StringComparison.Ordinal), SigtranInteropLabStatus.Describe());
 }
 
 static void SigtranReleaseAutomationPlanExposesDeterministicReleaseSteps()
@@ -7377,9 +7384,31 @@ static void NativeSctpReadinessSnapshotsFoundationAndVerificationGates()
     NativeSctpReadinessSnapshot report = NativeSctpReadiness.GetReport();
 
     Assert(report.FoundationReady, "native SCTP foundation should be ready");
-    Assert(!report.IsProductionReady, "native SCTP production should wait for Linux verification");
+    Assert(report.IsProductionReady, "native SCTP should consume retained Linux verification");
     AssertEqual(NativeSctpReadiness.RequiredFoundationCapabilityCount, report.FoundationCapabilityCount, "native SCTP foundation count");
-    Assert(report.Describe().Contains("linuxVerified=False", StringComparison.Ordinal), report.Describe());
+    Assert(report.Describe().Contains("linuxVerified=True", StringComparison.Ordinal), report.Describe());
+}
+
+static void SigtranVerificationCatalogReconcilesRetainedEvidence()
+{
+    SigtranVerificationCatalog catalog = SigtranVerificationCatalogs.CreateCurrent();
+
+    AssertEqual(7, catalog.Snapshot().Count, "retained verification record count");
+    Assert(catalog.HasPassingEvidence(SigtranVerificationArea.NativeLinuxSctp), "native Linux SCTP evidence");
+    Assert(catalog.HasPassingEvidence(SigtranVerificationArea.ExternalSctpPeer), "external SCTP peer evidence");
+    Assert(catalog.HasPassingEvidence(SigtranVerificationArea.M3uaPeerInteroperability), "M3UA peer evidence");
+    Assert(catalog.HasPassingEvidence(SigtranVerificationArea.ReleaseSbom), "release SBOM evidence");
+    Assert(!catalog.HasPassingEvidence(SigtranVerificationArea.OperatorPerformance), "operator performance must remain blocked");
+    Assert(!catalog.HasPassingEvidence(SigtranVerificationArea.TrustedPackageSigning), "trusted package signing must remain blocked");
+    Assert(!catalog.HasPassingEvidence(SigtranVerificationArea.StablePublication), "stable publication must remain blocked");
+
+    IReadOnlyList<SigtranVerificationArea> missing = catalog.GetMissingAreas(
+    [
+        SigtranVerificationArea.NativeLinuxSctp,
+        SigtranVerificationArea.OperatorPerformance,
+        SigtranVerificationArea.StablePublication
+    ]);
+    AssertEqual(2, missing.Count, "missing retained verification area count");
 }
 
 static void SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation()
@@ -7391,7 +7420,7 @@ static void SigtranNativeSctpImplementationStatusSummarizesNativeSctpFoundation(
     AssertEqual(10, capabilities.Count, "native SCTP implementation capability count");
     Assert(capabilities.Contains("native-sctp-listener"), "native SCTP implementation status should include listener");
     Assert(SigtranNativeSctpImplementationStatus.Describe().Contains("foundationReady=True", StringComparison.Ordinal), SigtranNativeSctpImplementationStatus.Describe());
-    Assert(SigtranNativeSctpImplementationStatus.Describe().Contains("productionReady=False", StringComparison.Ordinal), SigtranNativeSctpImplementationStatus.Describe());
+    Assert(SigtranNativeSctpImplementationStatus.Describe().Contains("productionReady=True", StringComparison.Ordinal), SigtranNativeSctpImplementationStatus.Describe());
 }
 
 static void TcapBerElementEncodesShortAndLongLengths()
@@ -8427,9 +8456,8 @@ static void SctpProductionHardeningStatusSummarizesFoundation()
     AssertEqual(10, status.CompletedUnitCount, "SCTP hardening completed units");
     AssertEqual(10, status.Capabilities.Count, "SCTP hardening capabilities");
     Assert(status.FoundationReady, status.Describe());
-    Assert(!status.ProductionReady, status.Describe());
-    Assert(status.Blockers.Contains("retained-linux-sctp-evidence-required"), status.Describe());
-    Assert(status.Blockers.Contains("retained-external-peer-evidence-required"), status.Describe());
+    Assert(status.ProductionReady, status.Describe());
+    AssertEqual(0, status.Blockers.Count, "SCTP hardening blockers");
     Assert(status.Describe().Contains("foundationReady=True", StringComparison.Ordinal), status.Describe());
 }
 

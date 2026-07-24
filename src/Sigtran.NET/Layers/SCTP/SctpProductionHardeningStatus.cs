@@ -87,17 +87,18 @@ public static class SctpProductionHardeningStatus
 
     /// <summary>Whether the source-level foundation is ready.</summary>
     public static bool FoundationReady => CurrentCapabilities.Length == CompletedUnitCount
-        && SctpProductionHardeningReadiness.GetReport().FoundationReady;
+        && SctpProductionHardeningReadiness.GetCurrentReport().FoundationReady;
 
     /// <summary>Whether production evidence allows production SCTP claims.</summary>
     public static bool ProductionReady => FoundationReady
-        && SctpProductionHardeningReadiness.GetReport().ProductionReady;
+        && SctpProductionHardeningReadiness.GetCurrentReport().ProductionReady;
 
     /// <summary>Returns the current production hardening status report.</summary>
     /// <returns>The current status report.</returns>
     public static SctpProductionHardeningStatusReport GetStatus()
     {
-        SctpProductionHardeningReadinessSnapshot readiness = SctpProductionHardeningReadiness.GetReport();
+        SctpProductionHardeningReadinessSnapshot readiness =
+            SctpProductionHardeningReadiness.GetCurrentReport();
         return new(
             StatusLabel,
             CompletedUnitCount,

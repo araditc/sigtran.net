@@ -68,7 +68,7 @@ public static class SigtranNativeSctpSupport
 {
     private static readonly SigtranNativeSctpSupportEntry[] Entries =
     [
-        new(SigtranOperatingSystemFamily.Linux, SigtranNativeSctpSupportStatus.VerificationRequired, "Target platform for native SCTP lab verification."),
+        new(SigtranOperatingSystemFamily.Linux, SigtranNativeSctpSupportStatus.ProductionVerified, "Linux kernel SCTP stream, PPID, metadata, reconnect, queue metrics, and graceful shutdown are covered by retained verification evidence."),
         new(SigtranOperatingSystemFamily.Windows, SigtranNativeSctpSupportStatus.ContractOnly, "Use the transport contract or development TCP adapter until a verified SCTP provider is selected."),
         new(SigtranOperatingSystemFamily.MacOS, SigtranNativeSctpSupportStatus.ContractOnly, "No production native SCTP claim is made.")
     ];
@@ -85,6 +85,17 @@ public static class SigtranNativeSctpSupport
     public static bool IsProductionVerified()
     {
         return Entries.All(static entry => entry.Status == SigtranNativeSctpSupportStatus.ProductionVerified);
+    }
+
+    /// <summary>Returns whether one operating system family has production verification.</summary>
+    /// <param name="operatingSystem">The operating system family.</param>
+    /// <returns>True when the selected platform is production verified; otherwise false.</returns>
+    public static bool IsProductionVerified(
+        SigtranOperatingSystemFamily operatingSystem)
+    {
+        return Entries.Any(entry =>
+            entry.OperatingSystem == operatingSystem
+            && entry.Status == SigtranNativeSctpSupportStatus.ProductionVerified);
     }
 
     /// <summary>Returns whether the native SCTP implementation foundation is available.</summary>

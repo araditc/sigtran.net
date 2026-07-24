@@ -49,8 +49,23 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 42 | Production package publication gate integration | [Phase 42 Production Package Publication Gate Integration](PHASE42_COMMERCIAL_PACKAGE_PUBLICATION_GATE_INTEGRATION.md), [Phase 42 Summary](PHASE42_SUMMARY.md) | Foundation complete; protected live publication run still required |
 | 43 | Stable commercial release gate | [Phase 43 Stable Production Release Gate](PHASE43_STABLE_COMMERCIAL_RELEASE_GATE.md), [Phase 43 Summary](PHASE43_SUMMARY.md) | Foundation complete; real stable publication evidence still required |
 | 44 | Layer contracts and package boundaries | [Phase 44 Layer Contracts](PHASE44_LAYER_CONTRACTS.md), [Phase 44 Summary](PHASE44_SUMMARY.md), [Layer Contracts](LAYER_CONTRACTS.md) | Complete; official layer interfaces and adapters are available |
-| 45 | Native SCTP production transport | [Phase 45 Native SCTP Production Transport](PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md), [Phase 45 Summary](PHASE45_SUMMARY.md), [SCTP Transport](SCTP_TRANSPORT.md) | Evidence complete for Linux SCTP loopback; external peer remains separate |
+| 45 | Native SCTP production transport | [Phase 45 Native SCTP Production Transport](PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md), [Phase 45 Summary](PHASE45_SUMMARY.md), [SCTP Transport](SCTP_TRANSPORT.md) | Evidence complete for Linux SCTP loopback; external peer evidence is tracked separately |
+| 46 | Evidence and readiness reconciliation | [Phase 46 Evidence And Readiness Reconciliation](PHASE46_EVIDENCE_READINESS_RECONCILIATION.md), [Phase 46 Summary](PHASE46_SUMMARY.md) | Complete; retained SCTP/M3UA evidence is reflected by readiness APIs |
+| 47 | M3UA production runtime API | Planned | Pending |
+| 48 | M2PA production path | Planned | Pending |
+| 49 | SCCP stateful service layer | Planned | Pending |
+| 50 | TCAP dialogue manager | Planned | Pending |
+| 51 | MAP SMS service | Planned | Pending |
+| 52 | End-to-end SS7 traffic lab | Planned | Pending |
+| 53 | Operator-sized performance and resilience | Planned | Pending |
+| 54 | Production operations package | Planned | Pending |
+| 55 | Stable release execution | Planned | Pending |
 
 ## Current Production Gate
 
-The SDK can now define governed commercial evidence-producing execution, model intake of retained artifacts, verify retained files, execute filesystem-backed verification, prepare approved commercial run publication handoff records, integrate the approved handoff into the package publication gate with retained dry-run and guarded command outputs, lock the final stable release target, map the stable commercial dossier evidence required for checklist evaluation, evaluate approved stable commercial readiness areas, record a stable release decision for the next gate, plan protected stable tag creation, authorize protected stable publication inputs, prepare a guarded stable publish execution plan, retain a final stable commercial report, audit the stable gate lifecycle, report final stable gate status, compose protocol layers through official contracts from SCTP to MAP SMS, and retain passing Linux native SCTP loopback evidence with metadata/reconnect artifacts. External C SCTP peer evidence, peer-traffic benchmark evidence, internal timestamped RC signing evidence, and protected release workflow dry-run evidence are retained for the RC gate in `docs/evidence/COMMERCIAL_EVIDENCE_20260627.json`. Stable publication remains blocked until approved package publication run evidence, final stable release gate evidence, NuGet publication evidence, and any adopter-specific commercial evidence are complete.
+The retained verification catalog now reports native Linux SCTP, external SCTP
+peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
+prerelease publication evidence. Full product readiness remains blocked on the
+production M3UA runtime, M2PA, stateful SCCP/TCAP/MAP services, end-to-end
+independent peer traffic, operator-sized performance, production operations, a
+trusted release identity, and protected stable publication.

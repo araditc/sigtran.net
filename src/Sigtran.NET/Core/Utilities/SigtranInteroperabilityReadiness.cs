@@ -106,6 +106,16 @@ public static class SigtranInteroperabilityReadiness
     /// <returns>The current readiness report.</returns>
     public static SigtranInteroperabilityReadinessSnapshot GetReport()
     {
+        return GetReport(SigtranVerificationCatalogs.CreateCurrent());
+    }
+
+    /// <summary>Returns interoperability tooling readiness from retained verification evidence.</summary>
+    /// <param name="verificationCatalog">The retained verification catalog.</param>
+    /// <returns>The current readiness report.</returns>
+    public static SigtranInteroperabilityReadinessSnapshot GetReport(
+        SigtranVerificationCatalog verificationCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(verificationCatalog);
         return new(
             hasTraceFormatter: true,
             hasConformanceRegistry: true,
@@ -115,6 +125,9 @@ public static class SigtranInteroperabilityReadiness
             hasTransportSamples: true,
             hasSampleCatalog: true,
             hasCiProfile: true,
-            hasExternalInteroperabilityLab: false);
+            hasExternalInteroperabilityLab:
+                verificationCatalog.HasPassingEvidence(SigtranVerificationArea.ExternalSctpPeer)
+                && verificationCatalog.HasPassingEvidence(
+                    SigtranVerificationArea.M3uaPeerInteroperability));
     }
 }

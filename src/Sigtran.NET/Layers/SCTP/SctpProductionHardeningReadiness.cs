@@ -1,3 +1,5 @@
+using Sigtran.NET.Core.Utilities;
+
 namespace Sigtran.NET.Layers.SCTP;
 
 /// <summary>
@@ -133,5 +135,24 @@ public static class SctpProductionHardeningReadiness
             hasTransportDiagnostics: true,
             hasRetainedLinuxSctpEvidence,
             hasRetainedExternalPeerEvidence);
+    }
+
+    /// <summary>Returns hardening readiness from retained verification evidence.</summary>
+    /// <param name="verificationCatalog">The retained verification catalog.</param>
+    /// <returns>The SCTP production hardening readiness report.</returns>
+    public static SctpProductionHardeningReadinessSnapshot GetReport(
+        SigtranVerificationCatalog verificationCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(verificationCatalog);
+        return GetReport(
+            verificationCatalog.HasPassingEvidence(SigtranVerificationArea.NativeLinuxSctp),
+            verificationCatalog.HasPassingEvidence(SigtranVerificationArea.ExternalSctpPeer));
+    }
+
+    /// <summary>Returns hardening readiness from the current retained evidence catalog.</summary>
+    /// <returns>The current SCTP production hardening readiness report.</returns>
+    public static SctpProductionHardeningReadinessSnapshot GetCurrentReport()
+    {
+        return GetReport(SigtranVerificationCatalogs.CreateCurrent());
     }
 }

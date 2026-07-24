@@ -402,6 +402,92 @@ Status: Phase 44 is complete. `ISctpAssociation`, `ISctpTransport`, `IMtp2Link`,
 
 Status: Phase 45 is evidence-complete for native Linux SCTP loopback. The native SCTP adapter uses lksctp metadata calls, records queue metrics and diagnostics, enforces backpressure, supports graceful shutdown, and the connector records reconnect attempts. Run `phase45-native-sctp-20260701T103951Z` retained PCAP/log/trace/comparison/report/digest artifacts and validated stream id `1`, PPID `3`, receive metadata, reconnect, and graceful shutdown. Independent external peer interoperability remains a separate production gate.
 
+## Phase 46 - Evidence And Readiness Reconciliation
+
+- Store retained verification results in a package-neutral technical catalog.
+- Feed native SCTP, interoperability, and product readiness from one source.
+- Report passed Linux SCTP and M3UA evidence without clearing unrelated gates.
+- Keep higher-layer, performance, signing, and stable publication blockers explicit.
+
+Status: Complete. `SigtranVerificationCatalogs.CreateCurrent()` records the
+retained repository evidence. Native Linux SCTP and external M3UA readiness now
+report passing evidence, while full product readiness remains blocked.
+
+## Phase 47 - M3UA Production Runtime API
+
+- Add a long-running ASP/SG runtime over `ISctpTransport`.
+- Coordinate ASP lifecycle, routing contexts, traffic modes, heartbeat, restart,
+  reconnect, failover, and fault recovery.
+- Expose bounded queues, runtime events, metrics, and graceful shutdown.
+
+Status: Pending.
+
+## Phase 48 - M2PA Production Path
+
+- Implement M2PA link alignment, proving, status, sequence, acknowledgement,
+  retransmission, congestion, and recovery semantics.
+- Expose the runtime through `IMtp2Link`.
+- Validate against independent M2PA traces and peer traffic.
+
+Status: Pending.
+
+## Phase 49 - SCCP Stateful Service Layer
+
+- Implement connectionless service primitives over `IMtp3Network`.
+- Complete global-title routing, segmentation/reassembly, return handling, and
+  route policy.
+- Validate UDT, XUDT, LUDT, and service-return behavior.
+
+Status: Pending.
+
+## Phase 50 - TCAP Dialogue Manager
+
+- Implement concurrent dialogue lifecycle, transaction correlation, timers,
+  invoke tracking, errors, rejects, aborts, and deterministic cleanup.
+- Run through `ISccpService` and expose `ITcapDialogues`.
+
+Status: Pending.
+
+## Phase 51 - MAP SMS Service
+
+- Implement stateful SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and
+  AlertServiceCentre workflows.
+- Add MAP error mapping, operation profiles, cancellation, and operator samples.
+
+Status: Pending.
+
+## Phase 52 - End-To-End SS7 Traffic Lab
+
+- Execute MAP over TCAP over SCCP over M3UA over SCTP against an independent peer.
+- Retain PCAP, peer log, SDK trace, configuration, field comparison, report, and
+  SHA-256 manifests.
+
+Status: Pending.
+
+## Phase 53 - Operator-Sized Performance And Resilience
+
+- Measure warmup, sustained, peak, reconnect, failover, and soak workloads across
+  separate hosts or VMs.
+- Report TPS, P95/P99 latency, CPU, memory, allocations, queue pressure, and loss.
+
+Status: Pending.
+
+## Phase 54 - Production Operations Package
+
+- Provide health checks, metrics, structured logs, OpenTelemetry integration,
+  configuration validation, container deployment, runbooks, and upgrade/rollback
+  guidance.
+
+Status: Pending.
+
+## Phase 55 - Stable Release Execution
+
+- Freeze the public API baseline and stable SemVer target.
+- Generate final SBOM and provenance, use trusted timestamped signing, upload
+  release artifacts, run protected stable publication, and verify public restore.
+
+Status: Pending.
+
 ## Recommended First Deliverable
 
 The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
