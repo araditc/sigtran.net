@@ -399,6 +399,10 @@ Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmenta
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
+Run("SCCP global-title translation uses longest prefix", SccpGlobalTitleTranslationUsesLongestPrefix);
+Run("SCCP reassembly enforces ordered bounded segments", SccpReassemblyEnforcesOrderedSegments);
+Run("SCCP stateful service routes UDT XUDT and LUDT", SccpStatefulServiceRoutesConnectionlessTraffic);
+Run("SCCP stateful service returns unroutable Unitdata", SccpStatefulServiceReturnsUnroutableUnitdata);
 Run("SCCP evidence vectors validate codec bytes", SccpEvidenceVectorsValidateCodecBytes);
 Run("SCCP readiness reports foundation status", SccpReadinessSnapshotsFoundationStatus);
 Run("SCTP payload metadata stores stream and PPID values", SctpPayloadMetadataStoresStreamAndPpidValues);
@@ -647,6 +651,8 @@ static void SigtranProductionReadinessSnapshotsReleaseGates()
     Assert(report.HasExternalInteroperabilityEvidence, report.Describe());
     Assert(!report.HasReleaseGovernance, report.Describe());
     Assert(!report.ProductionBlockers.Contains("m2pa-runtime-required"), report.Describe());
+    Assert(!report.ProductionBlockers.Contains("sccp-stateful-service-required"), report.Describe());
+    Assert(report.ProductionBlockers.Contains("end-to-end-ss7-evidence-required"), report.Describe());
     Assert(report.ProductionBlockers.Contains("operator-performance-evidence-required"), report.Describe());
     Assert(report.Describe().Contains("nativeSctp=True", StringComparison.Ordinal), report.Describe());
     Assert(report.Describe().Contains("externalInterop=True", StringComparison.Ordinal), report.Describe());
@@ -8051,6 +8057,238 @@ static void SccpRouteTableResolvesSsnAndGlobalTitleRoutes()
     AssertEqual(3, table.Snapshot().Count, "SCCP route snapshot count");
 }
 
+static void SccpGlobalTitleTranslationUsesLongestPrefix()
+{
+    SccpGlobalTitleTranslationTable table = new();
+    table.Add(
+        new(
+            "iran-mobile",
+            "989",
+            destinationPointCode: 2,
+            SubsystemNumber.MAP));
+    table.Add(
+        new(
+            "specific-network",
+            "98912",
+            destinationPointCode: 7,
+            SubsystemNumber.MAP,
+            preserveGlobalTitle: false));
+    SccpPartyAddress source = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        globalTitle: new("989121234567"));
+
+    Assert(
+        table.TryTranslate(
+            source,
+            out SccpPartyAddress? translated,
+            out SccpGlobalTitleTranslationRule? rule),
+        "SCCP global title should translate");
+    AssertEqual("specific-network", rule!.Name, "SCCP longest-prefix translation rule");
+    AssertEqual((ushort?)7, translated!.PointCode, "SCCP translated point code");
+    AssertEqual(SubsystemNumber.MAP, translated.SubsystemNumber!.Value, "SCCP translated SSN");
+    AssertEqual(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        translated.RoutingIndicator,
+        "SCCP translated routing indicator");
+    Assert(translated.GlobalTitle is null, "SCCP rule should remove preserved global title");
+    Assert(table.Remove("iran-mobile"), "SCCP translation rule removal");
+    AssertEqual(1, table.Snapshot().Count, "SCCP translation snapshot count");
+}
+
+static void SccpReassemblyEnforcesOrderedSegments()
+{
+    SccpPartyAddress called = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 2);
+    SccpPartyAddress calling = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpProtocolClass protocolClass = new(SccpConnectionlessClass.Class1);
+    DateTimeOffset now = DateTimeOffset.UtcNow;
+    SccpReassemblyBuffer reassembly = new(
+        maximumContexts: 1,
+        maximumPayloadBytes: 8,
+        timeout: TimeSpan.FromSeconds(1));
+    SccpExtendedUnitdataMessage first = new(
+        protocolClass,
+        hopCounter: 10,
+        called,
+        calling,
+        new byte[] { 0x01, 0x02 },
+        new(localReference: 7, remainingSegments: 1, firstSegment: true));
+    SccpExtendedUnitdataMessage last = new(
+        protocolClass,
+        hopCounter: 10,
+        called,
+        calling,
+        new byte[] { 0x03, 0x04 },
+        new(localReference: 7, remainingSegments: 0, firstSegment: false));
+
+    SccpReassemblyResult pending = reassembly.Add(1, first, now);
+    AssertEqual(SccpReassemblyStatus.Pending, pending.Status, "SCCP first segment status");
+    AssertEqual(1, reassembly.Count, "SCCP active reassembly count");
+    SccpReassemblyResult complete = reassembly.Add(1, last, now.AddMilliseconds(10));
+    AssertEqual(SccpReassemblyStatus.Complete, complete.Status, "SCCP final segment status");
+    AssertSequence([0x01, 0x02, 0x03, 0x04], complete.Payload.Span, "SCCP reassembled payload");
+    AssertEqual(0, reassembly.Count, "SCCP completed reassembly count");
+
+    reassembly.Add(1, first, now);
+    AssertEqual(1, reassembly.CleanupExpired(now.AddSeconds(2)), "SCCP expired reassembly count");
+}
+
+static void SccpStatefulServiceRoutesConnectionlessTraffic()
+{
+    SccpLoopbackMtp3Network network = new();
+    SccpRouteTable routes = new();
+    routes.Add(
+        new(
+            "map-local",
+            SccpRouteSelector.ForSubsystem(SubsystemNumber.MAP, pointCode: 2)));
+    SccpGlobalTitleTranslationTable translations = new();
+    translations.Add(
+        new(
+            "smsc",
+            "98912",
+            destinationPointCode: 2,
+            SubsystemNumber.MAP));
+    SccpConnectionlessServiceOptions options = new(
+        inboundQueueCapacity: 4,
+        returnQueueCapacity: 2,
+        extendedSegmentSize: 96,
+        maximumReassemblyContexts: 4,
+        maximumReassembledBytes: 2048,
+        reassemblyTimeout: TimeSpan.FromSeconds(2));
+    SccpConnectionlessService service = new(
+        network,
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 3),
+        networkIndicator: 2,
+        options: options,
+        routes: routes,
+        translations: translations);
+    SccpPartyAddress called = new(
+        SccpRoutingIndicator.RouteOnGlobalTitle,
+        globalTitle: new("989121234567"));
+    SccpPartyAddress calling = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpProtocolClass protocolClass =
+        new(SccpConnectionlessClass.Class1, returnMessageOnError: true);
+
+    service.StartAsync().AsTask().GetAwaiter().GetResult();
+    service.SendAsync(new(protocolClass, called, calling, new byte[] { 0x01, 0x02 }))
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(3));
+    SccpDataIndication unitdata = service.ReceiveAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(SccpConnectionlessMessageKind.Unitdata, unitdata.MessageKind, "SCCP automatic UDT kind");
+    AssertEqual("map-local", unitdata.RouteName!, "SCCP routed UDT route");
+    AssertEqual((uint)2, unitdata.Transfer.RoutingLabel.DestinationPointCode, "SCCP translated MTP3 DPC");
+    AssertSequence([0x01, 0x02], unitdata.UserData.Span, "SCCP routed UDT payload");
+
+    byte[] extendedPayload = Enumerable.Range(0, 300).Select(value => (byte)value).ToArray();
+    service.SendAsync(
+            new(
+                protocolClass,
+                called,
+                calling,
+                extendedPayload,
+                SccpConnectionlessMessageKind.ExtendedUnitdata))
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    SccpDataIndication extended = service.ReceiveAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(SccpConnectionlessMessageKind.ExtendedUnitdata, extended.MessageKind, "SCCP XUDT kind");
+    Assert(extended.SegmentationReference.HasValue, "SCCP XUDT reassembly reference");
+    AssertSequence(extendedPayload, extended.UserData.Span, "SCCP reassembled XUDT payload");
+
+    byte[] longPayload = Enumerable.Range(0, 600).Select(value => (byte)(value % 251)).ToArray();
+    service.SendAsync(
+            new(
+                protocolClass,
+                called,
+                calling,
+                longPayload,
+                SccpConnectionlessMessageKind.LongUnitdata))
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    SccpDataIndication longData = service.ReceiveAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(SccpConnectionlessMessageKind.LongUnitdata, longData.MessageKind, "SCCP LUDT kind");
+    AssertSequence(longPayload, longData.UserData.Span, "SCCP LUDT payload");
+
+    SccpServiceMetrics metrics = service.GetMetrics();
+    AssertEqual(3L, metrics.SentMessages, "SCCP sent logical messages");
+    AssertEqual(3L, metrics.ReceivedMessages, "SCCP received logical messages");
+    Assert(metrics.SentSegments > 1, "SCCP sent segment count");
+    AssertEqual(1L, metrics.ReassembledMessages, "SCCP reassembled message count");
+    AssertEqual(0L, metrics.MalformedMessages, "SCCP malformed message count");
+
+    service.StopAsync().AsTask().GetAwaiter().GetResult();
+    Assert(!service.IsRunning, "SCCP service should stop");
+    service.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void SccpStatefulServiceReturnsUnroutableUnitdata()
+{
+    SccpLoopbackMtp3Network network = new();
+    SccpRouteTable routes = new();
+    routes.Add(
+        new(
+            "map-local",
+            SccpRouteSelector.ForSubsystem(SubsystemNumber.MAP, pointCode: 2)));
+    SccpConnectionlessService service = new(
+        network,
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 0),
+        routes: routes);
+    SccpPartyAddress unknown = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 3);
+    SccpPartyAddress source = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpUnitdataMessage inbound = new(
+        new(SccpConnectionlessClass.Class0, returnMessageOnError: true),
+        unknown,
+        source,
+        new byte[] { 0xCA, 0xFE });
+    network.QueueInbound(
+        new(
+            new(Mtp3ServiceIndicator.Sccp, networkIndicator: 2),
+            new(destinationPointCode: 2, originatingPointCode: 3, signallingLinkSelection: 0),
+            inbound.Encode()));
+
+    service.StartAsync().AsTask().GetAwaiter().GetResult();
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(3));
+    SccpReturnIndication returned = service.ReceiveReturnAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(
+        SccpReturnCause.NoTranslationForThisSpecificAddress,
+        returned.Message.ReturnCause,
+        "SCCP unroutable return cause");
+    AssertSequence([0xCA, 0xFE], returned.Message.UserData.Span, "SCCP returned payload");
+    AssertEqual(1L, service.GetMetrics().UnroutableMessages, "SCCP unroutable metric");
+    AssertEqual(2L, service.GetMetrics().ReturnedMessages, "SCCP generated and received return metric");
+
+    service.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
 static void SccpEvidenceVectorsValidateCodecBytes()
 {
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = SccpEvidenceVectors.GetVectors();
@@ -8082,7 +8320,7 @@ static void SccpEvidenceVectorsValidateCodecBytes()
 static void SccpReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("MTP3 and SCCP foundation", SccpReadiness.ReleaseLabel, "SCCP readiness label");
-    AssertEqual(6, SccpReadiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
+    AssertEqual(10, SccpReadiness.RequiredFoundationCapabilityCount, "SCCP readiness capability count");
     Assert(
         SccpReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         SccpReadiness.ProductionGateDescription);
@@ -8090,8 +8328,12 @@ static void SccpReadinessSnapshotsFoundationStatus()
     SccpReadinessSnapshot report = SccpReadiness.GetReport();
     Assert(report.FoundationReady, "SCCP foundation should be ready");
     Assert(!report.IsProductionReady, "SCCP should not claim production readiness without interop vectors");
-    AssertEqual(6, report.FoundationCapabilityCount, "SCCP completed foundation capabilities");
-    Assert(report.Describe().Contains("foundationCapabilities=6/6", StringComparison.Ordinal), report.Describe());
+    AssertEqual(10, report.FoundationCapabilityCount, "SCCP completed foundation capabilities");
+    Assert(report.HasStatefulService, "SCCP stateful service should be ready");
+    Assert(report.HasGlobalTitleTranslation, "SCCP global-title translation should be ready");
+    Assert(report.HasReassembly, "SCCP reassembly should be ready");
+    Assert(report.HasReturnPolicy, "SCCP return policy should be ready");
+    Assert(report.Describe().Contains("foundationCapabilities=10/10", StringComparison.Ordinal), report.Describe());
 }
 
 static void SctpPayloadMetadataStoresStreamAndPpidValues()

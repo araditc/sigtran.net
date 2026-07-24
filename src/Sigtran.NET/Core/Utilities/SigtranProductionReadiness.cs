@@ -149,9 +149,9 @@ public static class SigtranProductionReadiness
     {
         List<string> blockers =
         [
-            "sccp-stateful-service-required",
             "tcap-dialogue-manager-required",
-            "map-sms-service-required"
+            "map-sms-service-required",
+            "end-to-end-ss7-evidence-required"
         ];
 
         AddEvidenceBlocker(

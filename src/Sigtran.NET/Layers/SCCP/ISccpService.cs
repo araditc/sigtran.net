@@ -24,4 +24,30 @@ public interface ISccpService
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The received SCCP Unitdata message.</returns>
     ValueTask<SccpUnitdataMessage> ReceiveUnitdataAsync(CancellationToken ct = default);
+
+    /// <summary>Starts the stateful lower-layer receive loop.</summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the receive loop has started.</returns>
+    ValueTask StartAsync(CancellationToken ct = default);
+
+    /// <summary>Stops the stateful lower-layer receive loop.</summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the receive loop has stopped.</returns>
+    ValueTask StopAsync(CancellationToken ct = default);
+
+    /// <summary>Sends one SCCP connectionless data request.</summary>
+    /// <param name="request">The outbound SCCP request.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when all encoded messages have been sent.</returns>
+    ValueTask SendAsync(SccpDataRequest request, CancellationToken ct = default);
+
+    /// <summary>Receives one decoded and routed SCCP data indication.</summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The next SCCP data indication.</returns>
+    ValueTask<SccpDataIndication> ReceiveAsync(CancellationToken ct = default);
+
+    /// <summary>Receives one SCCP service-return indication.</summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The next SCCP service-return indication.</returns>
+    ValueTask<SccpReturnIndication> ReceiveReturnAsync(CancellationToken ct = default);
 }

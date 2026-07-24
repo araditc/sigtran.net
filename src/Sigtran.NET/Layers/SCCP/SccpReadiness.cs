@@ -12,6 +12,10 @@ public readonly struct SccpReadinessSnapshot
     /// <param name="hasSegmentation">Whether segmentation parameters are available.</param>
     /// <param name="hasServiceMessages">Whether UDTS return-cause messages are available.</param>
     /// <param name="hasRoutingApis">Whether route-on-SSN and route-on-GT APIs are available.</param>
+    /// <param name="hasStatefulService">Whether a long-running service over IMtp3Network is available.</param>
+    /// <param name="hasGlobalTitleTranslation">Whether longest-prefix global-title translation is available.</param>
+    /// <param name="hasReassembly">Whether bounded, expiring XUDT reassembly is available.</param>
+    /// <param name="hasReturnPolicy">Whether unroutable Unitdata return policy is available.</param>
     /// <param name="hasInteropVectors">Whether external interoperability vectors are present.</param>
     public SccpReadinessSnapshot(
         bool hasMtp3Routing,
@@ -20,6 +24,10 @@ public readonly struct SccpReadinessSnapshot
         bool hasSegmentation,
         bool hasServiceMessages,
         bool hasRoutingApis,
+        bool hasStatefulService,
+        bool hasGlobalTitleTranslation,
+        bool hasReassembly,
+        bool hasReturnPolicy,
         bool hasInteropVectors)
     {
         HasMtp3Routing = hasMtp3Routing;
@@ -28,6 +36,10 @@ public readonly struct SccpReadinessSnapshot
         HasSegmentation = hasSegmentation;
         HasServiceMessages = hasServiceMessages;
         HasRoutingApis = hasRoutingApis;
+        HasStatefulService = hasStatefulService;
+        HasGlobalTitleTranslation = hasGlobalTitleTranslation;
+        HasReassembly = hasReassembly;
+        HasReturnPolicy = hasReturnPolicy;
         HasInteropVectors = hasInteropVectors;
     }
 
@@ -49,6 +61,18 @@ public readonly struct SccpReadinessSnapshot
     /// <summary>Whether route-on-SSN and route-on-GT APIs are available.</summary>
     public bool HasRoutingApis { get; }
 
+    /// <summary>Whether a long-running service over IMtp3Network is available.</summary>
+    public bool HasStatefulService { get; }
+
+    /// <summary>Whether longest-prefix global-title translation is available.</summary>
+    public bool HasGlobalTitleTranslation { get; }
+
+    /// <summary>Whether bounded, expiring XUDT reassembly is available.</summary>
+    public bool HasReassembly { get; }
+
+    /// <summary>Whether unroutable Unitdata return policy is available.</summary>
+    public bool HasReturnPolicy { get; }
+
     /// <summary>Whether external interoperability vectors are present.</summary>
     public bool HasInteropVectors { get; }
 
@@ -59,7 +83,11 @@ public readonly struct SccpReadinessSnapshot
         + Count(HasConnectionlessCodecs)
         + Count(HasSegmentation)
         + Count(HasServiceMessages)
-        + Count(HasRoutingApis);
+        + Count(HasRoutingApis)
+        + Count(HasStatefulService)
+        + Count(HasGlobalTitleTranslation)
+        + Count(HasReassembly)
+        + Count(HasReturnPolicy);
 
     /// <summary>Whether the SDK foundation for MTP3 and SCCP is complete.</summary>
     public bool FoundationReady => FoundationCapabilityCount == SccpReadiness.RequiredFoundationCapabilityCount;
@@ -86,7 +114,7 @@ public static class SccpReadiness
     public const string ReleaseLabel = "MTP3 and SCCP foundation";
 
     /// <summary>The number of required SDK foundation capabilities.</summary>
-    public const int RequiredFoundationCapabilityCount = 6;
+    public const int RequiredFoundationCapabilityCount = 10;
 
     /// <summary>Explains the remaining production gate.</summary>
     public const string ProductionGateDescription = "External SCCP interoperability vectors and network trace validation are required before production claims.";
@@ -102,6 +130,10 @@ public static class SccpReadiness
             hasSegmentation: true,
             hasServiceMessages: true,
             hasRoutingApis: true,
+            hasStatefulService: true,
+            hasGlobalTitleTranslation: true,
+            hasReassembly: true,
+            hasReturnPolicy: true,
             hasInteropVectors: false);
     }
 }

@@ -446,7 +446,11 @@ end-to-end traffic lab gate.
   route policy.
 - Validate UDT, XUDT, LUDT, and service-return behavior.
 
-Status: Pending.
+Status: Implementation complete. `SccpConnectionlessService` now owns a
+cancellable `IMtp3Network` receive loop and exposes bounded stateful indications.
+It supports UDT/XUDT/LUDT selection, GT translation, application route policy,
+ordered bounded XUDT reassembly, UDTS return handling, metrics, and deterministic
+shutdown. Independent SCCP peer evidence remains in the end-to-end lab gate.
 
 ## Phase 50 - TCAP Dialogue Manager
 

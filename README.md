@@ -18,7 +18,7 @@ SIGTRAN.NET is currently in a **public release-candidate** track. Version
 Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
 the SDK readiness APIs through a common verification catalog. Stateful M3UA and
 M2PA runtimes are available. Full stable-product readiness remains gated on
-stateful SCCP/TCAP/MAP services, end-to-end independent-peer evidence,
+stateful TCAP/MAP services, end-to-end independent-peer evidence,
 operator-sized performance evidence, trusted signing, and stable release
 execution.
 
@@ -69,7 +69,7 @@ The current RC engineering track focuses on:
 | M3UA | Codec, routing, ASP state, long-running `IMtp3Network` runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence are available. |
 | SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
 | M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
-| SCCP | Connectionless codec and routing foundation exists; a stateful service layer and external evidence remain. |
+| SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. External peer evidence remains. |
 | TCAP | BER and transaction foundations exist; production dialogue management and external evidence remain. |
 | MAP | SMS codec and facade foundations exist; stateful service workflows and external evidence remain. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
@@ -156,6 +156,7 @@ Start here:
 - [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
 - [Phase 46 evidence and readiness reconciliation](docs/PHASE46_EVIDENCE_READINESS_RECONCILIATION.md)
 - [SCCP](docs/SCCP.md)
+- [Phase 49 SCCP stateful service](docs/PHASE49_SCCP_STATEFUL_SERVICE.md)
 - [TCAP](docs/TCAP.md)
 - [MAP SMS profile](docs/MAP.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)

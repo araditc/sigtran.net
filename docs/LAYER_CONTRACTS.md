@@ -56,3 +56,7 @@ IMapSmsService map = new MapSmsService(tcap, calledParty, callingParty);
 This keeps replacement points explicit. A production Linux SCTP transport, the
 provided M2PA-backed MTP2 link, or a different TCAP dialogue manager can be
 swapped in without changing the layers above the relevant interface.
+
+`ISccpService` owns stateful connectionless data and return indications while
+remaining independent of a concrete M3UA runtime. Its implementation can route
+UDT, XUDT, and LUDT traffic over any `IMtp3Network`.

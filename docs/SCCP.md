@@ -1,6 +1,7 @@
 # SCCP
 
-Phase 3 replaces the early SCCP proof-of-concept with standards-shaped connectionless SCCP primitives.
+SIGTRAN.NET provides standards-shaped connectionless SCCP codecs and a stateful
+service over `IMtp3Network`.
 
 ## Protocol Vocabulary
 
@@ -21,13 +22,30 @@ SccpProtocolClass protocolClass = new(
 byte encoded = protocolClass.Encode();
 ```
 
-The current SCCP work is still a foundation for standards-based encode/decode. Interoperability-sensitive consumers should wait for the Phase 3 readiness report before treating SCCP APIs as stable.
+The stateful implementation is available for controlled integration. External
+peer trace evidence remains required before broad interoperability claims.
 
 ## Service Contract
 
-`ISccpService` is the official SCCP service boundary consumed by TCAP. It depends on `IMtp3Network` and exposes SCCP Unitdata send/receive primitives without binding callers to a concrete MTP3 or M3UA implementation.
+`ISccpService` is the official SCCP service boundary consumed by TCAP. It
+depends on `IMtp3Network` and exposes lifecycle, UDT compatibility methods,
+general connectionless data requests and indications, and service-return
+indications.
 
-`SccpConnectionlessService` implements `ISccpService` for UDT traffic over an `IMtp3Network`.
+`SccpConnectionlessService` owns one lower-layer receive loop. Its bounded data
+and return queues provide asynchronous backpressure, and `StopAsync` cancels the
+receive owner deterministically.
+
+```csharp
+SccpConnectionlessService service = new(network, routingLabel);
+await service.StartAsync(ct);
+
+await service.SendAsync(
+    new SccpDataRequest(protocolClass, called, calling, tcapPayload),
+    ct);
+
+SccpDataIndication indication = await service.ReceiveAsync(ct);
+```
 
 ## Party Addresses
 
@@ -111,6 +129,10 @@ SccpExtendedUnitdataMessage segmented = new(
     segmentation);
 ```
 
+`SccpReassemblyBuffer` validates descending remaining-segment values and bounds
+context count, assembled payload size, and inactivity lifetime. The stateful
+service uses it automatically and emits only a complete logical indication.
+
 ## Long Unitdata
 
 `SccpLongUnitdataMessage` carries larger connectionless payloads with 16-bit pointer and length fields.
@@ -144,6 +166,11 @@ byte[] encoded = udts.Encode();
 
 Use UDTS when an incoming UDT cannot be delivered and the protocol class asks for return-on-error behavior.
 
+When at least one application route is configured, the stateful service rejects
+unresolved traffic. An unroutable UDT with return-on-error set is returned as
+UDTS with the original payload and reversed party addresses. Received UDTS
+messages are available through `ReceiveReturnAsync`.
+
 ## Evidence Vectors
 
 `SccpEvidenceVectors.GetVectors()` exposes deterministic byte-level vectors for UDT, XUDT segmentation, LUDT pointer layout, and UDTS return-cause behavior.
@@ -172,9 +199,17 @@ if (routes.TryResolve(calledParty, out SccpRoute? route))
 
 Global title routes use longest-prefix matching. SSN routes can optionally include a point code for more specific routing.
 
+`SccpGlobalTitleTranslationTable` performs outbound longest-prefix translation.
+Each rule maps a numeric prefix to DPC and SSN and can preserve or remove the
+original global title. The translated DPC is applied to the outbound MTP3
+routing label.
+
 ## Readiness
 
-`SccpReadiness.GetReport()` reports the current Phase 3 status. The SDK foundation is ready when MTP3 routing, party addressing, UDT/XUDT/LUDT codecs, segmentation, service messages, and routing APIs are present.
+`SccpReadiness.GetReport()` reports codec and stateful service capabilities. The
+SDK foundation is ready when MTP3 routing, party addressing, UDT/XUDT/LUDT
+codecs, segmentation, service messages, route APIs, stateful lifecycle,
+global-title translation, reassembly, and return policy are present.
 
 ```csharp
 SccpReadinessSnapshot report = SccpReadiness.GetReport();

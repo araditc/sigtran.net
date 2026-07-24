@@ -126,6 +126,7 @@ public sealed class SccpRoute
 /// </summary>
 public sealed class SccpRouteTable
 {
+    private readonly object _sync = new();
     private readonly List<SccpRoute> _routes = [];
 
     /// <summary>Adds a route to the table.</summary>
@@ -133,19 +134,60 @@ public sealed class SccpRouteTable
     public void Add(SccpRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
-        if (_routes.Any(existing => string.Equals(existing.Name, route.Name, StringComparison.Ordinal)))
+        lock (_sync)
         {
-            throw new InvalidOperationException($"SCCP route '{route.Name}' already exists.");
+            if (_routes.Any(existing =>
+                    string.Equals(existing.Name, route.Name, StringComparison.Ordinal)))
+            {
+                throw new InvalidOperationException(
+                    $"SCCP route '{route.Name}' already exists.");
+            }
+
+            _routes.Add(route);
+        }
+    }
+
+    /// <summary>Removes a route by name.</summary>
+    /// <param name="name">The route name.</param>
+    /// <returns>True when a route was removed.</returns>
+    public bool Remove(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return false;
         }
 
-        _routes.Add(route);
+        lock (_sync)
+        {
+            int index = _routes.FindIndex(route =>
+                string.Equals(route.Name, name, StringComparison.Ordinal));
+            if (index < 0)
+            {
+                return false;
+            }
+
+            _routes.RemoveAt(index);
+            return true;
+        }
+    }
+
+    /// <summary>Removes all configured routes.</summary>
+    public void Clear()
+    {
+        lock (_sync)
+        {
+            _routes.Clear();
+        }
     }
 
     /// <summary>Returns a snapshot of the configured routes.</summary>
     /// <returns>The configured routes.</returns>
     public IReadOnlyList<SccpRoute> Snapshot()
     {
-        return _routes.ToArray();
+        lock (_sync)
+        {
+            return _routes.ToArray();
+        }
     }
 
     /// <summary>Resolves the best route for the supplied SCCP party address.</summary>
@@ -154,11 +196,15 @@ public sealed class SccpRouteTable
     /// <returns>True when a route matched; otherwise false.</returns>
     public bool TryResolve(SccpPartyAddress address, out SccpRoute? route)
     {
-        route = _routes
-            .Where(candidate => candidate.Selector.Matches(address))
-            .OrderByDescending(candidate => candidate.Selector.Specificity())
-            .ThenBy(candidate => candidate.Name, StringComparer.Ordinal)
-            .FirstOrDefault();
-        return route is not null;
+        ArgumentNullException.ThrowIfNull(address);
+        lock (_sync)
+        {
+            route = _routes
+                .Where(candidate => candidate.Selector.Matches(address))
+                .OrderByDescending(candidate => candidate.Selector.Specificity())
+                .ThenBy(candidate => candidate.Name, StringComparer.Ordinal)
+                .FirstOrDefault();
+            return route is not null;
+        }
     }
 }
