@@ -41,6 +41,22 @@ publication additionally requires:
 - timestamped signature verification;
 - `NUGET_API_KEY`.
 
+## Executed Assessment
+
+GitHub Actions run
+[`30088170594`](https://github.com/araditc/sigtran.net/actions/runs/30088170594)
+completed successfully against commit
+`6490c1069df8dc5a867380ec94b3e280d6582fc8` with publication disabled. It
+generated the candidate package, final SPDX 2.2 SBOM, exact API comparison,
+digest manifest, SLSA provenance attestation, SBOM attestation, and all five
+release artifact bundles.
+
+Independent download verification confirmed all 17 digest-manifest entries.
+Both hosted attestations verified against the repository, release workflow,
+source commit, GitHub-hosted runner identity, OIDC issuer, and Rekor timestamp.
+See the
+[retained stable assessment summary](evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json).
+
 ## Current Decision
 
 The current decision is `NO-GO`. Passing repository evidence covers native

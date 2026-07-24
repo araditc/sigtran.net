@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "assessment": {
+    "mode": "stable",
+    "version": "1.0.0",
+    "publishRequested": false,
+    "runId": 30088170594,
+    "runUrl": "https://github.com/araditc/sigtran.net/actions/runs/30088170594",
+    "sourceCommit": "6490c1069df8dc5a867380ec94b3e280d6582fc8",
+    "startedAtUtc": "2026-07-24T11:01:34Z",
+    "completedAtUtc": "2026-07-24T11:05:19Z",
+    "conclusion": "success",
+    "publicationJob": "skipped"
+  },
+  "releaseDecision": {
+    "decision": "NO-GO",
+    "blockerCount": 6,
+    "decisionArtifactSha256": "70b0768d71a8af2e54fa63902e918a9487b42a505b372cf070e5bbfa607d27d0",
+    "blockers": [
+      "independent-m2pa",
+      "operator-profile",
+      "capacity-target",
+      "multi-host-soak",
+      "kubernetes-sctp",
+      "trusted-signing"
+    ]
+  },
+  "package": {
+    "name": "Sigtran.NET.1.0.0.nupkg",
+    "sizeBytes": 605658,
+    "sha256": "8f278ee4f68b195a3a223912108ddf0d490a4587ff3433bdac7e09221b84eb27",
+    "signed": false,
+    "published": false,
+    "note": "Signing and publication are intentionally disabled for a NO-GO assessment."
+  },
+  "publicApi": {
+    "baselineMembers": 2185,
+    "candidateMembers": 2185,
+    "addedMembers": 0,
+    "removedMembers": 0,
+    "baselineSha256": "7db9488d1552da68de3d4fd5c0ef9f1d39d990797c1fdfa3e916bc5407b67d34"
+  },
+  "sbom": {
+    "format": "SPDX-2.2",
+    "name": "Sigtran.NET 1.0.0",
+    "sha256": "43d48b18d93d4e07fd127cb5e307da7b2705b844fe2d0c1217e2b8b1b1f70fb7"
+  },
+  "attestations": [
+    {
+      "kind": "build-provenance",
+      "predicateType": "https://slsa.dev/provenance/v1",
+      "url": "https://github.com/araditc/sigtran.net/attestations/36934622",
+      "verified": true
+    },
+    {
+      "kind": "sbom",
+      "predicateType": "https://spdx.dev/Document/v2.2",
+      "url": "https://github.com/araditc/sigtran.net/attestations/36934660",
+      "verified": true
+    }
+  ],
+  "attestationVerification": {
+    "repository": "araditc/sigtran.net",
+    "signerWorkflow": "araditc/sigtran.net/.github/workflows/release.yml",
+    "signerIdentity": "https://github.com/araditc/sigtran.net/.github/workflows/release.yml@refs/heads/main",
+    "oidcIssuer": "https://token.actions.githubusercontent.com",
+    "runnerEnvironment": "github-hosted",
+    "sourceCommitVerified": true,
+    "transparencyLog": "https://rekor.sigstore.dev",
+    "verifiedTimestampCountPerAttestation": 1,
+    "verifiedAtUtc": "2026-07-24T11:08:12Z"
+  },
+  "digestManifest": {
+    "sha256": "2cb31827a162c9eb7f7ffa8caa0c343352a31759ca2283c6b08e5667b950eea2",
+    "entryCount": 17,
+    "verifiedEntryCount": 17,
+    "failureCount": 0
+  },
+  "uploadedArtifacts": [
+    {
+      "id": 8594638381,
+      "name": "sigtran-package",
+      "archiveSha256": "4e19f51b69c345f929ba74cd57b10c0e6e0150689c5be440f1903be8f0b3ad9c"
+    },
+    {
+      "id": 8594638882,
+      "name": "sigtran-symbols",
+      "archiveSha256": "f7a1ffa2356859996abb87b10cd99677939b4bbde3c8d684d5b785f44207150f"
+    },
+    {
+      "id": 8594639313,
+      "name": "sigtran-supply-chain",
+      "archiveSha256": "b53d7a50e66ef817f1d92f1ea7fcdce27cba494ea1d7903a5544f87838555b77"
+    },
+    {
+      "id": 8594639687,
+      "name": "sigtran-release-dry-run",
+      "archiveSha256": "b789af801b960b709119844b0728841b1678af2d8ff24979e4e519583dbcd9a6"
+    },
+    {
+      "id": 8594640097,
+      "name": "sigtran-stable-release-decision",
+      "archiveSha256": "a28d05d5b7402ca686203f83a8fc30908bd9eebd2ef8a2a7211db4959c6f9aa4"
+    }
+  ]
+}

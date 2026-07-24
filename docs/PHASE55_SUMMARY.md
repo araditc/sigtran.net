@@ -12,4 +12,8 @@ Release actions are pinned to reviewed commit SHAs.
 Main branch protection and the reviewer-gated `nuget-stable` environment were
 created and verified through the GitHub API.
 
+Stable assessment run
+[`30088170594`](https://github.com/araditc/sigtran.net/actions/runs/30088170594)
+completed successfully and produced verified SLSA provenance and SPDX SBOM
+attestations, five uploaded artifact bundles, and 17 verified digest entries.
 The current release decision is `NO-GO`. No stable package has been published.

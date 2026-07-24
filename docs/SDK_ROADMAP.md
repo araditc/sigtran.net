@@ -540,7 +540,9 @@ upload, public restore verification, and GitHub release creation. The current
 machine-evaluated decision is `NO-GO` because independent M2PA,
 operator/vendor-profile acceptance, 20K TPS, multi-host soak, representative
 Kubernetes SCTP, and organization-trusted signing evidence remain open. No
-stable tag or package is published by this phase.
+stable tag or package is published by this phase. Stable assessment run
+`30088170594` completed the non-publishing release path and retained verified
+package/SBOM attestations plus all release artifact bundles.
 
 ## Recommended First Deliverable
 

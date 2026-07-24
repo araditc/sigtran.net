@@ -177,6 +177,7 @@ Start here:
 - [Phase 54 production operations package](docs/PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md)
 - [Runtime operations](docs/OPERATIONS_RUNTIME.md)
 - [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
+- [Phase 55 stable assessment evidence](docs/evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json)
 - [Public API baseline](docs/PUBLIC_API_BASELINE.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)

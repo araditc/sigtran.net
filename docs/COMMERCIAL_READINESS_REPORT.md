@@ -81,9 +81,17 @@ retained manifests instead of stale hard-coded flags.
   but it is single-host WSL loopback. It reached about 13.5K TPS and did not
   meet the 20K peak target. Do not use it for broad operator capacity claims
   until a representative multi-host deployment benchmark passes.
-- Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
+- Package publication evidence is closed for the public RC prerelease. Stable
+  assessment run `30088170594` completed successfully and retained package,
+  SBOM, API, digest, decision, and hosted attestation evidence. Live stable
+  publication remains blocked by the six machine-evaluated qualification
+  gates and still requires a protected publish run plus verified stable NuGet
+  restore evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
-- Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
+- Hosted GitHub provenance/SBOM attestations were skipped for dry-run and
+  prerelease. Stable assessment run `30088170594` produced and independently
+  verified both hosted attestations against the release workflow, source
+  commit, OIDC issuer, GitHub-hosted runner identity, and Rekor timestamp.
 - M3UA and M2PA provide stateful runtime implementations through `IMtp3Network`
   and `IMtp2Link`. Independent external M2PA peer evidence remains.
 - SCCP, TCAP, and MAP SMS provide stateful runtime implementations and now have
