@@ -108,7 +108,8 @@ The gate keeps supply-chain completeness separate from commercial release readin
 - Generate the final SBOM with `sbom-tool generate`.
 - Sign the NuGet package with `dotnet nuget sign`.
 - Verify package signature and timestamp with `dotnet nuget verify --all`.
-- Create GitHub provenance and SBOM attestations with `actions/attest-build-provenance` and `actions/attest-sbom`.
+- Create GitHub provenance and SBOM attestations with the SHA-pinned
+  `actions/attest-build-provenance` and `actions/attest` actions.
 - Retain provenance marker, public API diff, and digest manifest artifacts.
 - Upload package, symbols, and supply-chain evidence with the SHA-pinned
   `actions/upload-artifact` action.

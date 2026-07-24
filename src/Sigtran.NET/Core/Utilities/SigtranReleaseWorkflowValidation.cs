@@ -63,7 +63,7 @@ internal static class SigtranReleaseWorkflowValidation
         "dotnet nuget sign",
         "dotnet nuget verify",
         "actions/attest-build-provenance",
-        "actions/attest-sbom",
+        "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6",
         "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
         "SIGTRAN_FINAL_SBOM_PATH",
         "SIGTRAN_PUBLIC_API_DIFF_PATH",
