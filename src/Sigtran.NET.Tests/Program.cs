@@ -245,6 +245,7 @@ Run("SIGTRAN release publish guard allows intentional tagged publication", Sigtr
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
 Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
 Run("SIGTRAN stable workflow requires protected release controls", SigtranStableWorkflowRequiresProtectedReleaseControls);
+Run("SIGTRAN stable release manifest is version controlled", SigtranStableReleaseManifestIsVersionControlled);
 Run("SIGTRAN release workflow concurrency prevents overlapping releases", SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases);
 Run("SIGTRAN release workflow environment exposes supply chain and evidence variables", SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables);
 Run("SIGTRAN release promotion gate blocks incomplete release evidence", SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence);
@@ -3829,6 +3830,23 @@ static void SigtranStableWorkflowRequiresProtectedReleaseControls()
     Assert(
         project.Contains("<VersionSuffix>rc.2</VersionSuffix>", StringComparison.Ordinal),
         "normal package builds should remain prerelease");
+}
+
+static void SigtranStableReleaseManifestIsVersionControlled()
+{
+    string path = Path.Combine(
+        "eng",
+        "release",
+        "stable-release.json");
+    Assert(File.Exists(path), "stable release manifest should be version controlled");
+
+    using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+    JsonElement root = document.RootElement;
+    AssertEqual("Sigtran.NET", root.GetProperty("packageId").GetString(), "stable manifest package");
+    AssertEqual("1.0.0", root.GetProperty("version").GetString(), "stable manifest version");
+    Assert(
+        root.GetProperty("gates").GetArrayLength() > 0,
+        "stable release manifest should contain evidence gates");
 }
 
 static void SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases()

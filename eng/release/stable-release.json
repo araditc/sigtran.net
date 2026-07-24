@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "packageId": "Sigtran.NET",
+  "version": "1.0.0",
+  "publicApiBaseline": "eng/api/Sigtran.NET.1.0.public-api.txt",
+  "gates": [
+    {
+      "id": "native-linux-sctp",
+      "title": "Native Linux SCTP transport",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "docs/evidence/PHASE45_NATIVE_SCTP_20260701T103951Z.json"
+      ],
+      "note": "Native SCTP stream, PPID, metadata, reconnect, and shutdown evidence is retained."
+    },
+    {
+      "id": "external-m3ua",
+      "title": "Independent M3UA interoperability",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "docs/evidence/COMMERCIAL_EVIDENCE_20260627.json"
+      ],
+      "note": "Independent C SCTP/M3UA peer evidence is retained."
+    },
+    {
+      "id": "full-stack-traffic",
+      "title": "Full-stack MAP SMS traffic",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "docs/evidence/PHASE52_END_TO_END_20260724T085858Z/reports/end-to-end-20260724T085858Z-summary.json",
+        "docs/evidence/PHASE52_END_TO_END_20260724T085858Z/reports/end-to-end-20260724T085858Z-sha256.txt"
+      ],
+      "note": "Repository-profile M3UA/SCCP/TCAP/MAP SMS traffic evidence is retained."
+    },
+    {
+      "id": "independent-m2pa",
+      "title": "Independent M2PA interoperability",
+      "required": true,
+      "passed": false,
+      "evidence": [],
+      "note": "No retained independent external M2PA peer run exists."
+    },
+    {
+      "id": "operator-profile",
+      "title": "Operator or vendor profile acceptance",
+      "required": true,
+      "passed": false,
+      "evidence": [],
+      "note": "No retained operator or vendor SS7 profile acceptance bundle exists."
+    },
+    {
+      "id": "capacity-target",
+      "title": "20K TPS capacity target",
+      "required": true,
+      "passed": false,
+      "evidence": [
+        "docs/evidence/PHASE53_PERFORMANCE_20260724T093659Z/metrics/performance-20260724T093659Z-metrics.json"
+      ],
+      "note": "The current controlled baseline is about 13.5K TPS and does not meet the 20K target."
+    },
+    {
+      "id": "multi-host-soak",
+      "title": "Representative multi-host soak and failover",
+      "required": true,
+      "passed": false,
+      "evidence": [],
+      "note": "No long-duration multi-host operator-sized soak is retained."
+    },
+    {
+      "id": "operations-runtime",
+      "title": "Production operations runtime",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "docs/evidence/PHASE54_OPERATIONS_HOST_20260724T095723Z.json"
+      ],
+      "note": "Runtime health, telemetry, structured events, and Linux host smoke evidence are retained."
+    },
+    {
+      "id": "kubernetes-sctp",
+      "title": "Representative Kubernetes SCTP deployment",
+      "required": true,
+      "passed": false,
+      "evidence": [],
+      "note": "No representative cluster CNI, SCTP, termination, and rollback evidence is retained."
+    },
+    {
+      "id": "trusted-signing",
+      "title": "Organization-trusted package signing identity",
+      "required": true,
+      "passed": false,
+      "evidence": [],
+      "note": "The retained RC signing certificate is self-issued and is not approved for stable publication."
+    },
+    {
+      "id": "public-api-baseline",
+      "title": "Frozen public API baseline",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "eng/api/Sigtran.NET.1.0.public-api.txt"
+      ],
+      "note": "The 1.0 public API member baseline is version controlled and workflow-compared."
+    },
+    {
+      "id": "protected-publication",
+      "title": "Protected stable publication environment",
+      "required": true,
+      "passed": true,
+      "evidence": [
+        "docs/evidence/PHASE55_GITHUB_PROTECTION_20260724T102354Z.json"
+      ],
+      "note": "Main branch protection and the reviewer-gated nuget-stable environment are verified through the GitHub API."
+    }
+  ]
+}
