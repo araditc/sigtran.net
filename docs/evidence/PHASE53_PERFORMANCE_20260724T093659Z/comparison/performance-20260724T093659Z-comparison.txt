@@ -1,0 +1,9 @@
+runId=performance-20260724T093659Z
+executionPassed=true
+capacityQualified=false
+sdkExitCode=0
+peerAfterFailoverExitCode=0
+peerBeforeFailoverOperations=41000
+peerAfterFailoverOperations=21000
+pcapSctpPacketCount=146533
+pcapM3uaDataCount=119847

@@ -114,7 +114,11 @@ This keeps retained benchmark evidence separate from production claims. A report
 
 The final unit completes the status count and validates the phase with naming, package-neutrality, build, test, and pack checks. The final status capability is `final-sweep-validation`.
 
-Phase 33 is foundation-complete for performance and resilience evidence contracts. Production performance claims still require a retained real peer-traffic benchmark report and wider commercial readiness.
+Phase 33 is foundation-complete for performance and resilience evidence
+contracts. Phase 53 now supplies a retained 62,000-operation native SCTP
+full-stack baseline and an executable runner. Production performance claims
+still require a passing 20K peak result and representative multi-host,
+long-duration operator evidence.
 
 ## Validation
 

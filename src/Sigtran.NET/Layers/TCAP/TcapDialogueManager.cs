@@ -32,6 +32,7 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
     private long _timedOutInvokes;
     private long _rejectedComponents;
     private long _malformedTransactions;
+    private long _droppedDialogueEvents;
     private bool _disposed;
 
     /// <summary>Creates a concurrent TCAP dialogue manager.</summary>
@@ -564,7 +565,8 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             Interlocked.Read(ref _rejectedComponents),
             Interlocked.Read(ref _malformedTransactions),
             active,
-            pending);
+            pending,
+            Interlocked.Read(ref _droppedDialogueEvents));
     }
 
     /// <inheritdoc />
@@ -711,9 +713,10 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             }
         }
 
-        await _events.Writer.WriteAsync(
-            new(handle, transaction),
-            ct).ConfigureAwait(false);
+        if (!_events.Writer.TryWrite(new(handle, transaction)))
+        {
+            Interlocked.Increment(ref _droppedDialogueEvents);
+        }
         if (context is not null && !transaction.ComponentPortion.IsEmpty)
         {
             await ProcessComponentsAsync(

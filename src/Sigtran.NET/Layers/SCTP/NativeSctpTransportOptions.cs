@@ -1,7 +1,7 @@
 namespace Sigtran.NET.Layers.SCTP;
 
 /// <summary>
-/// Configures production native SCTP transport behavior around metadata, backpressure, timeouts, and reconnect.
+/// Configures production native SCTP transport behavior around metadata, latency, backpressure, timeouts, and reconnect.
 /// </summary>
 public sealed class NativeSctpTransportOptions
 {
@@ -10,16 +10,19 @@ public sealed class NativeSctpTransportOptions
     /// <param name="timeoutPolicy">The operation timeout policy.</param>
     /// <param name="reconnectPolicy">The reconnect policy.</param>
     /// <param name="requireKernelMetadata">Whether send/receive operations must use Linux SCTP metadata APIs.</param>
+    /// <param name="enableNoDelay">Whether SCTP message bundling delay is disabled for latency-sensitive signaling.</param>
     public NativeSctpTransportOptions(
         SctpBackpressurePolicy? backpressurePolicy = null,
         SctpOperationTimeoutPolicy? timeoutPolicy = null,
         SctpReconnectPolicy? reconnectPolicy = null,
-        bool requireKernelMetadata = true)
+        bool requireKernelMetadata = true,
+        bool enableNoDelay = true)
     {
         BackpressurePolicy = backpressurePolicy ?? new SctpBackpressurePolicy();
         TimeoutPolicy = timeoutPolicy ?? new SctpOperationTimeoutPolicy();
         ReconnectPolicy = reconnectPolicy ?? new SctpReconnectPolicy();
         RequireKernelMetadata = requireKernelMetadata;
+        EnableNoDelay = enableNoDelay;
     }
 
     /// <summary>The send backpressure policy.</summary>
@@ -33,4 +36,7 @@ public sealed class NativeSctpTransportOptions
 
     /// <summary>Whether send/receive operations must use Linux SCTP metadata APIs.</summary>
     public bool RequireKernelMetadata { get; }
+
+    /// <summary>Whether SCTP message bundling delay is disabled for latency-sensitive signaling.</summary>
+    public bool EnableNoDelay { get; }
 }

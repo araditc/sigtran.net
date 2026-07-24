@@ -1,0 +1,6 @@
+hostname=AmmarPC
+kernel=6.18.33.2-microsoft-standard-WSL2
+distribution="Ubuntu 24.04.4 LTS"
+processors=8
+memory=Mem:           7.7Gi       618Mi       6.0Gi       3.4Mi       1.2Gi       7.1Gi
+10.0.109

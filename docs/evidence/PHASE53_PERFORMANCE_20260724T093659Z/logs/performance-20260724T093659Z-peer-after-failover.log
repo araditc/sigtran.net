@@ -1,0 +1,5 @@
+2026-07-24T09:37:14Z event=listening endpoint=127.0.0.1:2906
+2026-07-24T09:37:15Z event=association-accepted endpoint=127.0.0.1:2906
+2026-07-24T09:37:15Z event=asp-up-ack class=3 type=1 bytes=48 stream=0 ppid=3
+2026-07-24T09:37:15Z event=asp-active-ack class=4 type=1 bytes=32 stream=0 ppid=3
+2026-07-24T09:37:17Z event=complete operations=21000 expected=0 passed=true

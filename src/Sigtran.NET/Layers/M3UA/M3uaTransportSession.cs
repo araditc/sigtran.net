@@ -771,7 +771,7 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
             }
 
             SctpOutboundMessage message = new(
-                rented.AsMemory(0, written).ToArray(),
+                rented.AsMemory(0, written),
                 new SctpPayloadMetadata(streamId: 0, payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua));
             await _transport.SendAsync(message, ct).ConfigureAwait(false);
             Interlocked.Increment(ref _sentPdus);

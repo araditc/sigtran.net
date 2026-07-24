@@ -98,7 +98,11 @@ public sealed class NativeSctpListener : IDisposable
         {
             if (_transportOptions.RequireKernelMetadata)
             {
-                NativeSctpInterop.ConfigureSocket(socket, options.OutboundStreams, options.InboundStreams);
+                NativeSctpInterop.ConfigureSocket(
+                    socket,
+                    options.OutboundStreams,
+                    options.InboundStreams,
+                    _transportOptions.EnableNoDelay);
             }
 
             socket.Bind(local);
@@ -124,6 +128,10 @@ public sealed class NativeSctpListener : IDisposable
         if (_transportOptions.RequireKernelMetadata)
         {
             NativeSctpInterop.EnableReceiveMetadata(accepted);
+            if (_transportOptions.EnableNoDelay)
+            {
+                NativeSctpInterop.EnableNoDelay(accepted);
+            }
         }
 
         SctpEndpoint remote = ToSctpEndpoint(accepted.RemoteEndPoint, "remote");

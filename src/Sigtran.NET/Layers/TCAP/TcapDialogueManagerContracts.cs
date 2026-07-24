@@ -466,7 +466,7 @@ public sealed class TcapDialogueSnapshot
 }
 
 /// <summary>
-/// Captures TCAP dialogue, component, timeout, and rejection counters.
+/// Captures TCAP dialogue, component, timeout, rejection, and observation counters.
 /// </summary>
 public readonly struct TcapDialogueManagerMetrics
 {
@@ -480,6 +480,7 @@ public readonly struct TcapDialogueManagerMetrics
     /// <param name="malformedTransactions">The total malformed transaction count.</param>
     /// <param name="activeDialogues">The current active dialogue count.</param>
     /// <param name="pendingInvokes">The current pending outbound invoke count.</param>
+    /// <param name="droppedDialogueEvents">The dialogue events dropped because the optional observation queue was full.</param>
     public TcapDialogueManagerMetrics(
         long openedDialogues,
         long closedDialogues,
@@ -489,7 +490,8 @@ public readonly struct TcapDialogueManagerMetrics
         long rejectedComponents,
         long malformedTransactions,
         int activeDialogues,
-        int pendingInvokes)
+        int pendingInvokes,
+        long droppedDialogueEvents = 0)
     {
         OpenedDialogues = openedDialogues;
         ClosedDialogues = closedDialogues;
@@ -500,6 +502,7 @@ public readonly struct TcapDialogueManagerMetrics
         MalformedTransactions = malformedTransactions;
         ActiveDialogues = activeDialogues;
         PendingInvokes = pendingInvokes;
+        DroppedDialogueEvents = droppedDialogueEvents;
     }
 
     /// <summary>The total opened dialogue count.</summary>
@@ -528,4 +531,7 @@ public readonly struct TcapDialogueManagerMetrics
 
     /// <summary>The current pending outbound invoke count.</summary>
     public int PendingInvokes { get; }
+
+    /// <summary>The dialogue events dropped because the optional observation queue was full.</summary>
+    public long DroppedDialogueEvents { get; }
 }

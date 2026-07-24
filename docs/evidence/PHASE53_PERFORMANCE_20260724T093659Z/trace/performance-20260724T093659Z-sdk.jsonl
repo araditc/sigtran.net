@@ -1,0 +1,31 @@
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.0558282+00:00","Layer":"lab","Event":"starting","Detail":"runId=performance-20260724T093659Z endpoint=127.0.0.1:2906 warmup=1000/16 sustained=20000/64 peak=20000/128 recovery=1000/32 soak=20000/64"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.1373135+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Starting detail=runtime-start"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.1380966+00:00","Layer":"sctp","Event":"connect-attempt","Detail":"attempt=1 successful=True delay=- reason=connected"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.1584996+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Active detail=asp-active"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.1586911+00:00","Layer":"m3ua","Event":"AspActivated","Detail":"state=Active detail=asp-startup-complete"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.171243+00:00","Layer":"stage","Event":"starting","Detail":"name=warmup operations=1000 concurrency=16"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.3843302+00:00","Layer":"stage","Event":"completed","Detail":"name=warmup passed=True successful=1000 failed=0 tps=4913.2 p95Ms=2.352 p99Ms=92.041 cpu=16.0/31.9 rssMb=51 allocBytes=10179"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:11.3870628+00:00","Layer":"stage","Event":"starting","Detail":"name=sustained operations=20000 concurrency=64"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:12.8748811+00:00","Layer":"stage","Event":"completed","Detail":"name=sustained passed=True successful=20000 failed=0 tps=13515.3 p95Ms=7.230 p99Ms=8.419 cpu=42.7/51.7 rssMb=60 allocBytes=9627"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:12.8750329+00:00","Layer":"stage","Event":"starting","Detail":"name=peak operations=20000 concurrency=128"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:13.2822649+00:00","Layer":"m3ua","Event":"HeartbeatAcknowledged","Detail":"state=Active detail=-"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:14.375058+00:00","Layer":"stage","Event":"completed","Detail":"name=peak passed=True successful=20000 failed=0 tps=13491.5 p95Ms=14.471 p99Ms=16.380 cpu=42.8/49.0 rssMb=69 allocBytes=9585"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:14.3766442+00:00","Layer":"resilience","Event":"failover-requested","Detail":"/home/ammar/sigtran-lab/artifacts/performance/performance-20260724T093659Z/build/failover-ready"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.2891737+00:00","Layer":"m3ua","Event":"FaultObserved","Detail":"state=Active detail=Broken pipe"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.289704+00:00","Layer":"m3ua","Event":"ReconnectScheduled","Detail":"state=Active detail=attempt=1 delayMs=100"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.2897472+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Reconnecting detail=reconnect-scheduled"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.3926331+00:00","Layer":"sctp","Event":"connect-attempt","Detail":"attempt=1 successful=True delay=- reason=connected"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.3940393+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Active detail=asp-active"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.3941306+00:00","Layer":"m3ua","Event":"AspActivated","Detail":"state=Active detail=asp-startup-complete"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.4146882+00:00","Layer":"resilience","Event":"association-recovered","Detail":"reconnectAttempts=1"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.4148238+00:00","Layer":"stage","Event":"starting","Detail":"name=recovery operations=1000 concurrency=32"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.6458779+00:00","Layer":"stage","Event":"completed","Detail":"name=recovery passed=True successful=1000 failed=0 tps=4333.8 p95Ms=13.255 p99Ms=89.833 cpu=18.5/31.1 rssMb=70 allocBytes=9626"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:15.6459351+00:00","Layer":"stage","Event":"starting","Detail":"name=soak operations=20000 concurrency=64"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.1204023+00:00","Layer":"stage","Event":"completed","Detail":"name=soak passed=True successful=20000 failed=0 tps=13582.4 p95Ms=6.911 p99Ms=8.058 cpu=31.0/42.1 rssMb=70 allocBytes=9501"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.122049+00:00","Layer":"metrics","Event":"final","Detail":"m3uaSent=62000 m3uaReceived=62000 reconnects=1 faults=1 sccpSent=62000 sccpReceived=62000 tcapOpened=62000 tcapClosed=62000 tcapDroppedEvents=61872"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.1497435+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Stopping detail=runtime-stop"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.2196186+00:00","Layer":"m3ua","Event":"FaultObserved","Detail":"state=Stopping detail=The active M3UA session ended."}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.2197681+00:00","Layer":"m3ua","Event":"ReconnectScheduled","Detail":"state=Stopping detail=attempt=1 delayMs=100"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.2197833+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Reconnecting detail=reconnect-scheduled"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.2202154+00:00","Layer":"m3ua","Event":"StateChanged","Detail":"state=Stopped detail=runtime-stopped"}
+{"RunId":"performance-20260724T093659Z","TimestampUtc":"2026-07-24T09:37:17.2202624+00:00","Layer":"m3ua","Event":"ShutdownCompleted","Detail":"state=Stopped detail=runtime-stopped"}

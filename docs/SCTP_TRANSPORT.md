@@ -221,3 +221,15 @@ Run `phase45-native-sctp-20260701T103951Z` passed this script on a Linux VM and 
 `NativeSctpLab.CreateFromEnvironment()` keeps native SCTP integration verification opt-in through `SIGTRAN_NATIVE_SCTP_LAB=1`.
 
 `NativeSctpReadiness.GetReport()` marks the Phase 8 native SCTP foundation complete while keeping production readiness blocked until Linux verification passes.
+
+## Low-Allocation Native Traffic
+
+`NativeSctpTransportOptions.EnableNoDelay` enables `SCTP_NODELAY` by default for
+latency-sensitive signaling. Set it to `false` only when deliberate SCTP
+bundling is preferred and measured.
+
+The lksctp interop path uses array-backed `ReadOnlyMemory<byte>` and
+`Memory<byte>` directly. Non-array-backed buffers fall back to
+`ArrayPool<byte>` instead of allocating a maximum-PDU array for every receive.
+Phase 53 reduced measured full-stack allocation from approximately 77 KB to
+about 9.5 KB per MAP SMS transaction with these changes.

@@ -74,3 +74,15 @@ Long-running benchmarks remain opt-in so normal pull-request validation stays fa
 ## Phase Status
 
 `SigtranPerformanceStatus.Describe()` summarizes the completed Phase 14 units and separates performance foundation readiness from production performance readiness.
+
+## Measured Full-Stack Baseline
+
+Phase 53 adds an executable native SCTP benchmark and retained run
+`performance-20260724T093659Z`. The run completed 62,000 MAP SMS transactions
+through TCAP, SCCP, and M3UA with no failures, measured approximately 13.5K TPS
+for sustained, peak, and soak stages, and restored traffic after association
+failure without loss.
+
+The run is a single-host WSL baseline and did not reach the 20K peak target. See
+[Phase 53](PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md) for metrics, evidence,
+and the remaining multi-host gate.

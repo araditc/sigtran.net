@@ -500,7 +500,15 @@ profile validation and independent M2PA traffic remain separate gates.
   separate hosts or VMs.
 - Report TPS, P95/P99 latency, CPU, memory, allocations, queue pressure, and loss.
 
-Status: Pending.
+Status: Implementation and controlled baseline execution are complete.
+`Sigtran.NET.PerformanceLab` and
+`scripts/run-full-stack-performance-lab.sh` execute warmup, sustained, peak,
+failover, recovery, and soak against the independent C/lksctp peer. Run
+`performance-20260724T093659Z` completed 62,000 full-stack transactions without
+loss, measured about 13.5K TPS across sustained/peak/soak, kept sustained and
+peak P95 below 15 ms, and restored traffic in about 1.27 seconds. The run did
+not satisfy the 20K peak target and is single-host WSL loopback, so
+operator-sized multi-host qualification remains open.
 
 ## Phase 54 - Production Operations Package
 

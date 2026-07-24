@@ -7363,6 +7363,7 @@ static void NativeSctpTransportOptionsExposeProductionPolicies()
     AssertEqual(TimeSpan.FromMilliseconds(250), options.TimeoutPolicy.SendTimeout, "native transport send timeout");
     AssertEqual(2, options.ReconnectPolicy.MaxAttempts, "native transport reconnect attempts");
     Assert(options.RequireKernelMetadata, "native transport should require kernel metadata");
+    Assert(options.EnableNoDelay, "native transport should enable low-latency SCTP sends");
 
     SctpTransportQueueMetrics metrics = new(
         queuedSendMessages: 1,
@@ -7652,15 +7653,22 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
     SccpConnectionlessService secondSccp = new(
         secondNetwork,
         new(destinationPointCode: 1, originatingPointCode: 2, signallingLinkSelection: 0));
-    TcapDialogueManagerOptions options = new(
+    TcapDialogueManagerOptions firstOptions = new(
+        eventQueueCapacity: 1,
+        componentQueueCapacity: 32,
+        maximumDialogues: 32,
+        maximumPendingInvokesPerDialogue: 8,
+        invokeTimeout: TimeSpan.FromSeconds(2),
+        timerResolution: TimeSpan.FromMilliseconds(20));
+    TcapDialogueManagerOptions secondOptions = new(
         eventQueueCapacity: 32,
         componentQueueCapacity: 32,
         maximumDialogues: 32,
         maximumPendingInvokesPerDialogue: 8,
         invokeTimeout: TimeSpan.FromSeconds(2),
         timerResolution: TimeSpan.FromMilliseconds(20));
-    TcapDialogueManager first = new(firstSccp, options);
-    TcapDialogueManager second = new(secondSccp, options);
+    TcapDialogueManager first = new(firstSccp, firstOptions);
+    TcapDialogueManager second = new(secondSccp, secondOptions);
     SccpPartyAddress firstParty = new(
         SccpRoutingIndicator.RouteOnSubsystemNumber,
         SubsystemNumber.MAP,
@@ -7741,6 +7749,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
     AssertEqual(4L, first.GetMetrics().ClosedDialogues, "TCAP closed dialogue metric");
     AssertEqual(4L, first.GetMetrics().SentComponents, "TCAP sent component metric");
     AssertEqual(4L, first.GetMetrics().ReceivedComponents, "TCAP received component metric");
+    AssertEqual(3L, first.GetMetrics().DroppedDialogueEvents, "TCAP dropped observation event metric");
 
     first.DisposeAsync().AsTask().GetAwaiter().GetResult();
     second.DisposeAsync().AsTask().GetAwaiter().GetResult();

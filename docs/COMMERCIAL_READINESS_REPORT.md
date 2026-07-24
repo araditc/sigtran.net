@@ -38,10 +38,22 @@ retained manifests instead of stale hard-coded flags.
   invokes and built five results. The retained PCAP contains 23 SCTP packets
   and ten M3UA DATA messages. The complete bundle is under
   `docs/evidence/PHASE52_END_TO_END_20260724T085858Z/`.
+- Full-stack performance run `performance-20260724T093659Z` completed 62,000
+  MAP SMS transactions through TCAP, SCCP, M3UA, and native SCTP without
+  protocol failure. Sustained, peak, and soak throughput were approximately
+  13.5K TPS; sustained/peak P95 remained below 15 ms; peak working set was
+  70 MB; and hot-path allocation was about 9.5 KB per transaction. Injected
+  association failure recovered in about 1.04 seconds and recovery traffic
+  completed without loss. Compressed PCAP, TShark fields, metrics, logs,
+  configuration, trace, comparison, report, and digests are retained under
+  `docs/evidence/PHASE53_PERFORMANCE_20260724T093659Z/`.
 
 ## Remaining Production Blockers
 
-- The current benchmark is real Linux SCTP peer traffic evidence, but it is single-host loopback. Do not use it for broad operator capacity claims until an operator-sized deployment benchmark is retained.
+- The current full-stack benchmark is real Linux SCTP peer traffic evidence,
+  but it is single-host WSL loopback. It reached about 13.5K TPS and did not
+  meet the 20K peak target. Do not use it for broad operator capacity claims
+  until a representative multi-host deployment benchmark passes.
 - Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
@@ -51,8 +63,8 @@ retained manifests instead of stale hard-coded flags.
   cross-implementation traffic evidence for the repository profile. A separate
   operator or vendor profile run is still required before broad SS7 network
   interoperability can be claimed.
-- The retained benchmark is not an operator-sized multi-host capacity or soak
-  result.
+- The retained soak contains 20,000 operations, not the long-duration
+  multi-host soak required for an operator capacity claim.
 
 ## Production Decision
 

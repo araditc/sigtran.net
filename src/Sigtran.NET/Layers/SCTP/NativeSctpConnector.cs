@@ -106,7 +106,11 @@ public sealed class NativeSctpConnector
             {
                 if (effectiveTransportOptions.RequireKernelMetadata)
                 {
-                    NativeSctpInterop.ConfigureSocket(socket, options.OutboundStreams, options.InboundStreams);
+                    NativeSctpInterop.ConfigureSocket(
+                        socket,
+                        options.OutboundStreams,
+                        options.InboundStreams,
+                        effectiveTransportOptions.EnableNoDelay);
                 }
                 if (plan.LocalEndpoint is not null)
                 {

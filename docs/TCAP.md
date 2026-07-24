@@ -161,6 +161,12 @@ dedicated delay task for every invoke while preserving per-invoke timeout
 overrides. `SnapshotDialogues` and `GetMetrics` expose current state without
 returning mutable manager internals.
 
+The dialogue event stream is observational and cannot block correlated
+ReturnResult, ReturnError, or Reject processing. When its bounded queue is full,
+the manager drops the observation event and increments
+`TcapDialogueManagerMetrics.DroppedDialogueEvents`. Inbound Invoke components
+still use their bounded component queue and retain application backpressure.
+
 ## Allocation
 
 `TcapTransactionIdAllocator` and `TcapInvokeRegistry` provide deterministic allocation and duplicate detection for transaction and invoke identifiers.

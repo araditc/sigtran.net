@@ -66,6 +66,7 @@ struct tcap_invoke_view {
 };
 
 static volatile sig_atomic_t stop_requested = 0;
+static int quiet_traffic = 0;
 
 static void handle_signal(int signal_number)
 {
@@ -99,6 +100,15 @@ static void write_u32_be(uint8_t *destination, uint32_t value)
 
 static void log_event(const char *event_name, const char *detail)
 {
+    if (quiet_traffic
+        && (strcmp(event_name, "sctp-receive") == 0
+            || strcmp(event_name, "m3ua-receive") == 0
+            || strcmp(event_name, "map-invoke") == 0
+            || strcmp(event_name, "map-result") == 0
+            || strcmp(event_name, "heartbeat-ack") == 0)) {
+        return;
+    }
+
     time_t now = time(NULL);
     struct tm value;
     char timestamp[32];
@@ -696,8 +706,12 @@ int main(int argc, char **argv)
 {
     const char *bind_ip = argc > 1 ? argv[1] : "127.0.0.1";
     int bind_port = argc > 2 ? atoi(argv[2]) : 2906;
+    unsigned int expected_operations =
+        argc > 3 ? (unsigned int)strtoul(argv[3], NULL, 10) : 5U;
     int listener_fd;
     int connection_fd;
+    int reuse_address = 1;
+    int no_delay = 1;
     struct sockaddr_in address;
     struct sctp_initmsg init_message;
     struct sctp_event_subscribe events;
@@ -708,10 +722,31 @@ int main(int argc, char **argv)
 
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
+    quiet_traffic = argc > 4 && strcmp(argv[4], "quiet") == 0;
 
     listener_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP);
     if (listener_fd < 0) {
         perror("socket");
+        return 1;
+    }
+    if (setsockopt(
+            listener_fd,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            &reuse_address,
+            sizeof(reuse_address)) != 0) {
+        perror("setsockopt SO_REUSEADDR");
+        close(listener_fd);
+        return 1;
+    }
+    if (setsockopt(
+            listener_fd,
+            IPPROTO_SCTP,
+            SCTP_NODELAY,
+            &no_delay,
+            sizeof(no_delay)) != 0) {
+        perror("setsockopt SCTP_NODELAY");
+        close(listener_fd);
         return 1;
     }
 
@@ -769,7 +804,7 @@ int main(int argc, char **argv)
     }
     log_event("association-accepted", detail);
 
-    receive_timeout.tv_sec = 10;
+    receive_timeout.tv_sec = 1;
     receive_timeout.tv_usec = 0;
     (void)setsockopt(
         connection_fd,
@@ -798,8 +833,12 @@ int main(int argc, char **argv)
             break;
         }
         if (received < 0) {
+            if (errno == EINTR && stop_requested) {
+                break;
+            }
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                if (operation_count >= 5U) {
+                if (expected_operations > 0U
+                    && operation_count >= expected_operations) {
                     break;
                 }
                 continue;
@@ -908,16 +947,25 @@ int main(int argc, char **argv)
                 close(connection_fd);
                 return 1;
             }
+            if (expected_operations > 0U
+                && operation_count >= expected_operations) {
+                break;
+            }
         }
     }
 
     snprintf(
         detail,
         sizeof(detail),
-        "operations=%u passed=%s",
+        "operations=%u expected=%u passed=%s",
         operation_count,
-        operation_count == 5U ? "true" : "false");
+        expected_operations,
+        (expected_operations == 0U && operation_count > 0U)
+            || operation_count == expected_operations
+                ? "true"
+                : "false");
     log_event("complete", detail);
     close(connection_fd);
-    return operation_count == 5U ? 0 : 1;
+    return ((expected_operations == 0U && operation_count > 0U)
+        || operation_count == expected_operations) ? 0 : 1;
 }

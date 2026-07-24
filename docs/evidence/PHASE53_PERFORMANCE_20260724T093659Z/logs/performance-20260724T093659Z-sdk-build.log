@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Sigtran.NET -> /mnt/d/MyDocuments/SourceCode/sigtran.net/src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.dll
+  Sigtran.NET.PerformanceLab -> /mnt/d/MyDocuments/SourceCode/sigtran.net/src/Sigtran.NET.PerformanceLab/bin/Release/net10.0/Sigtran.NET.PerformanceLab.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:08.01
