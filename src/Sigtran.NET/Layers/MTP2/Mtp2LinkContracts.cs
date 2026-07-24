@@ -11,8 +11,17 @@ public enum Mtp2LinkState
     /// <summary>The link is aligning or reconnecting.</summary>
     Aligning,
 
+    /// <summary>The link is verifying the SCTP association during proving.</summary>
+    Proving,
+
     /// <summary>The link is aligned and can carry signalling units.</summary>
     InService,
+
+    /// <summary>The local or remote processor is unavailable.</summary>
+    ProcessorOutage,
+
+    /// <summary>User Data transmission is paused by remote congestion.</summary>
+    Busy,
 
     /// <summary>The link is draining or shutting down.</summary>
     ShuttingDown,

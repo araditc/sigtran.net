@@ -52,7 +52,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 45 | Native SCTP production transport | [Phase 45 Native SCTP Production Transport](PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md), [Phase 45 Summary](PHASE45_SUMMARY.md), [SCTP Transport](SCTP_TRANSPORT.md) | Evidence complete for Linux SCTP loopback; external peer evidence is tracked separately |
 | 46 | Evidence and readiness reconciliation | [Phase 46 Evidence And Readiness Reconciliation](PHASE46_EVIDENCE_READINESS_RECONCILIATION.md), [Phase 46 Summary](PHASE46_SUMMARY.md) | Complete; retained SCTP/M3UA evidence is reflected by readiness APIs |
 | 47 | M3UA production runtime API | [Phase 47 M3UA Runtime](PHASE47_M3UA_RUNTIME.md), [Phase 47 Summary](PHASE47_SUMMARY.md), [M3UA](M3UA.md) | Complete; long-running ASP runtime implements IMtp3Network |
-| 48 | M2PA production path | Planned | Pending |
+| 48 | M2PA production path | [Phase 48 M2PA Production Path](PHASE48_M2PA_PRODUCTION_PATH.md), [Phase 48 Summary](PHASE48_SUMMARY.md), [M2PA](M2PA.md) | Implementation complete; external peer evidence pending |
 | 49 | SCCP stateful service layer | Planned | Pending |
 | 50 | TCAP dialogue manager | Planned | Pending |
 | 51 | MAP SMS service | Planned | Pending |
@@ -66,6 +66,6 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 The retained verification catalog now reports native Linux SCTP, external SCTP
 peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
 prerelease publication evidence. Full product readiness remains blocked on the
-M2PA, stateful SCCP/TCAP/MAP services, end-to-end
+stateful SCCP/TCAP/MAP services, end-to-end M2PA and higher-layer
 independent peer traffic, operator-sized performance, production operations, a
 trusted release identity, and protected stable publication.

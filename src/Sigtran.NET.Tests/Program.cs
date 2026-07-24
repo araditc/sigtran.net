@@ -452,6 +452,11 @@ Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters
 Run("M3UA transport session notifies ASP transport loss", M3uaTransportSessionNotifiesAspTransportLoss);
 Run("M3UA runtime carries MTP3 traffic with heartbeat supervision", M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision);
 Run("M3UA runtime readiness reports production service capabilities", M3uaRuntimeReadinessReportsServiceCapabilities);
+Run("M2PA codec round-trips User Data and Link Status", M2paCodecRoundTripsMessages);
+Run("M2PA sequence and retrieval acknowledgements wrap correctly", M2paSequenceAndRetrievalAcknowledge);
+Run("M2PA SCTP metadata enforces PPID streams and ordering", M2paMetadataEnforcesTransportPolicy);
+Run("M2PA link aligns and carries MTP2 payload", M2paLinkAlignsAndCarriesPayload);
+Run("M2PA readiness reports link runtime capabilities", M2paReadinessReportsRuntimeCapabilities);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP startup options validate and describe settings", M3uaAspStartupOptionsValidateAndDescribeSettings);
@@ -641,7 +646,7 @@ static void SigtranProductionReadinessSnapshotsReleaseGates()
     Assert(report.HasNativeSctpVerification, report.Describe());
     Assert(report.HasExternalInteroperabilityEvidence, report.Describe());
     Assert(!report.HasReleaseGovernance, report.Describe());
-    Assert(report.ProductionBlockers.Contains("m2pa-runtime-required"), report.Describe());
+    Assert(!report.ProductionBlockers.Contains("m2pa-runtime-required"), report.Describe());
     Assert(report.ProductionBlockers.Contains("operator-performance-evidence-required"), report.Describe());
     Assert(report.Describe().Contains("nativeSctp=True", StringComparison.Ordinal), report.Describe());
     Assert(report.Describe().Contains("externalInterop=True", StringComparison.Ordinal), report.Describe());
@@ -9489,6 +9494,214 @@ static void M3uaRuntimeReadinessReportsServiceCapabilities()
     Assert(readiness.HasReconnectAndFailover, "M3UA runtime should expose reconnect and failover");
     Assert(readiness.HasRuntimeMetrics, "M3UA runtime should expose metrics");
     Assert(readiness.HasMtp3Contract, "M3UA runtime should implement MTP3 contract");
+}
+
+static void M2paCodecRoundTripsMessages()
+{
+    Span<byte> encoded = stackalloc byte[128];
+    Assert(
+        M2paMessage.TryEncodeUserData(
+            encoded,
+            backwardSequenceNumber: 0x000102,
+            forwardSequenceNumber: 0x00FFFF,
+            payload: [0x83, 0x01, 0x02, 0x03],
+            out int userDataLength,
+            out string? userDataError),
+        userDataError ?? "M2PA User Data encode failed");
+    Assert(
+        M2paMessage.TryDecode(
+            encoded[..userDataLength],
+            out M2paMessage? userData,
+            out string? userDataDecodeError),
+        userDataDecodeError ?? "M2PA User Data decode failed");
+    AssertEqual(M2paMessageType.UserData, userData!.MessageType, "M2PA User Data type");
+    AssertEqual((uint)0x000102, userData.BackwardSequenceNumber, "M2PA User Data BSN");
+    AssertEqual((uint)0x00FFFF, userData.ForwardSequenceNumber, "M2PA User Data FSN");
+    AssertSequence([0x83, 0x01, 0x02, 0x03], userData.Payload.Span, "M2PA User Data payload");
+
+    Assert(
+        M2paMessage.TryEncodeLinkStatus(
+            encoded,
+            backwardSequenceNumber: M2paProtocol.MaximumSequenceNumber,
+            forwardSequenceNumber: M2paProtocol.MaximumSequenceNumber,
+            status: M2paLinkStatus.ProvingNormal,
+            provingFiller: [0xAA, 0x55],
+            out int statusLength,
+            out string? statusError),
+        statusError ?? "M2PA Link Status encode failed");
+    Assert(
+        M2paMessage.TryDecode(
+            encoded[..statusLength],
+            out M2paMessage? status,
+            out string? statusDecodeError),
+        statusDecodeError ?? "M2PA Link Status decode failed");
+    AssertEqual(M2paMessageType.LinkStatus, status!.MessageType, "M2PA Link Status type");
+    AssertEqual(M2paLinkStatus.ProvingNormal, status.LinkStatus!.Value, "M2PA Link Status value");
+    AssertSequence([0xAA, 0x55], status.Payload.Span, "M2PA proving filler");
+}
+
+static void M2paSequenceAndRetrievalAcknowledge()
+{
+    AssertEqual(
+        (uint)0,
+        M2paProtocol.NextSequenceNumber(M2paProtocol.MaximumSequenceNumber),
+        "M2PA sequence wrap");
+
+    M2paRetrievalBuffer retrieval = new(capacity: 2);
+    retrieval.Add(
+        new(
+            M2paProtocol.MaximumSequenceNumber,
+            new byte[] { 0x01 },
+            DateTimeOffset.UtcNow));
+    retrieval.Add(new(0, new byte[] { 0x02 }, DateTimeOffset.UtcNow));
+
+    AssertEqual(1, retrieval.AcknowledgeThrough(M2paProtocol.MaximumSequenceNumber), "M2PA first acknowledgement");
+    AssertEqual(1, retrieval.Count, "M2PA retrieval depth after first acknowledgement");
+    AssertEqual((uint)0, retrieval.Snapshot()[0].ForwardSequenceNumber, "M2PA retained wrapped FSN");
+    AssertEqual(1, retrieval.AcknowledgeThrough(0), "M2PA wrapped acknowledgement");
+    AssertEqual(0, retrieval.Count, "M2PA retrieval depth after wrapped acknowledgement");
+}
+
+static void M2paMetadataEnforcesTransportPolicy()
+{
+    Span<byte> encoded = stackalloc byte[M2paProtocol.MinimumMessageLength];
+    Assert(
+        M2paMessage.TryEncodeUserData(
+            encoded,
+            backwardSequenceNumber: M2paProtocol.MaximumSequenceNumber,
+            forwardSequenceNumber: M2paProtocol.MaximumSequenceNumber,
+            payload: ReadOnlySpan<byte>.Empty,
+            out int written,
+            out string? encodeError),
+        encodeError ?? "M2PA acknowledgement encode failed");
+    Assert(
+        M2paMessage.TryDecode(
+            encoded[..written],
+            out M2paMessage? message,
+            out string? decodeError),
+        decodeError ?? "M2PA acknowledgement decode failed");
+
+    Assert(
+        M2paProtocol.TryValidateSctpMetadata(
+            message!,
+            new(
+                M2paProtocol.UserDataStream,
+                SctpPayloadProtocolIdentifiers.M2pa,
+                unordered: false),
+            out string? validError),
+        validError ?? "M2PA valid SCTP metadata rejected");
+    Assert(
+        !M2paProtocol.TryValidateSctpMetadata(
+            message!,
+            new(
+                M2paProtocol.LinkStatusStream,
+                SctpPayloadProtocolIdentifiers.M2pa,
+                unordered: false),
+            out _),
+        "M2PA User Data should reject stream 0");
+    Assert(
+        !M2paProtocol.TryValidateSctpMetadata(
+            message!,
+            new(
+                M2paProtocol.UserDataStream,
+                SctpPayloadProtocolIdentifiers.M2pa,
+                unordered: true),
+            out _),
+        "M2PA should reject unordered delivery");
+}
+
+static void M2paLinkAlignsAndCarriesPayload()
+{
+    M2paLoopbackTransport transport = new();
+    M2paLinkOptions options = new(
+        normalProvingDuration: TimeSpan.Zero,
+        emergencyProvingDuration: TimeSpan.Zero,
+        alignmentTimeout: TimeSpan.FromSeconds(2),
+        inboundQueueCapacity: 2,
+        retrievalCapacity: 2);
+    List<Mtp2LinkState> states = [];
+    M2paLink link = new(transport, options);
+    link.StateChanged += (_, args) => states.Add(args.State);
+
+    link.StartAsync().AsTask().GetAwaiter().GetResult();
+    AssertEqual(Mtp2LinkState.InService, link.State, "M2PA aligned link state");
+    Assert(states.Contains(Mtp2LinkState.Aligning), "M2PA alignment state event");
+    Assert(states.Contains(Mtp2LinkState.Proving), "M2PA proving state event");
+
+    link.SendAsync(new byte[] { 0x83, 0x01, 0x02, 0x03 })
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    using CancellationTokenSource receiveTimeout = new(TimeSpan.FromSeconds(2));
+    byte[] receiveBuffer = new byte[32];
+    int received = link.ReceiveAsync(receiveBuffer, receiveTimeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertSequence(
+        [0x83, 0x01, 0x02, 0x03],
+        receiveBuffer.AsSpan(0, received),
+        "M2PA loopback payload");
+    Assert(
+        SpinWait.SpinUntil(
+            () => link.GetMetrics().AcknowledgedUserData == 1,
+            TimeSpan.FromSeconds(2)),
+        "M2PA peer BSN should acknowledge sent User Data");
+    AssertEqual(0, link.RetrieveUnacknowledged().Count, "M2PA acknowledged retrieval depth");
+
+    transport.QueueLinkStatus(M2paLinkStatus.Busy);
+    Assert(
+        SpinWait.SpinUntil(
+            () => link.State == Mtp2LinkState.Busy,
+            TimeSpan.FromSeconds(2)),
+        "M2PA peer Busy should pause the link");
+    Task blockedSend = link.SendAsync(new byte[] { 0x04 }).AsTask();
+    Assert(!blockedSend.Wait(TimeSpan.FromMilliseconds(50)), "M2PA send should wait during peer Busy");
+    transport.QueueLinkStatus(M2paLinkStatus.BusyEnded);
+    blockedSend.Wait(TimeSpan.FromSeconds(2));
+    Assert(blockedSend.IsCompletedSuccessfully, "M2PA send should resume after Busy Ended");
+
+    link.SetLocalProcessorOutageAsync(outage: true)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(Mtp2LinkState.ProcessorOutage, link.State, "M2PA local processor outage state");
+    link.SetLocalProcessorOutageAsync(outage: false)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(Mtp2LinkState.InService, link.State, "M2PA local processor recovered state");
+
+    M2paLinkMetrics metrics = link.GetMetrics();
+    Assert(metrics.SentUserData >= 2, "M2PA sent User Data metric");
+    Assert(metrics.ReceivedUserData >= 1, "M2PA received User Data metric");
+    Assert(metrics.SentAcknowledgements >= 1, "M2PA sent acknowledgement metric");
+    Assert(metrics.SentLinkStatus >= 6, "M2PA link-status metric");
+    Assert(
+        transport.SentMetadata.All(static metadata =>
+            metadata.PayloadProtocolIdentifier == SctpPayloadProtocolIdentifiers.M2pa
+            && !metadata.Unordered),
+        "M2PA transport should use PPID 5 with ordered delivery");
+
+    link.StopAsync().AsTask().GetAwaiter().GetResult();
+    AssertEqual(Mtp2LinkState.OutOfService, link.State, "M2PA stopped link state");
+    link.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void M2paReadinessReportsRuntimeCapabilities()
+{
+    M2paReadinessSnapshot readiness = M2paReadiness.GetReport();
+
+    Assert(readiness.RuntimeReady, "M2PA runtime readiness should be complete");
+    Assert(readiness.HasRfcCodec, "M2PA should expose RFC framing");
+    Assert(readiness.HasStreamAndPpidPolicy, "M2PA should enforce stream and PPID policy");
+    Assert(readiness.HasAlignmentAndProving, "M2PA should expose alignment and proving");
+    Assert(readiness.HasSequenceAndAcknowledgement, "M2PA should expose sequence handling");
+    Assert(readiness.HasRetrievalBuffer, "M2PA should expose retrieval retention");
+    Assert(readiness.HasCongestionControl, "M2PA should expose congestion control");
+    Assert(readiness.HasProcessorOutage, "M2PA should expose processor outage handling");
+    Assert(readiness.HasRecovery, "M2PA should expose transport recovery");
+    Assert(readiness.HasMtp2Contract, "M2PA should implement the MTP2 contract");
 }
 
 static void M3uaDiagnosticsFormatHexAndSummaries()

@@ -26,7 +26,9 @@ Upper layers should depend on the public contract of the layer below them, not o
 
 ## MTP2 And MTP3
 
-`IMtp2Link` is the MTP2-compatible link boundary intended for M2PA or physical-link style providers.
+`IMtp2Link` is the MTP2-compatible link boundary. `M2paLink` supplies the
+RFC 4165 implementation over `ISctpTransport`; physical-link style providers
+can implement the same contract.
 
 `IMtp3Network` is the MTP3 transfer boundary consumed by SCCP. `M3uaMtp3Network` adapts `M3uaTransportSession` to this contract, giving upper layers an MTP3 view over M3UA Payload Data messages.
 
@@ -51,4 +53,6 @@ ITcapDialogues tcap = new TcapDialogueService(sccp);
 IMapSmsService map = new MapSmsService(tcap, calledParty, callingParty);
 ```
 
-This keeps replacement points explicit. A production Linux SCTP transport, an M2PA-backed MTP2 link, or a different TCAP dialogue manager can be swapped in without changing the layers above the relevant interface.
+This keeps replacement points explicit. A production Linux SCTP transport, the
+provided M2PA-backed MTP2 link, or a different TCAP dialogue manager can be
+swapped in without changing the layers above the relevant interface.

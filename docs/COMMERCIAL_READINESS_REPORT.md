@@ -39,10 +39,9 @@ retained manifests instead of stale hard-coded flags.
 - Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
-- The production M3UA runtime service now provides lifecycle orchestration,
-  failover hooks, bounded queueing, heartbeat supervision, cancellation, and
-  runtime observability through `M3uaRuntime`.
-- M2PA is not yet available as a production `IMtp2Link` path.
+- M3UA and M2PA now provide stateful runtime implementations through
+  `IMtp3Network` and `IMtp2Link`. Independent external M2PA peer evidence remains
+  part of the end-to-end traffic lab gate.
 - SCCP, TCAP, and MAP SMS require stateful service/session implementations and
   independent end-to-end peer evidence.
 - The retained benchmark is not an operator-sized multi-host capacity or soak

@@ -16,9 +16,10 @@ SIGTRAN.NET is currently in a **public release-candidate** track. Version
 `1.0.0-rc.1` has been published and restored from NuGet.org.
 
 Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
-the SDK readiness APIs through a common verification catalog. Full stable-product
-readiness remains gated on the M3UA runtime service, M2PA, stateful SCCP/TCAP/MAP
-services, operator-sized performance evidence, trusted signing, and stable release
+the SDK readiness APIs through a common verification catalog. Stateful M3UA and
+M2PA runtimes are available. Full stable-product readiness remains gated on
+stateful SCCP/TCAP/MAP services, end-to-end independent-peer evidence,
+operator-sized performance evidence, trusted signing, and stable release
 execution.
 
 For release history and governance, see:
@@ -67,7 +68,7 @@ The current RC engineering track focuses on:
 | --- | --- |
 | M3UA | Codec, routing, ASP state, long-running `IMtp3Network` runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence are available. |
 | SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
-| M2PA | Official MTP2 contract exists; production M2PA runtime is planned. |
+| M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
 | SCCP | Connectionless codec and routing foundation exists; a stateful service layer and external evidence remain. |
 | TCAP | BER and transaction foundations exist; production dialogue management and external evidence remain. |
 | MAP | SMS codec and facade foundations exist; stateful service workflows and external evidence remain. |
@@ -149,6 +150,8 @@ Start here:
 - [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
 - [Phase 47 M3UA runtime](docs/PHASE47_M3UA_RUNTIME.md)
+- [M2PA implementation notes](docs/M2PA.md)
+- [Phase 48 M2PA production path](docs/PHASE48_M2PA_PRODUCTION_PATH.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
 - [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
 - [Phase 46 evidence and readiness reconciliation](docs/PHASE46_EVIDENCE_READINESS_RECONCILIATION.md)
@@ -202,7 +205,7 @@ Stable production support requires:
 
 - Retained Linux SCTP verification evidence.
 - External SIGTRAN peer interoperability evidence.
-- Production M2PA runtime path.
+- Independent M2PA peer evidence.
 - Stateful SCCP, TCAP, and MAP SMS service validation.
 - End-to-end protocol trace validation.
 - Operator-sized capacity and resilience evidence.

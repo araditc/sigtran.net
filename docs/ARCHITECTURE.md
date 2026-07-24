@@ -27,7 +27,7 @@ SIGTRAN.NET is organized as layered protocol components with explicit boundaries
 | --- | --- | --- |
 | SCTP association | `ISctpAssociation` | Platform association state |
 | SCTP transport | `ISctpTransport` | `ISctpAssociation` |
-| MTP2 link | `IMtp2Link` | SCTP, M2PA, or physical link provider |
+| MTP2 link | `IMtp2Link` | `M2paLink` over `ISctpTransport`, or another link provider |
 | MTP3 network | `IMtp3Network` | `IMtp2Link` or M3UA adapter |
 | SCCP service | `ISccpService` | `IMtp3Network` |
 | TCAP dialogues | `ITcapDialogues` | `ISccpService` |

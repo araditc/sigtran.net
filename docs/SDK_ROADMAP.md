@@ -432,7 +432,12 @@ cancellation, and graceful shutdown sends.
 - Expose the runtime through `IMtp2Link`.
 - Validate against independent M2PA traces and peer traffic.
 
-Status: Pending.
+Status: Implementation complete. `M2paLink` implements `IMtp2Link` over
+`ISctpTransport` with RFC 4165 framing, stream/PPID policy, alignment, proving,
+Ready, 24-bit sequencing, acknowledgement, retrieval retention, Busy flow
+control, processor-outage recovery, metrics, cancellation, graceful stop, and
+transport replacement. Independent external M2PA peer evidence remains in the
+end-to-end traffic lab gate.
 
 ## Phase 49 - SCCP Stateful Service Layer
 
