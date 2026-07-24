@@ -516,7 +516,14 @@ operator-sized multi-host qualification remains open.
   configuration validation, container deployment, runbooks, and upgrade/rollback
   guidance.
 
-Status: Pending.
+Status: Implementation complete. `SigtranHealthService` and the built-in
+SCTP/M3UA probes provide executable liveness/readiness inputs.
+`SigtranTelemetry` exposes BCL activities and metrics consumable by
+OpenTelemetry providers; `M3uaRuntimeObserver` emits structured JSONL events.
+Validated environment configuration, a native SCTP/M3UA operations host,
+Docker/Compose/Kubernetes material, and recovery/upgrade runbooks are included.
+Representative Kubernetes SCTP network validation and operator alert review
+remain deployment evidence gates.
 
 ## Phase 55 - Stable Release Execution
 

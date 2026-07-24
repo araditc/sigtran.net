@@ -24,7 +24,13 @@ Critical incidents should be acknowledged within 15 minutes and updated within 3
 
 ## Health Checks
 
-`SigtranHealthChecks.GetDefinitions()` defines operational health checks for transport, M3UA session, routing, interoperability evidence, and release readiness.
+`SigtranHealthChecks.GetDefinitions()` defines the original operational health
+catalog for transport, M3UA session, routing, interoperability evidence, and
+release readiness.
+
+Phase 54 adds executable `SigtranHealthService`, `ISigtranHealthProbe`,
+`SctpAssociationHealthProbe`, and `M3uaRuntimeHealthProbe` APIs. See
+[Runtime Operations](OPERATIONS_RUNTIME.md).
 
 ## Rollback Plan
 
@@ -44,7 +50,8 @@ The plan stops publication, communicates the affected version, preserves artifac
 
 `SigtranOperationsReadiness.GetReport()` separates operations foundation readiness from production operations readiness.
 
-Production operations remain blocked until wider commercial readiness is complete.
+The executable operations package is complete. Representative deployment
+validation and wider product evidence remain release gates.
 
 ## Operations CI
 

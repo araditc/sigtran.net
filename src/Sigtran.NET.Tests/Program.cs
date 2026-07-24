@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 
@@ -13,6 +16,7 @@ using Sigtran.NET.Layers.SCTP;
 using Sigtran.NET.Layers.TCAP;
 using Sigtran.NET.Core.Interfaces;
 using Sigtran.NET.Core.Utilities;
+using Sigtran.NET.Operations;
 
 Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
 Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
@@ -32,6 +36,10 @@ Run("SIGTRAN package governance reports production requirements", SigtranPackage
 Run("SIGTRAN security policy reports response targets", SigtranSecurityPolicyReportsResponseTargets);
 Run("SIGTRAN compatibility policy reports SemVer rules", SigtranCompatibilityPolicyReportsSemVerRules);
 Run("SIGTRAN observability profile exposes production signals", SigtranObservabilityProfileExposesProductionSignals);
+Run("SIGTRAN runtime health service aggregates probe outcomes", SigtranRuntimeHealthServiceAggregatesProbeOutcomes);
+Run("SIGTRAN telemetry emits standard activities and metrics", SigtranTelemetryEmitsStandardActivitiesAndMetrics);
+Run("SIGTRAN structured event sink writes JSON Lines", SigtranStructuredEventSinkWritesJsonLines);
+Run("SIGTRAN node configuration validates environment settings", SigtranNodeConfigurationValidatesEnvironmentSettings);
 Run("SIGTRAN deployment profiles expose production and development gates", SigtranDeploymentProfilesExposeProductionAndDevelopmentGates);
 Run("SIGTRAN productionization status summarizes foundation", SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
@@ -11775,6 +11783,167 @@ static void M3uaRejectsRoutingKeyWithoutDestinationPointCode()
         !M3uaMessageBuilder.BuildRegistrationRequest(buffer, routingKeys, out _, out string? buildError),
         "Routing Key without Destination Point Code should be rejected");
     Assert(buildError?.Contains("Destination Point Code", StringComparison.Ordinal) == true, buildError ?? "missing Routing Key DPC error");
+}
+
+static void SigtranRuntimeHealthServiceAggregatesProbeOutcomes()
+{
+    DelegateSigtranHealthProbe healthy = new(
+        "process",
+        _ => ValueTask.FromResult(new SigtranHealthProbeResult(
+            "process",
+            SigtranHealthStatus.Healthy,
+            "Process is responsive.",
+            DateTimeOffset.UtcNow)));
+    DelegateSigtranHealthProbe degraded = new(
+        "dependency",
+        _ => ValueTask.FromResult(new SigtranHealthProbeResult(
+            "dependency",
+            SigtranHealthStatus.Degraded,
+            "Dependency is reconnecting.",
+            DateTimeOffset.UtcNow)));
+    SigtranHealthService service = new([healthy, degraded]);
+
+    SigtranHealthReport report =
+        service.CheckAsync().AsTask().GetAwaiter().GetResult();
+
+    AssertEqual(
+        SigtranHealthStatus.Degraded,
+        report.Status,
+        "aggregate health status");
+    AssertEqual(2, report.Results.Count, "health result count");
+
+    SctpAssociationHealthProbe associationProbe = new(
+        new M3uaLoopbackAssociation());
+    SigtranHealthProbeResult associationResult =
+        associationProbe.CheckAsync().AsTask().GetAwaiter().GetResult();
+    AssertEqual(
+        SigtranHealthStatus.Healthy,
+        associationResult.Status,
+        "established SCTP association health");
+}
+
+static void SigtranTelemetryEmitsStandardActivitiesAndMetrics()
+{
+    List<string> measurements = [];
+    using MeterListener meterListener = new();
+    meterListener.InstrumentPublished = (instrument, listener) =>
+    {
+        if (instrument.Meter.Name == SigtranTelemetry.InstrumentationName)
+        {
+            listener.EnableMeasurementEvents(instrument);
+        }
+    };
+    meterListener.SetMeasurementEventCallback<long>(
+        (instrument, _, _, _) => measurements.Add(instrument.Name));
+    meterListener.SetMeasurementEventCallback<int>(
+        (instrument, _, _, _) => measurements.Add(instrument.Name));
+    meterListener.SetMeasurementEventCallback<double>(
+        (instrument, _, _, _) => measurements.Add(instrument.Name));
+    meterListener.Start();
+
+    using ActivityListener activityListener = new()
+    {
+        ShouldListenTo = static source =>
+            source.Name == SigtranTelemetry.InstrumentationName,
+        Sample = static (ref ActivityCreationOptions<ActivityContext> _) =>
+            ActivitySamplingResult.AllData
+    };
+    ActivitySource.AddActivityListener(activityListener);
+
+    using Activity? activity = SigtranTelemetry.StartOperation(
+        "map.send-routing-info",
+        "map",
+        "peer-a");
+    SigtranTelemetry.RecordTransfer(
+        "m3ua",
+        SigtranTransferDirection.Outbound,
+        "peer-a");
+    SigtranTelemetry.RecordFault("sctp", "transport", "peer-a");
+    SigtranTelemetry.RecordReconnect("m3ua", "peer-a");
+    SigtranTelemetry.RecordQueueDepth("m3ua", "outbound", 3);
+    SigtranTelemetry.RecordOperation(
+        "map",
+        "send-routing-info",
+        TimeSpan.FromMilliseconds(4));
+
+    Assert(activity is not null, "telemetry activity should be sampled");
+    AssertEqual(
+        "map",
+        activity!.GetTagItem("sigtran.protocol") as string,
+        "activity protocol tag");
+    Assert(
+        measurements.Contains("sigtran.transfer.count", StringComparer.Ordinal),
+        "transfer counter should be observed");
+    Assert(
+        measurements.Contains("sigtran.operation.duration", StringComparer.Ordinal),
+        "operation histogram should be observed");
+}
+
+static void SigtranStructuredEventSinkWritesJsonLines()
+{
+    using StringWriter writer = new();
+    using (JsonLineSigtranEventSink sink = new(writer, leaveOpen: true))
+    {
+        sink.Write(new(
+            DateTimeOffset.UtcNow,
+            "m3ua.asp.activated",
+            SigtranEventSeverity.Information,
+            "m3ua",
+            "ASP is active.",
+            "peer-a",
+            new Dictionary<string, string>
+            {
+                ["state"] = "Active"
+            }));
+    }
+
+    string jsonLine = writer.ToString().Trim();
+    using JsonDocument document = JsonDocument.Parse(jsonLine);
+    AssertEqual(
+        "m3ua.asp.activated",
+        document.RootElement.GetProperty("EventName").GetString(),
+        "structured event name");
+    AssertEqual(
+        "peer-a",
+        document.RootElement.GetProperty("Association").GetString(),
+        "structured event association");
+}
+
+static void SigtranNodeConfigurationValidatesEnvironmentSettings()
+{
+    Dictionary<string, string?> valid = new(StringComparer.Ordinal)
+    {
+        ["SIGTRAN_REMOTE_IP"] = "127.0.0.1",
+        ["SIGTRAN_REMOTE_PORT"] = "2905",
+        ["SIGTRAN_ASP_IDENTIFIER"] = "42",
+        ["SIGTRAN_LOCAL_POINT_CODE"] = "1",
+        ["SIGTRAN_REMOTE_POINT_CODE"] = "2",
+        ["SIGTRAN_ROUTING_CONTEXT"] = "100",
+        ["SIGTRAN_NETWORK_INDICATOR"] = "2",
+        ["SIGTRAN_SERVICE_INDICATOR"] = "3",
+        ["SIGTRAN_QUEUE_CAPACITY"] = "4096"
+    };
+
+    SigtranNodeConfigurationResult result =
+        SigtranNodeConfigurationParser.Parse(valid);
+
+    Assert(result.IsValid, "valid node configuration should parse");
+    AssertEqual(2905, result.Configuration!.RemotePort, "remote SCTP port");
+    AssertEqual((uint)2, result.Configuration.RemotePointCode, "remote point code");
+
+    valid["SIGTRAN_REMOTE_PORT"] = "70000";
+    valid["SIGTRAN_REMOTE_POINT_CODE"] = "1";
+    SigtranNodeConfigurationResult invalid =
+        SigtranNodeConfigurationParser.Parse(valid);
+    Assert(!invalid.IsValid, "invalid node configuration should fail");
+    Assert(
+        invalid.Issues.Any(static issue =>
+            issue.Key == "SIGTRAN_REMOTE_PORT"),
+        "invalid port should be reported");
+    Assert(
+        invalid.Issues.Any(static issue =>
+            issue.Key == "SIGTRAN_REMOTE_POINT_CODE"),
+        "duplicate point code should be reported");
 }
 
 static void Run(string name, Action test)

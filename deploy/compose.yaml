@@ -1,0 +1,30 @@
+services:
+  sigtran-node:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      SIGTRAN_REMOTE_IP: ${SIGTRAN_REMOTE_IP}
+      SIGTRAN_REMOTE_PORT: ${SIGTRAN_REMOTE_PORT:-2905}
+      SIGTRAN_ASP_IDENTIFIER: ${SIGTRAN_ASP_IDENTIFIER:-42}
+      SIGTRAN_LOCAL_POINT_CODE: ${SIGTRAN_LOCAL_POINT_CODE:-1}
+      SIGTRAN_REMOTE_POINT_CODE: ${SIGTRAN_REMOTE_POINT_CODE:-2}
+      SIGTRAN_ROUTING_CONTEXT: ${SIGTRAN_ROUTING_CONTEXT:-100}
+      SIGTRAN_NETWORK_INDICATOR: ${SIGTRAN_NETWORK_INDICATOR:-2}
+      SIGTRAN_SERVICE_INDICATOR: ${SIGTRAN_SERVICE_INDICATOR:-3}
+      SIGTRAN_QUEUE_CAPACITY: ${SIGTRAN_QUEUE_CAPACITY:-4096}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/curl
+        - --fail
+        - --silent
+        - http://127.0.0.1:8080/health/live
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 20s

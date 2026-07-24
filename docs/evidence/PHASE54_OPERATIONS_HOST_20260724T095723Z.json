@@ -1,0 +1,22 @@
+{
+  "runId": "operations-host-20260724T095723Z",
+  "executedAtUtc": "2026-07-24T09:57:23Z",
+  "platform": "WSL2 Ubuntu 24.04",
+  "kernel": "6.18.33.2-microsoft-standard-WSL2",
+  "dotnetSdk": "10.0.109",
+  "transport": "native Linux SCTP",
+  "peer": "independently compiled C/lksctp repository peer",
+  "checks": {
+    "configurationValidated": true,
+    "sctpAssociationEstablished": true,
+    "m3uaAspActive": true,
+    "livenessHealthy": true,
+    "readinessHealthy": true,
+    "metricsEndpointResponded": true,
+    "activeAssociationMetric": 1,
+    "reconnectAttempts": 0,
+    "faults": 0
+  },
+  "passed": true,
+  "scope": "Single-host operations endpoint smoke; not representative Kubernetes or operator-network evidence."
+}

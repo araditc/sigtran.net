@@ -47,6 +47,15 @@ retained manifests instead of stale hard-coded flags.
   completed without loss. Compressed PCAP, TShark fields, metrics, logs,
   configuration, trace, comparison, report, and digests are retained under
   `docs/evidence/PHASE53_PERFORMANCE_20260724T093659Z/`.
+- The production operations implementation includes executable aggregate
+  health, SCTP/M3UA probes, OpenTelemetry-compatible BCL tracing and metrics,
+  structured JSONL runtime events, node configuration validation, a native
+  SCTP/M3UA operations host, live/ready/metrics endpoints, container and
+  Kubernetes manifests, and incident/upgrade runbooks.
+- Operations-host smoke run `operations-host-20260724T095723Z` passed on WSL2
+  Ubuntu 24.04 against the independent C/lksctp peer. Native SCTP established,
+  the M3UA ASP became active, live/readiness were healthy, and the metrics
+  endpoint reported one active association with zero faults or reconnects.
 
 ## Remaining Production Blockers
 
@@ -65,6 +74,10 @@ retained manifests instead of stale hard-coded flags.
   interoperability can be claimed.
 - The retained soak contains 20,000 operations, not the long-duration
   multi-host soak required for an operator capacity claim.
+- The container and Kubernetes manifests build with the solution, but no
+  representative cluster SCTP/CNI deployment evidence has yet been retained.
+  Cluster network, firewall, readiness, termination, and rollback behavior need
+  validation in the adopting operator environment.
 
 ## Production Decision
 

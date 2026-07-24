@@ -19,8 +19,8 @@ Native Linux SCTP, external SCTP/M3UA, and cross-implementation full-stack MAP
 SMS traffic evidence are retained. Stateful M3UA, M2PA, SCCP, TCAP, and MAP SMS
 runtimes are available. Full stable-product readiness remains gated on
 operator/vendor profile interoperability, independent M2PA evidence,
-20K peak and operator-sized multi-host performance evidence, production
-operations, trusted signing, and stable release execution.
+20K peak and operator-sized multi-host performance evidence, representative
+Kubernetes SCTP validation, trusted signing, and stable release execution.
 
 For release history and governance, see:
 
@@ -57,6 +57,9 @@ The current RC engineering track focuses on:
   with retained PCAP, traces, field comparison, and digest evidence.
 - Full-stack performance and resilience tooling with a retained 62,000-operation
   baseline, latency/resource metrics, SCTP failover, and zero-loss recovery.
+- Executable health probes, OpenTelemetry-compatible tracing and metrics,
+  structured JSONL events, validated node configuration, and a containerized
+  M3UA operations host with Kubernetes probes.
 - Stateful SCCP, TCAP, and MAP SMS service layers.
 - M2PA as a parallel MTP2 path.
 - Byte-level tests and protocol validation.
@@ -77,6 +80,7 @@ The current RC engineering track focuses on:
 | TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. Independent C-peer transaction evidence is retained; operator/vendor profile evidence remains. |
 | MAP | Stateful client/server SMS workflows cover SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre with operation profiles, result/error correlation, typed dispatch, cancellation, and metrics. All five operations have cross-implementation repository-profile evidence; operator/vendor profile evidence remains. |
 | Performance | The retained WSL baseline completed 62,000 full-stack operations without protocol loss at about 13.5K sustained/peak TPS. The 20K peak and multi-host operator qualification gates remain open. |
+| Operations | Runtime health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, and recovery/upgrade runbooks are available. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
 
 ---
@@ -168,6 +172,8 @@ Start here:
 - [Phase 51 MAP SMS service](docs/PHASE51_MAP_SMS_SERVICE.md)
 - [Phase 52 end-to-end SS7 traffic lab](docs/PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md)
 - [Phase 53 performance and resilience](docs/PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md)
+- [Phase 54 production operations package](docs/PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md)
+- [Runtime operations](docs/OPERATIONS_RUNTIME.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Quality and contribution rules](docs/QUALITY.md)

@@ -1,8 +1,15 @@
 # Observability
 
-Production SIGTRAN deployments need repeatable metrics, traces, and health signals.
+Production SIGTRAN deployments need repeatable metrics, traces, structured
+events, and health signals.
 
-`SigtranObservability.CreateDefaultProfile()` exposes the current SDK observability profile.
+`SigtranTelemetry` is the executable instrumentation surface. It publishes BCL
+`ActivitySource` and `Meter` instruments under the `Sigtran.NET`
+instrumentation scope, so OpenTelemetry providers can subscribe without the SDK
+forcing an exporter dependency.
+
+`SigtranObservability.CreateDefaultProfile()` remains the static signal catalog
+used by existing tooling.
 
 ## Metrics
 
@@ -26,3 +33,7 @@ Production SIGTRAN deployments need repeatable metrics, traces, and health signa
 - `interop-evidence-present`
 
 The profile is transport-neutral. Applications can map these names to OpenTelemetry, Prometheus, logs, or proprietary monitoring systems.
+
+The executable instruments, cardinality rules, health probes, structured JSONL
+events, and host endpoints are documented in
+[Runtime Operations](OPERATIONS_RUNTIME.md).

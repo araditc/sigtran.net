@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigtran.NET.EndToEndLab", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigtran.NET.PerformanceLab", "Sigtran.NET.PerformanceLab\Sigtran.NET.PerformanceLab.csproj", "{3CFDD2C0-4390-42FC-88A1-7A9EB332640F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigtran.NET.OperationsHost", "Sigtran.NET.OperationsHost\Sigtran.NET.OperationsHost.csproj", "{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{3CFDD2C0-4390-42FC-88A1-7A9EB332640F}.Release|x64.Build.0 = Release|Any CPU
 		{3CFDD2C0-4390-42FC-88A1-7A9EB332640F}.Release|x86.ActiveCfg = Release|Any CPU
 		{3CFDD2C0-4390-42FC-88A1-7A9EB332640F}.Release|x86.Build.0 = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|x64.Build.0 = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Debug|x86.Build.0 = Debug|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|x64.ActiveCfg = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|x64.Build.0 = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|x86.ActiveCfg = Release|Any CPU
+		{283D09FD-7A3B-4432-92F2-09CA4DAC0EB7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
