@@ -75,4 +75,74 @@ public interface IMapSmsService
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The submitted operation result.</returns>
     ValueTask<MapSmsSubmitResult> SendRoutingInfoForShortMessageAsync(MapSendRoutingInfoForShortMessage message, CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends a ReportSM-DeliveryStatus operation without waiting for its result.
+    /// </summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The submitted operation result.</returns>
+    ValueTask<MapSmsSubmitResult> SendReportShortMessageDeliveryStatusAsync(
+        MapReportShortMessageDeliveryStatus message,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends an AlertServiceCentre operation without waiting for its result.
+    /// </summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The submitted operation result.</returns>
+    ValueTask<MapSmsSubmitResult> SendAlertServiceCentreAsync(
+        MapAlertServiceCentre message,
+        CancellationToken ct = default);
+
+    /// <summary>Sends MO-ForwardSM and waits for its correlated outcome.</summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="timeout">The optional operation timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The correlated MAP SMS outcome.</returns>
+    ValueTask<MapSmsOperationResult> InvokeMoForwardShortMessageAsync(
+        MapMoForwardShortMessage message,
+        TimeSpan? timeout = null,
+        CancellationToken ct = default);
+
+    /// <summary>Sends MT-ForwardSM and waits for its correlated outcome.</summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="timeout">The optional operation timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The correlated MAP SMS outcome.</returns>
+    ValueTask<MapSmsOperationResult> InvokeMtForwardShortMessageAsync(
+        MapMtForwardShortMessage message,
+        TimeSpan? timeout = null,
+        CancellationToken ct = default);
+
+    /// <summary>Sends SendRoutingInfoForSM and waits for its correlated outcome.</summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="timeout">The optional operation timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The correlated MAP SMS outcome.</returns>
+    ValueTask<MapSmsOperationResult> InvokeRoutingInfoForShortMessageAsync(
+        MapSendRoutingInfoForShortMessage message,
+        TimeSpan? timeout = null,
+        CancellationToken ct = default);
+
+    /// <summary>Sends ReportSM-DeliveryStatus and waits for its correlated outcome.</summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="timeout">The optional operation timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The correlated MAP SMS outcome.</returns>
+    ValueTask<MapSmsOperationResult> InvokeReportShortMessageDeliveryStatusAsync(
+        MapReportShortMessageDeliveryStatus message,
+        TimeSpan? timeout = null,
+        CancellationToken ct = default);
+
+    /// <summary>Sends AlertServiceCentre and waits for its correlated outcome.</summary>
+    /// <param name="message">The operation parameters.</param>
+    /// <param name="timeout">The optional operation timeout.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The correlated MAP SMS outcome.</returns>
+    ValueTask<MapSmsOperationResult> InvokeAlertServiceCentreAsync(
+        MapAlertServiceCentre message,
+        TimeSpan? timeout = null,
+        CancellationToken ct = default);
 }

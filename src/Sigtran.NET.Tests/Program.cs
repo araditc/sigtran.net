@@ -391,6 +391,8 @@ Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMap
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
 Run("MAP SMS evidence vectors validate operation bytes", MapSmsEvidenceVectorsValidateOperationBytes);
 Run("MAP SMS readiness reports foundation status", MapSmsReadinessSnapshotsFoundationStatus);
+Run("MAP SMS operation profiles expose standardized codes and contexts", MapSmsOperationProfilesExposeStandardizedCodesAndContexts);
+Run("MAP SMS service correlates client and server workflows", MapSmsServiceCorrelatesClientAndServerWorkflows);
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
@@ -8070,8 +8072,8 @@ static void MapSmsEvidenceVectorsValidateOperationBytes()
 
 static void MapSmsReadinessSnapshotsFoundationStatus()
 {
-    AssertEqual("MAP SMS profile foundation", MapSmsReadiness.ReleaseLabel, "MAP readiness label");
-    AssertEqual(8, MapSmsReadiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
+    AssertEqual("MAP SMS stateful service", MapSmsReadiness.ReleaseLabel, "MAP readiness label");
+    AssertEqual(12, MapSmsReadiness.RequiredFoundationCapabilityCount, "MAP readiness capability count");
     Assert(
         MapSmsReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         MapSmsReadiness.ProductionGateDescription);
@@ -8079,8 +8081,222 @@ static void MapSmsReadinessSnapshotsFoundationStatus()
     MapSmsReadinessSnapshot report = MapSmsReadiness.GetReport();
     Assert(report.FoundationReady, "MAP SMS foundation should be ready");
     Assert(!report.IsProductionReady, "MAP SMS should not claim production readiness without interop vectors");
-    AssertEqual(8, report.FoundationCapabilityCount, "MAP completed foundation capabilities");
-    Assert(report.Describe().Contains("foundationCapabilities=8/8", StringComparison.Ordinal), report.Describe());
+    AssertEqual(12, report.FoundationCapabilityCount, "MAP completed service capabilities");
+    Assert(report.HasCorrelatedClientWorkflows, "MAP correlated client workflows should be ready");
+    Assert(report.HasTypedServerDispatch, "MAP typed server dispatch should be ready");
+    Assert(report.Describe().Contains("serviceCapabilities=12/12", StringComparison.Ordinal), report.Describe());
+}
+
+static void MapSmsOperationProfilesExposeStandardizedCodesAndContexts()
+{
+    AssertEqual((byte)44, (byte)MapSmsOperationCode.MtForwardShortMessage, "MAP MT-ForwardSM local operation code");
+    AssertEqual((byte)45, (byte)MapSmsOperationCode.SendRoutingInfoForShortMessage, "MAP SRI-SM local operation code");
+    AssertEqual((byte)46, (byte)MapSmsOperationCode.MoForwardShortMessage, "MAP MO-ForwardSM local operation code");
+    AssertEqual((byte)47, (byte)MapSmsOperationCode.ReportShortMessageDeliveryStatus, "MAP ReportSM local operation code");
+    AssertEqual((byte)64, (byte)MapSmsOperationCode.AlertServiceCentre, "MAP AlertServiceCentre local operation code");
+
+    IReadOnlyList<MapSmsOperationProfile> profiles = MapSmsOperationProfiles.GetAll();
+    AssertEqual(5, profiles.Count, "MAP SMS operation profile count");
+    AssertEqual(
+        "0.4.0.0.1.0.20.3",
+        MapSmsOperationProfiles.Get(MapSmsOperationCode.SendRoutingInfoForShortMessage).ApplicationContext.ToString(),
+        "MAP shortMsgGatewayContext-v3");
+    AssertEqual(
+        "0.4.0.0.1.0.21.3",
+        MapSmsOperationProfiles.Get(MapSmsOperationCode.MoForwardShortMessage).ApplicationContext.ToString(),
+        "MAP shortMsgMO-RelayContext-v3");
+    AssertEqual(
+        "0.4.0.0.1.0.25.3",
+        MapSmsOperationProfiles.Get(MapSmsOperationCode.MtForwardShortMessage).ApplicationContext.ToString(),
+        "MAP shortMsgMT-RelayContext-v3");
+    AssertEqual(
+        "0.4.0.0.1.0.23.2",
+        MapSmsOperationProfiles.Get(MapSmsOperationCode.AlertServiceCentre).ApplicationContext.ToString(),
+        "MAP shortMsgAlertContext-v2");
+}
+
+static void MapSmsServiceCorrelatesClientAndServerWorkflows()
+{
+    (PairedMtp3Network firstNetwork, PairedMtp3Network secondNetwork) =
+        PairedMtp3Network.CreatePair();
+    SccpConnectionlessService firstSccp = new(
+        firstNetwork,
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 2));
+    SccpConnectionlessService secondSccp = new(
+        secondNetwork,
+        new(destinationPointCode: 1, originatingPointCode: 2, signallingLinkSelection: 2));
+    TcapDialogueManagerOptions options = new(
+        eventQueueCapacity: 32,
+        componentQueueCapacity: 32,
+        maximumDialogues: 32,
+        maximumPendingInvokesPerDialogue: 8,
+        invokeTimeout: TimeSpan.FromSeconds(2),
+        timerResolution: TimeSpan.FromMilliseconds(20));
+    TcapDialogueManager first = new(firstSccp, options);
+    TcapDialogueManager second = new(secondSccp, options);
+    SccpPartyAddress firstParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpPartyAddress secondParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 2);
+    MapSmsAddress subscriber = new(MapSmsAddressKind.Msisdn, "989121234567");
+    MapSmsAddress serviceCentre = new(MapSmsAddressKind.ServiceCentre, "989120000000");
+    MapSmsAddress imsi = new(MapSmsAddressKind.Imsi, "432109876543210");
+
+    first.StartAsync().AsTask().GetAwaiter().GetResult();
+    second.StartAsync().AsTask().GetAwaiter().GetResult();
+    MapSmsServer server = new(second);
+    server.RegisterHandler(
+        MapSmsOperationCode.SendRoutingInfoForShortMessage,
+        (request, _) =>
+        {
+            MapSendRoutingInfoForShortMessage message =
+                request.GetMessage<MapSendRoutingInfoForShortMessage>();
+            AssertEqual(subscriber.Digits, message.Msisdn.Digits, "MAP server decoded SRI-SM MSISDN");
+            return ValueTask.FromResult(MapSmsOperationResponse.Result(new byte[] { 0x30, 0x00 }));
+        });
+    server.RegisterHandler(
+        MapSmsOperationCode.MoForwardShortMessage,
+        (request, _) =>
+        {
+            AssertSequence(
+                [0x01, 0x02],
+                request.GetMessage<MapMoForwardShortMessage>().SmRpUi.Span,
+                "MAP server decoded MO-ForwardSM TPDU");
+            return ValueTask.FromResult(MapSmsOperationResponse.Result());
+        });
+    server.RegisterHandler(
+        MapSmsOperationCode.MtForwardShortMessage,
+        (request, cancellationToken) =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _ = request.GetMessage<MapMtForwardShortMessage>();
+            return ValueTask.FromResult(
+                MapSmsOperationResponse.Error(
+                    MapSmsErrorCode.AbsentSubscriberForShortMessage));
+        });
+    server.RegisterHandler(
+        MapSmsOperationCode.ReportShortMessageDeliveryStatus,
+        (request, _) =>
+        {
+            AssertEqual(
+                MapSmsDeliveryStatus.Delivered,
+                request.GetMessage<MapReportShortMessageDeliveryStatus>().DeliveryStatus,
+                "MAP server decoded delivery status");
+            return ValueTask.FromResult(MapSmsOperationResponse.Result());
+        });
+    server.RegisterHandler(
+        MapSmsOperationCode.AlertServiceCentre,
+        (request, cancellationToken) =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _ = request.GetMessage<MapAlertServiceCentre>();
+            return ValueTask.FromResult(MapSmsOperationResponse.Result());
+        });
+
+    using CancellationTokenSource serverLifetime = new();
+    Task serverTask = server.RunAsync(serverLifetime.Token);
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(10));
+    MapSmsService service = new(first, secondParty, firstParty);
+
+    MapSmsOperationResult sri = service.InvokeRoutingInfoForShortMessageAsync(
+            new(subscriber, serviceCentre, gprsSupportIndicator: true),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    Assert(sri.IsSuccess, "MAP SRI-SM should return a correlated result");
+    AssertSequence([0x30, 0x00], sri.Parameters.Span, "MAP SRI-SM result parameters");
+
+    MapSmsOperationResult mo = service.InvokeMoForwardShortMessageAsync(
+            new(serviceCentre, subscriber, new byte[] { 0x01, 0x02 }),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    Assert(mo.IsSuccess, "MAP MO-ForwardSM should return a correlated result");
+
+    MapSmsOperationResult mt = service.InvokeMtForwardShortMessageAsync(
+            new(imsi, serviceCentre, new byte[] { 0x11 }),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(MapSmsOperationOutcomeKind.Error, mt.Outcome, "MAP MT-ForwardSM error outcome");
+    AssertEqual(
+        MapSmsErrorCode.AbsentSubscriberForShortMessage,
+        mt.ErrorCode!.Value,
+        "MAP MT-ForwardSM user error");
+
+    MapSmsOperationResult report = service.InvokeReportShortMessageDeliveryStatusAsync(
+            new(subscriber, serviceCentre, MapSmsDeliveryStatus.Delivered),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    Assert(report.IsSuccess, "MAP ReportSM-DeliveryStatus should succeed");
+
+    MapSmsOperationResult alert = service.InvokeAlertServiceCentreAsync(
+            new(subscriber, serviceCentre),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    Assert(alert.IsSuccess, "MAP AlertServiceCentre should succeed");
+
+    TcapInvokeHandle malformedHandle = first.BeginInvokeAsync(
+            new(
+                secondParty,
+                firstParty,
+                (TcapOperationCode)MapSmsOperationCode.SendRoutingInfoForShortMessage,
+                new byte[] { 0xFF }),
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    TcapInvokeOutcome malformed = first.WaitForInvokeAsync(
+            malformedHandle,
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(TcapInvokeOutcomeKind.Reject, malformed.Kind, "MAP malformed invoke outcome");
+    AssertEqual(
+        TcapRejectProblemCode.MistypedComponent,
+        malformed.ProblemCode!.Value,
+        "MAP malformed invoke reject problem");
+
+    MapSmsServerMetrics metrics = server.GetMetrics();
+    AssertEqual(6L, metrics.ReceivedOperations, "MAP server received operation count");
+    AssertEqual(4L, metrics.CompletedOperations, "MAP server successful result count");
+    AssertEqual(1L, metrics.ReturnedErrors, "MAP server returned error count");
+    AssertEqual(1L, metrics.RejectedOperations, "MAP server rejected operation count");
+    AssertEqual(1L, metrics.DecodeFailures, "MAP server decode failure count");
+
+    serverLifetime.Cancel();
+    serverTask.GetAwaiter().GetResult();
+
+    MapSmsOperationResult timedOut = service.InvokeRoutingInfoForShortMessageAsync(
+            new(subscriber, serviceCentre),
+            timeout: TimeSpan.FromMilliseconds(60),
+            ct: timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(MapSmsOperationOutcomeKind.TimedOut, timedOut.Outcome, "MAP SRI-SM timeout outcome");
+    Assert(
+        SpinWait.SpinUntil(
+            () => first.GetMetrics().ActiveDialogues == 0,
+            TimeSpan.FromSeconds(2)),
+        "MAP timed-out dialogue should be aborted and removed");
+
+    first.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    second.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    firstSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    secondSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
 }
 
 static void Mtp3RoutingLabelAndSioRoundTrip()

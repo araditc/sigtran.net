@@ -16,9 +16,9 @@ SIGTRAN.NET is currently in a **public release-candidate** track. Version
 `1.0.0-rc.1` has been published and restored from NuGet.org.
 
 Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
-the SDK readiness APIs through a common verification catalog. Stateful M3UA and
-M2PA runtimes are available. Full stable-product readiness remains gated on
-stateful MAP workflows, end-to-end independent-peer evidence,
+the SDK readiness APIs through a common verification catalog. Stateful M3UA,
+M2PA, SCCP, TCAP, and MAP SMS runtimes are available. Full stable-product
+readiness remains gated on end-to-end independent-peer evidence,
 operator-sized performance evidence, trusted signing, and stable release
 execution.
 
@@ -71,7 +71,7 @@ The current RC engineering track focuses on:
 | M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
 | SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. External peer evidence remains. |
 | TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. External peer evidence remains. |
-| MAP | SMS codec and facade foundations exist; stateful service workflows and external evidence remain. |
+| MAP | Stateful client/server SMS workflows cover SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre with operation profiles, result/error correlation, typed dispatch, cancellation, and metrics. Independent peer evidence remains. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
 
 ---
@@ -159,7 +159,8 @@ Start here:
 - [Phase 49 SCCP stateful service](docs/PHASE49_SCCP_STATEFUL_SERVICE.md)
 - [TCAP](docs/TCAP.md)
 - [Phase 50 TCAP dialogue manager](docs/PHASE50_TCAP_DIALOGUE_MANAGER.md)
-- [MAP SMS profile](docs/MAP.md)
+- [MAP SMS service](docs/MAP.md)
+- [Phase 51 MAP SMS service](docs/PHASE51_MAP_SMS_SERVICE.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Quality and contribution rules](docs/QUALITY.md)

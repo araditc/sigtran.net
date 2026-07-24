@@ -7,8 +7,27 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public static class MapSmsApplicationContexts
 {
-    /// <summary>MAP SMS application context placeholder used by the SDK SMS profile foundation.</summary>
-    public static TcapObjectIdentifier SmsApplicationContextV3 => new(0, 0, 17, 773, 1, 1, 1);
+    /// <summary>The MAP shortMsgGatewayContext-v3 object identifier.</summary>
+    public static TcapObjectIdentifier ShortMessageGatewayV3 =>
+        new(0, 4, 0, 0, 1, 0, 20, 3);
+
+    /// <summary>The MAP shortMsgMO-RelayContext-v3 object identifier.</summary>
+    public static TcapObjectIdentifier ShortMessageMobileOriginatedRelayV3 =>
+        new(0, 4, 0, 0, 1, 0, 21, 3);
+
+    /// <summary>The MAP shortMsgAlertContext-v2 object identifier.</summary>
+    public static TcapObjectIdentifier ShortMessageAlertV2 =>
+        new(0, 4, 0, 0, 1, 0, 23, 2);
+
+    /// <summary>The MAP shortMsgMT-RelayContext-v3 object identifier.</summary>
+    public static TcapObjectIdentifier ShortMessageMobileTerminatedRelayV3 =>
+        new(0, 4, 0, 0, 1, 0, 25, 3);
+
+    /// <summary>
+    /// Gets the legacy default MAP SMS context, retained for source compatibility.
+    /// </summary>
+    public static TcapObjectIdentifier SmsApplicationContextV3 =>
+        ShortMessageGatewayV3;
 }
 
 /// <summary>
@@ -17,7 +36,7 @@ public static class MapSmsApplicationContexts
 public sealed class MapSmsTcapClient
 {
     private readonly TcapSessionBuilder _builder;
-    private readonly TcapObjectIdentifier _applicationContext;
+    private readonly TcapObjectIdentifier? _applicationContextOverride;
 
     /// <summary>Creates a MAP SMS TCAP client.</summary>
     /// <param name="builder">The TCAP session builder.</param>
@@ -25,7 +44,7 @@ public sealed class MapSmsTcapClient
     public MapSmsTcapClient(TcapSessionBuilder? builder = null, TcapObjectIdentifier? applicationContext = null)
     {
         _builder = builder ?? new TcapSessionBuilder();
-        _applicationContext = applicationContext ?? MapSmsApplicationContexts.SmsApplicationContextV3;
+        _applicationContextOverride = applicationContext;
     }
 
     /// <summary>Builds a MO-ForwardSM Begin/Invoke transaction.</summary>
@@ -64,8 +83,26 @@ public sealed class MapSmsTcapClient
         return Begin(MapSmsOperationCode.AlertServiceCentre, message.Encode());
     }
 
+    /// <summary>Builds a ReportSM-DeliveryStatus Begin/Invoke transaction.</summary>
+    /// <param name="message">The ReportSM-DeliveryStatus parameters.</param>
+    /// <returns>The built TCAP invoke transaction.</returns>
+    public TcapBuiltInvoke BeginReportShortMessageDeliveryStatus(
+        MapReportShortMessageDeliveryStatus message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        return Begin(
+            MapSmsOperationCode.ReportShortMessageDeliveryStatus,
+            message.Encode());
+    }
+
     private TcapBuiltInvoke Begin(MapSmsOperationCode operationCode, byte[] parameters)
     {
-        return _builder.BeginInvoke(_applicationContext, (TcapOperationCode)operationCode, parameters);
+        TcapObjectIdentifier applicationContext =
+            _applicationContextOverride
+            ?? MapSmsOperationProfiles.Get(operationCode).ApplicationContext;
+        return _builder.BeginInvoke(
+            applicationContext,
+            (TcapOperationCode)operationCode,
+            parameters);
     }
 }

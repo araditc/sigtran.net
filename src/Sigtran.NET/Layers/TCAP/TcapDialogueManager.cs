@@ -7,7 +7,7 @@ namespace Sigtran.NET.Layers.TCAP;
 /// <summary>
 /// Coordinates concurrent TCAP dialogues and invoke correlation over a stateful SCCP service.
 /// </summary>
-public sealed class TcapDialogueManager : ITcapDialogues, IAsyncDisposable
+public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposable
 {
     private readonly object _sync = new();
     private readonly object _allocationSync = new();
@@ -481,14 +481,30 @@ public sealed class TcapDialogueManager : ITcapDialogues, IAsyncDisposable
         CancellationToken ct = default)
     {
         DialogueContext context = GetDialogue(dialogue);
-        TcapTransactionMessage transaction = CreateTransaction(
-            context,
-            TcapPackageType.Abort,
-            componentPortion: default);
-        await SendTransactionAsync(context, transaction, ct).ConfigureAwait(false);
+        bool canAddressPeer;
         lock (context.Sync)
         {
+            canAddressPeer = context.RemoteTransactionId.HasValue;
             context.Phase = TcapDialoguePhase.Aborted;
+        }
+
+        if (canAddressPeer)
+        {
+            TcapTransactionMessage transaction = CreateTransaction(
+                context,
+                TcapPackageType.Abort,
+                componentPortion: default);
+            try
+            {
+                await SendTransactionAsync(context, transaction, ct)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                CloseDialogue(context, TcapInvokeOutcomeKind.DialogueClosed);
+            }
+
+            return;
         }
 
         CloseDialogue(context, TcapInvokeOutcomeKind.DialogueClosed);
@@ -772,7 +788,10 @@ public sealed class TcapDialogueManager : ITcapDialogues, IAsyncDisposable
         }
 
         Interlocked.Increment(ref _receivedComponents);
-        await _components.Writer.WriteAsync(indication, ct).ConfigureAwait(false);
+        if (indication.ComponentType == TcapComponentType.Invoke)
+        {
+            await _components.Writer.WriteAsync(indication, ct).ConfigureAwait(false);
+        }
     }
 
     private TcapComponentIndication? DecodeInvoke(

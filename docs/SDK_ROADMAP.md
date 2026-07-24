@@ -471,7 +471,13 @@ peer evidence remains in the end-to-end lab gate.
   AlertServiceCentre workflows.
 - Add MAP error mapping, operation profiles, cancellation, and operator samples.
 
-Status: Pending.
+Status: Implementation complete. `MapSmsService` now executes and correlates all
+five supported SMS operations through `ITcapComponentDialogues`.
+`MapSmsOperationProfiles` supplies standardized local operation values,
+application contexts, and timeouts. `MapSmsServer` performs typed inbound
+dispatch with Result/Error/Reject responses, cancellation, validation, and
+metrics. Paired-stack tests cover every operation and MAP error mapping.
+Independent end-to-end peer evidence remains in Phase 52.
 
 ## Phase 52 - End-To-End SS7 Traffic Lab
 

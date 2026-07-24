@@ -317,6 +317,115 @@ public sealed class TcapComponentIndication
 }
 
 /// <summary>
+/// Provides correlated TCAP component primitives for application protocols
+/// that need request/response dialogue handling.
+/// </summary>
+public interface ITcapComponentDialogues : ITcapDialogues
+{
+    /// <summary>
+    /// Begins a dialogue with one tracked Invoke component.
+    /// </summary>
+    /// <param name="request">The Begin/Invoke request.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The tracked invoke handle.</returns>
+    ValueTask<TcapInvokeHandle> BeginInvokeAsync(
+        TcapBeginInvokeRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends one tracked Invoke component on an existing dialogue.
+    /// </summary>
+    /// <param name="dialogue">The active dialogue.</param>
+    /// <param name="request">The Invoke request.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The tracked invoke handle.</returns>
+    ValueTask<TcapInvokeHandle> InvokeAsync(
+        TcapDialogueHandle dialogue,
+        TcapInvokeRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Waits for a tracked invoke to complete, fail, reject, or time out.
+    /// </summary>
+    /// <param name="invoke">The tracked invoke.</param>
+    /// <param name="ct">A cancellation token that cancels only this waiter.</param>
+    /// <returns>The terminal invoke outcome.</returns>
+    ValueTask<TcapInvokeOutcome> WaitForInvokeAsync(
+        TcapInvokeHandle invoke,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Receives the next inbound Invoke component.
+    /// </summary>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The next component indication.</returns>
+    ValueTask<TcapComponentIndication> ReceiveComponentAsync(
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends a ReturnResult component for an inbound invoke.
+    /// </summary>
+    /// <param name="dialogue">The active dialogue.</param>
+    /// <param name="invokeId">The inbound invoke identifier.</param>
+    /// <param name="operationCode">The optional result operation code.</param>
+    /// <param name="parameters">The result parameters.</param>
+    /// <param name="endDialogue">Whether to end the dialogue with the result.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the result is sent.</returns>
+    ValueTask SendResultAsync(
+        TcapDialogueHandle dialogue,
+        byte invokeId,
+        TcapOperationCode? operationCode,
+        ReadOnlyMemory<byte> parameters,
+        bool endDialogue = false,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends a ReturnError component for an inbound invoke.
+    /// </summary>
+    /// <param name="dialogue">The active dialogue.</param>
+    /// <param name="invokeId">The inbound invoke identifier.</param>
+    /// <param name="errorCode">The local return error code.</param>
+    /// <param name="parameters">The error parameters.</param>
+    /// <param name="endDialogue">Whether to end the dialogue with the error.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the error is sent.</returns>
+    ValueTask SendErrorAsync(
+        TcapDialogueHandle dialogue,
+        byte invokeId,
+        TcapReturnErrorCode errorCode,
+        ReadOnlyMemory<byte> parameters,
+        bool endDialogue = false,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Sends a Reject component for an inbound invoke.
+    /// </summary>
+    /// <param name="dialogue">The active dialogue.</param>
+    /// <param name="invokeId">The inbound invoke identifier.</param>
+    /// <param name="problemCode">The reject problem code.</param>
+    /// <param name="endDialogue">Whether to end the dialogue with the reject.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the reject is sent.</returns>
+    ValueTask SendRejectAsync(
+        TcapDialogueHandle dialogue,
+        byte invokeId,
+        TcapRejectProblemCode problemCode,
+        bool endDialogue = false,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Aborts and removes an active dialogue.
+    /// </summary>
+    /// <param name="dialogue">The active dialogue.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when Abort is sent.</returns>
+    ValueTask AbortAsync(
+        TcapDialogueHandle dialogue,
+        CancellationToken ct = default);
+}
+
+/// <summary>
 /// Describes one active TCAP dialogue.
 /// </summary>
 public sealed class TcapDialogueSnapshot

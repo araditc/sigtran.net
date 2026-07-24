@@ -64,7 +64,19 @@ public readonly struct MapSmsReadinessSnapshot
     /// <summary>Whether external MAP SMS interoperability vectors are present.</summary>
     public bool HasInteropVectors { get; }
 
-    /// <summary>The completed foundation capability count.</summary>
+    /// <summary>Whether operation-specific application-context profiles are available.</summary>
+    public bool HasOperationProfiles => true;
+
+    /// <summary>Whether correlated client workflows are available.</summary>
+    public bool HasCorrelatedClientWorkflows => true;
+
+    /// <summary>Whether typed inbound operation dispatch is available.</summary>
+    public bool HasTypedServerDispatch => true;
+
+    /// <summary>Whether cancellation, timeout, error, and server metrics handling are available.</summary>
+    public bool HasOperationalControls => true;
+
+    /// <summary>The completed service capability count.</summary>
     public int FoundationCapabilityCount =>
         Count(HasOperationMetadata)
         + Count(HasAddressPrimitives)
@@ -73,9 +85,13 @@ public readonly struct MapSmsReadinessSnapshot
         + Count(HasDeliveryStatusCodec)
         + Count(HasAlertServiceCentreCodec)
         + Count(HasErrorsAndExtensions)
-        + Count(HasTcapClientFacade);
+        + Count(HasTcapClientFacade)
+        + Count(HasOperationProfiles)
+        + Count(HasCorrelatedClientWorkflows)
+        + Count(HasTypedServerDispatch)
+        + Count(HasOperationalControls);
 
-    /// <summary>Whether the MAP SMS foundation is ready.</summary>
+    /// <summary>Whether the MAP SMS service implementation is ready for external validation.</summary>
     public bool FoundationReady => FoundationCapabilityCount == MapSmsReadiness.RequiredFoundationCapabilityCount;
 
     /// <summary>Whether MAP SMS can claim production interoperability readiness.</summary>
@@ -85,7 +101,7 @@ public readonly struct MapSmsReadinessSnapshot
     /// <returns>A compact readiness summary.</returns>
     public string Describe()
     {
-        return $"mapSmsFoundationReady={FoundationReady} mapSmsProductionReady={IsProductionReady} foundationCapabilities={FoundationCapabilityCount}/{MapSmsReadiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
+        return $"mapSmsServiceReady={FoundationReady} mapSmsProductionReady={IsProductionReady} serviceCapabilities={FoundationCapabilityCount}/{MapSmsReadiness.RequiredFoundationCapabilityCount} interopVectors={HasInteropVectors}";
     }
 
     private static int Count(bool value) => value ? 1 : 0;
@@ -97,13 +113,13 @@ public readonly struct MapSmsReadinessSnapshot
 public static class MapSmsReadiness
 {
     /// <summary>The release label for MAP SMS readiness.</summary>
-    public const string ReleaseLabel = "MAP SMS profile foundation";
+    public const string ReleaseLabel = "MAP SMS stateful service";
 
     /// <summary>The number of required foundation capabilities.</summary>
-    public const int RequiredFoundationCapabilityCount = 8;
+    public const int RequiredFoundationCapabilityCount = 12;
 
     /// <summary>Explains the remaining production gate.</summary>
-    public const string ProductionGateDescription = "External MAP SMS interoperability vectors and operator-profile validation are required before production claims.";
+    public const string ProductionGateDescription = "External end-to-end MAP SMS interoperability traces and operator-profile validation are required before production claims.";
 
     /// <summary>Builds the current MAP SMS readiness report.</summary>
     /// <returns>The current MAP SMS readiness report.</returns>

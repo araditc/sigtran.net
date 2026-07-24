@@ -55,7 +55,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 48 | M2PA production path | [Phase 48 M2PA Production Path](PHASE48_M2PA_PRODUCTION_PATH.md), [Phase 48 Summary](PHASE48_SUMMARY.md), [M2PA](M2PA.md) | Implementation complete; external peer evidence pending |
 | 49 | SCCP stateful service layer | [Phase 49 SCCP Stateful Service](PHASE49_SCCP_STATEFUL_SERVICE.md), [Phase 49 Summary](PHASE49_SUMMARY.md), [SCCP](SCCP.md) | Implementation complete; external peer evidence pending |
 | 50 | TCAP dialogue manager | [Phase 50 TCAP Dialogue Manager](PHASE50_TCAP_DIALOGUE_MANAGER.md), [Phase 50 Summary](PHASE50_SUMMARY.md), [TCAP](TCAP.md) | Implementation complete; external peer evidence pending |
-| 51 | MAP SMS service | Planned | Pending |
+| 51 | MAP SMS service | [Phase 51 MAP SMS Service](PHASE51_MAP_SMS_SERVICE.md), [Phase 51 Summary](PHASE51_SUMMARY.md), [MAP SMS](MAP.md) | Implementation complete; independent peer evidence pending |
 | 52 | End-to-end SS7 traffic lab | Planned | Pending |
 | 53 | Operator-sized performance and resilience | Planned | Pending |
 | 54 | Production operations package | Planned | Pending |
@@ -66,6 +66,6 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 The retained verification catalog now reports native Linux SCTP, external SCTP
 peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
 prerelease publication evidence. Full product readiness remains blocked on the
-stateful MAP workflows, end-to-end M2PA and higher-layer
-independent peer traffic, operator-sized performance, production operations, a
+end-to-end M2PA and higher-layer independent peer traffic, operator-sized
+performance, production operations, a
 trusted release identity, and protected stable publication.

@@ -1,21 +1,20 @@
 namespace Sigtran.NET.Layers.TCAP;
 
 /// <summary>
-/// Enumerates simplified TCAP/MAP operation codes.  These values are
-/// placeholders used for early testing and do not correspond to real
-/// ASN.1 object identifiers.  Extend this enumeration as needed for
-/// additional MAP services.
+/// Enumerates legacy local operation tokens retained for source and wire-test
+/// compatibility. Application profiles use explicitly cast local operation
+/// values because TCAP operation codes are defined by the upper-layer context.
 /// </summary>
 public enum TcapOperationCode : byte
 {
     /// <summary>Unknown or unspecified operation.</summary>
     None = 0,
-    /// <summary>Mobile-originated forward short message (MO-ForwardSM).</summary>
+    /// <summary>Legacy token used by MO-ForwardSM TCAP codec tests.</summary>
     MoForwardShortMessage = 1,
-    /// <summary>Mobile-terminated forward short message (MT-ForwardSM).</summary>
+    /// <summary>Legacy token used by MT-ForwardSM TCAP codec tests.</summary>
     MtForwardShortMessage = 2,
-    /// <summary>Alert Service Centre.</summary>
+    /// <summary>Legacy token used by AlertServiceCentre TCAP codec tests.</summary>
     AlertServiceCentre = 3,
-    /// <summary>Report short message delivery status.</summary>
+    /// <summary>Legacy token used by ReportSM-DeliveryStatus TCAP codec tests.</summary>
     ReportSmDeliveryStatus = 4
 }

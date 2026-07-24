@@ -42,10 +42,10 @@ retained manifests instead of stale hard-coded flags.
 - M3UA and M2PA now provide stateful runtime implementations through
   `IMtp3Network` and `IMtp2Link`. Independent external M2PA peer evidence remains
   part of the end-to-end traffic lab gate.
-- SCCP and TCAP now provide stateful runtime implementations with routing,
-  reassembly, transaction correlation, invoke outcomes, timeout handling, and
-  cleanup. MAP SMS still requires stateful operation workflows, and the complete
-  stack requires independent end-to-end peer evidence.
+- SCCP, TCAP, and MAP SMS now provide stateful runtime implementations with
+  routing, reassembly, transaction correlation, typed application operations,
+  Result/Error/Reject outcomes, timeout handling, and cleanup. The complete
+  stack still requires independent end-to-end peer evidence.
 - The retained benchmark is not an operator-sized multi-host capacity or soak
   result.
 

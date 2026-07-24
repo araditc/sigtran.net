@@ -14,6 +14,7 @@ The direction is intentionally downward:
 | MTP3 network | `IMtp3Network` | `IMtp2Link` or an M3UA network adapter |
 | SCCP service | `ISccpService` | `IMtp3Network` |
 | TCAP dialogues | `ITcapDialogues` | `ISccpService` |
+| TCAP components | `ITcapComponentDialogues` | `ITcapDialogues` |
 | MAP SMS service | `IMapSmsService` | `ITcapDialogues` |
 
 Upper layers should depend on the public contract of the layer below them, not on concrete classes such as a specific socket adapter, session implementation, or lab runner.
@@ -36,9 +37,16 @@ can implement the same contract.
 
 `ISccpService` exposes SCCP Unitdata primitives over `IMtp3Network`. `SccpConnectionlessService` provides a connectionless UDT implementation.
 
-`ITcapDialogues` exposes Begin, Continue, End, and Receive dialogue primitives over `ISccpService`. `TcapDialogueService` provides a stateful dialogue service over SCCP Unitdata.
+`ITcapDialogues` exposes Begin, Continue, End, and Receive dialogue primitives
+over `ISccpService`. `ITcapComponentDialogues` extends that boundary with
+tracked invokes, correlated outcomes, inbound components, response primitives,
+and Abort. `TcapDialogueManager` implements both contracts.
 
-`IMapSmsService` exposes SMS-oriented MAP operations over `ITcapDialogues`. `MapSmsService` composes the existing MAP SMS TCAP builder with the dialogue contract.
+`IMapSmsService` exposes SMS-oriented MAP operations over `ITcapDialogues`.
+Fire-and-forget compatibility methods work with the base contract; correlated
+stateful methods require the `ITcapComponentDialogues` capability without
+depending on a concrete dialogue manager. `MapSmsServer` also consumes that
+component contract for typed inbound dispatch.
 
 ## Consumer Rule
 
@@ -49,7 +57,7 @@ ISctpTransport sctp = CreateProductionSctpTransport();
 using M3uaTransportSession m3uaSession = new(sctp);
 IMtp3Network mtp3 = new M3uaMtp3Network(m3uaSession);
 ISccpService sccp = new SccpConnectionlessService(mtp3, routingLabel);
-ITcapDialogues tcap = new TcapDialogueService(sccp);
+ITcapComponentDialogues tcap = new TcapDialogueManager(sccp);
 IMapSmsService map = new MapSmsService(tcap, calledParty, callingParty);
 ```
 

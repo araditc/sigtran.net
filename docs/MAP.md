@@ -1,12 +1,38 @@
-# MAP SMS Profile
+# MAP SMS Service
 
-Phase 5 builds MAP SMS operation models and BER bindings on top of the TCAP foundation.
+SIGTRAN.NET provides typed MAP SMS codecs, correlated client workflows, and an
+asynchronous inbound operation server over TCAP.
 
 ## Service Contract
 
-`IMapSmsService` is the official SMS-oriented MAP service boundary. It depends on `ITcapDialogues` and exposes operation-level methods for MO-ForwardSM, MT-ForwardSM, and SendRoutingInfoForSM.
+`IMapSmsService` is the official SMS-oriented MAP service boundary. It depends
+on `ITcapDialogues` and exposes all five supported operations:
 
-`MapSmsService` composes `MapSmsTcapClient` with the TCAP dialogue contract, allowing applications to inject alternate TCAP dialogue managers without changing MAP SMS code.
+- `sendRoutingInfoForSM`
+- `mo-ForwardSM`
+- `mt-ForwardSM`
+- `reportSM-DeliveryStatus`
+- `alertServiceCentre`
+
+The `Send*Async` methods retain fire-and-forget compatibility. The
+`Invoke*Async` methods require `ITcapComponentDialogues`, correlate the invoke
+with ReturnResult, ReturnError, Reject, timeout, or dialogue closure, and return
+`MapSmsOperationResult`.
+
+```csharp
+IMapSmsService map = new MapSmsService(
+    tcapDialogueManager,
+    remoteMapAddress,
+    localMapAddress);
+
+MapSmsOperationResult result =
+    await map.InvokeRoutingInfoForShortMessageAsync(request, ct: cancellationToken);
+
+if (result.ErrorCode == MapSmsErrorCode.UnknownSubscriber)
+{
+    // Apply the operator's subscriber-not-found policy.
+}
+```
 
 ## Operation Catalog
 
@@ -23,6 +49,21 @@ bool known = MapSmsOperationCatalog.TryGet(
     MapSmsOperationCode.MoForwardShortMessage,
     out MapSmsOperationMetadata metadata);
 ```
+
+`MapSmsOperationProfiles` binds each operation to its standardized local
+operation value, application-context-name, and default timeout. The built-in
+profiles use the TS 29.002 v3/v2 contexts:
+
+| Operation | Local code | Application context |
+| --- | ---: | --- |
+| `mt-ForwardSM` | 44 | `0.4.0.0.1.0.25.3` |
+| `sendRoutingInfoForSM` | 45 | `0.4.0.0.1.0.20.3` |
+| `mo-ForwardSM` | 46 | `0.4.0.0.1.0.21.3` |
+| `reportSM-DeliveryStatus` | 47 | `0.4.0.0.1.0.20.3` |
+| `alertServiceCentre` | 64 | `0.4.0.0.1.0.23.2` |
+
+The assignments follow
+[ETSI TS 129 002](https://www.etsi.org/deliver/etsi_ts/129000_129099/129002/03.06.00_60/ts_129002v030600p.pdf).
 
 ## Parameter Set
 
@@ -153,6 +194,33 @@ byte[] tcapMessage = built.EncodedMessage;
 
 The facade hides TCAP transaction-id, invoke-id, dialogue portion, and component wrapping while keeping the encoded transaction available for lower-level routing.
 
+## Inbound Operation Server
+
+`MapSmsServer` dispatches decoded inbound invokes to operation-specific async
+handlers. It validates the operation and payload before calling application
+code, returns `MistypedComponent` for malformed parameters, returns
+`UnrecognizedComponent` when no profile or handler exists, maps handler
+responses to ReturnResult, ReturnError, or Reject, and reports processing
+metrics.
+
+```csharp
+MapSmsServer server = new(tcapDialogueManager);
+server.RegisterHandler(
+    MapSmsOperationCode.MtForwardShortMessage,
+    (request, ct) =>
+    {
+        MapMtForwardShortMessage mt =
+            request.GetMessage<MapMtForwardShortMessage>();
+        return ValueTask.FromResult(MapSmsOperationResponse.Result());
+    });
+
+await server.RunAsync(stoppingToken);
+```
+
+Only one application consumer should own the inbound TCAP component stream for
+an endpoint. `TcapDialogueManager` keeps correlated outbound outcomes on their
+invoke completion path, so they cannot accumulate in the inbound server queue.
+
 ## Evidence Vectors
 
 `MapSmsEvidenceVectors.GetVectors()` exposes deterministic byte-level vectors for MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre operation parameters.
@@ -166,6 +234,11 @@ Each vector stores literal BER-shaped expected bytes and validates the current o
 
 ## Readiness
 
-`MapSmsReadiness.GetReport()` reports the current MAP SMS profile status. The foundation is complete when operation metadata, address primitives, ForwardSM codecs, SRI-SM, delivery status, AlertServiceCentre, errors/extensions, and the TCAP client facade are present.
+`MapSmsReadiness.GetReport()` reports twelve implemented service capabilities:
+operation metadata, address primitives, five operation codecs, errors and
+extensions, the TCAP facade, operation profiles, correlated client workflows,
+typed server dispatch, and operational controls.
 
-Production readiness remains false until external MAP SMS interoperability vectors and operator-profile validation are added.
+The in-process paired-stack tests exercise all five workflows and MAP error
+mapping. Production readiness remains false until independent end-to-end MAP
+SMS traces and operator-profile validation are retained.
