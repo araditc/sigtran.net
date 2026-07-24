@@ -104,6 +104,24 @@ bool productionReady = report.IsProductionReady;
 
 The foundation gate is complete when trace formatting, conformance vectors, built-in vectors, simulator scripts, MAP SMS flows, transport samples, sample catalog, and CI profile are all present.
 
-Production readiness remains false until external interoperability lab evidence is captured against real peer stacks and packet traces.
+Repository-profile cross-implementation evidence is retained, but production
+readiness remains false until operator/vendor-profile interoperability and the
+remaining release gates are complete.
 
 Phase 7 adds `SigtranInteropEvidenceRegistry` so those lab artifacts can be tracked as stable release evidence instead of free-form notes.
+
+## Full-Stack Traffic Lab
+
+`Sigtran.NET.EndToEndLab` composes the implemented MAP SMS, TCAP, SCCP, M3UA,
+and native SCTP layers. `tools/interop-peer/sigtran_reference_peer.c` is an
+independent C/lksctp peer that parses each layer and constructs response bytes
+without linking to SDK code.
+
+Run `end-to-end-20260724T085858Z` passed with five MAP invokes, five MAP results,
+ten M3UA DATA messages, and 23 SCTP packets. Its PCAP, logs, configuration,
+trace, field export, comparison, report, and digests are retained under
+`docs/evidence/PHASE52_END_TO_END_20260724T085858Z/`.
+
+See [Phase 52](PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md) for execution and evidence
+boundaries. This proves the repository profile across independent
+implementations; it does not replace operator/vendor interoperability.

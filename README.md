@@ -15,12 +15,12 @@ Repository: <https://github.com/araditc/sigtran.net>
 SIGTRAN.NET is currently in a **public release-candidate** track. Version
 `1.0.0-rc.1` has been published and restored from NuGet.org.
 
-Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
-the SDK readiness APIs through a common verification catalog. Stateful M3UA,
-M2PA, SCCP, TCAP, and MAP SMS runtimes are available. Full stable-product
-readiness remains gated on end-to-end independent-peer evidence,
-operator-sized performance evidence, trusted signing, and stable release
-execution.
+Native Linux SCTP, external SCTP/M3UA, and cross-implementation full-stack MAP
+SMS traffic evidence are retained. Stateful M3UA, M2PA, SCCP, TCAP, and MAP SMS
+runtimes are available. Full stable-product readiness remains gated on
+operator/vendor profile interoperability, independent M2PA evidence,
+operator-sized performance evidence, production operations, trusted signing,
+and stable release execution.
 
 For release history and governance, see:
 
@@ -53,6 +53,8 @@ The current RC engineering track focuses on:
   reconnect, metrics, and graceful-shutdown evidence.
 - External SCTP/M3UA peer validation with PCAP, SDK trace, peer log, and TShark
   comparison evidence.
+- Cross-implementation MAP SMS traffic through TCAP, SCCP, M3UA, and native SCTP
+  with retained PCAP, traces, field comparison, and digest evidence.
 - Stateful SCCP, TCAP, and MAP SMS service layers.
 - M2PA as a parallel MTP2 path.
 - Byte-level tests and protocol validation.
@@ -69,9 +71,9 @@ The current RC engineering track focuses on:
 | M3UA | Codec, routing, ASP state, long-running `IMtp3Network` runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence are available. |
 | SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
 | M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
-| SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. External peer evidence remains. |
-| TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. External peer evidence remains. |
-| MAP | Stateful client/server SMS workflows cover SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre with operation profiles, result/error correlation, typed dispatch, cancellation, and metrics. Independent peer evidence remains. |
+| SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Independent C-peer UDT evidence is retained; operator/vendor profile evidence remains. |
+| TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. Independent C-peer transaction evidence is retained; operator/vendor profile evidence remains. |
+| MAP | Stateful client/server SMS workflows cover SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre with operation profiles, result/error correlation, typed dispatch, cancellation, and metrics. All five operations have cross-implementation repository-profile evidence; operator/vendor profile evidence remains. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
 
 ---
@@ -161,6 +163,7 @@ Start here:
 - [Phase 50 TCAP dialogue manager](docs/PHASE50_TCAP_DIALOGUE_MANAGER.md)
 - [MAP SMS service](docs/MAP.md)
 - [Phase 51 MAP SMS service](docs/PHASE51_MAP_SMS_SERVICE.md)
+- [Phase 52 end-to-end SS7 traffic lab](docs/PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Quality and contribution rules](docs/QUALITY.md)
@@ -210,16 +213,16 @@ Stable production support requires:
 - External SIGTRAN peer interoperability evidence.
 - Independent M2PA peer evidence.
 - Stateful SCCP, TCAP, and MAP SMS service validation.
-- End-to-end protocol trace validation.
+- Operator/vendor-profile end-to-end protocol trace validation.
 - Operator-sized capacity and resilience evidence.
 - Trusted package signing and provenance.
 - Stable package publication evidence.
 - Stable API lifecycle validation.
 - Security, release, compliance, and operations review.
 
-The Linux SCTP and external M3UA evidence gates are complete. Until the remaining
-gates are complete, the package should be treated as release-candidate
-infrastructure for controlled integrations.
+The Linux SCTP, external M3UA, and repository-profile full-stack traffic gates
+are complete. Until the remaining gates are complete, the package should be
+treated as release-candidate infrastructure for controlled integrations.
 
 ---
 

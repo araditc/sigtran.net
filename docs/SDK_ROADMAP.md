@@ -477,7 +477,8 @@ five supported SMS operations through `ITcapComponentDialogues`.
 application contexts, and timeouts. `MapSmsServer` performs typed inbound
 dispatch with Result/Error/Reject responses, cancellation, validation, and
 metrics. Paired-stack tests cover every operation and MAP error mapping.
-Independent end-to-end peer evidence remains in Phase 52.
+Phase 52 adds cross-implementation evidence for all five operations;
+operator/vendor profile validation remains.
 
 ## Phase 52 - End-To-End SS7 Traffic Lab
 
@@ -485,7 +486,13 @@ Independent end-to-end peer evidence remains in Phase 52.
 - Retain PCAP, peer log, SDK trace, configuration, field comparison, report, and
   SHA-256 manifests.
 
-Status: Pending.
+Status: Complete for repository-profile cross-implementation traffic. The .NET
+lab endpoint completed all five supported MAP SMS operations against an
+independently compiled C/lksctp peer. Passing run
+`end-to-end-20260724T085858Z` retained 23 SCTP packets, ten M3UA DATA messages,
+five peer-parsed MAP invokes, five peer-built results, SDK trace, configuration,
+TShark fields, comparison, report, and SHA-256 manifests. Operator/vendor
+profile validation and independent M2PA traffic remain separate gates.
 
 ## Phase 53 - Operator-Sized Performance And Resilience
 

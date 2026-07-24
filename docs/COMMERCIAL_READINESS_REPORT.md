@@ -32,6 +32,12 @@ retained manifests instead of stale hard-coded flags.
   reconnect, queue metrics, and graceful shutdown validation. PCAP and SDK trace
   SHA-256 values are retained in
   `docs/evidence/PHASE45_NATIVE_SCTP_20260701T103951Z.json`.
+- Cross-implementation full-stack run `end-to-end-20260724T085858Z` passed on
+  WSL2 Linux with native SCTP. The .NET endpoint sent five MAP SMS operations
+  through TCAP, SCCP, and M3UA; the independent C/lksctp peer parsed five
+  invokes and built five results. The retained PCAP contains 23 SCTP packets
+  and ten M3UA DATA messages. The complete bundle is under
+  `docs/evidence/PHASE52_END_TO_END_20260724T085858Z/`.
 
 ## Remaining Production Blockers
 
@@ -39,13 +45,12 @@ retained manifests instead of stale hard-coded flags.
 - Package publication evidence is closed for the public RC prerelease. Stable commercial release gates are foundation-complete, but live stable publication still requires retained stable release evidence, a completed protected stable publication run, and verified stable NuGet publication evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and prerelease because private repository or organization attestation persistence can require a supported plan or public repository. These runs retained local provenance markers; stable runs keep hosted attestation reserved for the protected stable gate.
-- M3UA and M2PA now provide stateful runtime implementations through
-  `IMtp3Network` and `IMtp2Link`. Independent external M2PA peer evidence remains
-  part of the end-to-end traffic lab gate.
-- SCCP, TCAP, and MAP SMS now provide stateful runtime implementations with
-  routing, reassembly, transaction correlation, typed application operations,
-  Result/Error/Reject outcomes, timeout handling, and cleanup. The complete
-  stack still requires independent end-to-end peer evidence.
+- M3UA and M2PA provide stateful runtime implementations through `IMtp3Network`
+  and `IMtp2Link`. Independent external M2PA peer evidence remains.
+- SCCP, TCAP, and MAP SMS provide stateful runtime implementations and now have
+  cross-implementation traffic evidence for the repository profile. A separate
+  operator or vendor profile run is still required before broad SS7 network
+  interoperability can be claimed.
 - The retained benchmark is not an operator-sized multi-host capacity or soak
   result.
 

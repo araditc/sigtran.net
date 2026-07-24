@@ -1,0 +1,11 @@
+runId=end-to-end-20260724T085858Z
+passed=true
+sdkExitCode=0
+peerExitCode=0
+sdkOperationCount=5
+peerInvokeCount=5
+peerResultCount=5
+pcapSctpPacketCount=23
+pcapM3uaDataCount=10
+expectedOperations=5
+expectedM3uaDataMessages=10

@@ -307,11 +307,17 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
                 }
             }
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Cancellation can be observed while a reconnect delay is running,
+            // outside the active-session exception boundary.
+        }
         finally
         {
             bool stopped = false;
             lock (_sync)
             {
+                _firstActivation?.TrySetCanceled(ct);
                 _runTask = null;
                 _lifetime?.Dispose();
                 _lifetime = null;

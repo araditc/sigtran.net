@@ -1,0 +1,15 @@
+{
+  "RunId": "end-to-end-20260724T085858Z",
+  "Passed": true,
+  "CompletedAtUtc": "2026-07-24T08:59:06.9626724+00:00",
+  "PeerName": "independent-c-reference-peer",
+  "RemoteEndpoint": "127.0.0.1:2906",
+  "Operations": [
+    "sendRoutingInfoForSM",
+    "mo-ForwardSM",
+    "mt-ForwardSM",
+    "reportSM-DeliveryStatus",
+    "alertServiceCentre"
+  ],
+  "Error": null
+}

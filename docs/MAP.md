@@ -240,5 +240,7 @@ extensions, the TCAP facade, operation profiles, correlated client workflows,
 typed server dispatch, and operational controls.
 
 The in-process paired-stack tests exercise all five workflows and MAP error
-mapping. Production readiness remains false until independent end-to-end MAP
-SMS traces and operator-profile validation are retained.
+mapping. Phase 52 adds independent C-peer traffic for all five operations and
+retains PCAP and trace comparison evidence for the repository profile.
+Production readiness remains false until operator-profile validation is
+retained.

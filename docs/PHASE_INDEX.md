@@ -56,7 +56,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 49 | SCCP stateful service layer | [Phase 49 SCCP Stateful Service](PHASE49_SCCP_STATEFUL_SERVICE.md), [Phase 49 Summary](PHASE49_SUMMARY.md), [SCCP](SCCP.md) | Implementation complete; external peer evidence pending |
 | 50 | TCAP dialogue manager | [Phase 50 TCAP Dialogue Manager](PHASE50_TCAP_DIALOGUE_MANAGER.md), [Phase 50 Summary](PHASE50_SUMMARY.md), [TCAP](TCAP.md) | Implementation complete; external peer evidence pending |
 | 51 | MAP SMS service | [Phase 51 MAP SMS Service](PHASE51_MAP_SMS_SERVICE.md), [Phase 51 Summary](PHASE51_SUMMARY.md), [MAP SMS](MAP.md) | Implementation complete; independent peer evidence pending |
-| 52 | End-to-end SS7 traffic lab | Planned | Pending |
+| 52 | End-to-end SS7 traffic lab | [Phase 52 End-To-End SS7 Traffic Lab](PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md), [Phase 52 Summary](PHASE52_SUMMARY.md), [Interoperability](INTEROPERABILITY.md) | Complete for repository-profile cross-implementation traffic; operator/vendor profile evidence remains |
 | 53 | Operator-sized performance and resilience | Planned | Pending |
 | 54 | Production operations package | Planned | Pending |
 | 55 | Stable release execution | Planned | Pending |
@@ -65,7 +65,8 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 
 The retained verification catalog now reports native Linux SCTP, external SCTP
 peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
-prerelease publication evidence. Full product readiness remains blocked on the
-end-to-end M2PA and higher-layer independent peer traffic, operator-sized
-performance, production operations, a
-trusted release identity, and protected stable publication.
+prerelease publication evidence. Phase 52 also retains cross-implementation
+M3UA/SCCP/TCAP/MAP SMS traffic evidence. Full product readiness remains blocked
+on operator/vendor profile validation, independent M2PA peer traffic,
+operator-sized performance, production operations, a trusted release identity,
+and protected stable publication.

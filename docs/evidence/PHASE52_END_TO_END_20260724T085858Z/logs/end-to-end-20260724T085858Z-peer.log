@@ -1,0 +1,29 @@
+2026-07-24T08:59:04Z event=listening endpoint=127.0.0.1:2906
+2026-07-24T08:59:06Z event=association-accepted endpoint=127.0.0.1:2906
+2026-07-24T08:59:06Z event=sctp-receive received=48 version=1 class=3 type=1 declared=48 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=3 type=1 bytes=48 stream=0 ppid=3
+2026-07-24T08:59:06Z event=asp-up-ack class=3 type=1 bytes=48 stream=0 ppid=3
+2026-07-24T08:59:06Z event=sctp-receive received=28 version=1 class=4 type=1 declared=28 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=4 type=1 bytes=28 stream=0 ppid=3
+2026-07-24T08:59:06Z event=asp-active-ack class=4 type=1 bytes=28 stream=0 ppid=3
+2026-07-24T08:59:06Z event=sctp-receive received=96 version=1 class=1 type=1 declared=96 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=1 type=1 bytes=96 stream=0 ppid=3
+2026-07-24T08:59:06Z event=map-invoke operationCode=45 invokeId=1 opc=1 dpc=2 sccpBytes=69 mapBytes=25
+2026-07-24T08:59:06Z event=map-result operationCode=45 invokeId=1 opc=1 dpc=2 sccpBytes=69 mapBytes=25
+2026-07-24T08:59:06Z event=sctp-receive received=96 version=1 class=1 type=1 declared=96 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=1 type=1 bytes=96 stream=0 ppid=3
+2026-07-24T08:59:06Z event=map-invoke operationCode=46 invokeId=1 opc=1 dpc=2 sccpBytes=71 mapBytes=27
+2026-07-24T08:59:06Z event=map-result operationCode=46 invokeId=1 opc=1 dpc=2 sccpBytes=71 mapBytes=27
+2026-07-24T08:59:06Z event=sctp-receive received=100 version=1 class=1 type=1 declared=100 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=1 type=1 bytes=100 stream=0 ppid=3
+2026-07-24T08:59:06Z event=map-invoke operationCode=44 invokeId=1 opc=1 dpc=2 sccpBytes=73 mapBytes=29
+2026-07-24T08:59:06Z event=map-result operationCode=44 invokeId=1 opc=1 dpc=2 sccpBytes=73 mapBytes=29
+2026-07-24T08:59:06Z event=sctp-receive received=96 version=1 class=1 type=1 declared=96 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=1 type=1 bytes=96 stream=0 ppid=3
+2026-07-24T08:59:06Z event=map-invoke operationCode=47 invokeId=1 opc=1 dpc=2 sccpBytes=69 mapBytes=25
+2026-07-24T08:59:06Z event=map-result operationCode=47 invokeId=1 opc=1 dpc=2 sccpBytes=69 mapBytes=25
+2026-07-24T08:59:06Z event=sctp-receive received=92 version=1 class=1 type=1 declared=92 stream=0 ppidRaw=50331648 ppidNetwork=3 flags=128
+2026-07-24T08:59:06Z event=m3ua-receive class=1 type=1 bytes=92 stream=0 ppid=3
+2026-07-24T08:59:06Z event=map-invoke operationCode=64 invokeId=1 opc=1 dpc=2 sccpBytes=66 mapBytes=22
+2026-07-24T08:59:06Z event=map-result operationCode=64 invokeId=1 opc=1 dpc=2 sccpBytes=66 mapBytes=22
+2026-07-24T08:59:06Z event=complete operations=5 passed=true

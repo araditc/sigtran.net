@@ -459,6 +459,7 @@ Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters
 Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters);
 Run("M3UA transport session notifies ASP transport loss", M3uaTransportSessionNotifiesAspTransportLoss);
 Run("M3UA runtime carries MTP3 traffic with heartbeat supervision", M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision);
+Run("M3UA runtime stops cleanly during reconnect delay", M3uaRuntimeStopsCleanlyDuringReconnectDelay);
 Run("M3UA runtime readiness reports production service capabilities", M3uaRuntimeReadinessReportsServiceCapabilities);
 Run("M2PA codec round-trips User Data and Link Status", M2paCodecRoundTripsMessages);
 Run("M2PA sequence and retrieval acknowledgements wrap correctly", M2paSequenceAndRetrievalAcknowledge);
@@ -10193,6 +10194,33 @@ static void M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision()
 
     runtime.StopAsync().AsTask().GetAwaiter().GetResult();
     AssertEqual(M3uaRuntimeState.Stopped, runtime.State, "M3UA runtime stopped state");
+    runtime.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void M3uaRuntimeStopsCleanlyDuringReconnectDelay()
+{
+    IM3uaRuntimeSessionFactory factory = new M3uaDelegateRuntimeSessionFactory(
+        _ => ValueTask.FromException<M3uaRuntimeSessionLease>(
+            new IOException("simulated association failure")));
+    M3uaRuntimeOptions options = new(
+        reconnectPolicy: new SctpReconnectPolicy(
+            maxAttempts: 3,
+            initialDelay: TimeSpan.FromSeconds(30)),
+        heartbeatInterval: TimeSpan.Zero,
+        shutdownTimeout: TimeSpan.FromSeconds(1));
+    M3uaRuntime runtime = new(factory, options);
+
+    Task startup = runtime.StartAsync().AsTask();
+    Assert(
+        SpinWait.SpinUntil(
+            () => runtime.State == M3uaRuntimeState.Reconnecting,
+            TimeSpan.FromSeconds(1)),
+        "M3UA runtime should enter reconnect delay");
+
+    runtime.StopAsync().AsTask().GetAwaiter().GetResult();
+
+    AssertEqual(M3uaRuntimeState.Stopped, runtime.State, "M3UA reconnect shutdown state");
+    AssertThrows<TaskCanceledException>(() => startup.GetAwaiter().GetResult());
     runtime.DisposeAsync().AsTask().GetAwaiter().GetResult();
 }
 
