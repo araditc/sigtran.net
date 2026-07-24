@@ -125,3 +125,22 @@ Routing Keys require a Local-RK-Identifier and at least one Destination Point Co
 - UInt32 lists must be non-empty and aligned to four bytes.
 - Duplicate singleton parameters are rejected.
 - Required parameters are checked before typed messages are returned.
+
+## Long-Running Runtime
+
+`M3uaRuntime` is the production-oriented service API for applications that need a
+continuously active ASP. It implements `IMtp3Network`, so SCCP and other MTP3
+users depend on the official contract instead of coordinating
+`M3uaTransportSession` directly.
+
+The runtime provides:
+
+- ASP startup and graceful shutdown sends.
+- A single receive owner that prevents competing receive calls.
+- Bounded traffic queues with cancellation-aware backpressure.
+- Heartbeat request/acknowledgement correlation and peer heartbeat responses.
+- Reconnect and association failover through `IM3uaRuntimeSessionFactory`.
+- Runtime events and metrics.
+
+See [Phase 47 M3UA Runtime](PHASE47_M3UA_RUNTIME.md) for composition and
+operational details.

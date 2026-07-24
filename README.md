@@ -65,7 +65,7 @@ The current RC engineering track focuses on:
 
 | Area | Current Direction |
 | --- | --- |
-| M3UA | Codec, routing, ASP state, diagnostics, and external peer evidence are available; production runtime orchestration is the next gate. |
+| M3UA | Codec, routing, ASP state, long-running `IMtp3Network` runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence are available. |
 | SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
 | M2PA | Official MTP2 contract exists; production M2PA runtime is planned. |
 | SCCP | Connectionless codec and routing foundation exists; a stateful service layer and external evidence remain. |
@@ -148,6 +148,7 @@ Start here:
 - [Architecture](docs/ARCHITECTURE.md)
 - [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
+- [Phase 47 M3UA runtime](docs/PHASE47_M3UA_RUNTIME.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
 - [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
 - [Phase 46 evidence and readiness reconciliation](docs/PHASE46_EVIDENCE_READINESS_RECONCILIATION.md)
@@ -201,7 +202,7 @@ Stable production support requires:
 
 - Retained Linux SCTP verification evidence.
 - External SIGTRAN peer interoperability evidence.
-- Production M3UA and M2PA runtime paths.
+- Production M2PA runtime path.
 - Stateful SCCP, TCAP, and MAP SMS service validation.
 - End-to-end protocol trace validation.
 - Operator-sized capacity and resilience evidence.

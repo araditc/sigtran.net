@@ -149,7 +149,6 @@ public static class SigtranProductionReadiness
     {
         List<string> blockers =
         [
-            "m3ua-runtime-service-required",
             "m2pa-runtime-required",
             "sccp-stateful-service-required",
             "tcap-dialogue-manager-required",

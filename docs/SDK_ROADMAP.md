@@ -420,7 +420,10 @@ report passing evidence, while full product readiness remains blocked.
   reconnect, failover, and fault recovery.
 - Expose bounded queues, runtime events, metrics, and graceful shutdown.
 
-Status: Pending.
+Status: Complete. `M3uaRuntime` implements `IMtp3Network` and provides a
+single-reader ASP runtime with bounded traffic queues, heartbeat supervision,
+session replacement, reconnect/failover policy, runtime events, metrics,
+cancellation, and graceful shutdown sends.
 
 ## Phase 48 - M2PA Production Path
 

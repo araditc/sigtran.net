@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 
 using Sigtran.NET.Layers.MAP;
 using Sigtran.NET.Layers.M3UA;
@@ -449,6 +450,8 @@ Run("M3UA transport session disposes owned socket", M3uaTransportSessionDisposes
 Run("M3UA transport session tracks counters", M3uaTransportSessionTracksCounters);
 Run("M3UA transport session resets counters", M3uaTransportSessionResetsCounters);
 Run("M3UA transport session notifies ASP transport loss", M3uaTransportSessionNotifiesAspTransportLoss);
+Run("M3UA runtime carries MTP3 traffic with heartbeat supervision", M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision);
+Run("M3UA runtime readiness reports production service capabilities", M3uaRuntimeReadinessReportsServiceCapabilities);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
 Run("M3UA ASP startup options validate and describe settings", M3uaAspStartupOptionsValidateAndDescribeSettings);
@@ -9401,6 +9404,93 @@ static void M3uaTransportSessionNotifiesAspTransportLoss()
     AssertEqual(M3uaAspState.Down, aspSession.State, "transport loss session state");
 }
 
+static void M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision()
+{
+    M3uaLoopbackTransport transport = new();
+    M3uaAspSession aspSession = new();
+    M3uaInboundProcessor inbound = new(
+        aspSession,
+        requireActiveAspForPayload: true);
+    M3uaOutboundProcessor outbound = new(
+        aspSession,
+        networkAppearance: 7,
+        routingContext: 100,
+        requireActiveAspForPayload: true);
+    M3uaTransportSession session = new(
+        transport,
+        inbound,
+        outbound,
+        leaveOpen: false);
+    IM3uaRuntimeSessionFactory factory = new M3uaDelegateRuntimeSessionFactory(
+        _ => ValueTask.FromResult(new M3uaRuntimeSessionLease("loopback-primary", session)));
+    M3uaRuntimeOptions options = new(
+        startupOptions: new M3uaAspStartupOptions(
+            aspIdentifier: 42,
+            trafficModeType: M3uaTrafficModeType.Loadshare),
+        reconnectPolicy: new SctpReconnectPolicy(
+            maxAttempts: 1,
+            initialDelay: TimeSpan.Zero),
+        outboundQueueCapacity: 2,
+        inboundQueueCapacity: 2,
+        heartbeatInterval: TimeSpan.FromMilliseconds(20),
+        heartbeatTimeout: TimeSpan.FromSeconds(1),
+        shutdownTimeout: TimeSpan.FromSeconds(1));
+
+    List<M3uaRuntimeEventKind> events = [];
+    M3uaRuntime runtime = new(factory, options);
+    runtime.RuntimeEvent += (_, args) => events.Add(args.Kind);
+    runtime.StartAsync().AsTask().GetAwaiter().GetResult();
+
+    AssertEqual(M3uaRuntimeState.Active, runtime.State, "M3UA runtime active state");
+    AssertEqual("loopback-primary", runtime.AssociationName, "M3UA runtime association name");
+
+    Mtp3TransferMessage outboundTransfer = new(
+        new(Mtp3ServiceIndicator.Sccp, networkIndicator: 2, messagePriority: 0),
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 3),
+        new byte[] { 0x09, 0x08, 0x07 },
+        networkAppearance: 7,
+        routingContext: 100,
+        correlationId: 55);
+    runtime.SendAsync(outboundTransfer).AsTask().GetAwaiter().GetResult();
+
+    using CancellationTokenSource receiveTimeout = new(TimeSpan.FromSeconds(2));
+    Mtp3TransferMessage received = runtime.ReceiveAsync(receiveTimeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertSequence([0x09, 0x08, 0x07], received.UserPayload.Span, "M3UA runtime echoed payload");
+    AssertEqual((uint?)100, received.RoutingContext, "M3UA runtime routing context");
+
+    SpinWait.SpinUntil(
+        () => runtime.GetMetrics().HeartbeatsAcknowledged > 0,
+        TimeSpan.FromSeconds(2));
+    M3uaRuntimeMetrics metrics = runtime.GetMetrics();
+    AssertEqual(1L, metrics.SentTransfers, "M3UA runtime sent transfers");
+    AssertEqual(1L, metrics.ReceivedTransfers, "M3UA runtime received transfers");
+    Assert(metrics.HeartbeatsSent > 0, "M3UA runtime should send heartbeats");
+    Assert(metrics.HeartbeatsAcknowledged > 0, "M3UA runtime should acknowledge heartbeats");
+    AssertEqual(0L, metrics.HeartbeatTimeouts, "M3UA runtime heartbeat timeouts");
+    Assert(events.Contains(M3uaRuntimeEventKind.AspActivated), "M3UA runtime ASP activation event");
+    Assert(events.Contains(M3uaRuntimeEventKind.TransferReceived), "M3UA runtime receive event");
+
+    runtime.StopAsync().AsTask().GetAwaiter().GetResult();
+    AssertEqual(M3uaRuntimeState.Stopped, runtime.State, "M3UA runtime stopped state");
+    runtime.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void M3uaRuntimeReadinessReportsServiceCapabilities()
+{
+    M3uaRuntimeReadinessSnapshot readiness = M3uaRuntimeReadiness.GetReport();
+
+    Assert(readiness.RuntimeReady, "M3UA runtime readiness should be complete");
+    Assert(readiness.HasAspLifecycle, "M3UA runtime should expose ASP lifecycle");
+    Assert(readiness.HasBoundedQueues, "M3UA runtime should expose bounded queues");
+    Assert(readiness.HasHeartbeatSupervision, "M3UA runtime should expose heartbeat supervision");
+    Assert(readiness.HasReconnectAndFailover, "M3UA runtime should expose reconnect and failover");
+    Assert(readiness.HasRuntimeMetrics, "M3UA runtime should expose metrics");
+    Assert(readiness.HasMtp3Contract, "M3UA runtime should implement MTP3 contract");
+}
+
 static void M3uaDiagnosticsFormatHexAndSummaries()
 {
     byte[] bytes =
@@ -10872,6 +10962,141 @@ internal sealed class FakeMtp3Network : IMtp3Network
     public void QueueReceive(Mtp3TransferMessage message)
     {
         _receiveTransfers.Enqueue(message);
+    }
+}
+
+internal sealed class M3uaLoopbackAssociation : ISctpAssociation
+{
+    public SctpAssociationState State => SctpAssociationState.Established;
+
+    public IReadOnlyList<SctpAssociationJournalEntry> SnapshotEvents()
+    {
+        return [];
+    }
+}
+
+internal sealed class M3uaLoopbackTransport : ISctpTransport
+{
+    private readonly Channel<byte[]> _receivePackets =
+        Channel.CreateUnbounded<byte[]>(
+            new UnboundedChannelOptions
+            {
+                SingleReader = true,
+                SingleWriter = false
+            });
+    private bool _disposed;
+
+    public ISctpAssociation Association { get; } = new M3uaLoopbackAssociation();
+
+    public ValueTask SendAsync(
+        SctpOutboundMessage message,
+        CancellationToken ct = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        M3uaMessage decoded = new();
+        if (!decoded.TryDecode(message.Payload.Span, out string? decodeError))
+        {
+            throw new InvalidOperationException(decodeError);
+        }
+
+        byte[] response = BuildResponse(decoded, message.Payload.Span);
+        if (response.Length > 0)
+        {
+            _receivePackets.Writer.TryWrite(response);
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    public async ValueTask<SctpReceiveResult> ReceiveAsync(
+        Memory<byte> buffer,
+        CancellationToken ct = default)
+    {
+        byte[] packet = await _receivePackets.Reader.ReadAsync(ct).ConfigureAwait(false);
+        packet.CopyTo(buffer);
+        return new(
+            packet.Length,
+            new(
+                streamId: 0,
+                payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua));
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _receivePackets.Writer.TryComplete();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private static byte[] BuildResponse(
+        M3uaMessage message,
+        ReadOnlySpan<byte> encodedMessage)
+    {
+        Span<byte> buffer = stackalloc byte[512];
+        bool built;
+        int written;
+        string? error;
+
+        if (message.MessageClass == M3uaMessageClass.Aspsm
+            && message.MessageType == (byte)M3uaAspsmMessageType.AspUp)
+        {
+            built = M3uaMessageBuilder.BuildAspUpAck(
+                buffer,
+                aspIdentifier: 42,
+                ReadOnlySpan<byte>.Empty,
+                out written,
+                out error);
+        }
+        else if (message.MessageClass == M3uaMessageClass.Asptm
+            && message.MessageType == (byte)M3uaAsptmMessageType.AspActive)
+        {
+            built = M3uaMessageBuilder.BuildAspActiveAck(
+                buffer,
+                M3uaTrafficModeType.Loadshare,
+                [100],
+                ReadOnlySpan<byte>.Empty,
+                out written,
+                out error);
+        }
+        else if (message.MessageClass == M3uaMessageClass.Aspsm
+            && message.MessageType == (byte)M3uaAspsmMessageType.Heartbeat)
+        {
+            if (!M3uaTypedMessageParser.TryParseAspsm(
+                    message,
+                    out M3uaAspStateMaintenanceMessage? heartbeat,
+                    out string? parseError))
+            {
+                throw new InvalidOperationException(
+                    parseError ?? "Loopback heartbeat parse failed.");
+            }
+
+            built = M3uaMessageBuilder.BuildHeartbeatAck(
+                buffer,
+                heartbeat!.HeartbeatData.Span,
+                out written,
+                out error);
+        }
+        else if (message.MessageClass == M3uaMessageClass.Transfer
+            && message.MessageType == (byte)M3uaTransferMessageType.PayloadData)
+        {
+            return encodedMessage.ToArray();
+        }
+        else
+        {
+            return [];
+        }
+
+        if (!built)
+        {
+            throw new InvalidOperationException(error);
+        }
+
+        return buffer.Slice(0, written).ToArray();
     }
 }
 
