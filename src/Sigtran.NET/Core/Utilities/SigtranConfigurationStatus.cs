@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides configuration and environment readiness status.
 /// </summary>
-public static class SigtranConfigurationStatus
+internal static class SigtranConfigurationStatus
 {
     private static readonly string[] Capabilities =
     [

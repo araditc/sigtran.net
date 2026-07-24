@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a package publication artifact kind.
 /// </summary>
-public enum SigtranPackageArtifactKind
+internal enum SigtranPackageArtifactKind
 {
     /// <summary>NuGet package artifact.</summary>
     Package,
@@ -15,7 +15,7 @@ public enum SigtranPackageArtifactKind
 /// <summary>
 /// Describes one package artifact expected from a pack operation.
 /// </summary>
-public sealed class SigtranPackageArtifactPath
+internal sealed class SigtranPackageArtifactPath
 {
     /// <summary>Creates a package artifact path.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -36,7 +36,7 @@ public sealed class SigtranPackageArtifactPath
 /// <summary>
 /// Describes the expected package output layout for release publication.
 /// </summary>
-public sealed class SigtranPackageLayout
+internal sealed class SigtranPackageLayout
 {
     /// <summary>Creates a package output layout.</summary>
     /// <param name="packageId">The package identifier.</param>
@@ -78,7 +78,7 @@ public sealed class SigtranPackageLayout
 /// <summary>
 /// Provides package layout helpers.
 /// </summary>
-public static class SigtranPackageLayouts
+internal static class SigtranPackageLayouts
 {
     /// <summary>Creates the default package layout.</summary>
     /// <returns>The default package layout.</returns>

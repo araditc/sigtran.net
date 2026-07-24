@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a native SCTP lab artifact kind.
 /// </summary>
-public enum SigtranNativeSctpLabArtifactKind
+internal enum SigtranNativeSctpLabArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -27,7 +27,7 @@ public enum SigtranNativeSctpLabArtifactKind
 /// <summary>
 /// Describes one native SCTP lab artifact.
 /// </summary>
-public sealed class SigtranNativeSctpLabArtifact
+internal sealed class SigtranNativeSctpLabArtifact
 {
     /// <summary>Creates a native SCTP lab artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranNativeSctpLabArtifact
 /// <summary>
 /// Stores artifacts for one native SCTP lab scenario.
 /// </summary>
-public sealed class SigtranNativeSctpLabArtifactManifest
+internal sealed class SigtranNativeSctpLabArtifactManifest
 {
     private readonly List<SigtranNativeSctpLabArtifact> _artifacts = [];
 

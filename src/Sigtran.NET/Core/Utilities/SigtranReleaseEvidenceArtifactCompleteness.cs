@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes production evidence artifact intake completeness.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactCompletenessResult
+internal sealed class SigtranReleaseEvidenceArtifactCompletenessResult
 {
     /// <summary>Creates a production evidence artifact completeness result.</summary>
     /// <param name="redactionReviewManifest">The redaction review manifest.</param>
@@ -49,7 +49,7 @@ public sealed class SigtranReleaseEvidenceArtifactCompletenessResult
 /// <summary>
 /// Provides production evidence artifact completeness evaluation.
 /// </summary>
-public static class SigtranReleaseEvidenceArtifactCompleteness
+internal static class SigtranReleaseEvidenceArtifactCompleteness
 {
     /// <summary>Evaluates artifact intake completeness.</summary>
     /// <param name="redactionReviewManifest">The redaction review manifest.</param>

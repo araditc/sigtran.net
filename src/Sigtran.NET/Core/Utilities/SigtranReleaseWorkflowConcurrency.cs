@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release workflow concurrency policy.
 /// </summary>
-public sealed class SigtranReleaseWorkflowConcurrencyPolicy
+internal sealed class SigtranReleaseWorkflowConcurrencyPolicy
 {
     /// <summary>Creates a release workflow concurrency policy.</summary>
     /// <param name="groupExpression">The concurrency group expression.</param>
@@ -28,7 +28,7 @@ public sealed class SigtranReleaseWorkflowConcurrencyPolicy
 /// <summary>
 /// Provides release workflow concurrency policies.
 /// </summary>
-public static class SigtranReleaseWorkflowConcurrency
+internal static class SigtranReleaseWorkflowConcurrency
 {
     /// <summary>Creates the default release workflow concurrency policy.</summary>
     /// <returns>The default release workflow concurrency policy.</returns>

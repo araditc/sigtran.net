@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release promotion gate evaluation.
 /// </summary>
-public sealed class SigtranReleasePromotionGateResult
+internal sealed class SigtranReleasePromotionGateResult
 {
     /// <summary>Creates a release promotion gate result.</summary>
     /// <param name="canPromote">Whether the release can be promoted.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranReleasePromotionGateResult
 /// <summary>
 /// Evaluates release promotion gates.
 /// </summary>
-public static class SigtranReleasePromotionGate
+internal static class SigtranReleasePromotionGate
 {
     /// <summary>Evaluates whether a release can be promoted.</summary>
     /// <param name="publishGuard">The publish guard result.</param>

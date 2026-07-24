@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a supply-chain release gate result.
 /// </summary>
-public sealed class SigtranSupplyChainReleaseGateResult
+internal sealed class SigtranSupplyChainReleaseGateResult
 {
     /// <summary>Creates a supply-chain release gate result.</summary>
     /// <param name="canPromote">Whether the release can be promoted.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranSupplyChainReleaseGateResult
 /// <summary>
 /// Evaluates supply-chain release execution gates.
 /// </summary>
-public static class SigtranSupplyChainReleaseGate
+internal static class SigtranSupplyChainReleaseGate
 {
     /// <summary>Evaluates whether a supply-chain release can be promoted.</summary>
     /// <param name="sbom">The final SBOM artifact.</param>

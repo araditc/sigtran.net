@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the final release readiness position for RC and stable publication.
 /// </summary>
-public sealed class SigtranFinalProductionReadinessSnapshot
+internal sealed class SigtranFinalProductionReadinessSnapshot
 {
     /// <summary>Creates a final production readiness report.</summary>
     /// <param name="version">The package version being evaluated.</param>
@@ -93,7 +93,7 @@ public sealed class SigtranFinalProductionReadinessSnapshot
 /// <summary>
 /// Provides final release readiness reports.
 /// </summary>
-public static class SigtranFinalProductionReadinessSnapshots
+internal static class SigtranFinalProductionReadinessSnapshots
 {
     /// <summary>Creates the default final readiness report for a prerelease.</summary>
     /// <param name="version">The prerelease version.</param>

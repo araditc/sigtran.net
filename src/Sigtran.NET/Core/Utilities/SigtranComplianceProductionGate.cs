@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the compliance contribution to production readiness.
 /// </summary>
-public sealed class SigtranComplianceProductionGateResult
+internal sealed class SigtranComplianceProductionGateResult
 {
     /// <summary>Creates a compliance production gate result.</summary>
     /// <param name="complianceFoundationReady">Whether compliance foundation is ready.</param>
@@ -34,7 +34,7 @@ public sealed class SigtranComplianceProductionGateResult
 /// <summary>
 /// Provides compliance production gate helpers.
 /// </summary>
-public static class SigtranComplianceProductionGate
+internal static class SigtranComplianceProductionGate
 {
     /// <summary>Evaluates the current compliance production gate.</summary>
     /// <returns>The compliance production gate result.</returns>

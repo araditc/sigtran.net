@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the protocol interoperability vector CI profile.
 /// </summary>
-public sealed class SigtranProtocolInteropCiProfile
+internal sealed class SigtranProtocolInteropCiProfile
 {
     /// <summary>Creates a protocol interoperability CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranProtocolInteropCiProfile
 /// <summary>
 /// Provides protocol interoperability CI profile helpers.
 /// </summary>
-public static class SigtranProtocolInteropCi
+internal static class SigtranProtocolInteropCi
 {
     /// <summary>Creates the default protocol interoperability CI profile.</summary>
     /// <returns>The default protocol interoperability CI profile.</returns>

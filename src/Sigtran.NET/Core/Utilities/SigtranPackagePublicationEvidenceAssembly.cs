@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes assembled package publication evidence for gate evaluation.
 /// </summary>
-public sealed class SigtranPackagePublicationEvidenceAssembly
+internal sealed class SigtranPackagePublicationEvidenceAssembly
 {
     /// <summary>Creates an assembled package publication evidence result.</summary>
     /// <param name="credentialReadiness">The package publication credential readiness.</param>
@@ -63,7 +63,7 @@ public sealed class SigtranPackagePublicationEvidenceAssembly
 /// <summary>
 /// Provides package publication evidence assembly helpers.
 /// </summary>
-public static class SigtranPackagePublicationEvidenceAssemblies
+internal static class SigtranPackagePublicationEvidenceAssemblies
 {
     /// <summary>Assembles package publication evidence from credential readiness and retained evidence gates.</summary>
     /// <param name="credentialReadiness">The package publication credential readiness.</param>

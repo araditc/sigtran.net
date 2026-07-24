@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable release release decision outcomes.
 /// </summary>
-public enum SigtranStableReleaseDecisionKind
+internal enum SigtranStableReleaseDecisionKind
 {
     /// <summary>Stable release publication is blocked.</summary>
     Blocked,
@@ -15,7 +15,7 @@ public enum SigtranStableReleaseDecisionKind
 /// <summary>
 /// Describes a stable release release decision.
 /// </summary>
-public sealed class SigtranStableReleaseDecision
+internal sealed class SigtranStableReleaseDecision
 {
     /// <summary>Creates a stable release release decision.</summary>
     /// <param name="checklist">The reviewed stable release readiness checklist.</param>
@@ -75,7 +75,7 @@ public sealed class SigtranStableReleaseDecision
 /// <summary>
 /// Provides stable release release decision helpers.
 /// </summary>
-public static class SigtranStableReleaseDecisions
+internal static class SigtranStableReleaseDecisions
 {
     /// <summary>Creates a stable release release decision from the reviewed readiness checklist.</summary>
     /// <param name="checklist">The reviewed stable release readiness checklist.</param>

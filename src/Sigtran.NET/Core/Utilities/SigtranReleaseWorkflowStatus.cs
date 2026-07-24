@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides release workflow orchestration status.
 /// </summary>
-public static class SigtranReleaseWorkflowStatus
+internal static class SigtranReleaseWorkflowStatus
 {
     private static readonly string[] Capabilities =
     [

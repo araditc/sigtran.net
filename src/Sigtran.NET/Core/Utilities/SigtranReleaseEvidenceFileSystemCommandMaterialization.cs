@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a materialized filesystem-backed production evidence command script.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemCommandMaterialization
+internal sealed class SigtranReleaseEvidenceFileSystemCommandMaterialization
 {
     /// <summary>Creates a materialized filesystem-backed command script result.</summary>
     /// <param name="commandPlan">The source file verification command plan.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranReleaseEvidenceFileSystemCommandMaterialization
 /// <summary>
 /// Provides filesystem-backed production evidence command materialization helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemCommandMaterializer
+internal static class SigtranReleaseEvidenceFileSystemCommandMaterializer
 {
     /// <summary>Writes a shell command script from a file verification command plan.</summary>
     /// <param name="commandPlan">The source file verification command plan.</param>

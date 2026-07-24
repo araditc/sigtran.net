@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one SDK layer contract and the interface it depends on below it.
 /// </summary>
-public sealed class SigtranLayerContract
+internal sealed class SigtranLayerContract
 {
     /// <summary>Creates a layer contract description.</summary>
     /// <param name="layerName">The protocol layer name.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranLayerContract
 /// <summary>
 /// Catalogs the official SDK layer contracts and their downward dependency direction.
 /// </summary>
-public static class SigtranLayerContracts
+internal static class SigtranLayerContracts
 {
     /// <summary>Returns the official layer contract catalog in bottom-up order.</summary>
     /// <returns>The contract catalog.</returns>

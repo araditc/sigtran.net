@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the assembled production evidence dossier intake pipeline.
 /// </summary>
-public sealed class SigtranReleaseEvidenceDossierIntakeBridgeResult
+internal sealed class SigtranReleaseEvidenceDossierIntakeBridgeResult
 {
     /// <summary>Creates a production evidence dossier intake bridge result.</summary>
     /// <param name="target">The artifact intake target.</param>
@@ -72,7 +72,7 @@ public sealed class SigtranReleaseEvidenceDossierIntakeBridgeResult
 /// <summary>
 /// Provides production evidence execution-to-dossier bridge helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceDossierIntakeBridge
+internal static class SigtranReleaseEvidenceDossierIntakeBridge
 {
     /// <summary>Builds an intake handoff from a governed execution run and retained artifact inputs.</summary>
     /// <param name="executionRun">The execution run that produced artifacts.</param>

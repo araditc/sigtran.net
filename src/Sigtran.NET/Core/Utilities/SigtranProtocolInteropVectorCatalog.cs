@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a higher-layer protocol interop vector surface.
 /// </summary>
-public enum SigtranProtocolInteropSurface
+internal enum SigtranProtocolInteropSurface
 {
     /// <summary>SCCP connectionless protocol vectors.</summary>
     Sccp,
@@ -18,7 +18,7 @@ public enum SigtranProtocolInteropSurface
 /// <summary>
 /// Describes a required protocol interoperability vector.
 /// </summary>
-public sealed class SigtranProtocolInteropVector
+internal sealed class SigtranProtocolInteropVector
 {
     /// <summary>Creates a protocol interoperability vector.</summary>
     /// <param name="surface">The protocol surface.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranProtocolInteropVector
 /// <summary>
 /// Provides the protocol interoperability vector catalog.
 /// </summary>
-public static class SigtranProtocolInteropVectorCatalog
+internal static class SigtranProtocolInteropVectorCatalog
 {
     private static readonly SigtranProtocolInteropVector[] Vectors =
     [

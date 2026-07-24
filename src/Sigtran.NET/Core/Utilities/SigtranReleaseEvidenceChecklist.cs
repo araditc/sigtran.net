@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production evidence checklist artifact kind.
 /// </summary>
-public enum SigtranReleaseEvidenceChecklistKind
+internal enum SigtranReleaseEvidenceChecklistKind
 {
     /// <summary>Packet capture evidence.</summary>
     PacketCapture,
@@ -48,7 +48,7 @@ public enum SigtranReleaseEvidenceChecklistKind
 /// <summary>
 /// Describes one production evidence checklist item.
 /// </summary>
-public sealed class SigtranReleaseEvidenceChecklistItem
+internal sealed class SigtranReleaseEvidenceChecklistItem
 {
     /// <summary>Creates a production evidence checklist item.</summary>
     /// <param name="id">The stable checklist item identifier.</param>
@@ -89,7 +89,7 @@ public sealed class SigtranReleaseEvidenceChecklistItem
 /// <summary>
 /// Describes the production evidence checklist.
 /// </summary>
-public sealed class SigtranReleaseEvidenceChecklist
+internal sealed class SigtranReleaseEvidenceChecklist
 {
     /// <summary>Creates a production evidence checklist.</summary>
     /// <param name="items">The checklist items.</param>
@@ -146,7 +146,7 @@ public sealed class SigtranReleaseEvidenceChecklist
 /// <summary>
 /// Provides production evidence checklist helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceChecklists
+internal static class SigtranReleaseEvidenceChecklists
 {
     /// <summary>Creates the default production evidence checklist.</summary>
     /// <returns>The default production evidence checklist.</returns>

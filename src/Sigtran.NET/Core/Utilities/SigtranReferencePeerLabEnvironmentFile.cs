@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a rendered reference external peer lab environment file.
 /// </summary>
-public sealed class SigtranReferencePeerLabEnvironmentFile
+internal sealed class SigtranReferencePeerLabEnvironmentFile
 {
     private readonly SortedDictionary<string, string> _variables;
 
@@ -62,7 +62,7 @@ public sealed class SigtranReferencePeerLabEnvironmentFile
 /// <summary>
 /// Provides reference external peer lab environment file helpers.
 /// </summary>
-public static class SigtranReferencePeerLabEnvironmentFiles
+internal static class SigtranReferencePeerLabEnvironmentFiles
 {
     /// <summary>Creates an environment file from a reference peer lab run manifest.</summary>
     /// <param name="manifest">The reference peer lab run manifest.</param>

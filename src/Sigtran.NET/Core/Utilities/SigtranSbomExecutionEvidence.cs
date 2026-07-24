@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes generated SBOM execution evidence for a release package set.
 /// </summary>
-public sealed class SigtranSbomExecutionEvidence
+internal sealed class SigtranSbomExecutionEvidence
 {
     /// <summary>Creates generated SBOM execution evidence.</summary>
     /// <param name="format">The SBOM format.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranSbomExecutionEvidence
 /// <summary>
 /// Provides generated SBOM execution evidence helpers.
 /// </summary>
-public static class SigtranSbomExecution
+internal static class SigtranSbomExecution
 {
     /// <summary>Creates generated SBOM execution evidence from a retained digest.</summary>
     /// <param name="sha256">The retained SBOM SHA-256 digest.</param>

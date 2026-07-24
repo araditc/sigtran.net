@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab command kinds.
 /// </summary>
-public enum SigtranReferencePeerLabCommandKind
+internal enum SigtranReferencePeerLabCommandKind
 {
     /// <summary>Prepare lab directories and configuration.</summary>
     Prepare,
@@ -27,7 +27,7 @@ public enum SigtranReferencePeerLabCommandKind
 /// <summary>
 /// Describes one reference external peer lab command.
 /// </summary>
-public sealed class SigtranReferencePeerLabCommand
+internal sealed class SigtranReferencePeerLabCommand
 {
     /// <summary>Creates a reference external peer lab command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -70,7 +70,7 @@ public sealed class SigtranReferencePeerLabCommand
 /// <summary>
 /// Describes the reference external peer lab command plan.
 /// </summary>
-public sealed class SigtranReferencePeerLabCommandPlan
+internal sealed class SigtranReferencePeerLabCommandPlan
 {
     private readonly SigtranReferencePeerLabCommand[] _commands;
 
@@ -125,7 +125,7 @@ public sealed class SigtranReferencePeerLabCommandPlan
 /// <summary>
 /// Provides reference external peer lab command plan helpers.
 /// </summary>
-public static class SigtranReferencePeerLabCommandPlans
+internal static class SigtranReferencePeerLabCommandPlans
 {
     /// <summary>Creates the default reference external peer lab command plan.</summary>
     /// <param name="configuration">The lab configuration.</param>

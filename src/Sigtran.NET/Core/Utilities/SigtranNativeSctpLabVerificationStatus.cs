@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides native SCTP lab verification status.
 /// </summary>
-public static class SigtranNativeSctpLabVerificationStatus
+internal static class SigtranNativeSctpLabVerificationStatus
 {
     private static readonly string[] Capabilities =
     [

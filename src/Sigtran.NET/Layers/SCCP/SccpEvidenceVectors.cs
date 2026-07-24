@@ -5,7 +5,7 @@ namespace Sigtran.NET.Layers.SCCP;
 /// <summary>
 /// Provides deterministic SCCP evidence vectors for byte-level codec validation.
 /// </summary>
-public static class SccpEvidenceVectors
+internal static class SccpEvidenceVectors
 {
     private const string Source = "SDK deterministic SCCP Q.713-style vector";
 

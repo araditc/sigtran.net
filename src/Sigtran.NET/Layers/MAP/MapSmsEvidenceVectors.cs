@@ -5,7 +5,7 @@ namespace Sigtran.NET.Layers.MAP;
 /// <summary>
 /// Provides deterministic MAP SMS evidence vectors for byte-level operation parameter validation.
 /// </summary>
-public static class MapSmsEvidenceVectors
+internal static class MapSmsEvidenceVectors
 {
     private const string Source = "SDK deterministic MAP SMS BER-shaped vector";
 

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the concrete release workflow file contract.
 /// </summary>
-public sealed class SigtranReleaseWorkflowFileContract
+internal sealed class SigtranReleaseWorkflowFileContract
 {
     /// <summary>Creates a release workflow file contract.</summary>
     /// <param name="path">The workflow file path.</param>
@@ -46,7 +46,7 @@ public sealed class SigtranReleaseWorkflowFileContract
 /// <summary>
 /// Provides release workflow file contracts.
 /// </summary>
-public static class SigtranReleaseWorkflowFiles
+internal static class SigtranReleaseWorkflowFiles
 {
     /// <summary>Creates the default release workflow file contract.</summary>
     /// <returns>The default release workflow file contract.</returns>

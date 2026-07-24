@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab runner evidence package item kinds.
 /// </summary>
-public enum SigtranReferencePeerLabRunnerEvidencePackageItemKind
+internal enum SigtranReferencePeerLabRunnerEvidencePackageItemKind
 {
     /// <summary>Retained lab artifact item.</summary>
     RetainedArtifact,
@@ -23,7 +23,7 @@ public enum SigtranReferencePeerLabRunnerEvidencePackageItemKind
 /// <summary>
 /// Describes one reference external peer lab runner evidence package item.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerEvidencePackageItem
+internal sealed class SigtranReferencePeerLabRunnerEvidencePackageItem
 {
     /// <summary>Creates a reference peer lab runner evidence package item.</summary>
     /// <param name="kind">The package item kind.</param>
@@ -80,7 +80,7 @@ public sealed class SigtranReferencePeerLabRunnerEvidencePackageItem
 /// <summary>
 /// Describes a reference external peer lab runner evidence package manifest.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerEvidencePackageManifest
+internal sealed class SigtranReferencePeerLabRunnerEvidencePackageManifest
 {
     private readonly SigtranReferencePeerLabRunnerEvidencePackageItem[] _items;
 
@@ -183,7 +183,7 @@ public sealed class SigtranReferencePeerLabRunnerEvidencePackageManifest
 /// <summary>
 /// Provides reference external peer lab runner evidence package helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerEvidencePackages
+internal static class SigtranReferencePeerLabRunnerEvidencePackages
 {
     /// <summary>Creates an evidence package manifest from verified runner outputs.</summary>
     /// <param name="artifactVerification">The artifact verification report.</param>

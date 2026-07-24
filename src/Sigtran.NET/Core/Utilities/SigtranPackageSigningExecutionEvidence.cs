@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package signing execution evidence.
 /// </summary>
-public sealed class SigtranPackageSigningExecutionEvidence
+internal sealed class SigtranPackageSigningExecutionEvidence
 {
     /// <summary>Creates package signing execution evidence.</summary>
     /// <param name="signedPackagePath">The signed package path.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranPackageSigningExecutionEvidence
 /// <summary>
 /// Provides package signing execution evidence helpers.
 /// </summary>
-public static class SigtranPackageSigningExecution
+internal static class SigtranPackageSigningExecution
 {
     /// <summary>Creates package signing execution evidence from retained artifact digests.</summary>
     /// <param name="signedPackageSha256">The retained signed package SHA-256 digest.</param>

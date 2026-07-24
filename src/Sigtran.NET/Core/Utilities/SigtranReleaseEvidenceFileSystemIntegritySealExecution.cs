@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed production evidence integrity seal execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemIntegritySealExecution
+internal sealed class SigtranReleaseEvidenceFileSystemIntegritySealExecution
 {
     /// <summary>Creates filesystem-backed integrity seal execution.</summary>
     /// <param name="ledgerExecution">The filesystem-backed retention ledger execution.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranReleaseEvidenceFileSystemIntegritySealExecution
 /// <summary>
 /// Provides filesystem-backed production evidence integrity seal execution helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemIntegritySeals
+internal static class SigtranReleaseEvidenceFileSystemIntegritySeals
 {
     /// <summary>Creates an integrity seal from a filesystem-backed retention ledger execution.</summary>
     /// <param name="ledgerExecution">The filesystem-backed retention ledger execution.</param>

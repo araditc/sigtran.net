@@ -110,7 +110,8 @@ The gate keeps supply-chain completeness separate from commercial release readin
 - Verify package signature and timestamp with `dotnet nuget verify --all`.
 - Create GitHub provenance and SBOM attestations with `actions/attest-build-provenance` and `actions/attest-sbom`.
 - Retain provenance marker, public API diff, and digest manifest artifacts.
-- Upload package, symbols, and supply-chain evidence with `actions/upload-artifact@v4`.
+- Upload package, symbols, and supply-chain evidence with the SHA-pinned
+  `actions/upload-artifact` action.
 
 `SigtranReleaseWorkflowValidation` now requires these workflow fragments, including SBOM generation, signing, verification, attestation, artifact upload, and final SBOM/API diff environment outputs.
 

@@ -6,7 +6,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one artifact in an approved production evidence promotion package.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovedRunPromotionArtifact
+internal sealed class SigtranReleaseEvidenceApprovedRunPromotionArtifact
 {
     /// <summary>Creates an approved run promotion artifact reference.</summary>
     /// <param name="id">The artifact identifier.</param>
@@ -48,7 +48,7 @@ public sealed class SigtranReleaseEvidenceApprovedRunPromotionArtifact
 /// <summary>
 /// Describes an approved production evidence run promotion package.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovedRunPromotionPackage
+internal sealed class SigtranReleaseEvidenceApprovedRunPromotionPackage
 {
     /// <summary>Creates an approved production evidence run promotion package.</summary>
     /// <param name="packageId">The stable package identifier.</param>
@@ -132,7 +132,7 @@ public sealed class SigtranReleaseEvidenceApprovedRunPromotionPackage
 /// <summary>
 /// Provides approved production evidence run promotion package helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceApprovedRunPromotionPackages
+internal static class SigtranReleaseEvidenceApprovedRunPromotionPackages
 {
     /// <summary>Creates an approved run promotion package from a retained approval report.</summary>
     /// <param name="approvalReport">The retained approval report.</param>

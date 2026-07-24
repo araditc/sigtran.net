@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes generated public API baseline evidence.
 /// </summary>
-public sealed class SigtranPublicApiBaselineEvidence
+internal sealed class SigtranPublicApiBaselineEvidence
 {
     /// <summary>Creates generated public API baseline evidence.</summary>
     /// <param name="baselinePath">The public API baseline artifact path.</param>
@@ -34,7 +34,7 @@ public sealed class SigtranPublicApiBaselineEvidence
 /// <summary>
 /// Provides public API baseline evidence helpers.
 /// </summary>
-public static class SigtranPublicApiBaselineEvidenceFactory
+internal static class SigtranPublicApiBaselineEvidenceFactory
 {
     /// <summary>Creates public API baseline evidence from retained artifact metadata.</summary>
     /// <param name="baselineSha256">The retained baseline SHA-256 digest.</param>

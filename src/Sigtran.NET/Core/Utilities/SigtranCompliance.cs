@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an enterprise compliance capability area.
 /// </summary>
-public enum SigtranComplianceArea
+internal enum SigtranComplianceArea
 {
     /// <summary>Audit event coverage.</summary>
     Audit,
@@ -24,7 +24,7 @@ public enum SigtranComplianceArea
 /// <summary>
 /// Describes one enterprise compliance capability.
 /// </summary>
-public sealed class SigtranComplianceCapability
+internal sealed class SigtranComplianceCapability
 {
     /// <summary>Creates a compliance capability.</summary>
     /// <param name="area">The compliance area.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranComplianceCapability
 /// <summary>
 /// Provides enterprise compliance capability planning helpers.
 /// </summary>
-public static class SigtranCompliance
+internal static class SigtranCompliance
 {
     private static readonly SigtranComplianceCapability[] Capabilities =
     [

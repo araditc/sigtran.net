@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab runner file materialization.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerFileMaterializationPlan
+internal sealed class SigtranReferencePeerLabRunnerFileMaterializationPlan
 {
     private readonly string[] _directories;
     private readonly SigtranReferencePeerLabRunnerInputFile[] _inputFiles;
@@ -106,7 +106,7 @@ public sealed class SigtranReferencePeerLabRunnerFileMaterializationPlan
 /// <summary>
 /// Provides reference external peer lab runner file materialization helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerFileMaterialization
+internal static class SigtranReferencePeerLabRunnerFileMaterialization
 {
     /// <summary>Creates the default runner file materialization plan.</summary>
     /// <param name="inputBundle">The runner input bundle.</param>

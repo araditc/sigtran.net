@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes final package publication gate execution.
 /// </summary>
-public sealed class SigtranPackagePublicationGateExecution
+internal sealed class SigtranPackagePublicationGateExecution
 {
     /// <summary>Creates a package publication gate execution result.</summary>
     /// <param name="channelPolicyEvaluation">The package publication channel policy evaluation.</param>
@@ -62,7 +62,7 @@ public sealed class SigtranPackagePublicationGateExecution
 /// <summary>
 /// Provides package publication gate execution helpers.
 /// </summary>
-public static class SigtranPackagePublicationGateExecutions
+internal static class SigtranPackagePublicationGateExecutions
 {
     /// <summary>Executes the final package publication gate from channel policy evaluation.</summary>
     /// <param name="channelPolicyEvaluation">The package publication channel policy evaluation.</param>

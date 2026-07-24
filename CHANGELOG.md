@@ -4,6 +4,27 @@ All notable changes to SIGTRAN.NET will be documented in this file.
 
 This project follows Semantic Versioning once the public API reaches a stable release. During the alpha phase, breaking API changes may still occur as protocol behavior, transport abstractions, and interoperability evidence are finalized.
 
+## [1.0.0-rc.2] - Unreleased
+
+### Added
+
+- Formal layer contracts and stateful SCTP, M3UA, M2PA, SCCP, TCAP, and MAP SMS
+  runtime APIs.
+- Runtime health, BCL/OpenTelemetry diagnostics, structured events,
+  configuration validation, and an operations host.
+- Reflection-based public API baseline and protected stable release decision.
+
+### Changed
+
+- Normal package builds now produce `1.0.0-rc.2` rather than accidental stable
+  `1.0.0` packages.
+- Repository release/evidence governance types are internal and no longer part
+  of the consumer API.
+
+### Release status
+
+Unpublished. Stable `1.0.0` remains blocked by the retained `NO-GO` decision.
+
 ## [0.1.0-alpha] - 2026-06-27
 
 ### Release type

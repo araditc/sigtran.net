@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes protocol interoperability comparison rules.
 /// </summary>
-public sealed class SigtranProtocolInteropComparisonRuleSet
+internal sealed class SigtranProtocolInteropComparisonRuleSet
 {
     /// <summary>Creates a protocol interoperability comparison rule set.</summary>
     /// <param name="requiresByteExactEncoding">Whether byte-exact encoding comparison is required.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranProtocolInteropComparisonRuleSet
 /// <summary>
 /// Provides protocol interoperability comparison rule helpers.
 /// </summary>
-public static class SigtranProtocolInteropComparisonRules
+internal static class SigtranProtocolInteropComparisonRules
 {
     /// <summary>Creates the default comparison rule set.</summary>
     /// <returns>The default comparison rule set.</returns>

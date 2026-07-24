@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes measured CPU, memory, allocation, and GC evidence for a benchmark run.
 /// </summary>
-public sealed class SigtranPerformanceResourceEvidence
+internal sealed class SigtranPerformanceResourceEvidence
 {
     /// <summary>Creates measured resource evidence.</summary>
     /// <param name="averageCpuPercent">The measured average CPU percentage.</param>
@@ -61,7 +61,7 @@ public sealed class SigtranPerformanceResourceEvidence
 /// <summary>
 /// Describes the result of checking resource evidence against a resource budget.
 /// </summary>
-public sealed class SigtranPerformanceResourceBudgetReport
+internal sealed class SigtranPerformanceResourceBudgetReport
 {
     /// <summary>Creates a resource budget report.</summary>
     /// <param name="evidence">The measured resource evidence.</param>
@@ -103,7 +103,7 @@ public sealed class SigtranPerformanceResourceBudgetReport
 /// <summary>
 /// Evaluates measured resource evidence against SDK resource budgets.
 /// </summary>
-public static class SigtranPerformanceResourceEvidenceEvaluator
+internal static class SigtranPerformanceResourceEvidenceEvaluator
 {
     /// <summary>Evaluates measured resource evidence against the production resource budget.</summary>
     /// <param name="evidence">The measured resource evidence.</param>

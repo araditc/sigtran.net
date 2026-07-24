@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a guarded package publication command kind.
 /// </summary>
-public enum SigtranPackagePublicationCommandKind
+internal enum SigtranPackagePublicationCommandKind
 {
     /// <summary>Validate that the retained publication gate allows publication.</summary>
     ValidatePublicationGate,
@@ -26,7 +26,7 @@ public enum SigtranPackagePublicationCommandKind
 /// <summary>
 /// Describes one guarded package publication command.
 /// </summary>
-public sealed class SigtranPackagePublicationCommand
+internal sealed class SigtranPackagePublicationCommand
 {
     /// <summary>Creates a guarded package publication command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -71,7 +71,7 @@ public sealed class SigtranPackagePublicationCommand
 /// <summary>
 /// Describes a guarded package publication command plan.
 /// </summary>
-public sealed class SigtranPackagePublicationCommandPlan
+internal sealed class SigtranPackagePublicationCommandPlan
 {
     /// <summary>Creates a guarded package publication command plan.</summary>
     /// <param name="rehearsal">The retained dry-run rehearsal.</param>
@@ -125,7 +125,7 @@ public sealed class SigtranPackagePublicationCommandPlan
 /// <summary>
 /// Describes a materialized guarded package publication command script.
 /// </summary>
-public sealed class SigtranPackagePublicationCommandMaterialization
+internal sealed class SigtranPackagePublicationCommandMaterialization
 {
     /// <summary>Creates a guarded package publication command materialization.</summary>
     /// <param name="commandPlan">The source command plan.</param>
@@ -190,7 +190,7 @@ public sealed class SigtranPackagePublicationCommandMaterialization
 /// <summary>
 /// Provides guarded package publication command helpers.
 /// </summary>
-public static class SigtranPackagePublicationCommands
+internal static class SigtranPackagePublicationCommands
 {
     /// <summary>Creates a guarded package publication command plan from a dry-run rehearsal.</summary>
     /// <param name="rehearsal">The retained dry-run rehearsal.</param>

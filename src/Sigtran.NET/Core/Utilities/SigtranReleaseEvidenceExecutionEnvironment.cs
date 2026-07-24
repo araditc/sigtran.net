@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production evidence execution environment variable.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionEnvironmentVariable
+internal sealed class SigtranReleaseEvidenceExecutionEnvironmentVariable
 {
     /// <summary>Creates a production evidence execution environment variable contract.</summary>
     /// <param name="name">The environment variable name.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranReleaseEvidenceExecutionEnvironmentVariable
 /// <summary>
 /// Reports production evidence execution environment readiness.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionEnvironmentReadiness
+internal sealed class SigtranReleaseEvidenceExecutionEnvironmentReadiness
 {
     /// <summary>Creates an execution environment readiness report.</summary>
     /// <param name="contract">The execution environment contract.</param>
@@ -90,7 +90,7 @@ public sealed class SigtranReleaseEvidenceExecutionEnvironmentReadiness
 /// <summary>
 /// Describes the production evidence execution environment contract.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionEnvironmentContract
+internal sealed class SigtranReleaseEvidenceExecutionEnvironmentContract
 {
     /// <summary>Creates a production evidence execution environment contract.</summary>
     /// <param name="run">The production evidence execution run.</param>
@@ -165,7 +165,7 @@ public sealed class SigtranReleaseEvidenceExecutionEnvironmentContract
 /// <summary>
 /// Provides production evidence execution environment contract helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionEnvironments
+internal static class SigtranReleaseEvidenceExecutionEnvironments
 {
     /// <summary>Creates the default execution environment contract.</summary>
     /// <param name="run">The production evidence execution run.</param>

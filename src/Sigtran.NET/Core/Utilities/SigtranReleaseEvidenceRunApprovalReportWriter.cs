@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained production evidence run approval report.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRunApprovalReportWriteResult
+internal sealed class SigtranReleaseEvidenceRunApprovalReportWriteResult
 {
     /// <summary>Creates a retained production evidence run approval report result.</summary>
     /// <param name="manifest">The approval manifest rendered into the report.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranReleaseEvidenceRunApprovalReportWriteResult
 /// <summary>
 /// Provides retained production evidence run approval report helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRunApprovalReportWriters
+internal static class SigtranReleaseEvidenceRunApprovalReportWriters
 {
     /// <summary>Writes a retained Markdown approval report.</summary>
     /// <param name="manifest">The approval manifest to render.</param>

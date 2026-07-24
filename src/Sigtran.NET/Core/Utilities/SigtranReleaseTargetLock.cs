@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the immutable release target used to bind production evidence to one version and source commit.
 /// </summary>
-public sealed class SigtranReleaseTargetLock
+internal sealed class SigtranReleaseTargetLock
 {
     /// <summary>Creates a production release target lock.</summary>
     /// <param name="version">The package version under review.</param>
@@ -71,7 +71,7 @@ public sealed class SigtranReleaseTargetLock
 /// <summary>
 /// Provides production release target lock helpers.
 /// </summary>
-public static class SigtranReleaseTargetLocks
+internal static class SigtranReleaseTargetLocks
 {
     /// <summary>Creates a default release-candidate target lock.</summary>
     /// <param name="version">The release-candidate package version.</param>

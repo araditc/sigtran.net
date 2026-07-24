@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK adoption gates for enterprise users.
 /// </summary>
-public sealed class SigtranAdoptionGateReport
+internal sealed class SigtranAdoptionGateReport
 {
     /// <summary>Creates an adoption gate report.</summary>
     /// <param name="hasQuickstart">Whether quickstart material is available.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranAdoptionGateReport
 /// <summary>
 /// Provides adoption gate helpers.
 /// </summary>
-public static class SigtranAdoptionGates
+internal static class SigtranAdoptionGates
 {
     /// <summary>Returns the current adoption gate report.</summary>
     /// <returns>The current adoption gate report.</returns>

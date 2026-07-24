@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes external peer interoperability command requirements.
 /// </summary>
-public sealed class SigtranExternalPeerInteropCommandSet
+internal sealed class SigtranExternalPeerInteropCommandSet
 {
     /// <summary>Creates an external peer interoperability command set.</summary>
     /// <param name="commands">The commands.</param>
@@ -60,7 +60,7 @@ public sealed class SigtranExternalPeerInteropCommandSet
 /// <summary>
 /// Provides external peer interoperability command helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropCommands
+internal static class SigtranExternalPeerInteropCommands
 {
     /// <summary>Creates the default external peer interoperability command set.</summary>
     /// <returns>The default external peer interoperability command set.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the production go/no-go decision.
 /// </summary>
-public enum SigtranReleaseGoNoGoDecision
+internal enum SigtranReleaseGoNoGoDecision
 {
     /// <summary>The release must not proceed.</summary>
     NoGo,
@@ -21,7 +21,7 @@ public enum SigtranReleaseGoNoGoDecision
 /// <summary>
 /// Groups the inputs evaluated by the production go/no-go gate.
 /// </summary>
-public sealed class SigtranReleaseGoNoGoInput
+internal sealed class SigtranReleaseGoNoGoInput
 {
     /// <summary>Creates production go/no-go input.</summary>
     /// <param name="preflight">The release preflight report.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReleaseGoNoGoInput
 /// <summary>
 /// Reports the production go/no-go decision.
 /// </summary>
-public sealed class SigtranReleaseGoNoGoReport
+internal sealed class SigtranReleaseGoNoGoReport
 {
     /// <summary>Creates a production go/no-go report.</summary>
     /// <param name="input">The evaluated go/no-go input.</param>
@@ -105,7 +105,7 @@ public sealed class SigtranReleaseGoNoGoReport
 /// <summary>
 /// Provides production go/no-go gate helpers.
 /// </summary>
-public static class SigtranReleaseGoNoGoGates
+internal static class SigtranReleaseGoNoGoGates
 {
     /// <summary>Evaluates the production go/no-go gate.</summary>
     /// <param name="input">The go/no-go input.</param>

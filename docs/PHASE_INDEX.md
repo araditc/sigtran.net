@@ -59,7 +59,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 52 | End-to-end SS7 traffic lab | [Phase 52 End-To-End SS7 Traffic Lab](PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md), [Phase 52 Summary](PHASE52_SUMMARY.md), [Interoperability](INTEROPERABILITY.md) | Complete for repository-profile cross-implementation traffic; operator/vendor profile evidence remains |
 | 53 | Operator-sized performance and resilience | [Phase 53 Performance And Resilience](PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md), [Phase 53 Summary](PHASE53_SUMMARY.md), [Performance Foundation](PHASE14_PERFORMANCE.md) | Implementation and controlled 62K-operation baseline complete; 20K peak and multi-host operator qualification pending |
 | 54 | Production operations package | [Phase 54 Production Operations Package](PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md), [Phase 54 Summary](PHASE54_SUMMARY.md), [Runtime Operations](OPERATIONS_RUNTIME.md) | Implementation complete; representative Kubernetes SCTP validation remains |
-| 55 | Stable release execution | Planned | Pending |
+| 55 | Stable release execution | [Phase 55 Stable Release Execution](PHASE55_STABLE_RELEASE_EXECUTION.md), [Phase 55 Summary](PHASE55_SUMMARY.md), [Public API Baseline](PUBLIC_API_BASELINE.md) | Execution controls complete; machine decision NO-GO and no stable publication |
 
 ## Current Production Gate
 

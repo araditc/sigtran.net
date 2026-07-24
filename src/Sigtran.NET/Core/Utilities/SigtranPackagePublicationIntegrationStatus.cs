@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides package publication integration status reporting.
 /// </summary>
-public static class SigtranPackagePublicationIntegrationStatus
+internal static class SigtranPackagePublicationIntegrationStatus
 {
     private static readonly string[] Capabilities =
     [

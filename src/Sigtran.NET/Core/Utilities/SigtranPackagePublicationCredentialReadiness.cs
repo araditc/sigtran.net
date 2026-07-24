@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes publication credential readiness for a package artifact set.
 /// </summary>
-public sealed class SigtranPackagePublicationCredentialReadiness
+internal sealed class SigtranPackagePublicationCredentialReadiness
 {
     /// <summary>Creates package publication credential readiness.</summary>
     /// <param name="artifactSet">The package publication artifact set.</param>
@@ -76,7 +76,7 @@ public sealed class SigtranPackagePublicationCredentialReadiness
 /// <summary>
 /// Provides package publication credential readiness helpers.
 /// </summary>
-public static class SigtranPackagePublicationCredentialReadinessEvaluator
+internal static class SigtranPackagePublicationCredentialReadinessEvaluator
 {
     /// <summary>Evaluates package publication credential readiness using the default publication policy.</summary>
     /// <param name="artifactSet">The package publication artifact set.</param>

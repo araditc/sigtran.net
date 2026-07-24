@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes verification required for one production evidence execution artifact.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionVerificationItem
+internal sealed class SigtranReleaseEvidenceExecutionVerificationItem
 {
     /// <summary>Creates a production evidence execution verification item.</summary>
     /// <param name="artifactPath">The retained artifact path.</param>
@@ -55,7 +55,7 @@ public sealed class SigtranReleaseEvidenceExecutionVerificationItem
 /// <summary>
 /// Describes the production evidence execution digest and redaction verification plan.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionVerificationPlan
+internal sealed class SigtranReleaseEvidenceExecutionVerificationPlan
 {
     /// <summary>Creates a production evidence execution verification plan.</summary>
     /// <param name="manifest">The artifact manifest.</param>
@@ -104,7 +104,7 @@ public sealed class SigtranReleaseEvidenceExecutionVerificationPlan
 /// <summary>
 /// Provides production evidence execution verification plan helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionVerifications
+internal static class SigtranReleaseEvidenceExecutionVerifications
 {
     /// <summary>Creates the default digest and redaction verification plan.</summary>
     /// <param name="manifest">The artifact manifest.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the performance CI profile.
 /// </summary>
-public sealed class SigtranPerformanceCiProfile
+internal sealed class SigtranPerformanceCiProfile
 {
     /// <summary>Creates a performance CI profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -39,7 +39,7 @@ public sealed class SigtranPerformanceCiProfile
 /// <summary>
 /// Provides performance CI profile helpers.
 /// </summary>
-public static class SigtranPerformanceCi
+internal static class SigtranPerformanceCi
 {
     /// <summary>Creates the default performance CI profile.</summary>
     /// <returns>The default performance CI profile.</returns>

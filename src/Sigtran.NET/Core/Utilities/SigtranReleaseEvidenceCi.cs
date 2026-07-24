@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the production evidence CI profile.
 /// </summary>
-public sealed class SigtranReleaseEvidenceCiProfile
+internal sealed class SigtranReleaseEvidenceCiProfile
 {
     /// <summary>Creates a production evidence CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranReleaseEvidenceCiProfile
 /// <summary>
 /// Provides production evidence CI profile helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceCi
+internal static class SigtranReleaseEvidenceCi
 {
     /// <summary>Creates the default production evidence CI profile.</summary>
     /// <returns>The default production evidence CI profile.</returns>

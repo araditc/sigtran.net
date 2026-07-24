@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release publish context.
 /// </summary>
-public sealed class SigtranReleasePublishContext
+internal sealed class SigtranReleasePublishContext
 {
     /// <summary>Creates a release publish context.</summary>
     /// <param name="isManualDispatch">Whether the workflow was manually dispatched.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranReleasePublishContext
 /// <summary>
 /// Describes release publish guard evaluation.
 /// </summary>
-public sealed class SigtranReleasePublishGuardResult
+internal sealed class SigtranReleasePublishGuardResult
 {
     /// <summary>Creates a release publish guard result.</summary>
     /// <param name="canPublish">Whether publishing is allowed.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranReleasePublishGuardResult
 /// <summary>
 /// Evaluates release publish guard rules.
 /// </summary>
-public static class SigtranReleasePublishGuard
+internal static class SigtranReleasePublishGuard
 {
     /// <summary>Evaluates whether release publishing is allowed.</summary>
     /// <param name="context">The publish context.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production evidence execution stage.
 /// </summary>
-public enum SigtranReleaseEvidenceExecutionStageKind
+internal enum SigtranReleaseEvidenceExecutionStageKind
 {
     /// <summary>Readiness preflight stage.</summary>
     ReadinessPreflight,
@@ -33,7 +33,7 @@ public enum SigtranReleaseEvidenceExecutionStageKind
 /// <summary>
 /// Describes one production evidence execution stage.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionStage
+internal sealed class SigtranReleaseEvidenceExecutionStage
 {
     /// <summary>Creates a production evidence execution stage.</summary>
     /// <param name="id">The stable stage identifier.</param>
@@ -83,7 +83,7 @@ public sealed class SigtranReleaseEvidenceExecutionStage
 /// <summary>
 /// Describes the production evidence execution stage catalog.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionStageCatalog
+internal sealed class SigtranReleaseEvidenceExecutionStageCatalog
 {
     /// <summary>Creates a production evidence execution stage catalog.</summary>
     /// <param name="run">The production evidence execution run.</param>
@@ -131,7 +131,7 @@ public sealed class SigtranReleaseEvidenceExecutionStageCatalog
 /// <summary>
 /// Provides production evidence execution stage catalog helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionStages
+internal static class SigtranReleaseEvidenceExecutionStages
 {
     /// <summary>Creates the default production evidence execution stage catalog.</summary>
     /// <param name="run">The production evidence execution run.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one SDK prerelease manifest.
 /// </summary>
-public sealed class SigtranPrereleaseManifest
+internal sealed class SigtranPrereleaseManifest
 {
     /// <summary>Creates a prerelease manifest.</summary>
     /// <param name="packageId">The package id.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranPrereleaseManifest
 /// <summary>
 /// Builds prerelease manifests for the SDK.
 /// </summary>
-public static class SigtranPrerelease
+internal static class SigtranPrerelease
 {
     /// <summary>Creates a prerelease manifest.</summary>
     /// <param name="version">The package version.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes configuration and environment readiness.
 /// </summary>
-public sealed class SigtranConfigurationReadinessSnapshot
+internal sealed class SigtranConfigurationReadinessSnapshot
 {
     /// <summary>Creates a configuration readiness report.</summary>
     /// <param name="hasSchema">Whether configuration schema is available.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranConfigurationReadinessSnapshot
 /// <summary>
 /// Provides configuration readiness helpers.
 /// </summary>
-public static class SigtranConfigurationReadiness
+internal static class SigtranConfigurationReadiness
 {
     /// <summary>Returns the current configuration readiness report.</summary>
     /// <returns>The current configuration readiness report.</returns>

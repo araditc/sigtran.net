@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCCP;
 /// <summary>
 /// Readiness report for the MTP3 and SCCP phase.
 /// </summary>
-public readonly struct SccpReadinessSnapshot
+internal readonly struct SccpReadinessSnapshot
 {
     /// <summary>Creates a SCCP readiness report.</summary>
     /// <param name="hasMtp3Routing">Whether MTP3 SIO and routing labels are available.</param>
@@ -108,7 +108,7 @@ public readonly struct SccpReadinessSnapshot
 /// <summary>
 /// Provides readiness information for MTP3 and SCCP work.
 /// </summary>
-public static class SccpReadiness
+internal static class SccpReadiness
 {
     /// <summary>The release label for MTP3 and SCCP readiness.</summary>
     public const string ReleaseLabel = "MTP3 and SCCP foundation";

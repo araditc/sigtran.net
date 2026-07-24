@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an interoperability lab artifact kind.
 /// </summary>
-public enum SigtranInteropLabArtifactKind
+internal enum SigtranInteropLabArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -24,7 +24,7 @@ public enum SigtranInteropLabArtifactKind
 /// <summary>
 /// Describes one interoperability lab artifact.
 /// </summary>
-public sealed class SigtranInteropLabArtifact
+internal sealed class SigtranInteropLabArtifact
 {
     /// <summary>Creates an interoperability lab artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranInteropLabArtifact
 /// <summary>
 /// Stores artifacts for one interoperability lab scenario.
 /// </summary>
-public sealed class SigtranInteropLabArtifactManifest
+internal sealed class SigtranInteropLabArtifactManifest
 {
     private readonly List<SigtranInteropLabArtifact> _artifacts = [];
 

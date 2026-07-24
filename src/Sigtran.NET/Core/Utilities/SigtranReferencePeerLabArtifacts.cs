@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab artifact kinds.
 /// </summary>
-public enum SigtranReferencePeerLabArtifactKind
+internal enum SigtranReferencePeerLabArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -27,7 +27,7 @@ public enum SigtranReferencePeerLabArtifactKind
 /// <summary>
 /// Describes one expected reference external peer lab artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabArtifactPlanItem
+internal sealed class SigtranReferencePeerLabArtifactPlanItem
 {
     /// <summary>Creates an expected reference external peer lab artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReferencePeerLabArtifactPlanItem
 /// <summary>
 /// Describes the expected retained artifact layout for a reference external peer lab run.
 /// </summary>
-public sealed class SigtranReferencePeerLabArtifactPlan
+internal sealed class SigtranReferencePeerLabArtifactPlan
 {
     private readonly SigtranReferencePeerLabArtifactPlanItem[] _items;
 
@@ -108,7 +108,7 @@ public sealed class SigtranReferencePeerLabArtifactPlan
 /// <summary>
 /// Provides reference external peer lab artifact plan helpers.
 /// </summary>
-public static class SigtranReferencePeerLabArtifactPlans
+internal static class SigtranReferencePeerLabArtifactPlans
 {
     /// <summary>Creates the default reference peer artifact plan from configuration.</summary>
     /// <param name="configuration">The reference peer lab configuration.</param>

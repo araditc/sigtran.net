@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained production evidence file observation from the local filesystem.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemObservation
+internal sealed class SigtranReleaseEvidenceFileSystemObservation
 {
     /// <summary>Creates a retained production evidence filesystem observation.</summary>
     /// <param name="fileSystemPath">The local filesystem path that was observed.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranReleaseEvidenceFileSystemObservation
 /// <summary>
 /// Observes retained production evidence files from the local filesystem.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemObserver
+internal static class SigtranReleaseEvidenceFileSystemObserver
 {
     /// <summary>The deterministic digest marker used when a file is missing.</summary>
     public const string MissingFileSha256 = "0000000000000000000000000000000000000000000000000000000000000000";

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a latency budget surface.
 /// </summary>
-public enum SigtranLatencySurface
+internal enum SigtranLatencySurface
 {
     /// <summary>Protocol decode latency.</summary>
     Decode,
@@ -21,7 +21,7 @@ public enum SigtranLatencySurface
 /// <summary>
 /// Describes a latency budget.
 /// </summary>
-public sealed class SigtranLatencyBudget
+internal sealed class SigtranLatencyBudget
 {
     /// <summary>Creates a latency budget.</summary>
     /// <param name="surface">The latency surface.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranLatencyBudget
 /// <summary>
 /// Provides latency budget helpers.
 /// </summary>
-public static class SigtranLatencyBudgets
+internal static class SigtranLatencyBudgets
 {
     private static readonly SigtranLatencyBudget[] Budgets =
     [

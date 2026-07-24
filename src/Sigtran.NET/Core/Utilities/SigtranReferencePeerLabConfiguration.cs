@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab configuration values.
 /// </summary>
-public sealed class SigtranReferencePeerLabConfiguration
+internal sealed class SigtranReferencePeerLabConfiguration
 {
     /// <summary>Creates a reference external peer lab configuration.</summary>
     /// <param name="peerName">The peer name used in retained evidence.</param>
@@ -152,7 +152,7 @@ public sealed class SigtranReferencePeerLabConfiguration
 /// <summary>
 /// Describes reference external peer lab configuration validation output.
 /// </summary>
-public sealed class SigtranReferencePeerLabConfigurationValidation
+internal sealed class SigtranReferencePeerLabConfigurationValidation
 {
     /// <summary>Creates a reference peer lab configuration validation report.</summary>
     /// <param name="errors">The validation error ids.</param>
@@ -179,7 +179,7 @@ public sealed class SigtranReferencePeerLabConfigurationValidation
 /// <summary>
 /// Provides reference external peer lab configuration helpers.
 /// </summary>
-public static class SigtranReferencePeerLabConfigurations
+internal static class SigtranReferencePeerLabConfigurations
 {
     /// <summary>Creates the default reference external peer lab configuration.</summary>
     /// <returns>The default reference external peer lab configuration.</returns>

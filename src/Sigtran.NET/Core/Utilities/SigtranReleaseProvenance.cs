@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release provenance for a package artifact set.
 /// </summary>
-public sealed class SigtranReleaseProvenance
+internal sealed class SigtranReleaseProvenance
 {
     /// <summary>Creates release provenance.</summary>
     /// <param name="sourceRepository">The source repository URL.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranReleaseProvenance
 /// <summary>
 /// Provides release provenance helpers.
 /// </summary>
-public static class SigtranReleaseProvenanceFactory
+internal static class SigtranReleaseProvenanceFactory
 {
     /// <summary>Creates release provenance for a commit and artifact manifest.</summary>
     /// <param name="commitSha">The source commit SHA.</param>

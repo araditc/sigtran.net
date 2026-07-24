@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package publication evidence collected before upload.
 /// </summary>
-public sealed class SigtranPublicationEvidenceManifest
+internal sealed class SigtranPublicationEvidenceManifest
 {
     /// <summary>Creates a package publication evidence manifest.</summary>
     /// <param name="version">The package version.</param>

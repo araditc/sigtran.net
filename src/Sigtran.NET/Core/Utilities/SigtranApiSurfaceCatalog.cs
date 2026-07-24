@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a public SDK API surface category.
 /// </summary>
-public enum SigtranApiSurfaceCategory
+internal enum SigtranApiSurfaceCategory
 {
     /// <summary>Protocol codec APIs.</summary>
     Codec,
@@ -21,7 +21,7 @@ public enum SigtranApiSurfaceCategory
 /// <summary>
 /// Describes a public SDK API surface.
 /// </summary>
-public sealed class SigtranApiSurface
+internal sealed class SigtranApiSurface
 {
     /// <summary>Creates an API surface entry.</summary>
     /// <param name="category">The API surface category.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranApiSurface
 /// <summary>
 /// Provides the public API surface catalog.
 /// </summary>
-public static class SigtranApiSurfaceCatalog
+internal static class SigtranApiSurfaceCatalog
 {
     private static readonly SigtranApiSurface[] Surfaces =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained production evidence file observation.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetainedFile
+internal sealed class SigtranReleaseEvidenceRetainedFile
 {
     /// <summary>Creates a retained production evidence file observation.</summary>
     /// <param name="kind">The checklist artifact kind.</param>
@@ -89,7 +89,7 @@ public sealed class SigtranReleaseEvidenceRetainedFile
 /// <summary>
 /// Describes the retained production evidence file manifest.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetainedFileManifest
+internal sealed class SigtranReleaseEvidenceRetainedFileManifest
 {
     /// <summary>Creates a retained production evidence file manifest.</summary>
     /// <param name="handoff">The promotion handoff that declares expected retained files.</param>
@@ -139,7 +139,7 @@ public sealed class SigtranReleaseEvidenceRetainedFileManifest
 /// <summary>
 /// Describes the retained production evidence file verification report.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileVerificationReport
+internal sealed class SigtranReleaseEvidenceFileVerificationReport
 {
     /// <summary>Creates a retained production evidence file verification report.</summary>
     /// <param name="manifest">The retained file manifest under verification.</param>
@@ -189,7 +189,7 @@ public sealed class SigtranReleaseEvidenceFileVerificationReport
 /// <summary>
 /// Provides production evidence file verification report helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileVerificationReports
+internal static class SigtranReleaseEvidenceFileVerificationReports
 {
     /// <summary>Evaluates a retained file manifest and returns a verification report.</summary>
     /// <param name="manifest">The retained file manifest to evaluate.</param>
@@ -247,7 +247,7 @@ public static class SigtranReleaseEvidenceFileVerificationReports
 /// <summary>
 /// Provides production evidence retained file helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRetainedFiles
+internal static class SigtranReleaseEvidenceRetainedFiles
 {
     /// <summary>Creates a verified retained file observation from a promotion handoff item.</summary>
     /// <param name="item">The promotion handoff item.</param>

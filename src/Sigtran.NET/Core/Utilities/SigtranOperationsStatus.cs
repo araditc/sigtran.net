@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides production operations and support status.
 /// </summary>
-public static class SigtranOperationsStatus
+internal static class SigtranOperationsStatus
 {
     private static readonly string[] Capabilities =
     [

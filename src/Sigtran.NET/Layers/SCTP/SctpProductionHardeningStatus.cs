@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Summarizes native SCTP production hardening status.
 /// </summary>
-public sealed class SctpProductionHardeningStatusReport
+internal sealed class SctpProductionHardeningStatusReport
 {
     private readonly string[] _capabilities;
     private readonly string[] _blockers;
@@ -60,7 +60,7 @@ public sealed class SctpProductionHardeningStatusReport
 /// <summary>
 /// Provides the current native SCTP production hardening status.
 /// </summary>
-public static class SctpProductionHardeningStatus
+internal static class SctpProductionHardeningStatus
 {
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Native SCTP production hardening foundation";

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the class of mismatch found while comparing protocol evidence to captured trace frames.
 /// </summary>
-public enum SigtranProtocolEvidenceMismatchKind
+internal enum SigtranProtocolEvidenceMismatchKind
 {
     /// <summary>No mismatch was found.</summary>
     None = 0,
@@ -24,7 +24,7 @@ public enum SigtranProtocolEvidenceMismatchKind
 /// <summary>
 /// Describes one actionable protocol evidence mismatch.
 /// </summary>
-public sealed class SigtranProtocolEvidenceMismatchFinding
+internal sealed class SigtranProtocolEvidenceMismatchFinding
 {
     /// <summary>Creates an actionable protocol evidence mismatch finding.</summary>
     /// <param name="kind">The mismatch category.</param>
@@ -79,7 +79,7 @@ public sealed class SigtranProtocolEvidenceMismatchFinding
 /// <summary>
 /// Describes the actionable mismatch classification for a protocol evidence trace report.
 /// </summary>
-public sealed class SigtranProtocolEvidenceMismatchReport
+internal sealed class SigtranProtocolEvidenceMismatchReport
 {
     private readonly SigtranProtocolEvidenceMismatchFinding[] _findings;
 
@@ -116,7 +116,7 @@ public sealed class SigtranProtocolEvidenceMismatchReport
 /// <summary>
 /// Classifies trace validation failures into actionable correction categories.
 /// </summary>
-public static class SigtranProtocolEvidenceMismatchClassifier
+internal static class SigtranProtocolEvidenceMismatchClassifier
 {
     /// <summary>Classifies a trace validation report into actionable mismatch findings.</summary>
     /// <param name="traceReport">The trace validation report.</param>

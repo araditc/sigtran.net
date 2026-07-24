@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides compliance and audit readiness status.
 /// </summary>
-public static class SigtranComplianceStatus
+internal static class SigtranComplianceStatus
 {
     private static readonly string[] Capabilities =
     [

@@ -244,6 +244,7 @@ Run("SIGTRAN release publish guard blocks accidental publication", SigtranReleas
 Run("SIGTRAN release publish guard allows intentional tagged publication", SigtranReleasePublishGuardAllowsIntentionalTaggedPublication);
 Run("SIGTRAN release workflow artifact rules retain packages and evidence", SigtranReleaseWorkflowArtifactRulesRetainPackagesAndEvidence);
 Run("SIGTRAN release workflow permissions use least privilege", SigtranReleaseWorkflowPermissionsUseLeastPrivilege);
+Run("SIGTRAN stable workflow requires protected release controls", SigtranStableWorkflowRequiresProtectedReleaseControls);
 Run("SIGTRAN release workflow concurrency prevents overlapping releases", SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases);
 Run("SIGTRAN release workflow environment exposes supply chain and evidence variables", SigtranReleaseWorkflowEnvironmentExposesSupplyChainAndEvidenceVariables);
 Run("SIGTRAN release promotion gate blocks incomplete release evidence", SigtranReleasePromotionGateBlocksIncompleteReleaseEvidence);
@@ -363,6 +364,7 @@ Run("SIGTRAN production evidence approval command materializer writes script", S
 Run("SIGTRAN production evidence approval handoff status summarizes final validation", SigtranReleaseEvidenceApprovalHandoffStatusSummarizesFinalValidation);
 Run("SIGTRAN status capabilities use domain documentation labels", SigtranStatusCapabilitiesUseDomainDocumentationLabels);
 Run("SIGTRAN public API naming avoids project plan terminology", SigtranPublicApiNamingAvoidsProjectPlanTerminology);
+Run("SIGTRAN public API excludes release governance internals", SigtranPublicApiExcludesReleaseGovernanceInternals);
 Run("SIGTRAN verification catalog reconciles retained evidence", SigtranVerificationCatalogReconcilesRetainedEvidence);
 Run("Native SCTP platform probe reports socket creation capability", NativeSctpPlatformProbeReportsSocketCreationCapability);
 Run("Native SCTP socket factory creates or reports unsupported platform", NativeSctpSocketFactoryCreatesOrReportsUnsupportedPlatform);
@@ -1246,7 +1248,11 @@ static void SigtranReferencePeerLabWorkflowTemplateIsManualAndSelfHosted()
     Assert(template.IsReady, template.Describe());
     Assert(yaml.Contains("workflow_dispatch", StringComparison.Ordinal), yaml);
     Assert(yaml.Contains("self-hosted", StringComparison.Ordinal), yaml);
-    Assert(yaml.Contains("actions/upload-artifact@v4", StringComparison.Ordinal), yaml);
+    Assert(
+        yaml.Contains(
+            "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+            StringComparison.Ordinal),
+        yaml);
     Assert(yaml.Contains("artifacts/external-peer/**/pcap/*.pcap", StringComparison.Ordinal), yaml);
     Assert(!yaml.Contains("pull_request", StringComparison.Ordinal), yaml);
 }
@@ -3793,6 +3799,36 @@ static void SigtranReleaseWorkflowPermissionsUseLeastPrivilege()
     Assert(permissions.IsLeastPrivilege, "release workflow permissions should be least privilege");
     Assert(yaml.Contains("contents: read", StringComparison.Ordinal), "release workflow YAML should keep contents read-only");
     Assert(yaml.Contains("id-token: write", StringComparison.Ordinal), "release workflow YAML should allow OIDC token");
+}
+
+static void SigtranStableWorkflowRequiresProtectedReleaseControls()
+{
+    string yaml = File.ReadAllText(
+        Path.Combine(".github", "workflows", "release.yml"));
+    string project = File.ReadAllText(
+        Path.Combine("src", "Sigtran.NET", "Sigtran.NET.csproj"));
+
+    Assert(
+        yaml.Contains("'nuget-stable'", StringComparison.Ordinal),
+        "stable publication should use the protected environment");
+    Assert(
+        yaml.Contains("publish Sigtran.NET $env:RELEASE_VERSION", StringComparison.Ordinal),
+        "stable build should require exact confirmation");
+    Assert(
+        yaml.Contains("stable-release-decision.json", StringComparison.Ordinal),
+        "stable publication should consume the machine decision");
+    Assert(
+        yaml.Contains("verify-signing-certificate.sh", StringComparison.Ordinal),
+        "stable signing should validate certificate trust");
+    Assert(
+        yaml.Contains("Verify Stable Public Restore", StringComparison.Ordinal),
+        "stable publication should verify public restore");
+    Assert(
+        yaml.Contains("contents: write", StringComparison.Ordinal),
+        "isolated publication job should allow GitHub release creation");
+    Assert(
+        project.Contains("<VersionSuffix>rc.2</VersionSuffix>", StringComparison.Ordinal),
+        "normal package builds should remain prerelease");
 }
 
 static void SigtranReleaseWorkflowConcurrencyPreventsOverlappingReleases()
@@ -7175,6 +7211,43 @@ static void SigtranPublicApiNamingAvoidsProjectPlanTerminology()
     }
 
     AssertEqual("", string.Join(Environment.NewLine, offenders.Order(StringComparer.Ordinal)), "project plan naming offenders");
+}
+
+static void SigtranPublicApiExcludesReleaseGovernanceInternals()
+{
+    HashSet<string> allowedUtilityTypes = new(StringComparer.Ordinal)
+    {
+        "MapSmsSimulatorFlowBuilder",
+        "PduLogger",
+        "SigtranBuiltInVectors",
+        "SigtranConformanceRegistry",
+        "SigtranConformanceVector",
+        "SigtranLocalTcpEndpoint",
+        "SigtranLocalTcpScenario",
+        "SigtranSimulatorEndpoint",
+        "SigtranSimulatorRole",
+        "SigtranSimulatorScript",
+        "SigtranSimulatorStep",
+        "SigtranTraceDirection",
+        "SigtranTraceFormatter",
+        "SigtranTraceFrame",
+        "SigtranTraceComparison",
+        "SigtranTraceComparisonMismatch",
+        "SigtranTraceComparisonReport",
+        "SigtranTransportSamples"
+    };
+    Type[] unexpected = typeof(ISigtranMessage).Assembly
+        .GetExportedTypes()
+        .Where(static type =>
+            type.Namespace == "Sigtran.NET.Core.Utilities")
+        .Where(type => !allowedUtilityTypes.Contains(type.Name))
+        .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        .ToArray();
+
+    AssertEqual(
+        "",
+        string.Join(Environment.NewLine, unexpected.Select(static type => type.FullName)),
+        "unexpected public utility types");
 }
 
 static void AddIfOffender(List<string> offenders, string name, IReadOnlyList<string> bannedTokens)

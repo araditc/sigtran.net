@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable release readiness checklist areas.
 /// </summary>
-public enum SigtranStableReleaseReadinessArea
+internal enum SigtranStableReleaseReadinessArea
 {
     /// <summary>Stable release target readiness.</summary>
     StableReleaseTarget,
@@ -39,7 +39,7 @@ public enum SigtranStableReleaseReadinessArea
 /// <summary>
 /// Describes one stable release readiness checklist approval.
 /// </summary>
-public sealed class SigtranStableReleaseReadinessChecklistItem
+internal sealed class SigtranStableReleaseReadinessChecklistItem
 {
     /// <summary>Creates a stable release readiness checklist approval.</summary>
     /// <param name="area">The readiness area.</param>
@@ -96,7 +96,7 @@ public sealed class SigtranStableReleaseReadinessChecklistItem
 /// <summary>
 /// Evaluates stable release readiness before stable release decisioning.
 /// </summary>
-public sealed class SigtranStableReleaseReadinessChecklist
+internal sealed class SigtranStableReleaseReadinessChecklist
 {
     /// <summary>Creates a stable release readiness checklist.</summary>
     /// <param name="evidenceMap">The stable release dossier evidence map.</param>
@@ -199,7 +199,7 @@ public sealed class SigtranStableReleaseReadinessChecklist
 /// <summary>
 /// Provides stable release readiness checklist helpers.
 /// </summary>
-public static class SigtranStableReleaseReadinessChecklists
+internal static class SigtranStableReleaseReadinessChecklists
 {
     /// <summary>Creates an approved stable release readiness checklist from a complete evidence map.</summary>
     /// <param name="evidenceMap">The stable release dossier evidence map.</param>

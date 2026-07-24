@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides SCCP, TCAP, and MAP SMS interoperability vector status.
 /// </summary>
-public static class SigtranProtocolInteropStatus
+internal static class SigtranProtocolInteropStatus
 {
     private static readonly string[] Capabilities =
     [

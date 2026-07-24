@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one source artifact received for production evidence intake.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactSource
+internal sealed class SigtranReleaseEvidenceArtifactSource
 {
     /// <summary>Creates a production evidence artifact source.</summary>
     /// <param name="stageId">The execution stage that produced the artifact.</param>
@@ -58,7 +58,7 @@ public sealed class SigtranReleaseEvidenceArtifactSource
 /// <summary>
 /// Describes the artifact source manifest for a production evidence intake.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactSourceManifest
+internal sealed class SigtranReleaseEvidenceArtifactSourceManifest
 {
     /// <summary>Creates a production evidence artifact source manifest.</summary>
     /// <param name="target">The artifact intake target.</param>
@@ -119,7 +119,7 @@ public sealed class SigtranReleaseEvidenceArtifactSourceManifest
 /// <summary>
 /// Provides production evidence artifact source manifest helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceArtifactSources
+internal static class SigtranReleaseEvidenceArtifactSources
 {
     /// <summary>Creates a default source manifest for expected execution artifacts.</summary>
     /// <param name="target">The artifact intake target.</param>

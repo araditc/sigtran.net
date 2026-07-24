@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a native SCTP lab run plan.
 /// </summary>
-public sealed class SigtranNativeSctpLabRunPlan
+internal sealed class SigtranNativeSctpLabRunPlan
 {
     /// <summary>Creates a native SCTP lab run plan.</summary>
     /// <param name="name">The plan name.</param>
@@ -42,7 +42,7 @@ public sealed class SigtranNativeSctpLabRunPlan
 /// <summary>
 /// Provides native SCTP lab run plan helpers.
 /// </summary>
-public static class SigtranNativeSctpLabRunPlans
+internal static class SigtranNativeSctpLabRunPlans
 {
     /// <summary>Creates the default native SCTP verification plan.</summary>
     /// <returns>The default native SCTP verification plan.</returns>

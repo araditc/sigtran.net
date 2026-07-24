@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Stores native SCTP lab evidence.
 /// </summary>
-public sealed class SigtranNativeSctpLabEvidenceRegistry
+internal sealed class SigtranNativeSctpLabEvidenceRegistry
 {
     private readonly List<SigtranNativeSctpLabRunReport> _reports = [];
 
@@ -34,7 +34,7 @@ public sealed class SigtranNativeSctpLabEvidenceRegistry
 /// <summary>
 /// Provides native SCTP lab evidence helpers.
 /// </summary>
-public static class SigtranNativeSctpLabEvidence
+internal static class SigtranNativeSctpLabEvidence
 {
     /// <summary>Creates the current native SCTP lab evidence registry.</summary>
     /// <returns>The current native SCTP lab evidence registry.</returns>

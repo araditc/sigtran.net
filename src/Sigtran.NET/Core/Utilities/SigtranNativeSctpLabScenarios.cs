@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a native SCTP lab scenario kind.
 /// </summary>
-public enum SigtranNativeSctpLabScenarioKind
+internal enum SigtranNativeSctpLabScenarioKind
 {
     /// <summary>Platform kernel capability verification.</summary>
     PlatformProbe,
@@ -21,7 +21,7 @@ public enum SigtranNativeSctpLabScenarioKind
 /// <summary>
 /// Describes one native SCTP lab verification scenario.
 /// </summary>
-public sealed class SigtranNativeSctpLabScenario
+internal sealed class SigtranNativeSctpLabScenario
 {
     /// <summary>Creates a native SCTP lab scenario.</summary>
     /// <param name="kind">The scenario kind.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranNativeSctpLabScenario
 /// <summary>
 /// Provides native SCTP lab scenario helpers.
 /// </summary>
-public static class SigtranNativeSctpLabScenarios
+internal static class SigtranNativeSctpLabScenarios
 {
     private static readonly SigtranNativeSctpLabScenario[] Scenarios =
     [

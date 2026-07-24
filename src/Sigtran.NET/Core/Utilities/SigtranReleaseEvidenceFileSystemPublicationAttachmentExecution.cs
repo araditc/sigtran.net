@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed production evidence publication attachment execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution
+internal sealed class SigtranReleaseEvidenceFileSystemPublicationAttachmentExecution
 {
     /// <summary>Creates filesystem-backed publication attachment execution.</summary>
     /// <param name="sealExecution">The filesystem-backed integrity seal execution.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranReleaseEvidenceFileSystemPublicationAttachmentExecuti
 /// <summary>
 /// Provides filesystem-backed production evidence publication attachment helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemPublicationAttachments
+internal static class SigtranReleaseEvidenceFileSystemPublicationAttachments
 {
     /// <summary>Creates publication attachments from a filesystem-backed integrity seal execution.</summary>
     /// <param name="sealExecution">The filesystem-backed integrity seal execution.</param>

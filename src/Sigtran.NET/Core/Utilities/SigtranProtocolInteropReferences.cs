@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes an external protocol interoperability reference.
 /// </summary>
-public sealed class SigtranProtocolInteropReference
+internal sealed class SigtranProtocolInteropReference
 {
     /// <summary>Creates a protocol interoperability reference.</summary>
     /// <param name="surface">The protocol surface.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranProtocolInteropReference
 /// <summary>
 /// Provides external protocol interoperability references.
 /// </summary>
-public static class SigtranProtocolInteropReferences
+internal static class SigtranProtocolInteropReferences
 {
     private static readonly SigtranProtocolInteropReference[] References =
     [

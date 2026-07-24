@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release publish guard evaluation for assembled package publication evidence.
 /// </summary>
-public sealed class SigtranPackagePublicationPublishGuardEvaluation
+internal sealed class SigtranPackagePublicationPublishGuardEvaluation
 {
     /// <summary>Creates a package publication publish guard evaluation.</summary>
     /// <param name="evidenceAssembly">The assembled package publication evidence.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranPackagePublicationPublishGuardEvaluation
 /// <summary>
 /// Provides package publication publish guard helpers.
 /// </summary>
-public static class SigtranPackagePublicationPublishGuards
+internal static class SigtranPackagePublicationPublishGuards
 {
     /// <summary>Evaluates the release publish guard for assembled package publication evidence.</summary>
     /// <param name="evidenceAssembly">The assembled package publication evidence.</param>

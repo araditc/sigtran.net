@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Summarizes SCCP, TCAP, and MAP SMS protocol evidence upgrade status.
 /// </summary>
-public sealed class SigtranProtocolEvidenceStatusReport
+internal sealed class SigtranProtocolEvidenceStatusReport
 {
     private readonly string[] _capabilities;
     private readonly string[] _blockers;
@@ -66,7 +66,7 @@ public sealed class SigtranProtocolEvidenceStatusReport
 /// <summary>
 /// Provides current SCCP, TCAP, and MAP SMS protocol evidence upgrade status.
 /// </summary>
-public static class SigtranProtocolEvidenceStatus
+internal static class SigtranProtocolEvidenceStatus
 {
     /// <summary>The status label.</summary>
     public const string StatusLabel = "SCCP TCAP MAP evidence upgrade";

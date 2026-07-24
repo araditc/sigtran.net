@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an operational health check area.
 /// </summary>
-public enum SigtranHealthCheckArea
+internal enum SigtranHealthCheckArea
 {
     /// <summary>Transport health.</summary>
     Transport,
@@ -24,7 +24,7 @@ public enum SigtranHealthCheckArea
 /// <summary>
 /// Describes one operational health check.
 /// </summary>
-public sealed class SigtranHealthCheckDefinition
+internal sealed class SigtranHealthCheckDefinition
 {
     /// <summary>Creates a health check definition.</summary>
     /// <param name="id">The stable health check id.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranHealthCheckDefinition
 /// <summary>
 /// Provides operational health check definitions.
 /// </summary>
-public static class SigtranHealthChecks
+internal static class SigtranHealthChecks
 {
     /// <summary>Returns the operational health check definitions.</summary>
     /// <returns>The health check definitions.</returns>

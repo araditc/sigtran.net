@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a load-test stage.
 /// </summary>
-public sealed class SigtranLoadTestStage
+internal sealed class SigtranLoadTestStage
 {
     /// <summary>Creates a load-test stage.</summary>
     /// <param name="name">The stage name.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranLoadTestStage
 /// <summary>
 /// Describes a load-test plan.
 /// </summary>
-public sealed class SigtranLoadTestPlan
+internal sealed class SigtranLoadTestPlan
 {
     /// <summary>Creates a load-test plan.</summary>
     /// <param name="name">The plan name.</param>
@@ -72,7 +72,7 @@ public sealed class SigtranLoadTestPlan
 /// <summary>
 /// Provides load-test plan helpers.
 /// </summary>
-public static class SigtranLoadTestPlans
+internal static class SigtranLoadTestPlans
 {
     /// <summary>Creates the default production load-test plan.</summary>
     /// <returns>The default production load-test plan.</returns>

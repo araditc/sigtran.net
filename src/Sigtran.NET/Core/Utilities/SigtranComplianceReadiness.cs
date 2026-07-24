@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes enterprise compliance readiness.
 /// </summary>
-public sealed class SigtranComplianceReadinessSnapshot
+internal sealed class SigtranComplianceReadinessSnapshot
 {
     /// <summary>Creates a compliance readiness report.</summary>
     /// <param name="hasCapabilityCatalog">Whether the compliance capability catalog is available.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranComplianceReadinessSnapshot
 /// <summary>
 /// Provides compliance readiness helpers.
 /// </summary>
-public static class SigtranComplianceReadiness
+internal static class SigtranComplianceReadiness
 {
     /// <summary>Returns the current compliance readiness report.</summary>
     /// <returns>The current compliance readiness report.</returns>

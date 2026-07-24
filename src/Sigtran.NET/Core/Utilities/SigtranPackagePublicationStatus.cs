@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package publication readiness.
 /// </summary>
-public sealed class SigtranPackagePublicationReadinessSnapshot
+internal sealed class SigtranPackagePublicationReadinessSnapshot
 {
     /// <summary>Creates a package publication readiness report.</summary>
     /// <param name="versionPolicyReady">Whether version policy is ready.</param>
@@ -82,7 +82,7 @@ public sealed class SigtranPackagePublicationReadinessSnapshot
 /// <summary>
 /// Provides package publication readiness and status reporting.
 /// </summary>
-public static class SigtranPackagePublicationStatus
+internal static class SigtranPackagePublicationStatus
 {
     private static readonly string[] Capabilities =
     [

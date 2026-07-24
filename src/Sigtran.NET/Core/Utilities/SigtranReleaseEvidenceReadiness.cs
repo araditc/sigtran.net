@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes production evidence readiness.
 /// </summary>
-public sealed class SigtranReleaseEvidenceReadinessSnapshot
+internal sealed class SigtranReleaseEvidenceReadinessSnapshot
 {
     /// <summary>Creates a production evidence readiness report.</summary>
     /// <param name="hasRequirements">Whether evidence requirements are available.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReleaseEvidenceReadinessSnapshot
 /// <summary>
 /// Provides production evidence readiness helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceReadiness
+internal static class SigtranReleaseEvidenceReadiness
 {
     /// <summary>Returns the current production evidence readiness report.</summary>
     /// <returns>The current production evidence readiness report.</returns>

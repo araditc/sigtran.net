@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the result of evaluating performance evidence for production claims.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceGateResult
+internal sealed class SigtranPerformanceEvidenceGateResult
 {
     private readonly string[] _reasons;
 
@@ -53,7 +53,7 @@ public sealed class SigtranPerformanceEvidenceGateResult
 /// <summary>
 /// Evaluates retained performance evidence against production claim gates.
 /// </summary>
-public static class SigtranPerformanceEvidenceGate
+internal static class SigtranPerformanceEvidenceGate
 {
     /// <summary>Evaluates whether retained performance evidence can support production performance claims.</summary>
     /// <param name="report">The performance evidence report.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a retained performance evidence artifact kind.
 /// </summary>
-public enum SigtranPerformanceEvidenceArtifactKind
+internal enum SigtranPerformanceEvidenceArtifactKind
 {
     /// <summary>Packet capture containing peer traffic.</summary>
     PacketCapture,
@@ -36,7 +36,7 @@ public enum SigtranPerformanceEvidenceArtifactKind
 /// <summary>
 /// Describes one retained performance evidence artifact.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceArtifact
+internal sealed class SigtranPerformanceEvidenceArtifact
 {
     /// <summary>Creates a retained performance evidence artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -68,7 +68,7 @@ public sealed class SigtranPerformanceEvidenceArtifact
 /// <summary>
 /// Stores retained artifacts for one performance evidence run.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceArtifactManifest
+internal sealed class SigtranPerformanceEvidenceArtifactManifest
 {
     private readonly List<SigtranPerformanceEvidenceArtifact> _artifacts = [];
 
@@ -135,7 +135,7 @@ public sealed class SigtranPerformanceEvidenceArtifactManifest
 /// <summary>
 /// Describes a peer-traffic benchmark run plan.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceRunPlan
+internal sealed class SigtranPerformanceEvidenceRunPlan
 {
     /// <summary>Creates a peer-traffic benchmark run plan.</summary>
     /// <param name="runId">The benchmark run id.</param>
@@ -179,7 +179,7 @@ public sealed class SigtranPerformanceEvidenceRunPlan
 /// <summary>
 /// Creates peer-traffic benchmark evidence run plans.
 /// </summary>
-public static class SigtranPerformanceEvidenceRunPlans
+internal static class SigtranPerformanceEvidenceRunPlans
 {
     /// <summary>Creates a default peer-traffic benchmark run plan from retained artifacts.</summary>
     /// <param name="manifest">The retained artifact manifest.</param>

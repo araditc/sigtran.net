@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab production readiness bridge output.
 /// </summary>
-public sealed class SigtranReferencePeerLabProductionReadinessSnapshot
+internal sealed class SigtranReferencePeerLabProductionReadinessSnapshot
 {
     /// <summary>Creates a reference peer lab production readiness bridge report.</summary>
     /// <param name="evidenceBundle">The evidence bundle.</param>
@@ -66,7 +66,7 @@ public sealed class SigtranReferencePeerLabProductionReadinessSnapshot
 /// <summary>
 /// Provides reference external peer lab production readiness bridge helpers.
 /// </summary>
-public static class SigtranReferencePeerLabProductionBridge
+internal static class SigtranReferencePeerLabProductionBridge
 {
     /// <summary>Evaluates reference peer lab production readiness from an evidence handoff bundle.</summary>
     /// <param name="evidenceBundle">The evidence handoff bundle.</param>

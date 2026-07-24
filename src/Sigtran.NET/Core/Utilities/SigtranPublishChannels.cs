@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a release publication channel.
 /// </summary>
-public enum SigtranPublishChannelKind
+internal enum SigtranPublishChannelKind
 {
     /// <summary>Internal development feed.</summary>
     Internal,
@@ -21,7 +21,7 @@ public enum SigtranPublishChannelKind
 /// <summary>
 /// Describes one publication channel.
 /// </summary>
-public sealed class SigtranPublishChannel
+internal sealed class SigtranPublishChannel
 {
     /// <summary>Creates a publication channel.</summary>
     /// <param name="kind">The channel kind.</param>
@@ -70,7 +70,7 @@ public sealed class SigtranPublishChannel
 /// <summary>
 /// Provides official publication channel rules.
 /// </summary>
-public static class SigtranPublishChannels
+internal static class SigtranPublishChannels
 {
     /// <summary>Returns the official publication channels.</summary>
     /// <returns>The official publication channels.</returns>

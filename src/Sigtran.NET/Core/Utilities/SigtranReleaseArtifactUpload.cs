@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a release artifact upload kind.
 /// </summary>
-public enum SigtranReleaseArtifactUploadKind
+internal enum SigtranReleaseArtifactUploadKind
 {
     /// <summary>NuGet package artifact.</summary>
     Package,
@@ -33,7 +33,7 @@ public enum SigtranReleaseArtifactUploadKind
 /// <summary>
 /// Describes one artifact uploaded by the release workflow.
 /// </summary>
-public sealed class SigtranReleaseArtifactUploadItem
+internal sealed class SigtranReleaseArtifactUploadItem
 {
     /// <summary>Creates a release artifact upload item.</summary>
     /// <param name="kind">The upload kind.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranReleaseArtifactUploadItem
 /// <summary>
 /// Describes release workflow artifact uploads.
 /// </summary>
-public sealed class SigtranReleaseArtifactUploadManifest
+internal sealed class SigtranReleaseArtifactUploadManifest
 {
     /// <summary>Creates a release artifact upload manifest.</summary>
     /// <param name="items">The upload items.</param>
@@ -118,7 +118,7 @@ public sealed class SigtranReleaseArtifactUploadManifest
 /// <summary>
 /// Provides release artifact upload manifests.
 /// </summary>
-public static class SigtranReleaseArtifactUploads
+internal static class SigtranReleaseArtifactUploads
 {
     /// <summary>Creates the default release artifact upload manifest.</summary>
     /// <returns>The default release artifact upload manifest.</returns>

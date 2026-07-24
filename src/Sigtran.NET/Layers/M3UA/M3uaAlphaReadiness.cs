@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.M3UA;
 /// <summary>
 /// Snapshot of the SDK conditions required for the M3UA-focused alpha release.
 /// </summary>
-public readonly struct M3uaAlphaReadinessSnapshot
+internal readonly struct M3uaAlphaReadinessSnapshot
 {
     /// <summary>Creates an alpha readiness report.</summary>
     /// <param name="hasPackageMetadata">Whether package metadata is configured.</param>
@@ -61,7 +61,7 @@ public readonly struct M3uaAlphaReadinessSnapshot
 /// <summary>
 /// Provides release-readiness information for the M3UA-focused alpha package.
 /// </summary>
-public static class M3uaAlphaReadiness
+internal static class M3uaAlphaReadiness
 {
     /// <summary>The release label for the current alpha gate.</summary>
     public const string ReleaseLabel = "M3UA alpha";

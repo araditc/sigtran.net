@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a protocol interoperability artifact kind.
 /// </summary>
-public enum SigtranProtocolInteropArtifactKind
+internal enum SigtranProtocolInteropArtifactKind
 {
     /// <summary>External reference vector artifact.</summary>
     ReferenceVector,
@@ -24,7 +24,7 @@ public enum SigtranProtocolInteropArtifactKind
 /// <summary>
 /// Describes a protocol interoperability artifact.
 /// </summary>
-public sealed class SigtranProtocolInteropArtifact
+internal sealed class SigtranProtocolInteropArtifact
 {
     /// <summary>Creates a protocol interoperability artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranProtocolInteropArtifact
 /// <summary>
 /// Stores protocol interoperability artifacts for one vector.
 /// </summary>
-public sealed class SigtranProtocolInteropArtifactManifest
+internal sealed class SigtranProtocolInteropArtifactManifest
 {
     private readonly List<SigtranProtocolInteropArtifact> _artifacts = [];
 

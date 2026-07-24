@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the external peer interoperability CI profile.
 /// </summary>
-public sealed class SigtranExternalPeerInteropCiProfile
+internal sealed class SigtranExternalPeerInteropCiProfile
 {
     /// <summary>Creates an external peer interoperability CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranExternalPeerInteropCiProfile
 /// <summary>
 /// Provides external peer interoperability CI profile helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropCi
+internal static class SigtranExternalPeerInteropCi
 {
     /// <summary>Creates the default external peer interoperability CI profile.</summary>
     /// <returns>The default external peer interoperability CI profile.</returns>

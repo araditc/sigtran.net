@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a supply-chain release command kind.
 /// </summary>
-public enum SigtranSupplyChainReleaseCommandKind
+internal enum SigtranSupplyChainReleaseCommandKind
 {
     /// <summary>Generate final SBOM.</summary>
     GenerateFinalSbom,
@@ -30,7 +30,7 @@ public enum SigtranSupplyChainReleaseCommandKind
 /// <summary>
 /// Describes one supply-chain release command.
 /// </summary>
-public sealed class SigtranSupplyChainReleaseCommand
+internal sealed class SigtranSupplyChainReleaseCommand
 {
     /// <summary>Creates a supply-chain release command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -65,7 +65,7 @@ public sealed class SigtranSupplyChainReleaseCommand
 /// <summary>
 /// Describes the supply-chain release command plan.
 /// </summary>
-public sealed class SigtranSupplyChainReleaseCommandPlan
+internal sealed class SigtranSupplyChainReleaseCommandPlan
 {
     /// <summary>Creates a supply-chain release command plan.</summary>
     /// <param name="version">The release version.</param>
@@ -111,7 +111,7 @@ public sealed class SigtranSupplyChainReleaseCommandPlan
 /// <summary>
 /// Provides supply-chain release command plans.
 /// </summary>
-public static class SigtranSupplyChainReleaseCommands
+internal static class SigtranSupplyChainReleaseCommands
 {
     /// <summary>Creates the default supply-chain release command plan.</summary>
     /// <param name="version">The release version.</param>
@@ -129,7 +129,7 @@ public static class SigtranSupplyChainReleaseCommands
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.GenerateFinalSbom, "Generate final SBOM", $"sbom-tool generate -b src/Sigtran.NET/bin/Release -bc . -pn Sigtran.NET -pv {normalizedVersion} -ps Sigtran.NET -nsb https://github.com/araditc/Sigtran.NET -m artifacts/supply-chain/sbom", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.SignPackage, "Sign package", $"dotnet nuget sign src/Sigtran.NET/bin/Release/Sigtran.NET.{normalizedVersion}.nupkg --certificate-path \"$SIGNING_CERTIFICATE_PATH\" --certificate-password \"$SIGNING_CERTIFICATE_PASSWORD\" --timestamper {signingPlan.TimestampAuthorityUrl} --output artifacts/release", requiresSecret: true),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.VerifySignature, "Verify signature", $"dotnet nuget verify artifacts/release/Sigtran.NET.{normalizedVersion}.nupkg --all > artifacts/supply-chain/signing/Sigtran.NET.{normalizedVersion}.verification.md", requiresSecret: false),
-                new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreateProvenance, "Create provenance", $"actions/attest-build-provenance@v4 subject-path=artifacts/release/Sigtran.NET.{normalizedVersion}.nupkg", requiresSecret: false),
+                new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreateProvenance, "Create provenance", $"actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 subject-path=artifacts/release/Sigtran.NET.{normalizedVersion}.nupkg", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreatePublicApiDiff, "Create public API diff", $"dotnet build src/Sigtran.NET/Sigtran.NET.csproj --configuration Release /p:GenerateDocumentationFile=true > artifacts/supply-chain/api/Sigtran.NET.{normalizedVersion}.api-diff.md", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.CreateDigestManifest, "Create digest manifest", "sha256sum artifacts/release/* artifacts/supply-chain/**/* > artifacts/supply-chain/digests/Sigtran.NET.sha256", requiresSecret: false),
                 new SigtranSupplyChainReleaseCommand(SigtranSupplyChainReleaseCommandKind.UploadArtifacts, "Upload artifacts", "actions/upload-artifact retains package, symbols, SBOM, signing, timestamp, provenance, API diff, and digest artifacts", requiresSecret: false)

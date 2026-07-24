@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides production evidence file verification status reporting.
 /// </summary>
-public static class SigtranReleaseEvidenceFileVerificationStatus
+internal static class SigtranReleaseEvidenceFileVerificationStatus
 {
     private static readonly string[] Capabilities =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a release workflow trigger.
 /// </summary>
-public enum SigtranReleaseWorkflowTrigger
+internal enum SigtranReleaseWorkflowTrigger
 {
     /// <summary>Manual workflow dispatch trigger.</summary>
     ManualDispatch,
@@ -15,7 +15,7 @@ public enum SigtranReleaseWorkflowTrigger
 /// <summary>
 /// Identifies a release workflow stage kind.
 /// </summary>
-public enum SigtranReleaseWorkflowStageKind
+internal enum SigtranReleaseWorkflowStageKind
 {
     /// <summary>Checkout source code.</summary>
     Checkout,
@@ -48,7 +48,7 @@ public enum SigtranReleaseWorkflowStageKind
 /// <summary>
 /// Describes one release workflow stage.
 /// </summary>
-public sealed class SigtranReleaseWorkflowStage
+internal sealed class SigtranReleaseWorkflowStage
 {
     /// <summary>Creates a release workflow stage.</summary>
     /// <param name="kind">The stage kind.</param>
@@ -83,7 +83,7 @@ public sealed class SigtranReleaseWorkflowStage
 /// <summary>
 /// Describes the official release workflow plan.
 /// </summary>
-public sealed class SigtranReleaseWorkflowPlan
+internal sealed class SigtranReleaseWorkflowPlan
 {
     /// <summary>Creates a release workflow plan.</summary>
     /// <param name="workflowName">The workflow name.</param>
@@ -143,7 +143,7 @@ public sealed class SigtranReleaseWorkflowPlan
 /// <summary>
 /// Provides release workflow plan helpers.
 /// </summary>
-public static class SigtranReleaseWorkflows
+internal static class SigtranReleaseWorkflows
 {
     /// <summary>Creates the production release workflow plan.</summary>
     /// <returns>The production release workflow plan.</returns>
@@ -154,8 +154,8 @@ public static class SigtranReleaseWorkflows
             "10.0.x",
             [SigtranReleaseWorkflowTrigger.ManualDispatch, SigtranReleaseWorkflowTrigger.VersionTag],
             [
-                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Checkout, "Checkout", "actions/checkout@v4"),
-                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.SetupDotNet, "Setup .NET", "actions/setup-dotnet@v4"),
+                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Checkout, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"),
+                new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.SetupDotNet, "Setup .NET", "actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Restore, "Restore", "dotnet restore src/Sigtran.NET.sln"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Build, "Build", "dotnet build src/Sigtran.NET.sln --configuration Release --no-restore"),
                 new SigtranReleaseWorkflowStage(SigtranReleaseWorkflowStageKind.Test, "Test", "dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build"),

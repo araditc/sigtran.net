@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.MAP;
 /// <summary>
 /// Readiness report for the MAP SMS profile foundation phase.
 /// </summary>
-public readonly struct MapSmsReadinessSnapshot
+internal readonly struct MapSmsReadinessSnapshot
 {
     /// <summary>Creates a MAP SMS readiness report.</summary>
     /// <param name="hasOperationMetadata">Whether operation metadata is available.</param>
@@ -110,7 +110,7 @@ public readonly struct MapSmsReadinessSnapshot
 /// <summary>
 /// Provides readiness information for MAP SMS work.
 /// </summary>
-public static class MapSmsReadiness
+internal static class MapSmsReadiness
 {
     /// <summary>The release label for MAP SMS readiness.</summary>
     public const string ReleaseLabel = "MAP SMS stateful service";

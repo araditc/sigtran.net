@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a performance evidence runner command kind.
 /// </summary>
-public enum SigtranPerformanceEvidenceRunnerCommandKind
+internal enum SigtranPerformanceEvidenceRunnerCommandKind
 {
     /// <summary>Prepare the benchmark environment and peer configuration.</summary>
     PrepareEnvironment,
@@ -33,7 +33,7 @@ public enum SigtranPerformanceEvidenceRunnerCommandKind
 /// <summary>
 /// Describes one performance evidence runner command.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceRunnerCommand
+internal sealed class SigtranPerformanceEvidenceRunnerCommand
 {
     /// <summary>Creates a performance evidence runner command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -62,7 +62,7 @@ public sealed class SigtranPerformanceEvidenceRunnerCommand
 /// <summary>
 /// Describes the command plan for a real peer-traffic performance evidence run.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceRunnerPlan
+internal sealed class SigtranPerformanceEvidenceRunnerPlan
 {
     private readonly SigtranPerformanceEvidenceRunnerCommand[] _commands;
 
@@ -135,7 +135,7 @@ public sealed class SigtranPerformanceEvidenceRunnerPlan
 /// <summary>
 /// Describes CI handoff metadata for performance evidence execution.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceCiHandoff
+internal sealed class SigtranPerformanceEvidenceCiHandoff
 {
     private readonly string[] _artifactPatterns;
 
@@ -178,7 +178,7 @@ public sealed class SigtranPerformanceEvidenceCiHandoff
 /// <summary>
 /// Creates performance evidence runner and CI handoff contracts.
 /// </summary>
-public static class SigtranPerformanceEvidenceRunnerPlans
+internal static class SigtranPerformanceEvidenceRunnerPlans
 {
     /// <summary>Creates the default real peer-traffic performance evidence runner plan.</summary>
     /// <param name="runId">The benchmark run id.</param>

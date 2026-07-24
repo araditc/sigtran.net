@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes benchmark execution evidence.
 /// </summary>
-public sealed class SigtranBenchmarkExecutionEvidence
+internal sealed class SigtranBenchmarkExecutionEvidence
 {
     /// <summary>Creates benchmark execution evidence.</summary>
     /// <param name="reportPath">The benchmark report path.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranBenchmarkExecutionEvidence
 /// <summary>
 /// Provides benchmark execution evidence helpers.
 /// </summary>
-public static class SigtranBenchmarkExecution
+internal static class SigtranBenchmarkExecution
 {
     /// <summary>Creates smoke benchmark evidence from retained report data.</summary>
     /// <param name="reportSha256">The retained benchmark report digest.</param>

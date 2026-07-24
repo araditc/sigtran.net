@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a SIGTRAN sample scenario category.
 /// </summary>
-public enum SigtranSampleKind
+internal enum SigtranSampleKind
 {
     /// <summary>Application Server Process to Signalling Gateway sample.</summary>
     AspToSignallingGateway,
@@ -21,7 +21,7 @@ public enum SigtranSampleKind
 /// <summary>
 /// Describes one SDK sample scenario.
 /// </summary>
-public sealed class SigtranSampleDescriptor
+internal sealed class SigtranSampleDescriptor
 {
     /// <summary>Creates a sample descriptor.</summary>
     /// <param name="id">The stable sample id.</param>
@@ -70,7 +70,7 @@ public sealed class SigtranSampleDescriptor
 /// <summary>
 /// Provides a discoverable catalog of SDK sample scenarios.
 /// </summary>
-public static class SigtranSampleCatalog
+internal static class SigtranSampleCatalog
 {
     private static readonly SigtranSampleDescriptor[] Samples =
     [

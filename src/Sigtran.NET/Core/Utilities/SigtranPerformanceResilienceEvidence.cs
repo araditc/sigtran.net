@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a resilience or failover event captured during a performance benchmark.
 /// </summary>
-public enum SigtranPerformanceResilienceEventKind
+internal enum SigtranPerformanceResilienceEventKind
 {
     /// <summary>The active peer association or transport path failed.</summary>
     FailureDetected,
@@ -21,7 +21,7 @@ public enum SigtranPerformanceResilienceEventKind
 /// <summary>
 /// Describes one resilience or failover event captured during a performance benchmark.
 /// </summary>
-public sealed class SigtranPerformanceResilienceEvent
+internal sealed class SigtranPerformanceResilienceEvent
 {
     /// <summary>Creates a performance resilience event.</summary>
     /// <param name="timestampUtc">The UTC event timestamp.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranPerformanceResilienceEvent
 /// <summary>
 /// Describes failover and recovery evidence captured during a performance benchmark.
 /// </summary>
-public sealed class SigtranPerformanceResilienceEvidence
+internal sealed class SigtranPerformanceResilienceEvidence
 {
     private readonly SigtranPerformanceResilienceEvent[] _events;
 
@@ -129,7 +129,7 @@ public sealed class SigtranPerformanceResilienceEvidence
 /// <summary>
 /// Creates performance resilience evidence helpers.
 /// </summary>
-public static class SigtranPerformanceResilienceEvidenceFactory
+internal static class SigtranPerformanceResilienceEvidenceFactory
 {
     /// <summary>Creates a passing failover evidence sample from measured timestamps.</summary>
     /// <param name="runId">The benchmark run id.</param>

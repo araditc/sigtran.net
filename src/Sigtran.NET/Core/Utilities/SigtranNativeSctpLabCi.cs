@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the native SCTP lab CI profile.
 /// </summary>
-public sealed class SigtranNativeSctpLabCiProfile
+internal sealed class SigtranNativeSctpLabCiProfile
 {
     /// <summary>Creates a native SCTP lab CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranNativeSctpLabCiProfile
 /// <summary>
 /// Provides native SCTP lab CI profile helpers.
 /// </summary>
-public static class SigtranNativeSctpLabCi
+internal static class SigtranNativeSctpLabCi
 {
     /// <summary>Creates the default native SCTP lab CI profile.</summary>
     /// <returns>The default native SCTP lab CI profile.</returns>

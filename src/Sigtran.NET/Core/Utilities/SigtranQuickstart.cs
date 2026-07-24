@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one quickstart step.
 /// </summary>
-public sealed class SigtranQuickstartStep
+internal sealed class SigtranQuickstartStep
 {
     /// <summary>Creates a quickstart step.</summary>
     /// <param name="order">The one-based order.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranQuickstartStep
 /// <summary>
 /// Describes a quickstart guide.
 /// </summary>
-public sealed class SigtranQuickstartGuide
+internal sealed class SigtranQuickstartGuide
 {
     /// <summary>Creates a quickstart guide.</summary>
     /// <param name="id">The stable guide id.</param>
@@ -63,7 +63,7 @@ public sealed class SigtranQuickstartGuide
 /// <summary>
 /// Provides official quickstart guides.
 /// </summary>
-public static class SigtranQuickstarts
+internal static class SigtranQuickstarts
 {
     /// <summary>Creates the M3UA ASP-to-SG quickstart guide.</summary>
     /// <returns>The M3UA ASP-to-SG quickstart guide.</returns>

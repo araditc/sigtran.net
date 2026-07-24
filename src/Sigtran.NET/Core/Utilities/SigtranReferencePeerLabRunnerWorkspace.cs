@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the filesystem workspace used by a reference external peer lab runner.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerWorkspace
+internal sealed class SigtranReferencePeerLabRunnerWorkspace
 {
     /// <summary>Creates a reference peer lab runner workspace.</summary>
     /// <param name="runManifest">The reference peer lab run manifest.</param>
@@ -97,7 +97,7 @@ public sealed class SigtranReferencePeerLabRunnerWorkspace
 /// <summary>
 /// Provides reference external peer lab runner workspace helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerWorkspaces
+internal static class SigtranReferencePeerLabRunnerWorkspaces
 {
     /// <summary>Creates the default runner workspace from a reference peer lab run manifest.</summary>
     /// <param name="runManifest">The reference peer lab run manifest.</param>

@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies recommended reference external peer lab runner operator actions.
 /// </summary>
-public enum SigtranReferencePeerLabRunnerOperatorAction
+internal enum SigtranReferencePeerLabRunnerOperatorAction
 {
     /// <summary>Promote the evidence package for production readiness review.</summary>
     PromoteEvidence,
@@ -23,7 +23,7 @@ public enum SigtranReferencePeerLabRunnerOperatorAction
 /// <summary>
 /// Describes operator handoff for a reference external peer lab runner evidence package.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerOperatorHandoffReport
+internal sealed class SigtranReferencePeerLabRunnerOperatorHandoffReport
 {
     /// <summary>Creates a reference peer lab runner operator handoff report.</summary>
     /// <param name="packageManifest">The evidence package manifest.</param>
@@ -112,7 +112,7 @@ public sealed class SigtranReferencePeerLabRunnerOperatorHandoffReport
 /// <summary>
 /// Provides reference external peer lab runner operator handoff helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerOperatorHandoffs
+internal static class SigtranReferencePeerLabRunnerOperatorHandoffs
 {
     /// <summary>Creates an operator handoff report.</summary>
     /// <param name="packageManifest">The evidence package manifest.</param>

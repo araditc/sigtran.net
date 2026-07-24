@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained reference external peer lab evidence artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabEvidenceArtifact
+internal sealed class SigtranReferencePeerLabEvidenceArtifact
 {
     /// <summary>Creates a retained reference peer lab evidence artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -41,7 +41,7 @@ public sealed class SigtranReferencePeerLabEvidenceArtifact
 /// <summary>
 /// Describes reference external peer lab evidence promotion output.
 /// </summary>
-public sealed class SigtranReferencePeerLabEvidenceReport
+internal sealed class SigtranReferencePeerLabEvidenceReport
 {
     private readonly SigtranReferencePeerLabEvidenceArtifact[] _artifacts;
 
@@ -111,7 +111,7 @@ public sealed class SigtranReferencePeerLabEvidenceReport
 /// <summary>
 /// Provides reference external peer lab evidence helpers.
 /// </summary>
-public static class SigtranReferencePeerLabEvidence
+internal static class SigtranReferencePeerLabEvidence
 {
     /// <summary>Creates a retained evidence artifact set from an artifact plan using one digest placeholder.</summary>
     /// <param name="artifactPlan">The artifact plan.</param>

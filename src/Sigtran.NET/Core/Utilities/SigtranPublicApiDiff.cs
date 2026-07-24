@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained public API diff artifact for a release.
 /// </summary>
-public sealed class SigtranPublicApiDiffArtifact
+internal sealed class SigtranPublicApiDiffArtifact
 {
     /// <summary>Creates a public API diff artifact.</summary>
     /// <param name="baselinePath">The baseline API artifact path.</param>
@@ -80,7 +80,7 @@ public sealed class SigtranPublicApiDiffArtifact
 /// <summary>
 /// Provides public API diff artifact helpers.
 /// </summary>
-public static class SigtranPublicApiDiff
+internal static class SigtranPublicApiDiff
 {
     /// <summary>Creates a release public API diff artifact.</summary>
     /// <param name="version">The release package version.</param>

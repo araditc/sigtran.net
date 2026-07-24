@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Summarizes performance and resilience evidence execution status.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceStatusReport
+internal sealed class SigtranPerformanceEvidenceStatusReport
 {
     private readonly string[] _capabilities;
     private readonly string[] _blockers;
@@ -66,7 +66,7 @@ public sealed class SigtranPerformanceEvidenceStatusReport
 /// <summary>
 /// Provides current performance and resilience evidence execution status.
 /// </summary>
-public static class SigtranPerformanceEvidenceStatus
+internal static class SigtranPerformanceEvidenceStatus
 {
     /// <summary>The status label.</summary>
     public const string StatusLabel = "Performance and resilience evidence";

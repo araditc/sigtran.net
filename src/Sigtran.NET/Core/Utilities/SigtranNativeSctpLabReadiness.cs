@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes native SCTP lab verification readiness.
 /// </summary>
-public sealed class SigtranNativeSctpLabReadinessSnapshot
+internal sealed class SigtranNativeSctpLabReadinessSnapshot
 {
     /// <summary>Creates a native SCTP lab readiness report.</summary>
     /// <param name="hasScenarioCatalog">Whether scenario catalog is available.</param>
@@ -62,7 +62,7 @@ public sealed class SigtranNativeSctpLabReadinessSnapshot
 /// <summary>
 /// Provides native SCTP lab readiness helpers.
 /// </summary>
-public static class SigtranNativeSctpLabReadiness
+internal static class SigtranNativeSctpLabReadiness
 {
     /// <summary>Returns the current native SCTP lab readiness report.</summary>
     /// <returns>The current native SCTP lab readiness report.</returns>

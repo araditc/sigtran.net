@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes provenance for a reference external peer lab runner evidence package.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerProvenanceReport
+internal sealed class SigtranReferencePeerLabRunnerProvenanceReport
 {
     /// <summary>Creates reference peer lab runner provenance.</summary>
     /// <param name="runId">The lab run id.</param>
@@ -115,7 +115,7 @@ public sealed class SigtranReferencePeerLabRunnerProvenanceReport
 /// <summary>
 /// Provides reference external peer lab runner provenance helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerProvenance
+internal static class SigtranReferencePeerLabRunnerProvenance
 {
     /// <summary>Creates default reference peer lab runner provenance.</summary>
     /// <param name="runManifest">The run manifest.</param>

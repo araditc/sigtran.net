@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a public API baseline manifest.
 /// </summary>
-public sealed class SigtranPublicApiBaselineManifest
+internal sealed class SigtranPublicApiBaselineManifest
 {
     /// <summary>Creates a public API baseline manifest.</summary>
     /// <param name="name">The baseline name.</param>
@@ -37,7 +37,7 @@ public sealed class SigtranPublicApiBaselineManifest
 /// <summary>
 /// Provides public API baseline manifest helpers.
 /// </summary>
-public static class SigtranPublicApiBaseline
+internal static class SigtranPublicApiBaseline
 {
     /// <summary>Creates the current public API baseline manifest.</summary>
     /// <returns>The current public API baseline manifest.</returns>

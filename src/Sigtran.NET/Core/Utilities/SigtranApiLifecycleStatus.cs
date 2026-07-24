@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides API lifecycle readiness status.
 /// </summary>
-public static class SigtranApiLifecycleStatus
+internal static class SigtranApiLifecycleStatus
 {
     private static readonly string[] Capabilities =
     [

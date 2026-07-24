@@ -6,7 +6,8 @@ This phase makes the public SDK surface easier to consume in large projects by d
 
 ## API Surface Catalog
 
-`SigtranApiSurfaceCatalog.GetSurfaces()` exposes the public API surfaces that adopters should track:
+The historical `SigtranApiSurfaceCatalog` described the API surfaces that
+adopters should track:
 
 - M3UA
 - SCTP
@@ -51,9 +52,12 @@ Migration guides must include code samples so users can update applications with
 
 ## Public API Baseline
 
-`SigtranPublicApiBaseline.CreateCurrent()` defines the current pre-stable public API baseline manifest.
+The historical readiness model is now internal release tooling. The executable,
+version-controlled baseline is `eng/api/Sigtran.NET.1.0.public-api.txt`; see
+[Public API Baseline](PUBLIC_API_BASELINE.md).
 
-The baseline covers known public surfaces and requires diff review before API-shaping changes are accepted.
+The reflection-based baseline covers only exported types and public members.
+Release planning and evidence orchestration types are intentionally excluded.
 
 ## API Lifecycle Readiness
 

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a production evidence artifact.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifact
+internal sealed class SigtranReleaseEvidenceArtifact
 {
     /// <summary>Creates a production evidence artifact.</summary>
     /// <param name="area">The evidence area.</param>
@@ -41,7 +41,7 @@ public sealed class SigtranReleaseEvidenceArtifact
 /// <summary>
 /// Stores production evidence artifacts for a release dossier.
 /// </summary>
-public sealed class SigtranReleaseEvidenceManifest
+internal sealed class SigtranReleaseEvidenceManifest
 {
     private readonly List<SigtranReleaseEvidenceArtifact> _artifacts = [];
 

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production evidence run approval checklist item.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRunApprovalChecklistItem
+internal sealed class SigtranReleaseEvidenceRunApprovalChecklistItem
 {
     /// <summary>Creates a production evidence run approval checklist item.</summary>
     /// <param name="id">The stable checklist item identifier.</param>
@@ -41,7 +41,7 @@ public sealed class SigtranReleaseEvidenceRunApprovalChecklistItem
 /// <summary>
 /// Describes the approval checklist for a production evidence run.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRunApprovalChecklist
+internal sealed class SigtranReleaseEvidenceRunApprovalChecklist
 {
     /// <summary>Creates a production evidence run approval checklist.</summary>
     /// <param name="target">The production evidence run approval target.</param>
@@ -106,7 +106,7 @@ public sealed class SigtranReleaseEvidenceRunApprovalChecklist
 /// <summary>
 /// Provides production evidence run approval checklist helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRunApprovalChecklists
+internal static class SigtranReleaseEvidenceRunApprovalChecklists
 {
     /// <summary>Creates the default approval checklist for a production evidence run.</summary>
     /// <param name="target">The production evidence run approval target.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SCCP, TCAP, and MAP SMS interoperability vector readiness.
 /// </summary>
-public sealed class SigtranProtocolInteropReadinessSnapshot
+internal sealed class SigtranProtocolInteropReadinessSnapshot
 {
     /// <summary>Creates a protocol interop readiness report.</summary>
     /// <param name="hasVectorCatalog">Whether vector catalog is available.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranProtocolInteropReadinessSnapshot
 /// <summary>
 /// Provides protocol interoperability readiness helpers.
 /// </summary>
-public static class SigtranProtocolInteropReadiness
+internal static class SigtranProtocolInteropReadiness
 {
     /// <summary>Returns the current protocol interoperability readiness report.</summary>
     /// <returns>The current protocol interoperability readiness report.</returns>

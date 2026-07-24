@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed retained file manifest execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemManifestExecution
+internal sealed class SigtranReleaseEvidenceFileSystemManifestExecution
 {
     /// <summary>Creates filesystem-backed retained file manifest execution.</summary>
     /// <param name="handoff">The promotion handoff that declares retained evidence files.</param>
@@ -58,7 +58,7 @@ public sealed class SigtranReleaseEvidenceFileSystemManifestExecution
 /// <summary>
 /// Builds retained production evidence file manifests from filesystem observations.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemManifestBuilder
+internal static class SigtranReleaseEvidenceFileSystemManifestBuilder
 {
     /// <summary>Builds a retained file manifest by observing every promotion handoff item.</summary>
     /// <param name="handoff">The promotion handoff that declares retained evidence files.</param>

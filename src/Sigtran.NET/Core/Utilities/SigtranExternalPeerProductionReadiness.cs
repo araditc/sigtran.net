@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes production readiness for external SIGTRAN peer interoperability.
 /// </summary>
-public sealed class SigtranExternalPeerProductionReadinessSnapshot
+internal sealed class SigtranExternalPeerProductionReadinessSnapshot
 {
     /// <summary>Creates an external peer production readiness report.</summary>
     /// <param name="hasSelectedReferencePeer">Whether a reference peer package has been selected.</param>
@@ -58,7 +58,7 @@ public sealed class SigtranExternalPeerProductionReadinessSnapshot
 /// <summary>
 /// Provides production readiness evaluation for external peer interoperability.
 /// </summary>
-public static class SigtranExternalPeerProductionReadiness
+internal static class SigtranExternalPeerProductionReadiness
 {
     /// <summary>Creates the current external peer production readiness report.</summary>
     /// <returns>The current external peer production readiness report.</returns>

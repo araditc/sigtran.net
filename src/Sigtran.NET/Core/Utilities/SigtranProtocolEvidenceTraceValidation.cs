@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one protocol evidence trace frame validation result.
 /// </summary>
-public sealed class SigtranProtocolEvidenceTraceFrameReport
+internal sealed class SigtranProtocolEvidenceTraceFrameReport
 {
     /// <summary>Creates a protocol evidence trace frame report.</summary>
     /// <param name="index">The zero-based trace index.</param>
@@ -60,7 +60,7 @@ public sealed class SigtranProtocolEvidenceTraceFrameReport
 /// <summary>
 /// Describes the result of validating a trace frame sequence against protocol evidence vectors.
 /// </summary>
-public sealed class SigtranProtocolEvidenceTraceReport
+internal sealed class SigtranProtocolEvidenceTraceReport
 {
     private readonly SigtranProtocolEvidenceTraceFrameReport[] _frameReports;
     private readonly string[] _missingVectorIds;
@@ -113,7 +113,7 @@ public sealed class SigtranProtocolEvidenceTraceReport
 /// <summary>
 /// Validates ordered trace frames against protocol evidence vectors.
 /// </summary>
-public static class SigtranProtocolEvidenceTraceValidator
+internal static class SigtranProtocolEvidenceTraceValidator
 {
     /// <summary>Validates trace frames against evidence vectors in order.</summary>
     /// <param name="vectors">The expected evidence vectors.</param>

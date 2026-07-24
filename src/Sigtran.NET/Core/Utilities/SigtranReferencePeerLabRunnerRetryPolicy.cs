@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes retry behavior for one reference external peer lab runner failure kind.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerRetryRule
+internal sealed class SigtranReferencePeerLabRunnerRetryRule
 {
     /// <summary>Creates a reference peer lab runner retry rule.</summary>
     /// <param name="failureKind">The failure kind.</param>
@@ -63,7 +63,7 @@ public sealed class SigtranReferencePeerLabRunnerRetryRule
 /// <summary>
 /// Describes retry policy evaluation for a reference external peer lab runner failure report.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerRetryEvaluation
+internal sealed class SigtranReferencePeerLabRunnerRetryEvaluation
 {
     /// <summary>Creates a reference peer lab runner retry evaluation.</summary>
     /// <param name="failureReport">The failure report.</param>
@@ -141,7 +141,7 @@ public sealed class SigtranReferencePeerLabRunnerRetryEvaluation
 /// <summary>
 /// Describes reference external peer lab runner retry policy.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerRetryPolicy
+internal sealed class SigtranReferencePeerLabRunnerRetryPolicy
 {
     private readonly SigtranReferencePeerLabRunnerRetryRule[] _rules;
 

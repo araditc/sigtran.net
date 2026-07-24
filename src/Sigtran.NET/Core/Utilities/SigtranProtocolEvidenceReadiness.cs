@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK-side and external readiness for SCCP, TCAP, and MAP SMS protocol evidence.
 /// </summary>
-public sealed class SigtranProtocolEvidenceReadinessSnapshot
+internal sealed class SigtranProtocolEvidenceReadinessSnapshot
 {
     private readonly string[] _blockers;
 
@@ -123,7 +123,7 @@ public sealed class SigtranProtocolEvidenceReadinessSnapshot
 /// <summary>
 /// Builds protocol evidence readiness reports for SCCP, TCAP, and MAP SMS.
 /// </summary>
-public static class SigtranProtocolEvidenceReadiness
+internal static class SigtranProtocolEvidenceReadiness
 {
     /// <summary>Builds the current protocol evidence readiness report.</summary>
     /// <param name="hasExternalInteroperabilityEvidence">Whether retained external interoperability evidence is available.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a maintenance change kind.
 /// </summary>
-public enum SigtranMaintenanceChangeKind
+internal enum SigtranMaintenanceChangeKind
 {
     /// <summary>Documentation-only change.</summary>
     Documentation,
@@ -21,7 +21,7 @@ public enum SigtranMaintenanceChangeKind
 /// <summary>
 /// Describes a maintenance policy.
 /// </summary>
-public sealed class SigtranMaintenancePolicy
+internal sealed class SigtranMaintenancePolicy
 {
     /// <summary>Creates a maintenance policy.</summary>
     /// <param name="minimumNotice">The minimum notice period.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranMaintenancePolicy
 /// <summary>
 /// Provides maintenance policy helpers.
 /// </summary>
-public static class SigtranMaintenancePolicies
+internal static class SigtranMaintenancePolicies
 {
     /// <summary>Creates the default maintenance policy.</summary>
     /// <returns>The default maintenance policy.</returns>

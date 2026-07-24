@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the API lifecycle CI profile.
 /// </summary>
-public sealed class SigtranApiLifecycleCiProfile
+internal sealed class SigtranApiLifecycleCiProfile
 {
     /// <summary>Creates an API lifecycle CI profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -39,7 +39,7 @@ public sealed class SigtranApiLifecycleCiProfile
 /// <summary>
 /// Provides API lifecycle CI profile helpers.
 /// </summary>
-public static class SigtranApiLifecycleCi
+internal static class SigtranApiLifecycleCi
 {
     /// <summary>Creates the default API lifecycle CI profile.</summary>
     /// <returns>The default API lifecycle CI profile.</returns>

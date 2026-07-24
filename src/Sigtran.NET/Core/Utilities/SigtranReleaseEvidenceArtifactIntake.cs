@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production evidence artifact intake target.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactIntakeTarget
+internal sealed class SigtranReleaseEvidenceArtifactIntakeTarget
 {
     /// <summary>Creates a production evidence artifact intake target.</summary>
     /// <param name="intakeId">The stable intake identifier.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranReleaseEvidenceArtifactIntakeTarget
 /// <summary>
 /// Provides production evidence artifact intake target helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceArtifactIntakes
+internal static class SigtranReleaseEvidenceArtifactIntakes
 {
     /// <summary>Creates a default artifact intake target for an execution run.</summary>
     /// <param name="executionRun">The execution run that produced the artifacts.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the outcome of an interoperability lab run.
 /// </summary>
-public enum SigtranInteropLabRunStatus
+internal enum SigtranInteropLabRunStatus
 {
     /// <summary>The run has been planned but not completed.</summary>
     Pending,
@@ -18,7 +18,7 @@ public enum SigtranInteropLabRunStatus
 /// <summary>
 /// Describes one completed or planned interoperability lab run.
 /// </summary>
-public sealed class SigtranInteropLabRunReport
+internal sealed class SigtranInteropLabRunReport
 {
     /// <summary>Creates an interoperability lab run report.</summary>
     /// <param name="scenario">The lab scenario.</param>

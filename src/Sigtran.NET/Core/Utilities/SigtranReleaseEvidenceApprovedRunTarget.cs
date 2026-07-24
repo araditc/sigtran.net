@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a filesystem-backed production evidence run that is ready for approval review.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovedRunTarget
+internal sealed class SigtranReleaseEvidenceApprovedRunTarget
 {
     /// <summary>Creates a production evidence run approval target.</summary>
     /// <param name="runId">The stable release evidence run identifier.</param>
@@ -94,7 +94,7 @@ public sealed class SigtranReleaseEvidenceApprovedRunTarget
 /// <summary>
 /// Provides production evidence run approval target helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceApprovedRunTargets
+internal static class SigtranReleaseEvidenceApprovedRunTargets
 {
     /// <summary>Creates a production evidence run approval target.</summary>
     /// <param name="runId">The stable release evidence run identifier.</param>

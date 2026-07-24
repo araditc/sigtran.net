@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a byte mismatch found while validating a protocol evidence vector.
 /// </summary>
-public sealed class SigtranProtocolEvidenceMismatch
+internal sealed class SigtranProtocolEvidenceMismatch
 {
     /// <summary>Creates a protocol evidence mismatch.</summary>
     /// <param name="offset">The zero-based byte offset.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranProtocolEvidenceMismatch
 /// <summary>
 /// Describes the result of validating one protocol evidence vector.
 /// </summary>
-public sealed class SigtranProtocolEvidenceValidationReport
+internal sealed class SigtranProtocolEvidenceValidationReport
 {
     private readonly SigtranProtocolEvidenceMismatch[] _mismatches;
 
@@ -91,7 +91,7 @@ public sealed class SigtranProtocolEvidenceValidationReport
 /// <summary>
 /// Describes one byte-level protocol evidence vector for SCCP, TCAP, or MAP SMS.
 /// </summary>
-public sealed class SigtranProtocolEvidenceVector
+internal sealed class SigtranProtocolEvidenceVector
 {
     /// <summary>Creates a protocol evidence vector.</summary>
     /// <param name="id">The stable vector id.</param>
@@ -146,7 +146,7 @@ public sealed class SigtranProtocolEvidenceVector
 /// <summary>
 /// Validates protocol evidence vectors against actual encoded payloads.
 /// </summary>
-public static class SigtranProtocolEvidenceValidator
+internal static class SigtranProtocolEvidenceValidator
 {
     /// <summary>Validates an actual payload against a protocol evidence vector.</summary>
     /// <param name="vector">The evidence vector.</param>

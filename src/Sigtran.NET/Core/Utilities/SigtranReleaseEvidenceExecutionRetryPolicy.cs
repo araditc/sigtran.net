@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retry rule for a production evidence execution blocker kind.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionRetryRule
+internal sealed class SigtranReleaseEvidenceExecutionRetryRule
 {
     /// <summary>Creates a production evidence execution retry rule.</summary>
     /// <param name="blockerKind">The blocker kind.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranReleaseEvidenceExecutionRetryRule
 /// <summary>
 /// Describes a retry and resume decision.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionRetryDecision
+internal sealed class SigtranReleaseEvidenceExecutionRetryDecision
 {
     /// <summary>Creates a production evidence execution retry decision.</summary>
     /// <param name="blocker">The classified blocker.</param>
@@ -73,7 +73,7 @@ public sealed class SigtranReleaseEvidenceExecutionRetryDecision
 /// <summary>
 /// Describes the production evidence execution retry and resume policy.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionRetryPolicy
+internal sealed class SigtranReleaseEvidenceExecutionRetryPolicy
 {
     /// <summary>Creates a production evidence execution retry policy.</summary>
     /// <param name="catalog">The execution stage catalog.</param>
@@ -147,7 +147,7 @@ public sealed class SigtranReleaseEvidenceExecutionRetryPolicy
 /// <summary>
 /// Provides production evidence execution retry policy helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionRetryPolicies
+internal static class SigtranReleaseEvidenceExecutionRetryPolicies
 {
     /// <summary>Creates the default retry and resume policy.</summary>
     /// <param name="catalog">The execution stage catalog.</param>

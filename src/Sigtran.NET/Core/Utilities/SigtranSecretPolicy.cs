@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes protected configuration secret policy.
 /// </summary>
-public sealed class SigtranSecretPolicy
+internal sealed class SigtranSecretPolicy
 {
     /// <summary>Creates a secret policy.</summary>
     /// <param name="allowsPlainTextInDevelopment">Whether plaintext secrets are allowed in development.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranSecretPolicy
 /// <summary>
 /// Provides secret policy helpers.
 /// </summary>
-public static class SigtranSecretPolicies
+internal static class SigtranSecretPolicies
 {
     /// <summary>Creates the default protected configuration secret policy.</summary>
     /// <returns>The default protected configuration secret policy.</returns>

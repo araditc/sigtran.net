@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable tag gate command kinds.
 /// </summary>
-public enum SigtranStableTagCommandKind
+internal enum SigtranStableTagCommandKind
 {
     /// <summary>Validate the approved stable release decision.</summary>
     ValidateStableDecision,
@@ -24,7 +24,7 @@ public enum SigtranStableTagCommandKind
 /// <summary>
 /// Describes one stable tag gate command.
 /// </summary>
-public sealed class SigtranStableTagCommand
+internal sealed class SigtranStableTagCommand
 {
     /// <summary>Creates a stable tag gate command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranStableTagCommand
 /// <summary>
 /// Describes the stable tag gate command plan.
 /// </summary>
-public sealed class SigtranStableTagCommandPlan
+internal sealed class SigtranStableTagCommandPlan
 {
     /// <summary>Creates a stable tag gate command plan.</summary>
     /// <param name="decision">The approved stable release decision.</param>
@@ -134,7 +134,7 @@ public sealed class SigtranStableTagCommandPlan
 /// <summary>
 /// Describes stable tag gate evaluation.
 /// </summary>
-public sealed class SigtranStableTagGateResult
+internal sealed class SigtranStableTagGateResult
 {
     /// <summary>Creates a stable tag gate evaluation result.</summary>
     /// <param name="commandPlan">The stable tag command plan.</param>
@@ -199,7 +199,7 @@ public sealed class SigtranStableTagGateResult
 /// <summary>
 /// Provides stable tag gate helpers.
 /// </summary>
-public static class SigtranStableTagGates
+internal static class SigtranStableTagGates
 {
     /// <summary>Creates the stable tag command plan for an approved stable decision.</summary>
     /// <param name="decision">The approved stable release decision.</param>

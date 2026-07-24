@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies native SCTP lab run status.
 /// </summary>
-public enum SigtranNativeSctpLabRunStatus
+internal enum SigtranNativeSctpLabRunStatus
 {
     /// <summary>The run is pending.</summary>
     Pending,
@@ -18,7 +18,7 @@ public enum SigtranNativeSctpLabRunStatus
 /// <summary>
 /// Describes one native SCTP lab run report.
 /// </summary>
-public sealed class SigtranNativeSctpLabRunReport
+internal sealed class SigtranNativeSctpLabRunReport
 {
     /// <summary>Creates a native SCTP lab run report.</summary>
     /// <param name="scenario">The lab scenario.</param>

@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes an integrity seal over a retained production evidence ledger.
 /// </summary>
-public sealed class SigtranReleaseEvidenceIntegritySeal
+internal sealed class SigtranReleaseEvidenceIntegritySeal
 {
     /// <summary>Creates an integrity seal over a retained production evidence ledger.</summary>
     /// <param name="ledger">The retained production evidence ledger.</param>
@@ -83,7 +83,7 @@ public sealed class SigtranReleaseEvidenceIntegritySeal
 /// <summary>
 /// Provides retained production evidence integrity seal helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceIntegritySeals
+internal static class SigtranReleaseEvidenceIntegritySeals
 {
     /// <summary>Creates a default integrity seal over a ready retention ledger.</summary>
     /// <param name="ledger">The retained production evidence ledger.</param>

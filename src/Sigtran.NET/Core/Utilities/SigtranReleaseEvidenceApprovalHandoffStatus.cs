@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides approved production evidence run publication handoff status reporting.
 /// </summary>
-public static class SigtranReleaseEvidenceApprovalHandoffStatus
+internal static class SigtranReleaseEvidenceApprovalHandoffStatus
 {
     private static readonly string[] Capabilities =
     [

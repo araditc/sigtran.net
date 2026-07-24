@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the result of configuration validation.
 /// </summary>
-public sealed class SigtranConfigurationValidationResult
+internal sealed class SigtranConfigurationValidationResult
 {
     /// <summary>Creates a configuration validation result.</summary>
     /// <param name="profileName">The configuration profile name.</param>
@@ -28,7 +28,7 @@ public sealed class SigtranConfigurationValidationResult
 /// <summary>
 /// Provides configuration validation helpers.
 /// </summary>
-public static class SigtranConfigurationValidation
+internal static class SigtranConfigurationValidation
 {
     /// <summary>Validates required schema keys against the supplied configuration keys.</summary>
     /// <param name="profileName">The configuration profile name.</param>

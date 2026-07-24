@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes native SCTP lab command requirements.
 /// </summary>
-public sealed class SigtranNativeSctpLabCommandSet
+internal sealed class SigtranNativeSctpLabCommandSet
 {
     /// <summary>Creates a native SCTP lab command set.</summary>
     /// <param name="commands">The commands.</param>
@@ -33,7 +33,7 @@ public sealed class SigtranNativeSctpLabCommandSet
 /// <summary>
 /// Provides native SCTP lab command helpers.
 /// </summary>
-public static class SigtranNativeSctpLabCommands
+internal static class SigtranNativeSctpLabCommands
 {
     /// <summary>Creates the default native SCTP lab command set.</summary>
     /// <returns>The default native SCTP lab command set.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed production evidence promotion gate execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemPromotionExecution
+internal sealed class SigtranReleaseEvidenceFileSystemPromotionExecution
 {
     /// <summary>Creates filesystem-backed production evidence promotion execution.</summary>
     /// <param name="attachmentExecution">The filesystem-backed publication attachment execution.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranReleaseEvidenceFileSystemPromotionExecution
 /// <summary>
 /// Provides filesystem-backed production evidence promotion helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemPromotions
+internal static class SigtranReleaseEvidenceFileSystemPromotions
 {
     /// <summary>Evaluates filesystem-backed production evidence promotion readiness.</summary>
     /// <param name="attachmentExecution">The filesystem-backed publication attachment execution.</param>

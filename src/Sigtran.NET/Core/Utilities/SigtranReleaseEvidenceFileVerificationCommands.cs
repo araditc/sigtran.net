@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production evidence file verification command kind.
 /// </summary>
-public enum SigtranReleaseEvidenceFileVerificationCommandKind
+internal enum SigtranReleaseEvidenceFileVerificationCommandKind
 {
     /// <summary>Observe retained evidence files.</summary>
     ObserveRetainedFiles,
@@ -33,7 +33,7 @@ public enum SigtranReleaseEvidenceFileVerificationCommandKind
 /// <summary>
 /// Describes one production evidence file verification command.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileVerificationCommand
+internal sealed class SigtranReleaseEvidenceFileVerificationCommand
 {
     /// <summary>Creates a production evidence file verification command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -85,7 +85,7 @@ public sealed class SigtranReleaseEvidenceFileVerificationCommand
 /// <summary>
 /// Describes the production evidence file verification command plan.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileVerificationCommandPlan
+internal sealed class SigtranReleaseEvidenceFileVerificationCommandPlan
 {
     /// <summary>Creates a production evidence file verification command plan.</summary>
     /// <param name="artifactRoot">The retained evidence artifact root.</param>
@@ -144,7 +144,7 @@ public sealed class SigtranReleaseEvidenceFileVerificationCommandPlan
 /// <summary>
 /// Provides production evidence file verification command plan helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileVerificationCommands
+internal static class SigtranReleaseEvidenceFileVerificationCommands
 {
     /// <summary>Creates the default production evidence file verification command plan.</summary>
     /// <param name="artifactRoot">The retained evidence artifact root.</param>

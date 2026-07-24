@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a dry-run release command.
 /// </summary>
-public sealed class SigtranReleaseDryRunCommand
+internal sealed class SigtranReleaseDryRunCommand
 {
     /// <summary>Creates a dry-run release command.</summary>
     /// <param name="name">The command name.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranReleaseDryRunCommand
 /// <summary>
 /// Describes the dry-run release execution plan.
 /// </summary>
-public sealed class SigtranReleaseDryRunPlan
+internal sealed class SigtranReleaseDryRunPlan
 {
     /// <summary>Creates a dry-run release execution plan.</summary>
     /// <param name="version">The release version.</param>
@@ -76,7 +76,7 @@ public sealed class SigtranReleaseDryRunPlan
 /// <summary>
 /// Provides dry-run release execution plans.
 /// </summary>
-public static class SigtranReleaseDryRuns
+internal static class SigtranReleaseDryRuns
 {
     /// <summary>Creates the default dry-run release execution plan.</summary>
     /// <param name="version">The release version.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a troubleshooting category.
 /// </summary>
-public enum SigtranTroubleshootingCategory
+internal enum SigtranTroubleshootingCategory
 {
     /// <summary>Transport setup issues.</summary>
     Transport,
@@ -21,7 +21,7 @@ public enum SigtranTroubleshootingCategory
 /// <summary>
 /// Describes one troubleshooting entry.
 /// </summary>
-public sealed class SigtranTroubleshootingEntry
+internal sealed class SigtranTroubleshootingEntry
 {
     /// <summary>Creates a troubleshooting entry.</summary>
     /// <param name="id">The stable entry id.</param>
@@ -52,7 +52,7 @@ public sealed class SigtranTroubleshootingEntry
 /// <summary>
 /// Provides official troubleshooting entries.
 /// </summary>
-public static class SigtranTroubleshooting
+internal static class SigtranTroubleshooting
 {
     /// <summary>Returns the troubleshooting index.</summary>
     /// <returns>The troubleshooting index.</returns>

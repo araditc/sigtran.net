@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides native SCTP implementation status.
 /// </summary>
-public static class SigtranNativeSctpImplementationStatus
+internal static class SigtranNativeSctpImplementationStatus
 {
     private static readonly string[] Capabilities =
     [

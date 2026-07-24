@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one release workflow environment variable.
 /// </summary>
-public sealed class SigtranReleaseWorkflowEnvironmentVariable
+internal sealed class SigtranReleaseWorkflowEnvironmentVariable
 {
     /// <summary>Creates a release workflow environment variable.</summary>
     /// <param name="name">The variable name.</param>
@@ -24,7 +24,7 @@ public sealed class SigtranReleaseWorkflowEnvironmentVariable
 /// <summary>
 /// Provides release workflow environment variables.
 /// </summary>
-public static class SigtranReleaseWorkflowEnvironment
+internal static class SigtranReleaseWorkflowEnvironment
 {
     /// <summary>Returns the required release workflow environment variables.</summary>
     /// <returns>The required environment variables.</returns>

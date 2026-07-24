@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes protocol interoperability vector command requirements.
 /// </summary>
-public sealed class SigtranProtocolInteropCommandSet
+internal sealed class SigtranProtocolInteropCommandSet
 {
     /// <summary>Creates a protocol interoperability command set.</summary>
     /// <param name="commands">The commands.</param>
@@ -33,7 +33,7 @@ public sealed class SigtranProtocolInteropCommandSet
 /// <summary>
 /// Provides protocol interoperability command helpers.
 /// </summary>
-public static class SigtranProtocolInteropCommands
+internal static class SigtranProtocolInteropCommands
 {
     /// <summary>Creates the default protocol interoperability command set.</summary>
     /// <returns>The default protocol interoperability command set.</returns>

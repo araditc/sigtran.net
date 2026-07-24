@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package publication gate evaluation.
 /// </summary>
-public sealed class SigtranPublicationGateResult
+internal sealed class SigtranPublicationGateResult
 {
     /// <summary>Creates a publication gate result.</summary>
     /// <param name="canPublish">Whether package publication is allowed.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranPublicationGateResult
 /// <summary>
 /// Evaluates package publication readiness.
 /// </summary>
-public static class SigtranPublicationGate
+internal static class SigtranPublicationGate
 {
     /// <summary>Evaluates whether package publication is allowed.</summary>
     /// <param name="publishGuard">The release publish guard result.</param>

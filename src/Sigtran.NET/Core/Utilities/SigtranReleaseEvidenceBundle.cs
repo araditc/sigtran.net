@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a production evidence bundle.
 /// </summary>
-public sealed class SigtranReleaseEvidenceBundle
+internal sealed class SigtranReleaseEvidenceBundle
 {
     /// <summary>Creates a production evidence bundle.</summary>
     /// <param name="releaseVersion">The release version.</param>
@@ -49,7 +49,7 @@ public sealed class SigtranReleaseEvidenceBundle
 /// <summary>
 /// Provides production evidence bundle helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceBundles
+internal static class SigtranReleaseEvidenceBundles
 {
     /// <summary>Creates an empty production evidence bundle for the specified version.</summary>
     /// <param name="releaseVersion">The release version.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies production evidence execution blocker kinds.
 /// </summary>
-public enum SigtranReleaseEvidenceExecutionBlockerKind
+internal enum SigtranReleaseEvidenceExecutionBlockerKind
 {
     /// <summary>Readiness preflight blocker.</summary>
     ReadinessPreflight,
@@ -39,7 +39,7 @@ public enum SigtranReleaseEvidenceExecutionBlockerKind
 /// <summary>
 /// Describes one production evidence execution blocker.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionBlocker
+internal sealed class SigtranReleaseEvidenceExecutionBlocker
 {
     /// <summary>Creates a production evidence execution blocker.</summary>
     /// <param name="code">The stable blocker code.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranReleaseEvidenceExecutionBlocker
 /// <summary>
 /// Describes the production evidence execution blocker classifier.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionBlockerClassifier
+internal sealed class SigtranReleaseEvidenceExecutionBlockerClassifier
 {
     /// <summary>Creates a production evidence execution blocker classifier.</summary>
     /// <param name="knownBlockers">The known blocker definitions.</param>
@@ -135,7 +135,7 @@ public sealed class SigtranReleaseEvidenceExecutionBlockerClassifier
 /// <summary>
 /// Provides production evidence execution blocker classifier helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionBlockers
+internal static class SigtranReleaseEvidenceExecutionBlockers
 {
     /// <summary>Creates the default production evidence execution blocker classifier.</summary>
     /// <returns>The default blocker classifier.</returns>

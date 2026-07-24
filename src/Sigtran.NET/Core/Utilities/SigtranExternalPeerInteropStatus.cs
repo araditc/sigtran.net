@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides external peer interoperability execution status.
 /// </summary>
-public static class SigtranExternalPeerInteropStatus
+internal static class SigtranExternalPeerInteropStatus
 {
     private static readonly string[] Capabilities =
     [

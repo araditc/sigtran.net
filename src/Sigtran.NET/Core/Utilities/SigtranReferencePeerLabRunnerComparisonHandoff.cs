@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab runner comparison handoff output.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerComparisonHandoff
+internal sealed class SigtranReferencePeerLabRunnerComparisonHandoff
 {
     /// <summary>Creates a reference peer lab runner comparison handoff.</summary>
     /// <param name="inputBundle">The runner input bundle.</param>
@@ -75,7 +75,7 @@ public sealed class SigtranReferencePeerLabRunnerComparisonHandoff
 /// <summary>
 /// Provides reference external peer lab runner comparison handoff helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerComparisonHandoffs
+internal static class SigtranReferencePeerLabRunnerComparisonHandoffs
 {
     /// <summary>Creates a comparison handoff from observed messages and digest coverage.</summary>
     /// <param name="inputBundle">The runner input bundle.</param>

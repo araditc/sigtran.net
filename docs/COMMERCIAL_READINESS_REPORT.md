@@ -2,6 +2,10 @@
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
+Source builds now default to unpublished version `1.0.0-rc.2`. Stable release
+manifest `eng/release/stable-release.json` and
+`eng/evaluate-stable-release.ps1` produce the authoritative machine decision.
+
 The readiness APIs now consume `SigtranVerificationCatalogs.CreateCurrent()`.
 Native Linux SCTP and external SCTP/M3UA evidence report passing status from their
 retained manifests instead of stale hard-coded flags.
@@ -56,6 +60,20 @@ retained manifests instead of stale hard-coded flags.
   Ubuntu 24.04 against the independent C/lksctp peer. Native SCTP established,
   the M3UA ASP became active, live/readiness were healthy, and the metrics
   endpoint reported one active association with zero faults or reconnects.
+- The exported SDK surface was reduced from 1,133 XML-documented types to 313
+  actual exported types. Repository governance/evidence types are internal.
+  Reflection baselines retain 6,440 RC.1 members and 2,185 stable-candidate
+  members; the intentional prerelease break is documented for RC.2.
+- The stable workflow now pins the SBOM tool, compares the public API baseline,
+  evaluates retained evidence, validates certificate chain/fingerprint/expiry,
+  requires a matching existing tag and exact confirmation, uses a protected
+  environment, uploads artifacts, verifies public NuGet restore, and creates a
+  GitHub release only after all gates pass.
+- GitHub API evidence confirms main branch protection with strict
+  `build-test-pack`, one approval, stale-review dismissal, conversation
+  resolution, linear history, and no force-push/deletion. The
+  `nuget-stable` environment is restricted to protected branches and requires
+  reviewer approval.
 
 ## Remaining Production Blockers
 
@@ -78,9 +96,18 @@ retained manifests instead of stale hard-coded flags.
   representative cluster SCTP/CNI deployment evidence has yet been retained.
   Cluster network, firewall, readiness, termination, and rollback behavior need
   validation in the adopting operator environment.
+- The machine-evaluated stable decision is `NO-GO`. Stable publication is
+  blocked by independent external M2PA, operator/vendor profile acceptance,
+  20K TPS capacity, multi-host soak, representative Kubernetes SCTP, and
+  organization-trusted signing evidence.
 
 ## Production Decision
 
 Do not publish this SDK as stable commercially production-ready yet.
 
-The SDK has enough retained evidence for public RC consumption and controlled integration use. The stable release gate is ready to evaluate future stable publication evidence, but it must not be used to claim a stable public commercial release until the protected stable publication run, trusted public signing evidence, and stable NuGet publication evidence are retained and verified. The legacy OpenSS7/IPSS7 path can remain as historical evidence, but it is no longer the SDK's permanent commercial gate.
+The SDK has enough retained evidence for public RC consumption and controlled
+integration use. Stable publication is mechanically guarded and remains
+`NO-GO`; no stable tag or NuGet package may be created until every manifest
+gate passes and the protected workflow succeeds. The legacy OpenSS7/IPSS7 path
+can remain as historical evidence, but it is no longer the SDK's permanent
+release gate.

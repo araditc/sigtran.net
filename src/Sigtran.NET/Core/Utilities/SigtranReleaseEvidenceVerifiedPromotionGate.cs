@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the verified production evidence promotion gate result.
 /// </summary>
-public sealed class SigtranReleaseEvidenceVerifiedPromotionGateResult
+internal sealed class SigtranReleaseEvidenceVerifiedPromotionGateResult
 {
     /// <summary>Creates a verified production evidence promotion gate result.</summary>
     /// <param name="attachmentManifest">The publication attachment manifest under review.</param>
@@ -64,7 +64,7 @@ public sealed class SigtranReleaseEvidenceVerifiedPromotionGateResult
 /// <summary>
 /// Provides verified production evidence promotion gate helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceVerifiedPromotionGates
+internal static class SigtranReleaseEvidenceVerifiedPromotionGates
 {
     /// <summary>Evaluates whether retained production evidence can be promoted.</summary>
     /// <param name="attachmentManifest">The publication attachment manifest under review.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies whether a production release artifact is retained for review.
 /// </summary>
-public enum SigtranReleaseArtifactRetention
+internal enum SigtranReleaseArtifactRetention
 {
     /// <summary>The artifact has been retained.</summary>
     Retained,
@@ -15,7 +15,7 @@ public enum SigtranReleaseArtifactRetention
 /// <summary>
 /// Describes one artifact in a production release execution dossier.
 /// </summary>
-public sealed class SigtranReleaseArtifactRecord
+internal sealed class SigtranReleaseArtifactRecord
 {
     /// <summary>Creates a production release artifact record.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReleaseArtifactRecord
 /// <summary>
 /// Tracks the retained artifacts required for production release execution review.
 /// </summary>
-public sealed class SigtranReleaseArtifactDossier
+internal sealed class SigtranReleaseArtifactDossier
 {
     private readonly List<SigtranReleaseArtifactRecord> _records = [];
 
@@ -101,7 +101,7 @@ public sealed class SigtranReleaseArtifactDossier
 /// <summary>
 /// Provides production release execution artifact dossier helpers.
 /// </summary>
-public static class SigtranReleaseArtifactDossiers
+internal static class SigtranReleaseArtifactDossiers
 {
     /// <summary>Creates the current retained production release execution artifact dossier.</summary>
     /// <returns>The current retained production release execution artifact dossier.</returns>

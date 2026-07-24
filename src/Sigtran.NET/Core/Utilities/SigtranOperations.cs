@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production operations capability area.
 /// </summary>
-public enum SigtranOperationsArea
+internal enum SigtranOperationsArea
 {
     /// <summary>Operational runbooks.</summary>
     Runbooks,
@@ -24,7 +24,7 @@ public enum SigtranOperationsArea
 /// <summary>
 /// Describes one production operations capability.
 /// </summary>
-public sealed class SigtranOperationsCapability
+internal sealed class SigtranOperationsCapability
 {
     /// <summary>Creates an operations capability.</summary>
     /// <param name="area">The operations area.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranOperationsCapability
 /// <summary>
 /// Provides production operations capability planning helpers.
 /// </summary>
-public static class SigtranOperations
+internal static class SigtranOperations
 {
     private static readonly SigtranOperationsCapability[] Capabilities =
     [

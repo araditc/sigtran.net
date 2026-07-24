@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab runner failure categories.
 /// </summary>
-public enum SigtranReferencePeerLabRunnerFailureKind
+internal enum SigtranReferencePeerLabRunnerFailureKind
 {
     /// <summary>Preflight failure.</summary>
     Preflight,
@@ -32,7 +32,7 @@ public enum SigtranReferencePeerLabRunnerFailureKind
 /// <summary>
 /// Describes one reference external peer lab runner failure.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerFailure
+internal sealed class SigtranReferencePeerLabRunnerFailure
 {
     /// <summary>Creates a reference peer lab runner failure.</summary>
     /// <param name="kind">The failure kind.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranReferencePeerLabRunnerFailure
 /// <summary>
 /// Describes classified reference external peer lab runner failures.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerFailureReport
+internal sealed class SigtranReferencePeerLabRunnerFailureReport
 {
     private readonly SigtranReferencePeerLabRunnerFailure[] _failures;
 
@@ -148,7 +148,7 @@ public sealed class SigtranReferencePeerLabRunnerFailureReport
 /// <summary>
 /// Provides reference external peer lab runner failure classification helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerFailures
+internal static class SigtranReferencePeerLabRunnerFailures
 {
     /// <summary>Classifies runner failures from preflight, execution, artifact, provenance, and comparison outputs.</summary>
     /// <param name="preflight">The preflight report.</param>

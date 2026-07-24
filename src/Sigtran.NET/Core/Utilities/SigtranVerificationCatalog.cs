@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a technical area that can be supported by retained verification evidence.
 /// </summary>
-public enum SigtranVerificationArea
+internal enum SigtranVerificationArea
 {
     /// <summary>Native Linux SCTP transport behavior.</summary>
     NativeLinuxSctp,
@@ -48,7 +48,7 @@ public enum SigtranVerificationArea
 /// <summary>
 /// Describes one retained verification result.
 /// </summary>
-public sealed class SigtranVerificationRecord
+internal sealed class SigtranVerificationRecord
 {
     /// <summary>Creates a retained verification result.</summary>
     /// <param name="id">The stable verification run identifier.</param>
@@ -95,7 +95,7 @@ public sealed class SigtranVerificationRecord
 /// <summary>
 /// Stores retained verification results and evaluates technical evidence requirements.
 /// </summary>
-public sealed class SigtranVerificationCatalog
+internal sealed class SigtranVerificationCatalog
 {
     private readonly List<SigtranVerificationRecord> _records = [];
 
@@ -147,7 +147,7 @@ public sealed class SigtranVerificationCatalog
 /// <summary>
 /// Provides the verification evidence retained for the current SDK line.
 /// </summary>
-public static class SigtranVerificationCatalogs
+internal static class SigtranVerificationCatalogs
 {
     private static readonly DateTimeOffset ExternalPeerObservedAt =
         new(2026, 6, 27, 11, 19, 32, TimeSpan.Zero);

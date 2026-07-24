@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an SDK runtime environment.
 /// </summary>
-public enum SigtranRuntimeEnvironment
+internal enum SigtranRuntimeEnvironment
 {
     /// <summary>Local development environment.</summary>
     Development,
@@ -18,7 +18,7 @@ public enum SigtranRuntimeEnvironment
 /// <summary>
 /// Describes environment-specific configuration requirements.
 /// </summary>
-public sealed class SigtranEnvironmentMatrixEntry
+internal sealed class SigtranEnvironmentMatrixEntry
 {
     /// <summary>Creates an environment matrix entry.</summary>
     /// <param name="environment">The runtime environment.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranEnvironmentMatrixEntry
 /// <summary>
 /// Provides environment matrix helpers.
 /// </summary>
-public static class SigtranEnvironmentMatrix
+internal static class SigtranEnvironmentMatrix
 {
     private static readonly SigtranEnvironmentMatrixEntry[] Entries =
     [

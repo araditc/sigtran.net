@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a reference external peer lab evidence handoff bundle.
 /// </summary>
-public sealed class SigtranReferencePeerLabEvidenceBundle
+internal sealed class SigtranReferencePeerLabEvidenceBundle
 {
     /// <summary>Creates a reference peer lab evidence handoff bundle.</summary>
     /// <param name="runManifest">The run manifest.</param>
@@ -99,7 +99,7 @@ public sealed class SigtranReferencePeerLabEvidenceBundle
 /// <summary>
 /// Provides reference external peer lab evidence bundle helpers.
 /// </summary>
-public static class SigtranReferencePeerLabEvidenceBundles
+internal static class SigtranReferencePeerLabEvidenceBundles
 {
     /// <summary>Creates a passing evidence handoff bundle from default reference peer lab contracts.</summary>
     /// <param name="runId">The stable run id.</param>

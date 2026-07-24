@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Readiness report for the SCTP transport phase.
 /// </summary>
-public readonly struct SctpTransportReadinessSnapshot
+internal readonly struct SctpTransportReadinessSnapshot
 {
     /// <summary>Creates an SCTP transport readiness report.</summary>
     /// <param name="hasMetadataContract">Whether stream and PPID metadata contracts are available.</param>
@@ -76,7 +76,7 @@ public readonly struct SctpTransportReadinessSnapshot
 /// <summary>
 /// Provides readiness information for the SCTP transport phase.
 /// </summary>
-public static class SctpTransportReadiness
+internal static class SctpTransportReadiness
 {
     /// <summary>The release label for the current SCTP transport phase.</summary>
     public const string ReleaseLabel = "SCTP transport foundation";

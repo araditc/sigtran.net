@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a benchmark scenario category.
 /// </summary>
-public enum SigtranBenchmarkScenarioCategory
+internal enum SigtranBenchmarkScenarioCategory
 {
     /// <summary>Protocol parser benchmarks.</summary>
     Parser,
@@ -21,7 +21,7 @@ public enum SigtranBenchmarkScenarioCategory
 /// <summary>
 /// Describes one benchmark scenario.
 /// </summary>
-public sealed class SigtranBenchmarkScenario
+internal sealed class SigtranBenchmarkScenario
 {
     /// <summary>Creates a benchmark scenario.</summary>
     /// <param name="category">The benchmark category.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranBenchmarkScenario
 /// <summary>
 /// Provides benchmark scenario catalog helpers.
 /// </summary>
-public static class SigtranBenchmarkScenarios
+internal static class SigtranBenchmarkScenarios
 {
     private static readonly SigtranBenchmarkScenario[] Scenarios =
     [

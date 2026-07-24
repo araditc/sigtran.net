@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes supply-chain automation readiness.
 /// </summary>
-public sealed class SigtranSupplyChainReadinessSnapshot
+internal sealed class SigtranSupplyChainReadinessSnapshot
 {
     /// <summary>Creates a supply-chain readiness report.</summary>
     /// <param name="hasAutomationPlan">Whether the automation plan is available.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranSupplyChainReadinessSnapshot
 /// <summary>
 /// Provides supply-chain readiness helpers.
 /// </summary>
-public static class SigtranSupplyChainReadiness
+internal static class SigtranSupplyChainReadiness
 {
     /// <summary>Returns the current supply-chain readiness report.</summary>
     /// <returns>The current supply-chain readiness report.</returns>

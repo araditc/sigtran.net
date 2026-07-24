@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a migration guide requirement.
 /// </summary>
-public sealed class SigtranMigrationGuideEntry
+internal sealed class SigtranMigrationGuideEntry
 {
     /// <summary>Creates a migration guide entry.</summary>
     /// <param name="id">The stable guide id.</param>
@@ -34,7 +34,7 @@ public sealed class SigtranMigrationGuideEntry
 /// <summary>
 /// Provides migration guide planning helpers.
 /// </summary>
-public static class SigtranMigrationGuides
+internal static class SigtranMigrationGuides
 {
     private static readonly SigtranMigrationGuideEntry[] Entries =
     [

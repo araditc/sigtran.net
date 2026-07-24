@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an interoperability lab scenario kind.
 /// </summary>
-public enum SigtranInteropLabScenarioKind
+internal enum SigtranInteropLabScenarioKind
 {
     /// <summary>M3UA ASP to Signalling Gateway scenario.</summary>
     M3uaAspToSignallingGateway,
@@ -18,7 +18,7 @@ public enum SigtranInteropLabScenarioKind
 /// <summary>
 /// Describes one interoperability lab scenario.
 /// </summary>
-public sealed class SigtranInteropLabScenario
+internal sealed class SigtranInteropLabScenario
 {
     /// <summary>Creates an interoperability lab scenario.</summary>
     /// <param name="id">The stable scenario id.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranInteropLabScenario
 /// <summary>
 /// Provides the official interoperability lab scenario catalog.
 /// </summary>
-public static class SigtranInteropLabScenarios
+internal static class SigtranInteropLabScenarios
 {
     private static readonly SigtranInteropLabScenario[] Scenarios =
     [

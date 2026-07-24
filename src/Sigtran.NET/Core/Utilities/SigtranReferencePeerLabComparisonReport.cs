@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a reference external peer lab comparison report.
 /// </summary>
-public sealed class SigtranReferencePeerLabComparisonReport
+internal sealed class SigtranReferencePeerLabComparisonReport
 {
     private readonly string[] _expectedMessages;
     private readonly string[] _actualMessages;
@@ -89,7 +89,7 @@ public sealed class SigtranReferencePeerLabComparisonReport
 /// <summary>
 /// Provides reference external peer lab comparison helpers.
 /// </summary>
-public static class SigtranReferencePeerLabComparisonReports
+internal static class SigtranReferencePeerLabComparisonReports
 {
     /// <summary>Compares observed reference peer lab messages against the manifest vectors.</summary>
     /// <param name="runManifest">The run manifest.</param>

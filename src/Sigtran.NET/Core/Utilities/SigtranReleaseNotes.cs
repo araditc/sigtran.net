@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release notes for one SDK version.
 /// </summary>
-public sealed class SigtranReleaseNotes
+internal sealed class SigtranReleaseNotes
 {
     /// <summary>Creates release notes.</summary>
     /// <param name="version">The release version.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranReleaseNotes
 /// <summary>
 /// Provides release notes helpers.
 /// </summary>
-public static class SigtranReleaseNotesFactory
+internal static class SigtranReleaseNotesFactory
 {
     /// <summary>Creates alpha release notes for the current SDK milestone.</summary>
     /// <param name="version">The release version.</param>

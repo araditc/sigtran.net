@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides production evidence artifact intake status reporting.
 /// </summary>
-public static class SigtranReleaseEvidenceArtifactIntakeStatus
+internal static class SigtranReleaseEvidenceArtifactIntakeStatus
 {
     private static readonly string[] Capabilities =
     [

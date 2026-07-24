@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production release execution evidence area.
 /// </summary>
-public enum SigtranReleaseRunEvidenceArea
+internal enum SigtranReleaseRunEvidenceArea
 {
     /// <summary>Linux native SCTP lab evidence.</summary>
     LinuxSctp,
@@ -27,7 +27,7 @@ public enum SigtranReleaseRunEvidenceArea
 /// <summary>
 /// Identifies a production release evidence artifact kind.
 /// </summary>
-public enum SigtranReleaseRunEvidenceKind
+internal enum SigtranReleaseRunEvidenceKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -69,7 +69,7 @@ public enum SigtranReleaseRunEvidenceKind
 /// <summary>
 /// Identifies whether retained evidence proves a requirement.
 /// </summary>
-public enum SigtranReleaseRunEvidenceStatus
+internal enum SigtranReleaseRunEvidenceStatus
 {
     /// <summary>The evidence is retained and passed.</summary>
     Passed,
@@ -84,7 +84,7 @@ public enum SigtranReleaseRunEvidenceStatus
 /// <summary>
 /// Describes one retained production release execution evidence artifact.
 /// </summary>
-public sealed class SigtranReleaseRunEvidenceArtifact
+internal sealed class SigtranReleaseRunEvidenceArtifact
 {
     /// <summary>Creates a retained production release evidence artifact.</summary>
     /// <param name="area">The evidence area.</param>
@@ -134,7 +134,7 @@ public sealed class SigtranReleaseRunEvidenceArtifact
 /// <summary>
 /// Tracks retained production release execution evidence.
 /// </summary>
-public sealed class SigtranReleaseRunEvidenceManifest
+internal sealed class SigtranReleaseRunEvidenceManifest
 {
     private readonly List<SigtranReleaseRunEvidenceArtifact> _artifacts = [];
 

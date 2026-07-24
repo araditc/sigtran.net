@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the configuration contribution to production readiness.
 /// </summary>
-public sealed class SigtranConfigurationProductionGateResult
+internal sealed class SigtranConfigurationProductionGateResult
 {
     /// <summary>Creates a configuration production gate result.</summary>
     /// <param name="configurationFoundationReady">Whether configuration foundation is ready.</param>
@@ -42,7 +42,7 @@ public sealed class SigtranConfigurationProductionGateResult
 /// <summary>
 /// Provides configuration production gate helpers.
 /// </summary>
-public static class SigtranConfigurationProductionGate
+internal static class SigtranConfigurationProductionGate
 {
     /// <summary>Evaluates the current configuration production gate.</summary>
     /// <returns>The configuration production gate result.</returns>

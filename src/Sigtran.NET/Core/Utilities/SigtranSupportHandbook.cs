@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a support intake channel.
 /// </summary>
-public enum SigtranSupportChannel
+internal enum SigtranSupportChannel
 {
     /// <summary>GitHub issue support channel.</summary>
     GitHubIssues,
@@ -18,7 +18,7 @@ public enum SigtranSupportChannel
 /// <summary>
 /// Describes one support intake rule.
 /// </summary>
-public sealed class SigtranSupportRule
+internal sealed class SigtranSupportRule
 {
     /// <summary>Creates a support rule.</summary>
     /// <param name="channel">The support channel.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranSupportRule
 /// <summary>
 /// Provides support handbook metadata.
 /// </summary>
-public static class SigtranSupportHandbook
+internal static class SigtranSupportHandbook
 {
     /// <summary>Returns the support intake rules.</summary>
     /// <returns>The support intake rules.</returns>

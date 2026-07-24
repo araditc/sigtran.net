@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab traffic vector kinds.
 /// </summary>
-public enum SigtranReferencePeerLabTrafficVectorKind
+internal enum SigtranReferencePeerLabTrafficVectorKind
 {
     /// <summary>M3UA ASP lifecycle traffic.</summary>
     AspLifecycle,
@@ -18,7 +18,7 @@ public enum SigtranReferencePeerLabTrafficVectorKind
 /// <summary>
 /// Describes one reference external peer lab traffic vector.
 /// </summary>
-public sealed class SigtranReferencePeerLabTrafficVector
+internal sealed class SigtranReferencePeerLabTrafficVector
 {
     /// <summary>Creates a reference external peer lab traffic vector.</summary>
     /// <param name="id">The stable vector id.</param>
@@ -64,7 +64,7 @@ public sealed class SigtranReferencePeerLabTrafficVector
 /// <summary>
 /// Provides reference external peer lab traffic vectors.
 /// </summary>
-public static class SigtranReferencePeerLabTrafficVectors
+internal static class SigtranReferencePeerLabTrafficVectors
 {
     /// <summary>Returns the default reference external peer traffic vectors.</summary>
     /// <returns>The default reference external peer traffic vectors.</returns>

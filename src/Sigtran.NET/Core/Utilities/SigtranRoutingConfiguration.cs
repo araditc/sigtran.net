@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes M3UA routing configuration requirements.
 /// </summary>
-public sealed class SigtranRoutingConfiguration
+internal sealed class SigtranRoutingConfiguration
 {
     /// <summary>Creates routing configuration requirements.</summary>
     /// <param name="requiresRoutingContext">Whether Routing Context is required.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranRoutingConfiguration
 /// <summary>
 /// Provides routing configuration helpers.
 /// </summary>
-public static class SigtranRoutingConfigurations
+internal static class SigtranRoutingConfigurations
 {
     /// <summary>Creates the default enterprise routing configuration.</summary>
     /// <returns>The default enterprise routing configuration.</returns>

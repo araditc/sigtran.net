@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Aggregates SCCP, TCAP, and MAP SMS protocol evidence validation results.
 /// </summary>
-public sealed class SigtranProtocolEvidenceBundleReport
+internal sealed class SigtranProtocolEvidenceBundleReport
 {
     private readonly SigtranProtocolEvidenceVector[] _vectors;
     private readonly SigtranProtocolEvidenceValidationReport[] _validationReports;
@@ -70,7 +70,7 @@ public sealed class SigtranProtocolEvidenceBundleReport
 /// <summary>
 /// Provides a cross-layer SCCP, TCAP, and MAP SMS evidence bundle.
 /// </summary>
-public static class SigtranProtocolEvidenceBundle
+internal static class SigtranProtocolEvidenceBundle
 {
     /// <summary>The required cross-layer evidence vector count.</summary>
     public const int RequiredVectorCount = 11;

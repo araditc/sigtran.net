@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes verification state for one reference external peer lab runner artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerArtifactVerificationItem
+internal sealed class SigtranReferencePeerLabRunnerArtifactVerificationItem
 {
     /// <summary>Creates a reference peer lab runner artifact verification item.</summary>
     /// <param name="artifact">The collected artifact.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranReferencePeerLabRunnerArtifactVerificationItem
 /// <summary>
 /// Describes verification output for reference external peer lab runner artifacts.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerArtifactVerificationReport
+internal sealed class SigtranReferencePeerLabRunnerArtifactVerificationReport
 {
     private readonly SigtranReferencePeerLabRunnerArtifactVerificationItem[] _items;
 
@@ -137,7 +137,7 @@ public sealed class SigtranReferencePeerLabRunnerArtifactVerificationReport
 /// <summary>
 /// Provides reference external peer lab runner artifact verification helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerArtifactVerification
+internal static class SigtranReferencePeerLabRunnerArtifactVerification
 {
     /// <summary>Verifies collected artifacts against the retained digest manifest.</summary>
     /// <param name="collection">The evidence collection.</param>

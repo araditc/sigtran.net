@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides production evidence readiness lockdown status reporting.
 /// </summary>
-public static class SigtranReleaseEvidenceReadinessLockdownStatus
+internal static class SigtranReleaseEvidenceReadinessLockdownStatus
 {
     private static readonly string[] Capabilities =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK compatibility policy.
 /// </summary>
-public sealed class SigtranCompatibilityPolicy
+internal sealed class SigtranCompatibilityPolicy
 {
     /// <summary>Creates a compatibility policy.</summary>
     /// <param name="targetFramework">The supported target framework.</param>
@@ -45,7 +45,7 @@ public sealed class SigtranCompatibilityPolicy
 /// <summary>
 /// Provides SDK compatibility policy helpers.
 /// </summary>
-public static class SigtranCompatibility
+internal static class SigtranCompatibility
 {
     /// <summary>Creates the current SDK compatibility policy.</summary>
     /// <returns>The current compatibility policy.</returns>

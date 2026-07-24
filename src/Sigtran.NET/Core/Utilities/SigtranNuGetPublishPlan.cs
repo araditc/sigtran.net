@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a NuGet publication plan mode.
 /// </summary>
-public enum SigtranNuGetPublishMode
+internal enum SigtranNuGetPublishMode
 {
     /// <summary>Validate publication inputs without uploading a package.</summary>
     DryRun,
@@ -15,7 +15,7 @@ public enum SigtranNuGetPublishMode
 /// <summary>
 /// Describes a NuGet package publication plan.
 /// </summary>
-public sealed class SigtranNuGetPublishPlan
+internal sealed class SigtranNuGetPublishPlan
 {
     /// <summary>Creates a NuGet package publication plan.</summary>
     /// <param name="mode">The publication mode.</param>
@@ -63,7 +63,7 @@ public sealed class SigtranNuGetPublishPlan
 /// <summary>
 /// Provides NuGet publication plans.
 /// </summary>
-public static class SigtranNuGetPublishPlans
+internal static class SigtranNuGetPublishPlans
 {
     /// <summary>Creates the default dry-run publication plan.</summary>
     /// <returns>The default dry-run publication plan.</returns>

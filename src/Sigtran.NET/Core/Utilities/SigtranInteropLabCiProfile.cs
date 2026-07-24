@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the opt-in CI profile for external interoperability lab runs.
 /// </summary>
-public sealed class SigtranInteropLabCiProfile
+internal sealed class SigtranInteropLabCiProfile
 {
     /// <summary>Creates an interoperability lab CI profile.</summary>
     /// <param name="enableVariable">The variable that enables lab execution.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranInteropLabCiProfile
 /// <summary>
 /// Provides the official external interoperability lab CI profile.
 /// </summary>
-public static class SigtranInteropLabCiProfiles
+internal static class SigtranInteropLabCiProfiles
 {
     /// <summary>Creates the default external interoperability lab CI profile.</summary>
     /// <returns>The default external interoperability lab CI profile.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a package artifact that can participate in publication evaluation.
 /// </summary>
-public sealed class SigtranPackagePublicationArtifact
+internal sealed class SigtranPackagePublicationArtifact
 {
     /// <summary>Creates a package publication artifact reference.</summary>
     /// <param name="kind">The package artifact kind.</param>
@@ -54,7 +54,7 @@ public sealed class SigtranPackagePublicationArtifact
 /// <summary>
 /// Binds package artifacts to a package publication request.
 /// </summary>
-public sealed class SigtranPackagePublicationArtifactSet
+internal sealed class SigtranPackagePublicationArtifactSet
 {
     /// <summary>Creates a package publication artifact set.</summary>
     /// <param name="request">The package publication request.</param>
@@ -133,7 +133,7 @@ public sealed class SigtranPackagePublicationArtifactSet
 /// <summary>
 /// Provides package publication artifact set helpers.
 /// </summary>
-public static class SigtranPackagePublicationArtifacts
+internal static class SigtranPackagePublicationArtifacts
 {
     /// <summary>Creates a package publication artifact set.</summary>
     /// <param name="request">The package publication request.</param>

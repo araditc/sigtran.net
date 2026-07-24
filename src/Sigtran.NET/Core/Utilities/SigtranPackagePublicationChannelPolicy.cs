@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes publication channel policy evaluation for a guarded package publication.
 /// </summary>
-public sealed class SigtranPackagePublicationChannelPolicyEvaluation
+internal sealed class SigtranPackagePublicationChannelPolicyEvaluation
 {
     /// <summary>Creates a package publication channel policy evaluation.</summary>
     /// <param name="publishGuardEvaluation">The package publication publish guard evaluation.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranPackagePublicationChannelPolicyEvaluation
 /// <summary>
 /// Provides package publication channel policy helpers.
 /// </summary>
-public static class SigtranPackagePublicationChannelPolicies
+internal static class SigtranPackagePublicationChannelPolicies
 {
     /// <summary>Evaluates channel policy for a guarded package publication.</summary>
     /// <param name="publishGuardEvaluation">The package publication publish guard evaluation.</param>

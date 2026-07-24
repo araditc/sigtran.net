@@ -19,6 +19,9 @@ Avoid public type, member, and parameter names containing:
 - `ReadinessReport`
 - Phase-numbered names such as `Phase17`
 
-Historical planning documents can still describe business goals in prose, but SDK identifiers must remain neutral, protocol-oriented, and reusable outside this repository's release plan.
+Historical planning documents can still describe business goals in prose, but
+SDK identifiers must remain neutral, protocol-oriented, and reusable outside
+this repository's release plan. Release governance models are internal and are
+not part of the package compatibility contract.
 
 The test suite includes a public API naming guard that scans exported types, public members, and public parameters for these banned planning terms.

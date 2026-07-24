@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies security vulnerability severity.
 /// </summary>
-public enum SigtranSecuritySeverity
+internal enum SigtranSecuritySeverity
 {
     /// <summary>Low severity.</summary>
     Low,
@@ -21,7 +21,7 @@ public enum SigtranSecuritySeverity
 /// <summary>
 /// Describes the SDK security response policy.
 /// </summary>
-public sealed class SigtranSecurityResponsePolicy
+internal sealed class SigtranSecurityResponsePolicy
 {
     /// <summary>Creates a security response policy.</summary>
     /// <param name="contact">The security contact.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranSecurityResponsePolicy
 /// <summary>
 /// Provides the SDK security policy.
 /// </summary>
-public static class SigtranSecurityPolicy
+internal static class SigtranSecurityPolicy
 {
     /// <summary>Creates the current security response policy.</summary>
     /// <returns>The current security response policy.</returns>

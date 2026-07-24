@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a configured reference external peer lab binding.
 /// </summary>
-public sealed class SigtranReferencePeerLabBinding
+internal sealed class SigtranReferencePeerLabBinding
 {
     private readonly Dictionary<string, string> _environmentVariables;
     private readonly string[] _satisfiedCriterionIds;
@@ -83,7 +83,7 @@ public sealed class SigtranReferencePeerLabBinding
 /// <summary>
 /// Provides package-neutral reference external peer lab bindings.
 /// </summary>
-public static class SigtranReferencePeerLabBindings
+internal static class SigtranReferencePeerLabBindings
 {
     /// <summary>The environment variable that identifies the external peer profile.</summary>
     public const string PeerIdEnvironmentVariable = "SIGTRAN_EXTERNAL_PEER_ID";

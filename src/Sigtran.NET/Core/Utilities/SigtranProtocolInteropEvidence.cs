@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Stores protocol interoperability vector evidence.
 /// </summary>
-public sealed class SigtranProtocolInteropEvidenceRegistry
+internal sealed class SigtranProtocolInteropEvidenceRegistry
 {
     private readonly List<SigtranProtocolInteropRunReport> _reports = [];
 
@@ -30,7 +30,7 @@ public sealed class SigtranProtocolInteropEvidenceRegistry
 /// <summary>
 /// Provides protocol interoperability evidence helpers.
 /// </summary>
-public static class SigtranProtocolInteropEvidence
+internal static class SigtranProtocolInteropEvidence
 {
     /// <summary>Creates the current protocol interoperability evidence registry.</summary>
     /// <returns>The current protocol interoperability evidence registry.</returns>

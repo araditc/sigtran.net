@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release workflow orchestration readiness.
 /// </summary>
-public sealed class SigtranReleaseWorkflowReadinessSnapshot
+internal sealed class SigtranReleaseWorkflowReadinessSnapshot
 {
     /// <summary>Creates a release workflow readiness report.</summary>
     /// <param name="hasWorkflowContract">Whether the workflow contract is available.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranReleaseWorkflowReadinessSnapshot
 /// <summary>
 /// Provides release workflow readiness helpers.
 /// </summary>
-public static class SigtranReleaseWorkflowReadiness
+internal static class SigtranReleaseWorkflowReadiness
 {
     /// <summary>Returns the current release workflow readiness report.</summary>
     /// <returns>The release workflow readiness report.</returns>

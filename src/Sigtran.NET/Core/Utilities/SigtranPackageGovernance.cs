@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes package governance requirements for production release.
 /// </summary>
-public sealed class SigtranPackageGovernancePolicy
+internal sealed class SigtranPackageGovernancePolicy
 {
     /// <summary>Creates a package governance policy.</summary>
     /// <param name="requiresLicense">Whether a license is required.</param>
@@ -60,7 +60,7 @@ public sealed class SigtranPackageGovernancePolicy
 /// <summary>
 /// Provides package governance policies.
 /// </summary>
-public static class SigtranPackageGovernance
+internal static class SigtranPackageGovernance
 {
     /// <summary>Creates the current package governance policy.</summary>
     /// <returns>The current package governance policy.</returns>

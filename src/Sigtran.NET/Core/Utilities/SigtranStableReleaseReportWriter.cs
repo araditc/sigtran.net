@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained stable release release report.
 /// </summary>
-public sealed class SigtranStableReleaseReportWriteResult
+internal sealed class SigtranStableReleaseReportWriteResult
 {
     /// <summary>Creates a retained stable release release report result.</summary>
     /// <param name="publishPlan">The stable publish execution plan rendered into the report.</param>
@@ -122,7 +122,7 @@ public sealed class SigtranStableReleaseReportWriteResult
 /// <summary>
 /// Provides retained stable release release report helpers.
 /// </summary>
-public static class SigtranStableReleaseReportWriters
+internal static class SigtranStableReleaseReportWriters
 {
     /// <summary>Writes a retained stable release release report.</summary>
     /// <param name="publishPlan">The stable publish execution plan.</param>

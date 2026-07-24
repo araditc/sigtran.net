@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.M3UA;
 /// <summary>
 /// Describes the implemented M3UA runtime capabilities.
 /// </summary>
-public sealed class M3uaRuntimeReadinessSnapshot
+internal sealed class M3uaRuntimeReadinessSnapshot
 {
     /// <summary>Creates an M3UA runtime readiness snapshot.</summary>
     /// <param name="hasAspLifecycle">Whether ASP startup and shutdown lifecycle is implemented.</param>
@@ -72,7 +72,7 @@ public sealed class M3uaRuntimeReadinessSnapshot
 /// <summary>
 /// Provides M3UA runtime readiness information.
 /// </summary>
-public static class M3uaRuntimeReadiness
+internal static class M3uaRuntimeReadiness
 {
     /// <summary>Returns the current M3UA runtime readiness snapshot.</summary>
     /// <returns>The current M3UA runtime readiness snapshot.</returns>

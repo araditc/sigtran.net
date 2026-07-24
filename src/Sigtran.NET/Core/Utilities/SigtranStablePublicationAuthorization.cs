@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one stable publication reviewer approval.
 /// </summary>
-public sealed class SigtranStablePublicationApproval
+internal sealed class SigtranStablePublicationApproval
 {
     /// <summary>Creates a stable publication reviewer approval.</summary>
     /// <param name="reviewerName">The reviewer name.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranStablePublicationApproval
 /// <summary>
 /// Describes protected authorization for a stable publication run.
 /// </summary>
-public sealed class SigtranStablePublicationAuthorization
+internal sealed class SigtranStablePublicationAuthorization
 {
     private static readonly string[] RequiredApprovalRoles =
     [
@@ -194,7 +194,7 @@ public sealed class SigtranStablePublicationAuthorization
 /// <summary>
 /// Provides protected stable publication authorization helpers.
 /// </summary>
-public static class SigtranStablePublicationAuthorizations
+internal static class SigtranStablePublicationAuthorizations
 {
     /// <summary>Creates a default protected stable publication authorization.</summary>
     /// <param name="tagGate">The stable tag gate result.</param>

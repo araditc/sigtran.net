@@ -21,6 +21,10 @@ on:
           - dry-run
           - prerelease
           - stable
+      confirmation:
+        description: Type "publish Sigtran.NET <version>" for stable publication
+        required: false
+        type: string
   push:
     tags:
       - 'v*'
@@ -44,14 +48,16 @@ jobs:
       SIGTRAN_RELEASE_EVIDENCE: true
       SIGTRAN_RELEASE_EVIDENCE_ROOT: artifacts/release-evidence
       SIGTRAN_DRY_RUN_ARTIFACT_ROOT: artifacts/release-dry-run
-      TIMESTAMP_AUTHORITY: ${{ vars.TIMESTAMP_AUTHORITY || 'http://timestamp.sectigo.com' }}
+      TIMESTAMP_AUTHORITY: ${{ vars.TIMESTAMP_AUTHORITY || 'https://timestamp.sectigo.com' }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: 10.0.x
 
@@ -78,6 +84,50 @@ jobs:
 
       - name: Test
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
+
+      - name: Generate Current Public API
+        shell: pwsh
+        run: |
+          ./eng/generate-public-api-baseline.ps1 `
+            -OutputPath "artifacts/supply-chain/api/Sigtran.NET.$env:RELEASE_VERSION.public-api.txt"
+
+      - name: Compare Public API Baseline
+        shell: pwsh
+        run: |
+          $arguments = @{
+            CurrentPath = "artifacts/supply-chain/api/Sigtran.NET.$env:RELEASE_VERSION.public-api.txt"
+            OutputPath = "artifacts/supply-chain/api/Sigtran.NET.$env:RELEASE_VERSION.api-diff.md"
+          }
+          if ($env:SIGTRAN_RELEASE_CHANNEL -eq "stable") {
+            $arguments.FailOnAnyChange = $true
+          }
+          else {
+            $arguments.FailOnBreaking = $true
+          }
+          ./eng/compare-public-api.ps1 @arguments
+
+      - name: Evaluate Stable Release Readiness
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
+        shell: pwsh
+        run: |
+          ./eng/evaluate-stable-release.ps1 `
+            -ExpectedVersion "$env:RELEASE_VERSION" `
+            -JsonOutputPath "artifacts/release-evidence/stable-release-decision.json" `
+            -MarkdownOutputPath "artifacts/release-evidence/stable-release-decision.md"
+
+      - name: Enforce Stable Release Readiness
+        if: ${{ github.event_name != 'workflow_dispatch' || (inputs.channel == 'stable' && inputs.publish == true) }}
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch" -and
+              "${{ inputs.confirmation }}" -ne "publish Sigtran.NET $env:RELEASE_VERSION") {
+            throw "Stable publication confirmation does not match the requested version."
+          }
+          ./eng/evaluate-stable-release.ps1 `
+            -ExpectedVersion "$env:RELEASE_VERSION" `
+            -JsonOutputPath "artifacts/release-evidence/stable-release-decision.json" `
+            -MarkdownOutputPath "artifacts/release-evidence/stable-release-decision.md" `
+            -RequireGo
 
       - name: Pack
         shell: bash
@@ -106,13 +156,13 @@ jobs:
       - name: Prepare Release Artifacts
         shell: bash
         run: |
-          mkdir -p artifacts/release artifacts/supply-chain/sbom artifacts/supply-chain/signing artifacts/supply-chain/provenance artifacts/supply-chain/api artifacts/supply-chain/digests
+          mkdir -p artifacts/release artifacts/release-evidence artifacts/supply-chain/sbom artifacts/supply-chain/signing artifacts/supply-chain/provenance artifacts/supply-chain/api artifacts/supply-chain/digests
           cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" artifacts/release/
           cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.snupkg" artifacts/release/
           echo "SIGTRAN_RELEASE_PACKAGE=artifacts/release/Sigtran.NET.$RELEASE_VERSION.nupkg" >> "$GITHUB_ENV"
 
       - name: Install SBOM Tool
-        run: dotnet tool install --global Microsoft.Sbom.DotNetTool
+        run: dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
 
       - name: Generate Final SBOM
         shell: bash
@@ -128,7 +178,7 @@ jobs:
           echo "SIGTRAN_FINAL_SBOM_FORMAT=spdx-json" >> "$GITHUB_ENV"
 
       - name: Sign Package
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'prerelease' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'dry-run' || (inputs.channel == 'stable' && inputs.publish == true) }}
         shell: bash
         env:
           SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
@@ -138,6 +188,13 @@ jobs:
           test -n "$SIGNING_CERTIFICATE_PASSWORD"
           signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$signing_certificate_path"
+          if [ "$SIGTRAN_RELEASE_CHANNEL" = "stable" ]; then
+            test -n "${{ vars.TRUSTED_SIGNING_CERTIFICATE_SHA256 }}"
+            bash eng/verify-signing-certificate.sh \
+              "$signing_certificate_path" \
+              "${{ vars.TRUSTED_SIGNING_CERTIFICATE_SHA256 }}" \
+              | tee "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.certificate-trust.md"
+          fi
           dotnet nuget sign "$SIGTRAN_RELEASE_PACKAGE" --certificate-path "$signing_certificate_path" --certificate-password "$SIGNING_CERTIFICATE_PASSWORD" --timestamper "$TIMESTAMP_AUTHORITY" --overwrite
           sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
 
@@ -154,6 +211,19 @@ jobs:
             echo "package=$SIGTRAN_RELEASE_PACKAGE"
           } > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.md"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.prerelease-signing-policy.sha256"
+
+      - name: Retain Unsigned Stable Assessment Evidence
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel == 'stable' && inputs.publish == false }}
+        shell: bash
+        run: |
+          sha256sum "$SIGTRAN_RELEASE_PACKAGE" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.package.sha256"
+          {
+            echo "version=$RELEASE_VERSION"
+            echo "channel=$SIGTRAN_RELEASE_CHANNEL"
+            echo "authorSigning=not-executed"
+            echo "reason=stable assessment does not sign or publish a package"
+            echo "package=$SIGTRAN_RELEASE_PACKAGE"
+          } > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.stable-assessment.md"
 
       - name: Trust Dry-Run Signing Certificate
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel == 'dry-run' }}
@@ -177,7 +247,7 @@ jobs:
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.txt" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.dry-run-certificate-fingerprint.sha256"
 
       - name: Verify Signature And Timestamp
-        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel != 'prerelease' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'dry-run' || (inputs.channel == 'stable' && inputs.publish == true) }}
         shell: bash
         run: |
           verify_args=( "$SIGTRAN_RELEASE_PACKAGE" --all --verbosity detailed )
@@ -191,13 +261,13 @@ jobs:
 
       - name: Attest Package Provenance
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
 
       - name: Attest SBOM
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
-        uses: actions/attest-sbom@v2
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: ${{ env.SIGTRAN_RELEASE_PACKAGE }}
           sbom-path: ${{ env.SIGTRAN_FINAL_SBOM_PATH }}
@@ -215,28 +285,29 @@ jobs:
           } > "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.jsonl"
           sha256sum "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.jsonl" > "artifacts/supply-chain/provenance/Sigtran.NET.$RELEASE_VERSION.intoto.sha256"
 
-      - name: Create Public API Diff
+      - name: Retain Public API Diff Digest
         shell: bash
         run: |
-          current_api="artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.public-api.xml"
           api_diff="artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.api-diff.md"
-          cp "src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.xml" "$current_api"
-          if [ -f "artifacts/api/Sigtran.NET.baseline.public-api.txt" ]; then
-            diff -u "artifacts/api/Sigtran.NET.baseline.public-api.txt" "$current_api" > "$api_diff" || true
-          else
-            echo "No retained public API baseline was found in artifacts/api." > "$api_diff"
-          fi
+          test -f "$api_diff"
           echo "SIGTRAN_PUBLIC_API_DIFF_PATH=$api_diff" >> "$GITHUB_ENV"
           sha256sum "$api_diff" > "artifacts/supply-chain/api/Sigtran.NET.$RELEASE_VERSION.api-diff.sha256"
 
       - name: Create Digest Manifest
         shell: bash
         run: |
-          find artifacts/release artifacts/supply-chain artifacts/release-dry-run -type f -print0 | sort -z | xargs -0 sha256sum > "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256"
+          digest_manifest="$(mktemp)"
+          find artifacts/release artifacts/supply-chain artifacts/release-dry-run artifacts/release-evidence \
+            -type f \
+            ! -path "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256" \
+            -print0 |
+            sort -z |
+            xargs -0 sha256sum > "$digest_manifest"
+          mv "$digest_manifest" "artifacts/supply-chain/digests/Sigtran.NET.$RELEASE_VERSION.sha256"
 
       - name: Upload Package
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sigtran-package
           path: artifacts/release/*.nupkg
@@ -244,7 +315,7 @@ jobs:
 
       - name: Upload Symbols
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sigtran-symbols
           path: artifacts/release/*.snupkg
@@ -252,7 +323,7 @@ jobs:
 
       - name: Upload Supply Chain Evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sigtran-supply-chain
           path: artifacts/supply-chain
@@ -260,10 +331,18 @@ jobs:
 
       - name: Upload Dry-Run Evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: sigtran-release-dry-run
           path: artifacts/release-dry-run
+          retention-days: 90
+
+      - name: Upload Stable Release Decision
+        if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.channel == 'stable') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sigtran-stable-release-decision
+          path: artifacts/release-evidence
           retention-days: 90
 
       - name: Evaluate RC Publication Gate
@@ -283,21 +362,123 @@ jobs:
       - name: Production Evidence
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         run: |
-          echo "Production evidence verification requires retained native SCTP, external peer, protocol vector, provenance, and package artifacts."
-          test -d "$SIGTRAN_RELEASE_EVIDENCE_ROOT"
+          test -f "$SIGTRAN_RELEASE_EVIDENCE_ROOT/stable-release-decision.json"
+          test -f "$SIGTRAN_RELEASE_EVIDENCE_ROOT/stable-release-decision.md"
 
-      - name: Publish
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel != 'dry-run' && inputs.publish == true }}
+
+  publish:
+    needs: release
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.channel != 'dry-run' && inputs.publish == true }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.channel == 'stable' && 'nuget-stable' || 'nuget-prerelease' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download Package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sigtran-package
+          path: artifacts/release
+
+      - name: Download Symbols
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sigtran-symbols
+          path: artifacts/release
+
+      - name: Download Supply Chain Evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sigtran-supply-chain
+          path: artifacts/supply-chain
+
+      - name: Download Stable Release Decision
+        if: ${{ inputs.channel == 'stable' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sigtran-stable-release-decision
+          path: artifacts/release-evidence
+
+      - name: Validate Publication Request
         shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
         run: |
-          if [ "$SIGTRAN_RELEASE_CHANNEL" = "stable" ]; then
+          test -n "$NUGET_API_KEY"
+          if [ "$RELEASE_CHANNEL" = "stable" ]; then
             case "$RELEASE_VERSION" in
               *-*) echo "Stable channel requires a stable version."; exit 1 ;;
             esac
+            jq -e '.decision == "GO"' artifacts/release-evidence/stable-release-decision.json
+            test "${{ inputs.confirmation }}" = "publish Sigtran.NET $RELEASE_VERSION"
+            test "${GITHUB_REF_NAME}" = "main"
+            tag_commit="$(git rev-list -n 1 "v$RELEASE_VERSION")"
+            test "$tag_commit" = "$GITHUB_SHA"
+            dotnet nuget verify "artifacts/release/Sigtran.NET.$RELEASE_VERSION.nupkg" --all
           else
             case "$RELEASE_VERSION" in
               *-*) ;;
               *) echo "Prerelease channel requires a prerelease version."; exit 1 ;;
             esac
           fi
-          dotnet nuget push artifacts/release/Sigtran.NET.*.nupkg --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}"
+
+      - name: Publish
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          dotnet nuget push \
+            "artifacts/release/Sigtran.NET.$RELEASE_VERSION.nupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY"
+
+      - name: Verify Stable Public Restore
+        if: ${{ inputs.channel == 'stable' }}
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "https://api.nuget.org/v3-flatcontainer/sigtran.net/$RELEASE_VERSION/sigtran.net.$RELEASE_VERSION.nupkg" > /dev/null; then
+              break
+            fi
+            if [ "$attempt" = "30" ]; then
+              echo "Published package did not become visible in time."
+              exit 1
+            fi
+            sleep 10
+          done
+          restore_dir="$RUNNER_TEMP/sigtran-public-restore"
+          dotnet new classlib --framework net10.0 --output "$restore_dir"
+          dotnet add "$restore_dir" package Sigtran.NET --version "$RELEASE_VERSION" --source https://api.nuget.org/v3/index.json
+
+      - name: Create Stable GitHub Release
+        if: ${{ inputs.channel == 'stable' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          gh release create "v$RELEASE_VERSION" \
+            artifacts/release/Sigtran.NET.* \
+            artifacts/supply-chain/sbom/Sigtran.NET.$RELEASE_VERSION.spdx.json \
+            artifacts/release-evidence/stable-release-decision.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Sigtran.NET $RELEASE_VERSION" \
+            --notes-file "docs/releases/$RELEASE_VERSION.md" \
+            --verify-tag

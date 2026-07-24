@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies protocol interoperability vector run status.
 /// </summary>
-public enum SigtranProtocolInteropRunStatus
+internal enum SigtranProtocolInteropRunStatus
 {
     /// <summary>The run is pending.</summary>
     Pending,
@@ -18,7 +18,7 @@ public enum SigtranProtocolInteropRunStatus
 /// <summary>
 /// Describes a protocol interoperability vector run report.
 /// </summary>
-public sealed class SigtranProtocolInteropRunReport
+internal sealed class SigtranProtocolInteropRunReport
 {
     /// <summary>Creates a protocol interoperability vector run report.</summary>
     /// <param name="vector">The protocol vector.</param>

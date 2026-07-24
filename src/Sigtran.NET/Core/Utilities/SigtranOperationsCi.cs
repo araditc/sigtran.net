@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the operations CI profile.
 /// </summary>
-public sealed class SigtranOperationsCiProfile
+internal sealed class SigtranOperationsCiProfile
 {
     /// <summary>Creates an operations CI profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -30,7 +30,7 @@ public sealed class SigtranOperationsCiProfile
 /// <summary>
 /// Provides operations CI profile helpers.
 /// </summary>
-public static class SigtranOperationsCi
+internal static class SigtranOperationsCi
 {
     /// <summary>Creates the default operations CI profile.</summary>
     /// <returns>The default operations CI profile.</returns>

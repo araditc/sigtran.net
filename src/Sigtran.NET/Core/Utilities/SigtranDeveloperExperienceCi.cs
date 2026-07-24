@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the developer experience CI profile.
 /// </summary>
-public sealed class SigtranDeveloperExperienceCiProfile
+internal sealed class SigtranDeveloperExperienceCiProfile
 {
     /// <summary>Creates a developer experience CI profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -39,7 +39,7 @@ public sealed class SigtranDeveloperExperienceCiProfile
 /// <summary>
 /// Provides developer experience CI helpers.
 /// </summary>
-public static class SigtranDeveloperExperienceCi
+internal static class SigtranDeveloperExperienceCi
 {
     /// <summary>Creates the default developer experience CI profile.</summary>
     /// <returns>The default developer experience CI profile.</returns>

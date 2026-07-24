@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production evidence area.
 /// </summary>
-public enum SigtranReleaseEvidenceArea
+internal enum SigtranReleaseEvidenceArea
 {
     /// <summary>Native SCTP production verification evidence.</summary>
     NativeSctp,
@@ -24,7 +24,7 @@ public enum SigtranReleaseEvidenceArea
 /// <summary>
 /// Identifies a production evidence artifact kind.
 /// </summary>
-public enum SigtranReleaseEvidenceArtifactKind
+internal enum SigtranReleaseEvidenceArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -69,7 +69,7 @@ public enum SigtranReleaseEvidenceArtifactKind
 /// <summary>
 /// Describes a production evidence requirement.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRequirement
+internal sealed class SigtranReleaseEvidenceRequirement
 {
     /// <summary>Creates a production evidence requirement.</summary>
     /// <param name="area">The evidence area.</param>
@@ -105,7 +105,7 @@ public sealed class SigtranReleaseEvidenceRequirement
 /// <summary>
 /// Provides production evidence requirements.
 /// </summary>
-public static class SigtranReleaseEvidenceRequirements
+internal static class SigtranReleaseEvidenceRequirements
 {
     private static readonly SigtranReleaseEvidenceRequirement[] Requirements =
     [

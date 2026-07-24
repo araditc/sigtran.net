@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides release automation and supply-chain status.
 /// </summary>
-public static class SigtranReleaseAutomationStatus
+internal static class SigtranReleaseAutomationStatus
 {
     private static readonly string[] Capabilities =
     [

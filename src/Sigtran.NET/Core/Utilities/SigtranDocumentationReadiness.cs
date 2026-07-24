@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes documentation readiness for developer adoption.
 /// </summary>
-public sealed class SigtranDocumentationReadinessSnapshot
+internal sealed class SigtranDocumentationReadinessSnapshot
 {
     /// <summary>Creates a documentation readiness report.</summary>
     /// <param name="hasProjectPlan">Whether project plan documentation is available.</param>
@@ -37,7 +37,7 @@ public sealed class SigtranDocumentationReadinessSnapshot
 /// <summary>
 /// Provides documentation readiness helpers.
 /// </summary>
-public static class SigtranDocumentationReadiness
+internal static class SigtranDocumentationReadiness
 {
     /// <summary>Returns the current documentation readiness report.</summary>
     /// <returns>The current documentation readiness report.</returns>

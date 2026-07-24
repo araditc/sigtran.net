@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes ordered protocol messages expected during external peer interop execution.
 /// </summary>
-public sealed class SigtranExternalPeerInteropTraceExpectations
+internal sealed class SigtranExternalPeerInteropTraceExpectations
 {
     /// <summary>Creates external peer trace expectations.</summary>
     /// <param name="scenarioId">The scenario id.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranExternalPeerInteropTraceExpectations
 /// <summary>
 /// Provides external peer trace expectation helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropTraceExpectationsCatalog
+internal static class SigtranExternalPeerInteropTraceExpectationsCatalog
 {
     /// <summary>Creates the default external peer ASP-to-SG trace expectations.</summary>
     /// <returns>The default external peer ASP-to-SG trace expectations.</returns>

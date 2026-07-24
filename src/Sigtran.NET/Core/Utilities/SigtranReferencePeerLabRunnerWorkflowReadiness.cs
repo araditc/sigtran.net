@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab runner workflow readiness.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerWorkflowReadinessSnapshot
+internal sealed class SigtranReferencePeerLabRunnerWorkflowReadinessSnapshot
 {
     /// <summary>Creates a reference peer lab runner workflow readiness report.</summary>
     /// <param name="workflowTemplate">The workflow template.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranReferencePeerLabRunnerWorkflowReadinessSnapshot
 /// <summary>
 /// Provides reference external peer lab runner workflow readiness helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerWorkflowReadiness
+internal static class SigtranReferencePeerLabRunnerWorkflowReadiness
 {
     /// <summary>Evaluates workflow readiness for a runner command manifest.</summary>
     /// <param name="commandManifest">The runner command manifest.</param>

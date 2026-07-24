@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes production operations readiness.
 /// </summary>
-public sealed class SigtranOperationsReadinessSnapshot
+internal sealed class SigtranOperationsReadinessSnapshot
 {
     /// <summary>Creates an operations readiness report.</summary>
     /// <param name="hasRunbooks">Whether runbooks are available.</param>
@@ -62,7 +62,7 @@ public sealed class SigtranOperationsReadinessSnapshot
 /// <summary>
 /// Provides operations readiness helpers.
 /// </summary>
-public static class SigtranOperationsReadiness
+internal static class SigtranOperationsReadiness
 {
     /// <summary>Returns the current operations readiness report.</summary>
     /// <returns>The current operations readiness report.</returns>

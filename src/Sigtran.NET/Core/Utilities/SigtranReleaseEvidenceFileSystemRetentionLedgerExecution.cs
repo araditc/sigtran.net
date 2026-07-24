@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed production evidence retention ledger execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemRetentionLedgerExecution
+internal sealed class SigtranReleaseEvidenceFileSystemRetentionLedgerExecution
 {
     /// <summary>Creates filesystem-backed retention ledger execution.</summary>
     /// <param name="artifactWriteResult">The retained filesystem artifact write result.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranReleaseEvidenceFileSystemRetentionLedgerExecution
 /// <summary>
 /// Provides filesystem-backed production evidence retention ledger execution helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemRetentionLedgers
+internal static class SigtranReleaseEvidenceFileSystemRetentionLedgers
 {
     /// <summary>Creates retention ledger execution from retained filesystem verification artifacts.</summary>
     /// <param name="artifactWriteResult">The retained filesystem artifact write result.</param>

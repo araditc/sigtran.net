@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one public API reference entry for developer onboarding.
 /// </summary>
-public sealed class SigtranApiReferenceEntry
+internal sealed class SigtranApiReferenceEntry
 {
     /// <summary>Creates an API reference entry.</summary>
     /// <param name="name">The API name.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranApiReferenceEntry
 /// <summary>
 /// Provides a curated API reference index for onboarding.
 /// </summary>
-public static class SigtranApiReferenceIndex
+internal static class SigtranApiReferenceIndex
 {
     /// <summary>Returns the curated API reference entries.</summary>
     /// <returns>The curated API reference entries.</returns>

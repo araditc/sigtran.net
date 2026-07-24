@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a rendered reference external peer lab command script.
 /// </summary>
-public sealed class SigtranReferencePeerLabCommandScript
+internal sealed class SigtranReferencePeerLabCommandScript
 {
     /// <summary>Creates a reference external peer lab command script.</summary>
     /// <param name="runManifest">The run manifest.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranReferencePeerLabCommandScript
 /// <summary>
 /// Provides reference external peer lab command script helpers.
 /// </summary>
-public static class SigtranReferencePeerLabCommandScripts
+internal static class SigtranReferencePeerLabCommandScripts
 {
     /// <summary>Creates the default command script for a reference peer lab run.</summary>
     /// <param name="runManifest">The run manifest.</param>

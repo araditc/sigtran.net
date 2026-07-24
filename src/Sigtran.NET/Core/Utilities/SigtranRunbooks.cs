@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an operational runbook kind.
 /// </summary>
-public enum SigtranRunbookKind
+internal enum SigtranRunbookKind
 {
     /// <summary>Transport outage runbook.</summary>
     TransportOutage,
@@ -21,7 +21,7 @@ public enum SigtranRunbookKind
 /// <summary>
 /// Describes one operational runbook.
 /// </summary>
-public sealed class SigtranRunbook
+internal sealed class SigtranRunbook
 {
     /// <summary>Creates an operational runbook.</summary>
     /// <param name="id">The stable runbook id.</param>
@@ -52,7 +52,7 @@ public sealed class SigtranRunbook
 /// <summary>
 /// Provides official operational runbooks.
 /// </summary>
-public static class SigtranRunbooks
+internal static class SigtranRunbooks
 {
     /// <summary>Returns the operational runbook catalog.</summary>
     /// <returns>The operational runbook catalog.</returns>

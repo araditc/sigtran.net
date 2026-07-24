@@ -5,7 +5,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Reports native SCTP production hardening readiness.
 /// </summary>
-public sealed class SctpProductionHardeningReadinessSnapshot
+internal sealed class SctpProductionHardeningReadinessSnapshot
 {
     /// <summary>Creates an SCTP production hardening readiness report.</summary>
     /// <param name="hasStreamAndPpidFraming">Whether outbound stream and PPID framing is available.</param>
@@ -108,7 +108,7 @@ public sealed class SctpProductionHardeningReadinessSnapshot
 /// <summary>
 /// Provides native SCTP production hardening readiness information.
 /// </summary>
-public static class SctpProductionHardeningReadiness
+internal static class SctpProductionHardeningReadiness
 {
     /// <summary>The required native SCTP hardening foundation capability count.</summary>
     public const int RequiredFoundationCapabilityCount = 8;

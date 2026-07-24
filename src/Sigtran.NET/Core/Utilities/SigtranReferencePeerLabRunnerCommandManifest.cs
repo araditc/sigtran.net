@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reference external peer lab runner command manifest entry.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerCommandEntry
+internal sealed class SigtranReferencePeerLabRunnerCommandEntry
 {
     private readonly string[] _expectedOutputPaths;
 
@@ -48,7 +48,7 @@ public sealed class SigtranReferencePeerLabRunnerCommandEntry
 /// <summary>
 /// Describes an executable command manifest for a reference external peer lab runner.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerCommandManifest
+internal sealed class SigtranReferencePeerLabRunnerCommandManifest
 {
     private readonly SigtranReferencePeerLabRunnerCommandEntry[] _commands;
 
@@ -135,7 +135,7 @@ public sealed class SigtranReferencePeerLabRunnerCommandManifest
 /// <summary>
 /// Provides reference external peer lab runner command manifest helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerCommandManifests
+internal static class SigtranReferencePeerLabRunnerCommandManifests
 {
     /// <summary>Creates a command manifest from runner input, artifact, and preflight contracts.</summary>
     /// <param name="inputBundle">The runner input bundle.</param>

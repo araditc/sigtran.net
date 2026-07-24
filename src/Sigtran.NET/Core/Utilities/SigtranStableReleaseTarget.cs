@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the stable release release target being evaluated.
 /// </summary>
-public sealed class SigtranStableReleaseTarget
+internal sealed class SigtranStableReleaseTarget
 {
     /// <summary>Creates a stable release release target.</summary>
     /// <param name="version">The stable package version.</param>
@@ -77,7 +77,7 @@ public sealed class SigtranStableReleaseTarget
 /// <summary>
 /// Provides stable release release target helpers.
 /// </summary>
-public static class SigtranStableReleaseTargets
+internal static class SigtranStableReleaseTargets
 {
     /// <summary>Creates a stable release release target.</summary>
     /// <param name="version">The stable package version.</param>

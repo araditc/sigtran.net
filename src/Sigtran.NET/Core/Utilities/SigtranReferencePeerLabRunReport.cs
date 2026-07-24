@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab step status values.
 /// </summary>
-public enum SigtranReferencePeerLabStepStatus
+internal enum SigtranReferencePeerLabStepStatus
 {
     /// <summary>The step has not run.</summary>
     Pending,
@@ -23,7 +23,7 @@ public enum SigtranReferencePeerLabStepStatus
 /// <summary>
 /// Describes one reference external peer lab step result.
 /// </summary>
-public sealed class SigtranReferencePeerLabStepResult
+internal sealed class SigtranReferencePeerLabStepResult
 {
     /// <summary>Creates a reference peer lab step result.</summary>
     /// <param name="kind">The command kind.</param>
@@ -70,7 +70,7 @@ public sealed class SigtranReferencePeerLabStepResult
 /// <summary>
 /// Describes a reference external peer lab run report.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunReport
+internal sealed class SigtranReferencePeerLabRunReport
 {
     private readonly SigtranReferencePeerLabStepResult[] _steps;
 
@@ -153,7 +153,7 @@ public sealed class SigtranReferencePeerLabRunReport
 /// <summary>
 /// Provides reference external peer lab run report helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunReports
+internal static class SigtranReferencePeerLabRunReports
 {
     /// <summary>Creates a passing run report from a manifest and comparison report.</summary>
     /// <param name="runManifest">The run manifest.</param>

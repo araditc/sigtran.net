@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production release execution readiness item.
 /// </summary>
-public sealed class SigtranReleaseReadinessItem
+internal sealed class SigtranReleaseReadinessItem
 {
     /// <summary>Creates a production release readiness item.</summary>
     /// <param name="name">The readiness item name.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranReleaseReadinessItem
 /// <summary>
 /// Describes production release execution readiness.
 /// </summary>
-public sealed class SigtranReleaseExecutionReadinessSnapshot
+internal sealed class SigtranReleaseExecutionReadinessSnapshot
 {
     /// <summary>Creates a production release execution readiness report.</summary>
     /// <param name="items">The readiness items.</param>
@@ -62,7 +62,7 @@ public sealed class SigtranReleaseExecutionReadinessSnapshot
 /// <summary>
 /// Provides production release execution readiness helpers.
 /// </summary>
-public static class SigtranReleaseExecutionReadiness
+internal static class SigtranReleaseExecutionReadiness
 {
     /// <summary>Creates the current production release execution readiness report.</summary>
     /// <returns>The current production release execution readiness report.</returns>

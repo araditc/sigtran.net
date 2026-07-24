@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a performance readiness capability area.
 /// </summary>
-public enum SigtranPerformanceArea
+internal enum SigtranPerformanceArea
 {
     /// <summary>Benchmark scenario coverage.</summary>
     Benchmarks,
@@ -24,7 +24,7 @@ public enum SigtranPerformanceArea
 /// <summary>
 /// Describes one performance readiness capability.
 /// </summary>
-public sealed class SigtranPerformanceCapability
+internal sealed class SigtranPerformanceCapability
 {
     /// <summary>Creates a performance capability.</summary>
     /// <param name="area">The performance area.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranPerformanceCapability
 /// <summary>
 /// Provides performance readiness capability planning helpers.
 /// </summary>
-public static class SigtranPerformance
+internal static class SigtranPerformance
 {
     private static readonly SigtranPerformanceCapability[] Capabilities =
     [

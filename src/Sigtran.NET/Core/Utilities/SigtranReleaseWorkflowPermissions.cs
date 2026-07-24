@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes release workflow permissions.
 /// </summary>
-public sealed class SigtranReleaseWorkflowPermissionSet
+internal sealed class SigtranReleaseWorkflowPermissionSet
 {
     /// <summary>Creates a release workflow permission set.</summary>
     /// <param name="contents">The contents permission.</param>
@@ -34,7 +34,7 @@ public sealed class SigtranReleaseWorkflowPermissionSet
 /// <summary>
 /// Provides release workflow permission policies.
 /// </summary>
-public static class SigtranReleaseWorkflowPermissions
+internal static class SigtranReleaseWorkflowPermissions
 {
     /// <summary>Creates the default release workflow permission set.</summary>
     /// <returns>The default release workflow permission set.</returns>

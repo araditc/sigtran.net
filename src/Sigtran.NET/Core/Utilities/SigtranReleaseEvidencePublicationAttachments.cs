@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained production evidence publication attachment.
 /// </summary>
-public sealed class SigtranReleaseEvidencePublicationAttachment
+internal sealed class SigtranReleaseEvidencePublicationAttachment
 {
     /// <summary>Creates a retained production evidence publication attachment.</summary>
     /// <param name="kind">The retained artifact kind.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranReleaseEvidencePublicationAttachment
 /// <summary>
 /// Describes retained production evidence publication attachments.
 /// </summary>
-public sealed class SigtranReleaseEvidencePublicationAttachmentManifest
+internal sealed class SigtranReleaseEvidencePublicationAttachmentManifest
 {
     /// <summary>Creates retained production evidence publication attachments.</summary>
     /// <param name="seal">The retained production evidence integrity seal.</param>
@@ -130,7 +130,7 @@ public sealed class SigtranReleaseEvidencePublicationAttachmentManifest
 /// <summary>
 /// Provides retained production evidence publication attachment helpers.
 /// </summary>
-public static class SigtranReleaseEvidencePublicationAttachments
+internal static class SigtranReleaseEvidencePublicationAttachments
 {
     /// <summary>Creates default publication attachments from an integrity seal.</summary>
     /// <param name="seal">The retained production evidence integrity seal.</param>

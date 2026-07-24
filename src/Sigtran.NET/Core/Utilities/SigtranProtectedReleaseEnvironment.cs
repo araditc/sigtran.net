@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a protected release environment channel.
 /// </summary>
-public enum SigtranProtectedReleaseChannel
+internal enum SigtranProtectedReleaseChannel
 {
     /// <summary>Dry-run validation without package publication.</summary>
     DryRun,
@@ -18,7 +18,7 @@ public enum SigtranProtectedReleaseChannel
 /// <summary>
 /// Describes one protected release environment rule.
 /// </summary>
-public sealed class SigtranProtectedReleaseEnvironmentRule
+internal sealed class SigtranProtectedReleaseEnvironmentRule
 {
     /// <summary>Creates a protected release environment rule.</summary>
     /// <param name="name">The release environment name.</param>
@@ -68,7 +68,7 @@ public sealed class SigtranProtectedReleaseEnvironmentRule
 /// <summary>
 /// Describes the protected release environment profile.
 /// </summary>
-public sealed class SigtranProtectedReleaseEnvironmentProfile
+internal sealed class SigtranProtectedReleaseEnvironmentProfile
 {
     /// <summary>Creates a protected release environment profile.</summary>
     /// <param name="rules">The protected environment rules.</param>
@@ -110,7 +110,7 @@ public sealed class SigtranProtectedReleaseEnvironmentProfile
 /// <summary>
 /// Provides protected release environment profile helpers.
 /// </summary>
-public static class SigtranProtectedReleaseEnvironments
+internal static class SigtranProtectedReleaseEnvironments
 {
     /// <summary>Creates the default protected release environment profile.</summary>
     /// <returns>The default protected release environment profile.</returns>

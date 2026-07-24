@@ -1,0 +1,37 @@
+{
+  "observedAtUtc": "2026-07-24T10:23:54Z",
+  "repository": "araditc/sigtran.net",
+  "branch": {
+    "name": "main",
+    "protected": true,
+    "strictStatusChecks": true,
+    "requiredStatusContexts": [
+      "build-test-pack"
+    ],
+    "requiredPullRequestApprovals": 1,
+    "dismissStaleReviews": true,
+    "requiredConversationResolution": true,
+    "requiredLinearHistory": true,
+    "forcePushAllowed": false,
+    "deletionAllowed": false,
+    "adminEnforcement": false
+  },
+  "stableEnvironment": {
+    "name": "nuget-stable",
+    "requiredReviewers": [
+      "ammarheidari"
+    ],
+    "preventSelfReview": false,
+    "protectedBranchesOnly": true,
+    "adminBypassAllowed": true
+  },
+  "prereleaseEnvironment": {
+    "name": "nuget-prerelease",
+    "requiredReviewers": []
+  },
+  "repositoryVariables": {
+    "TIMESTAMP_AUTHORITY": "https://timestamp.sectigo.com",
+    "TRUSTED_SIGNING_CERTIFICATE_SHA256": null
+  },
+  "scope": "GitHub API observation; stable protocol, capacity, deployment, and signing evidence remains independently gated."
+}

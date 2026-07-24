@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes an external peer interoperability execution plan.
 /// </summary>
-public sealed class SigtranExternalPeerInteropRunPlan
+internal sealed class SigtranExternalPeerInteropRunPlan
 {
     /// <summary>Creates an external peer interoperability execution plan.</summary>
     /// <param name="template">The interop lab template.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranExternalPeerInteropRunPlan
 /// <summary>
 /// Provides external peer interoperability execution plan helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropRunPlans
+internal static class SigtranExternalPeerInteropRunPlans
 {
     /// <summary>Creates the default external peer ASP-to-SG execution plan.</summary>
     /// <returns>The default external peer ASP-to-SG execution plan.</returns>

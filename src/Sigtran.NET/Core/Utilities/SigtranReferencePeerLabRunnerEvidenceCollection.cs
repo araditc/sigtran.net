@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one collected reference external peer lab runner artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerCollectedArtifact
+internal sealed class SigtranReferencePeerLabRunnerCollectedArtifact
 {
     /// <summary>Creates a collected reference peer lab runner artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -48,7 +48,7 @@ public sealed class SigtranReferencePeerLabRunnerCollectedArtifact
 /// <summary>
 /// Describes reference external peer lab runner evidence collection output.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerEvidenceCollection
+internal sealed class SigtranReferencePeerLabRunnerEvidenceCollection
 {
     private readonly SigtranReferencePeerLabRunnerCollectedArtifact[] _artifacts;
 
@@ -99,7 +99,7 @@ public sealed class SigtranReferencePeerLabRunnerEvidenceCollection
 /// <summary>
 /// Provides reference external peer lab runner evidence collection helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerEvidenceCollections
+internal static class SigtranReferencePeerLabRunnerEvidenceCollections
 {
     /// <summary>Collects artifact retention state from an artifact materialization plan.</summary>
     /// <param name="artifactPlan">The runner artifact materialization plan.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one operator command in the production evidence execution plan.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionCommand
+internal sealed class SigtranReleaseEvidenceExecutionCommand
 {
     /// <summary>Creates a production evidence execution command.</summary>
     /// <param name="stageId">The stage identifier that owns the command.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranReleaseEvidenceExecutionCommand
 /// <summary>
 /// Describes the operator command plan for a production evidence execution run.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionCommandPlan
+internal sealed class SigtranReleaseEvidenceExecutionCommandPlan
 {
     /// <summary>Creates a production evidence execution command plan.</summary>
     /// <param name="catalog">The execution stage catalog.</param>
@@ -121,7 +121,7 @@ public sealed class SigtranReleaseEvidenceExecutionCommandPlan
 /// <summary>
 /// Provides production evidence execution command plan helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionCommands
+internal static class SigtranReleaseEvidenceExecutionCommands
 {
     /// <summary>Creates the default operator command plan.</summary>
     /// <param name="catalog">The execution stage catalog.</param>

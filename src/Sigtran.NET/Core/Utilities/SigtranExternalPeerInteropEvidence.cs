@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Stores external peer interoperability execution evidence.
 /// </summary>
-public sealed class SigtranExternalPeerInteropEvidenceRegistry
+internal sealed class SigtranExternalPeerInteropEvidenceRegistry
 {
     private readonly List<SigtranExternalPeerInteropRunReport> _reports = [];
 
@@ -32,7 +32,7 @@ public sealed class SigtranExternalPeerInteropEvidenceRegistry
 /// <summary>
 /// Provides external peer interoperability evidence helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropEvidence
+internal static class SigtranExternalPeerInteropEvidence
 {
     /// <summary>Creates the current external peer evidence registry.</summary>
     /// <returns>The current external peer evidence registry.</returns>

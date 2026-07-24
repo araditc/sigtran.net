@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the production evidence dossier intake report.
 /// </summary>
-public sealed class SigtranReleaseEvidenceDossierIntakeReport
+internal sealed class SigtranReleaseEvidenceDossierIntakeReport
 {
     /// <summary>Creates a production evidence dossier intake report.</summary>
     /// <param name="completeness">The artifact completeness result.</param>
@@ -68,7 +68,7 @@ public sealed class SigtranReleaseEvidenceDossierIntakeReport
 /// <summary>
 /// Provides production evidence dossier intake report helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceDossierIntakeReports
+internal static class SigtranReleaseEvidenceDossierIntakeReports
 {
     /// <summary>Creates the default retained dossier intake report.</summary>
     /// <param name="completeness">The artifact completeness result.</param>

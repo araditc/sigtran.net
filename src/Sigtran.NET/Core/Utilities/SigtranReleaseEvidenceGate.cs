@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a production evidence gate result.
 /// </summary>
-public sealed class SigtranReleaseEvidenceGateResult
+internal sealed class SigtranReleaseEvidenceGateResult
 {
     /// <summary>Creates a production evidence gate result.</summary>
     /// <param name="canClaimReleaseEvidence">Whether production evidence can be claimed.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranReleaseEvidenceGateResult
 /// <summary>
 /// Evaluates production evidence gates.
 /// </summary>
-public static class SigtranReleaseEvidenceGate
+internal static class SigtranReleaseEvidenceGate
 {
     /// <summary>Evaluates whether a production evidence bundle can support production claims.</summary>
     /// <param name="bundle">The production evidence bundle.</param>

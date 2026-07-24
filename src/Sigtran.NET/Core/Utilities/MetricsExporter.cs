@@ -8,7 +8,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// observability framework is selected they can be replaced with
 /// appropriate wrappers.
 /// </summary>
-public static class MetricsExporter
+internal static class MetricsExporter
 {
     /// <summary>
     /// Incremented each time an M3UA message is processed (either

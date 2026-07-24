@@ -13,7 +13,9 @@ Repository: <https://github.com/araditc/sigtran.net>
 ## Status
 
 SIGTRAN.NET is currently in a **public release-candidate** track. Version
-`1.0.0-rc.1` has been published and restored from NuGet.org.
+`1.0.0-rc.1` has been published and restored from NuGet.org. Source builds now
+default to the unpublished `1.0.0-rc.2` candidate so ordinary packing cannot
+accidentally create a stable package.
 
 Native Linux SCTP, external SCTP/M3UA, and cross-implementation full-stack MAP
 SMS traffic evidence are retained. Stateful M3UA, M2PA, SCCP, TCAP, and MAP SMS
@@ -174,6 +176,8 @@ Start here:
 - [Phase 53 performance and resilience](docs/PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md)
 - [Phase 54 production operations package](docs/PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md)
 - [Runtime operations](docs/OPERATIONS_RUNTIME.md)
+- [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
+- [Public API baseline](docs/PUBLIC_API_BASELINE.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
 - [Quality and contribution rules](docs/QUALITY.md)
@@ -184,6 +188,7 @@ Release and governance:
 
 - [Changelog](CHANGELOG.md)
 - [v0.1.0-alpha release notes](docs/releases/v0.1.0-alpha.md)
+- [RC.1 to RC.2 migration](docs/migrations/1.0.0-rc.1-to-rc.2.md)
 - [Alpha release checklist](docs/ALPHA_RELEASE.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 
@@ -228,6 +233,7 @@ Stable production support requires:
 - Trusted package signing and provenance.
 - Stable package publication evidence.
 - Stable API lifecycle validation.
+- A machine-evaluated `GO` stable release decision.
 - Security, release, compliance, and operations review.
 
 The Linux SCTP, external M3UA, repository-profile full-stack traffic, and

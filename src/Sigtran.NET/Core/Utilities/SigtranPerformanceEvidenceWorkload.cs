@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a performance evidence workload stage.
 /// </summary>
-public enum SigtranPerformanceEvidenceStageKind
+internal enum SigtranPerformanceEvidenceStageKind
 {
     /// <summary>Warmup traffic used to stabilize connections, JIT behavior, and buffers.</summary>
     Warmup = 0,
@@ -18,7 +18,7 @@ public enum SigtranPerformanceEvidenceStageKind
 /// <summary>
 /// Describes one measured benchmark stage for performance evidence.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceStage
+internal sealed class SigtranPerformanceEvidenceStage
 {
     /// <summary>Creates a performance evidence stage.</summary>
     /// <param name="kind">The workload stage kind.</param>
@@ -81,7 +81,7 @@ public sealed class SigtranPerformanceEvidenceStage
 /// <summary>
 /// Describes a complete benchmark workload evidence sequence.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceWorkload
+internal sealed class SigtranPerformanceEvidenceWorkload
 {
     private readonly SigtranPerformanceEvidenceStage[] _stages;
 
@@ -134,7 +134,7 @@ public sealed class SigtranPerformanceEvidenceWorkload
 /// <summary>
 /// Creates performance evidence workload templates from SDK load-test plans.
 /// </summary>
-public static class SigtranPerformanceEvidenceWorkloads
+internal static class SigtranPerformanceEvidenceWorkloads
 {
     /// <summary>Creates the expected production peer-traffic workload from the default load-test plan.</summary>
     /// <returns>The expected production peer-traffic workload.</returns>

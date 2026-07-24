@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the release decision outcome.
 /// </summary>
-public enum SigtranReleaseDecisionKind
+internal enum SigtranReleaseDecisionKind
 {
     /// <summary>Publication is blocked.</summary>
     Blocked,
@@ -18,7 +18,7 @@ public enum SigtranReleaseDecisionKind
 /// <summary>
 /// Describes the RC versus stable publication decision.
 /// </summary>
-public sealed class SigtranReleaseDecision
+internal sealed class SigtranReleaseDecision
 {
     /// <summary>Creates a release decision.</summary>
     /// <param name="version">The evaluated version.</param>
@@ -67,7 +67,7 @@ public sealed class SigtranReleaseDecision
 /// <summary>
 /// Evaluates release decisions from retained readiness reports.
 /// </summary>
-public static class SigtranReleaseDecisions
+internal static class SigtranReleaseDecisions
 {
     /// <summary>Decides whether to publish an RC, publish stable, or block publication.</summary>
     /// <param name="report">The final production readiness report.</param>

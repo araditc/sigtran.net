@@ -6,7 +6,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab runner execution log event kinds.
 /// </summary>
-public enum SigtranReferencePeerLabRunnerLogEventKind
+internal enum SigtranReferencePeerLabRunnerLogEventKind
 {
     /// <summary>The runner started.</summary>
     Started,
@@ -36,7 +36,7 @@ public enum SigtranReferencePeerLabRunnerLogEventKind
 /// <summary>
 /// Describes one reference external peer lab runner execution log entry.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerExecutionLogEntry
+internal sealed class SigtranReferencePeerLabRunnerExecutionLogEntry
 {
     /// <summary>Creates a reference peer lab runner execution log entry.</summary>
     /// <param name="timestampUtc">The UTC timestamp.</param>
@@ -98,7 +98,7 @@ public sealed class SigtranReferencePeerLabRunnerExecutionLogEntry
 /// <summary>
 /// Describes reference external peer lab runner execution logs.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerExecutionLog
+internal sealed class SigtranReferencePeerLabRunnerExecutionLog
 {
     private readonly SigtranReferencePeerLabRunnerExecutionLogEntry[] _entries;
 
@@ -178,7 +178,7 @@ public sealed class SigtranReferencePeerLabRunnerExecutionLog
 /// <summary>
 /// Provides reference external peer lab runner execution log helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerExecutionLogs
+internal static class SigtranReferencePeerLabRunnerExecutionLogs
 {
     /// <summary>Creates a passing execution log from a command manifest.</summary>
     /// <param name="commandManifest">The runner command manifest.</param>

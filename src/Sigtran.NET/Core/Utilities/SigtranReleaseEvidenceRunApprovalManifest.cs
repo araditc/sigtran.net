@@ -6,7 +6,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reviewer approval for a production evidence run.
 /// </summary>
-public sealed class SigtranReleaseEvidenceReviewerApproval
+internal sealed class SigtranReleaseEvidenceReviewerApproval
 {
     /// <summary>Creates a production evidence reviewer approval.</summary>
     /// <param name="reviewerName">The reviewer name.</param>
@@ -54,7 +54,7 @@ public sealed class SigtranReleaseEvidenceReviewerApproval
 /// <summary>
 /// Describes reviewer approvals for a production evidence run.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRunApprovalManifest
+internal sealed class SigtranReleaseEvidenceRunApprovalManifest
 {
     private static readonly string[] RequiredRoles =
     [
@@ -122,7 +122,7 @@ public sealed class SigtranReleaseEvidenceRunApprovalManifest
 /// <summary>
 /// Provides production evidence run approval manifest helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRunApprovalManifests
+internal static class SigtranReleaseEvidenceRunApprovalManifests
 {
     /// <summary>Creates a default reviewer approval manifest.</summary>
     /// <param name="checklist">The approval checklist under review.</param>

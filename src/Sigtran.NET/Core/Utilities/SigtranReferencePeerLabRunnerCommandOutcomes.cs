@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reference external peer lab runner command outcome.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerCommandOutcome
+internal sealed class SigtranReferencePeerLabRunnerCommandOutcome
 {
     /// <summary>Creates a reference peer lab runner command outcome.</summary>
     /// <param name="command">The command manifest entry.</param>
@@ -54,7 +54,7 @@ public sealed class SigtranReferencePeerLabRunnerCommandOutcome
 /// <summary>
 /// Describes reference external peer lab runner command outcome aggregation.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerCommandOutcomeReport
+internal sealed class SigtranReferencePeerLabRunnerCommandOutcomeReport
 {
     private readonly SigtranReferencePeerLabRunnerCommandOutcome[] _outcomes;
 
@@ -130,7 +130,7 @@ public sealed class SigtranReferencePeerLabRunnerCommandOutcomeReport
 /// <summary>
 /// Provides reference external peer lab runner command outcome helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerCommandOutcomes
+internal static class SigtranReferencePeerLabRunnerCommandOutcomes
 {
     /// <summary>Aggregates command outcomes from a command manifest and execution log.</summary>
     /// <param name="commandManifest">The command manifest.</param>

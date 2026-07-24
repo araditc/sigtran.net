@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the package version lane used during release publication.
 /// </summary>
-public enum SigtranReleaseVersionLane
+internal enum SigtranReleaseVersionLane
 {
     /// <summary>Pre-release package version such as 1.0.0-alpha.1.</summary>
     Prerelease,
@@ -15,7 +15,7 @@ public enum SigtranReleaseVersionLane
 /// <summary>
 /// Represents the official release version policy for package publication.
 /// </summary>
-public sealed class SigtranReleaseVersionPolicy
+internal sealed class SigtranReleaseVersionPolicy
 {
     /// <summary>Creates a release version policy.</summary>
     /// <param name="tagPrefix">The required source tag prefix.</param>
@@ -118,7 +118,7 @@ public sealed class SigtranReleaseVersionPolicy
 /// <summary>
 /// Provides release version policy helpers.
 /// </summary>
-public static class SigtranReleaseVersionPolicies
+internal static class SigtranReleaseVersionPolicies
 {
     /// <summary>Creates the default release version policy.</summary>
     /// <returns>The default release version policy.</returns>

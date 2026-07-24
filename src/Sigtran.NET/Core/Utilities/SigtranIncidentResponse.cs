@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an operational incident severity.
 /// </summary>
-public enum SigtranIncidentSeverity
+internal enum SigtranIncidentSeverity
 {
     /// <summary>Service is down or traffic is critically affected.</summary>
     Critical,
@@ -21,7 +21,7 @@ public enum SigtranIncidentSeverity
 /// <summary>
 /// Describes an incident response target.
 /// </summary>
-public sealed class SigtranIncidentResponseTarget
+internal sealed class SigtranIncidentResponseTarget
 {
     /// <summary>Creates an incident response target.</summary>
     /// <param name="severity">The incident severity.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranIncidentResponseTarget
 /// <summary>
 /// Provides operational incident response targets.
 /// </summary>
-public static class SigtranIncidentResponse
+internal static class SigtranIncidentResponse
 {
     /// <summary>Returns the operational incident response targets.</summary>
     /// <returns>The incident response targets.</returns>

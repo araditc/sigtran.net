@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes API version support for an SDK release line.
 /// </summary>
-public sealed class SigtranApiVersionMatrixEntry
+internal sealed class SigtranApiVersionMatrixEntry
 {
     /// <summary>Creates an API version matrix entry.</summary>
     /// <param name="releaseLine">The release line.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranApiVersionMatrixEntry
 /// <summary>
 /// Provides API version matrix helpers.
 /// </summary>
-public static class SigtranApiVersionMatrix
+internal static class SigtranApiVersionMatrix
 {
     private static readonly SigtranApiVersionMatrixEntry[] Entries =
     [

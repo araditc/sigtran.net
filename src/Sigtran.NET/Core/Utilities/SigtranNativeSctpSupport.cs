@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an operating system family for native SCTP support planning.
 /// </summary>
-public enum SigtranOperatingSystemFamily
+internal enum SigtranOperatingSystemFamily
 {
     /// <summary>Linux operating systems.</summary>
     Linux,
@@ -20,7 +20,7 @@ public enum SigtranOperatingSystemFamily
 /// <summary>
 /// Identifies native SCTP support status.
 /// </summary>
-public enum SigtranNativeSctpSupportStatus
+internal enum SigtranNativeSctpSupportStatus
 {
     /// <summary>The SDK exposes contracts only.</summary>
     ContractOnly,
@@ -35,7 +35,7 @@ public enum SigtranNativeSctpSupportStatus
 /// <summary>
 /// Describes native SCTP support for one operating system family.
 /// </summary>
-public sealed class SigtranNativeSctpSupportEntry
+internal sealed class SigtranNativeSctpSupportEntry
 {
     /// <summary>Creates a native SCTP support entry.</summary>
     /// <param name="operatingSystem">The operating system family.</param>
@@ -64,7 +64,7 @@ public sealed class SigtranNativeSctpSupportEntry
 /// <summary>
 /// Provides native SCTP support planning data.
 /// </summary>
-public static class SigtranNativeSctpSupport
+internal static class SigtranNativeSctpSupport
 {
     private static readonly SigtranNativeSctpSupportEntry[] Entries =
     [

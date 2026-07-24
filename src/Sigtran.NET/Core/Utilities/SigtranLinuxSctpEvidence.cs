@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained Linux SCTP packet capture summary.
 /// </summary>
-public sealed class SigtranLinuxSctpCaptureSummary
+internal sealed class SigtranLinuxSctpCaptureSummary
 {
     /// <summary>Creates a Linux SCTP capture summary.</summary>
     /// <param name="pcapPath">The retained PCAP path.</param>
@@ -71,7 +71,7 @@ public sealed class SigtranLinuxSctpCaptureSummary
 /// <summary>
 /// Provides Linux SCTP evidence helpers.
 /// </summary>
-public static class SigtranLinuxSctpEvidence
+internal static class SigtranLinuxSctpEvidence
 {
     /// <summary>Creates the current retained Linux SCTP smoke evidence summary.</summary>
     /// <returns>The current retained Linux SCTP smoke evidence summary.</returns>

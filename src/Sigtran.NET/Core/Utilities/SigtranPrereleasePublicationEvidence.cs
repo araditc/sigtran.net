@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies prerelease publication evidence artifact kinds.
 /// </summary>
-public enum SigtranPrereleasePublicationEvidenceKind
+internal enum SigtranPrereleasePublicationEvidenceKind
 {
     /// <summary>NuGet package artifact.</summary>
     Package,
@@ -33,7 +33,7 @@ public enum SigtranPrereleasePublicationEvidenceKind
 /// <summary>
 /// Describes one retained prerelease publication evidence artifact.
 /// </summary>
-public sealed class SigtranPrereleasePublicationEvidenceItem
+internal sealed class SigtranPrereleasePublicationEvidenceItem
 {
     /// <summary>Creates a prerelease publication evidence item.</summary>
     /// <param name="kind">The evidence kind.</param>
@@ -71,7 +71,7 @@ public sealed class SigtranPrereleasePublicationEvidenceItem
 /// <summary>
 /// Describes retained publication evidence for an RC package.
 /// </summary>
-public sealed class SigtranPrereleasePublicationEvidenceManifest
+internal sealed class SigtranPrereleasePublicationEvidenceManifest
 {
     /// <summary>Creates a prerelease publication evidence manifest.</summary>
     /// <param name="version">The prerelease version.</param>
@@ -132,7 +132,7 @@ public sealed class SigtranPrereleasePublicationEvidenceManifest
 /// <summary>
 /// Provides prerelease publication evidence manifests.
 /// </summary>
-public static class SigtranPrereleasePublicationEvidence
+internal static class SigtranPrereleasePublicationEvidence
 {
     /// <summary>Creates the default RC publication evidence manifest from retained artifact digests.</summary>
     /// <param name="version">The prerelease version.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes open-source license compliance obligations.
 /// </summary>
-public sealed class SigtranLicenseCompliancePolicy
+internal sealed class SigtranLicenseCompliancePolicy
 {
     /// <summary>Creates a license compliance policy.</summary>
     /// <param name="projectLicense">The project license expression.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranLicenseCompliancePolicy
 /// <summary>
 /// Provides license compliance policy helpers.
 /// </summary>
-public static class SigtranLicenseCompliance
+internal static class SigtranLicenseCompliance
 {
     /// <summary>Creates the current license compliance policy.</summary>
     /// <returns>The current license compliance policy.</returns>

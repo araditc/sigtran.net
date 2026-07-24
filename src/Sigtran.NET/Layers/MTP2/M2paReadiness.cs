@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.MTP2;
 /// <summary>
 /// Describes the implemented M2PA link capabilities.
 /// </summary>
-public sealed class M2paReadinessSnapshot
+internal sealed class M2paReadinessSnapshot
 {
     /// <summary>Creates an M2PA readiness snapshot.</summary>
     /// <param name="hasRfcCodec">Whether RFC 4165 framing is implemented.</param>
@@ -79,7 +79,7 @@ public sealed class M2paReadinessSnapshot
 /// <summary>
 /// Provides M2PA readiness information.
 /// </summary>
-public static class M2paReadiness
+internal static class M2paReadiness
 {
     /// <summary>Returns the current M2PA readiness snapshot.</summary>
     /// <returns>The current M2PA readiness snapshot.</returns>

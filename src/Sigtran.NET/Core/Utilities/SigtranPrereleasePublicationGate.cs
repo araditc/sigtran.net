@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a prerelease publication request.
 /// </summary>
-public sealed class SigtranPrereleasePublicationRequest
+internal sealed class SigtranPrereleasePublicationRequest
 {
     /// <summary>Creates a prerelease publication request.</summary>
     /// <param name="version">The package version.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranPrereleasePublicationRequest
 /// <summary>
 /// Describes prerelease publication gate evaluation.
 /// </summary>
-public sealed class SigtranPrereleasePublicationGateResult
+internal sealed class SigtranPrereleasePublicationGateResult
 {
     /// <summary>Creates a prerelease publication gate result.</summary>
     /// <param name="canPublishPrerelease">Whether prerelease publication is allowed.</param>
@@ -73,7 +73,7 @@ public sealed class SigtranPrereleasePublicationGateResult
 /// <summary>
 /// Evaluates gated NuGet prerelease publication.
 /// </summary>
-public static class SigtranPrereleasePublicationGate
+internal static class SigtranPrereleasePublicationGate
 {
     /// <summary>Evaluates whether a prerelease package can be published.</summary>
     /// <param name="request">The prerelease publication request.</param>

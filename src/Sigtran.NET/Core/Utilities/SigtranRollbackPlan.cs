@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a release rollback step.
 /// </summary>
-public sealed class SigtranRollbackStep
+internal sealed class SigtranRollbackStep
 {
     /// <summary>Creates a rollback step.</summary>
     /// <param name="order">The one-based step order.</param>
@@ -24,7 +24,7 @@ public sealed class SigtranRollbackStep
 /// <summary>
 /// Describes the release rollback plan.
 /// </summary>
-public sealed class SigtranRollbackPlan
+internal sealed class SigtranRollbackPlan
 {
     /// <summary>Creates a rollback plan.</summary>
     /// <param name="id">The stable plan id.</param>
@@ -46,7 +46,7 @@ public sealed class SigtranRollbackPlan
 /// <summary>
 /// Provides release rollback planning helpers.
 /// </summary>
-public static class SigtranRollbackPlans
+internal static class SigtranRollbackPlans
 {
     /// <summary>Creates the default package rollback plan.</summary>
     /// <returns>The default package rollback plan.</returns>

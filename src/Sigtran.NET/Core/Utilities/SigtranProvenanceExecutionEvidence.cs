@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes generated provenance attestation evidence.
 /// </summary>
-public sealed class SigtranProvenanceExecutionEvidence
+internal sealed class SigtranProvenanceExecutionEvidence
 {
     /// <summary>Creates generated provenance execution evidence.</summary>
     /// <param name="outputPath">The provenance output path.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranProvenanceExecutionEvidence
 /// <summary>
 /// Provides generated provenance execution evidence helpers.
 /// </summary>
-public static class SigtranProvenanceExecution
+internal static class SigtranProvenanceExecution
 {
     /// <summary>Creates generated provenance evidence from retained digests.</summary>
     /// <param name="provenanceSha256">The retained provenance SHA-256 digest.</param>

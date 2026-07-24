@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK observability signals for production deployments.
 /// </summary>
-public sealed class SigtranObservabilityProfile
+internal sealed class SigtranObservabilityProfile
 {
     /// <summary>Creates an observability profile.</summary>
     /// <param name="metricNames">The metric names.</param>
@@ -42,7 +42,7 @@ public sealed class SigtranObservabilityProfile
 /// <summary>
 /// Provides observability profiles for production deployments.
 /// </summary>
-public static class SigtranObservability
+internal static class SigtranObservability
 {
     /// <summary>Creates the default observability profile.</summary>
     /// <returns>The default observability profile.</returns>

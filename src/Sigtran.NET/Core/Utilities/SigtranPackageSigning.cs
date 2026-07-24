@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a package signing mode.
 /// </summary>
-public enum SigtranPackageSigningMode
+internal enum SigtranPackageSigningMode
 {
     /// <summary>No package signing is performed.</summary>
     None,
@@ -18,7 +18,7 @@ public enum SigtranPackageSigningMode
 /// <summary>
 /// Describes the package signing plan for a governed release.
 /// </summary>
-public sealed class SigtranPackageSigningPlan
+internal sealed class SigtranPackageSigningPlan
 {
     /// <summary>Creates a package signing plan.</summary>
     /// <param name="mode">The signing mode.</param>
@@ -65,7 +65,7 @@ public sealed class SigtranPackageSigningPlan
 /// <summary>
 /// Provides package signing planning helpers.
 /// </summary>
-public static class SigtranPackageSigning
+internal static class SigtranPackageSigning
 {
     /// <summary>Creates the default production package signing plan.</summary>
     /// <returns>The default production package signing plan.</returns>

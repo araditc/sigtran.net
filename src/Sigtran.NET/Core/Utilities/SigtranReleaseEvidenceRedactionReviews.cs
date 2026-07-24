@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production evidence artifact redaction review.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRedactionReview
+internal sealed class SigtranReleaseEvidenceRedactionReview
 {
     /// <summary>Creates a production evidence artifact redaction review.</summary>
     /// <param name="retainedPath">The retained artifact path.</param>
@@ -61,7 +61,7 @@ public sealed class SigtranReleaseEvidenceRedactionReview
 /// <summary>
 /// Describes the redaction review manifest for production evidence intake.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRedactionReviewManifest
+internal sealed class SigtranReleaseEvidenceRedactionReviewManifest
 {
     /// <summary>Creates a production evidence redaction review manifest.</summary>
     /// <param name="digestManifest">The artifact digest manifest.</param>
@@ -111,7 +111,7 @@ public sealed class SigtranReleaseEvidenceRedactionReviewManifest
 /// <summary>
 /// Provides production evidence redaction review helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRedactionReviews
+internal static class SigtranReleaseEvidenceRedactionReviews
 {
     /// <summary>Creates approved redaction reviews for every trace-bearing retained artifact.</summary>
     /// <param name="digestManifest">The artifact digest manifest.</param>

@@ -5,7 +5,7 @@ namespace Sigtran.NET.Layers.TCAP;
 /// <summary>
 /// Provides deterministic TCAP evidence vectors for byte-level transaction validation.
 /// </summary>
-public static class TcapEvidenceVectors
+internal static class TcapEvidenceVectors
 {
     private const string Source = "SDK deterministic TCAP BER vector";
 

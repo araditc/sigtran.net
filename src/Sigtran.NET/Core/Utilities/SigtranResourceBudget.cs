@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes runtime resource budgets for performance validation.
 /// </summary>
-public sealed class SigtranResourceBudget
+internal sealed class SigtranResourceBudget
 {
     /// <summary>Creates a resource budget.</summary>
     /// <param name="maxAllocatedBytesPerMessage">The maximum allocated bytes per message.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranResourceBudget
 /// <summary>
 /// Provides resource budget helpers.
 /// </summary>
-public static class SigtranResourceBudgets
+internal static class SigtranResourceBudgets
 {
     /// <summary>Creates the default production resource budget.</summary>
     /// <returns>The default production resource budget.</returns>

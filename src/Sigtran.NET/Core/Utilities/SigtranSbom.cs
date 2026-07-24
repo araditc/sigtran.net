@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a supported SBOM format.
 /// </summary>
-public enum SigtranSbomFormat
+internal enum SigtranSbomFormat
 {
     /// <summary>SPDX JSON format.</summary>
     SpdxJson,
@@ -15,7 +15,7 @@ public enum SigtranSbomFormat
 /// <summary>
 /// Describes the SBOM generation plan for a release.
 /// </summary>
-public sealed class SigtranSbomPlan
+internal sealed class SigtranSbomPlan
 {
     /// <summary>Creates an SBOM plan.</summary>
     /// <param name="format">The SBOM format.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranSbomPlan
 /// <summary>
 /// Provides SBOM release planning helpers.
 /// </summary>
-public static class SigtranSbom
+internal static class SigtranSbom
 {
     /// <summary>Creates the default production SBOM plan.</summary>
     /// <returns>The default production SBOM plan.</returns>

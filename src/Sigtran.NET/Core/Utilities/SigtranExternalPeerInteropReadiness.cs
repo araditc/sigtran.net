@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes external peer interoperability execution readiness.
 /// </summary>
-public sealed class SigtranExternalPeerInteropReadinessSnapshot
+internal sealed class SigtranExternalPeerInteropReadinessSnapshot
 {
     /// <summary>Creates an external peer interoperability readiness report.</summary>
     /// <param name="hasEnvironment">Whether environment requirements are available.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranExternalPeerInteropReadinessSnapshot
 /// <summary>
 /// Provides external peer interoperability readiness helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropReadiness
+internal static class SigtranExternalPeerInteropReadiness
 {
     /// <summary>Returns the current external peer interoperability readiness report.</summary>
     /// <returns>The current external peer interoperability readiness report.</returns>

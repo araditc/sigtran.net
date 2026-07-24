@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the compliance CI profile.
 /// </summary>
-public sealed class SigtranComplianceCiProfile
+internal sealed class SigtranComplianceCiProfile
 {
     /// <summary>Creates a compliance CI profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -30,7 +30,7 @@ public sealed class SigtranComplianceCiProfile
 /// <summary>
 /// Provides compliance CI profile helpers.
 /// </summary>
-public static class SigtranComplianceCi
+internal static class SigtranComplianceCi
 {
     /// <summary>Creates the default compliance CI profile.</summary>
     /// <returns>The default compliance CI profile.</returns>

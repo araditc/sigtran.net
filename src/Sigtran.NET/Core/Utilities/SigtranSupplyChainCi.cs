@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the supply-chain CI profile.
 /// </summary>
-public sealed class SigtranSupplyChainCiProfile
+internal sealed class SigtranSupplyChainCiProfile
 {
     /// <summary>Creates a supply-chain CI profile.</summary>
     /// <param name="enableVariable">The enable variable.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranSupplyChainCiProfile
 /// <summary>
 /// Provides supply-chain CI profile helpers.
 /// </summary>
-public static class SigtranSupplyChainCi
+internal static class SigtranSupplyChainCi
 {
     /// <summary>Creates the default supply-chain CI profile.</summary>
     /// <returns>The default supply-chain CI profile.</returns>

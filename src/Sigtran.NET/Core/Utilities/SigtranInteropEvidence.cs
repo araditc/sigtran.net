@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the result of an external interoperability evidence item.
 /// </summary>
-public enum SigtranInteropEvidenceResult
+internal enum SigtranInteropEvidenceResult
 {
     /// <summary>The evidence item passed.</summary>
     Passed,
@@ -18,7 +18,7 @@ public enum SigtranInteropEvidenceResult
 /// <summary>
 /// Describes one external interoperability evidence item.
 /// </summary>
-public sealed class SigtranInteropEvidenceItem
+internal sealed class SigtranInteropEvidenceItem
 {
     /// <summary>Creates an interoperability evidence item.</summary>
     /// <param name="id">The stable evidence id.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranInteropEvidenceItem
 /// <summary>
 /// Stores external interoperability evidence in deterministic order.
 /// </summary>
-public sealed class SigtranInteropEvidenceRegistry
+internal sealed class SigtranInteropEvidenceRegistry
 {
     private readonly List<SigtranInteropEvidenceItem> _items = [];
 
@@ -94,7 +94,7 @@ public sealed class SigtranInteropEvidenceRegistry
 /// <summary>
 /// Provides external interoperability evidence inventory helpers.
 /// </summary>
-public static class SigtranInteropEvidence
+internal static class SigtranInteropEvidence
 {
     /// <summary>Creates the current external evidence registry.</summary>
     /// <returns>The current external evidence registry.</returns>
@@ -107,7 +107,7 @@ public static class SigtranInteropEvidence
 /// <summary>
 /// Promotes passing interoperability lab runs into evidence items.
 /// </summary>
-public static class SigtranInteropEvidencePromotion
+internal static class SigtranInteropEvidencePromotion
 {
     /// <summary>Creates a passing evidence item from a lab run report.</summary>
     /// <param name="report">The lab run report.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one artifact expected from a production evidence execution stage.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionArtifact
+internal sealed class SigtranReleaseEvidenceExecutionArtifact
 {
     /// <summary>Creates a production evidence execution artifact requirement.</summary>
     /// <param name="stageId">The stage identifier that produces the artifact.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranReleaseEvidenceExecutionArtifact
 /// <summary>
 /// Describes the production evidence execution artifact collection manifest.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionArtifactManifest
+internal sealed class SigtranReleaseEvidenceExecutionArtifactManifest
 {
     /// <summary>Creates a production evidence execution artifact manifest.</summary>
     /// <param name="catalog">The execution stage catalog.</param>
@@ -94,7 +94,7 @@ public sealed class SigtranReleaseEvidenceExecutionArtifactManifest
 /// <summary>
 /// Provides production evidence execution artifact manifest helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionArtifacts
+internal static class SigtranReleaseEvidenceExecutionArtifacts
 {
     /// <summary>Creates the default artifact collection manifest.</summary>
     /// <param name="catalog">The execution stage catalog.</param>

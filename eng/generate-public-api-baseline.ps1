@@ -1,31 +1,28 @@
 param(
-    [string]$DocumentationPath = "src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.xml",
+    [string]$AssemblyPath = "src/Sigtran.NET/bin/Release/net10.0/Sigtran.NET.dll",
     [string]$OutputPath = "artifacts/api/Sigtran.NET-public-api.txt"
 )
 
 $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path (Join-Path $PSScriptRoot "..")
-$documentationFullPath = Resolve-Path (Join-Path $root $DocumentationPath)
+$assemblyCandidate = if ([System.IO.Path]::IsPathRooted($AssemblyPath)) {
+    $AssemblyPath
+}
+else {
+    Join-Path $root $AssemblyPath
+}
+$assemblyFullPath = Resolve-Path $assemblyCandidate
 $outputFullPath = Join-Path $root $OutputPath
 $outputDirectory = Split-Path $outputFullPath -Parent
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
-[xml]$documentation = Get-Content $documentationFullPath
-$members = $documentation.doc.members.member |
-    ForEach-Object { $_.name } |
-    Where-Object { $_ -match "^[TMPFE]:" } |
-    Sort-Object -Unique
-
-if ($members.Count -eq 0) {
-    throw "No public API members were found in $documentationFullPath."
+dotnet run `
+    --project (Join-Path $PSScriptRoot "Sigtran.NET.ApiSurface/Sigtran.NET.ApiSurface.csproj") `
+    --configuration Release `
+    -- `
+    $assemblyFullPath `
+    $outputFullPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Public API surface generation failed with exit code $LASTEXITCODE."
 }
-
-$members | Set-Content -Path $outputFullPath -Encoding UTF8
-$baselineHash = (Get-FileHash -Path $outputFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
-
-[ordered]@{
-    OutputPath = $OutputPath
-    Sha256 = $baselineHash
-    MemberCount = $members.Count
-} | ConvertTo-Json -Depth 5

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a reviewer role for the production evidence dossier.
 /// </summary>
-public enum SigtranEvidenceDossierReviewerRole
+internal enum SigtranEvidenceDossierReviewerRole
 {
     /// <summary>Release manager review.</summary>
     ReleaseManager,
@@ -24,7 +24,7 @@ public enum SigtranEvidenceDossierReviewerRole
 /// <summary>
 /// Describes one evidence dossier handoff item.
 /// </summary>
-public sealed class SigtranEvidenceDossierHandoffItem
+internal sealed class SigtranEvidenceDossierHandoffItem
 {
     /// <summary>Creates an evidence dossier handoff item.</summary>
     /// <param name="id">The handoff item identifier.</param>
@@ -71,7 +71,7 @@ public sealed class SigtranEvidenceDossierHandoffItem
 /// <summary>
 /// Describes the production evidence dossier handoff plan.
 /// </summary>
-public sealed class SigtranEvidenceDossierHandoffPlan
+internal sealed class SigtranEvidenceDossierHandoffPlan
 {
     /// <summary>Creates an evidence dossier handoff plan.</summary>
     /// <param name="target">The release target lock.</param>
@@ -138,7 +138,7 @@ public sealed class SigtranEvidenceDossierHandoffPlan
 /// <summary>
 /// Provides production evidence dossier handoff helpers.
 /// </summary>
-public static class SigtranEvidenceDossierHandoffs
+internal static class SigtranEvidenceDossierHandoffs
 {
     /// <summary>Creates the default production evidence dossier handoff plan.</summary>
     /// <param name="target">The release target lock.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a release workflow artifact upload rule.
 /// </summary>
-public sealed class SigtranReleaseWorkflowArtifactRule
+internal sealed class SigtranReleaseWorkflowArtifactRule
 {
     /// <summary>Creates a release workflow artifact upload rule.</summary>
     /// <param name="name">The artifact name.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranReleaseWorkflowArtifactRule
 /// <summary>
 /// Provides release workflow artifact upload rules.
 /// </summary>
-public static class SigtranReleaseWorkflowArtifacts
+internal static class SigtranReleaseWorkflowArtifacts
 {
     /// <summary>Returns the default release workflow artifact rules.</summary>
     /// <returns>The artifact upload rules.</returns>

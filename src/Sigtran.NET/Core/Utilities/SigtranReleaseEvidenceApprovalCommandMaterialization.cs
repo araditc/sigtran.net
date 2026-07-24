@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an approved production evidence run command kind.
 /// </summary>
-public enum SigtranReleaseEvidenceApprovalCommandKind
+internal enum SigtranReleaseEvidenceApprovalCommandKind
 {
     /// <summary>Create the approved run target.</summary>
     CreateRunTarget,
@@ -35,7 +35,7 @@ public enum SigtranReleaseEvidenceApprovalCommandKind
 /// <summary>
 /// Describes one approved production evidence run command.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovalCommand
+internal sealed class SigtranReleaseEvidenceApprovalCommand
 {
     /// <summary>Creates an approved production evidence run command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -81,7 +81,7 @@ public sealed class SigtranReleaseEvidenceApprovalCommand
 /// <summary>
 /// Describes an approved production evidence run command plan.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovalCommandPlan
+internal sealed class SigtranReleaseEvidenceApprovalCommandPlan
 {
     /// <summary>Creates an approved production evidence run command plan.</summary>
     /// <param name="artifactRoot">The retained artifact root.</param>
@@ -139,7 +139,7 @@ public sealed class SigtranReleaseEvidenceApprovalCommandPlan
 /// <summary>
 /// Describes a materialized approved production evidence run command script.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovalCommandMaterialization
+internal sealed class SigtranReleaseEvidenceApprovalCommandMaterialization
 {
     /// <summary>Creates a materialized approval command script result.</summary>
     /// <param name="commandPlan">The source command plan.</param>
@@ -204,7 +204,7 @@ public sealed class SigtranReleaseEvidenceApprovalCommandMaterialization
 /// <summary>
 /// Provides approved production evidence run command helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceApprovalCommands
+internal static class SigtranReleaseEvidenceApprovalCommands
 {
     /// <summary>Creates the default approved production evidence run command plan.</summary>
     /// <param name="artifactRoot">The retained artifact root.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a configuration profile kind.
 /// </summary>
-public enum SigtranConfigurationProfileKind
+internal enum SigtranConfigurationProfileKind
 {
     /// <summary>Local development profile.</summary>
     Development,
@@ -18,7 +18,7 @@ public enum SigtranConfigurationProfileKind
 /// <summary>
 /// Describes a developer-facing configuration profile.
 /// </summary>
-public sealed class SigtranConfigurationProfile
+internal sealed class SigtranConfigurationProfile
 {
     /// <summary>Creates a configuration profile.</summary>
     /// <param name="kind">The profile kind.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranConfigurationProfile
 /// <summary>
 /// Provides official developer-facing configuration profiles.
 /// </summary>
-public static class SigtranConfigurationProfiles
+internal static class SigtranConfigurationProfiles
 {
     /// <summary>Returns the official configuration profiles.</summary>
     /// <returns>The official configuration profiles.</returns>

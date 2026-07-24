@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab automation readiness status.
 /// </summary>
-public sealed class SigtranReferencePeerLabAutomationStatusReport
+internal sealed class SigtranReferencePeerLabAutomationStatusReport
 {
     /// <summary>Creates a reference peer lab automation status report.</summary>
     /// <param name="completedCapabilityCount">The completed automation capability count.</param>
@@ -49,7 +49,7 @@ public sealed class SigtranReferencePeerLabAutomationStatusReport
 /// <summary>
 /// Provides reference external peer lab automation status helpers.
 /// </summary>
-public static class SigtranReferencePeerLabAutomationStatus
+internal static class SigtranReferencePeerLabAutomationStatus
 {
     /// <summary>The completed automation unit count.</summary>
     public const int CompletedUnitCount = 10;

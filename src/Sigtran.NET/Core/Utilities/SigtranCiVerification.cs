@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one command in the official SDK verification profile.
 /// </summary>
-public sealed class SigtranCiVerificationStep
+internal sealed class SigtranCiVerificationStep
 {
     /// <summary>Creates a CI verification step.</summary>
     /// <param name="name">The step name.</param>
@@ -24,7 +24,7 @@ public sealed class SigtranCiVerificationStep
 /// <summary>
 /// Describes the official SDK CI verification profile.
 /// </summary>
-public sealed class SigtranCiVerificationProfile
+internal sealed class SigtranCiVerificationProfile
 {
     /// <summary>Creates a CI verification profile.</summary>
     /// <param name="dotNetVersion">The .NET SDK version pattern.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranCiVerificationProfile
 /// <summary>
 /// Provides the official verification profile for local and CI use.
 /// </summary>
-public static class SigtranCiVerification
+internal static class SigtranCiVerification
 {
     /// <summary>Creates the default SDK verification profile.</summary>
     /// <returns>The default verification profile.</returns>

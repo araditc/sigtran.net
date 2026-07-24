@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the native SCTP lab contribution to production readiness.
 /// </summary>
-public sealed class SigtranNativeSctpLabProductionGateResult
+internal sealed class SigtranNativeSctpLabProductionGateResult
 {
     /// <summary>Creates a native SCTP lab production gate result.</summary>
     /// <param name="labFoundationReady">Whether lab foundation is ready.</param>
@@ -34,7 +34,7 @@ public sealed class SigtranNativeSctpLabProductionGateResult
 /// <summary>
 /// Provides native SCTP lab production gate helpers.
 /// </summary>
-public static class SigtranNativeSctpLabProductionGate
+internal static class SigtranNativeSctpLabProductionGate
 {
     /// <summary>Evaluates the native SCTP lab production gate.</summary>
     /// <returns>The native SCTP lab production gate result.</returns>

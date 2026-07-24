@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes measured latency percentiles for one performance surface.
 /// </summary>
-public sealed class SigtranPerformanceLatencyEvidence
+internal sealed class SigtranPerformanceLatencyEvidence
 {
     /// <summary>Creates measured latency percentile evidence.</summary>
     /// <param name="surface">The measured latency surface.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranPerformanceLatencyEvidence
 /// <summary>
 /// Describes the result of checking measured latency evidence against a budget.
 /// </summary>
-public sealed class SigtranPerformanceLatencyBudgetReport
+internal sealed class SigtranPerformanceLatencyBudgetReport
 {
     /// <summary>Creates a latency budget report.</summary>
     /// <param name="evidence">The measured latency evidence.</param>
@@ -100,7 +100,7 @@ public sealed class SigtranPerformanceLatencyBudgetReport
 /// <summary>
 /// Evaluates measured performance latency evidence against SDK latency budgets.
 /// </summary>
-public static class SigtranPerformanceLatencyEvidenceEvaluator
+internal static class SigtranPerformanceLatencyEvidenceEvaluator
 {
     /// <summary>Evaluates all measured latency evidence entries against known budgets.</summary>
     /// <param name="evidence">The measured latency evidence entries.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the external peer interoperability execution environment.
 /// </summary>
-public sealed class SigtranExternalPeerInteropEnvironment
+internal sealed class SigtranExternalPeerInteropEnvironment
 {
     /// <summary>Creates an external peer interoperability environment.</summary>
     /// <param name="name">The environment name.</param>
@@ -86,7 +86,7 @@ public sealed class SigtranExternalPeerInteropEnvironment
 /// <summary>
 /// Provides external peer interoperability environment helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropEnvironments
+internal static class SigtranExternalPeerInteropEnvironments
 {
     /// <summary>Creates the default external peer lab environment.</summary>
     /// <returns>The default external peer lab environment.</returns>

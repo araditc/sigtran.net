@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab runner readiness status.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerStatusReport
+internal sealed class SigtranReferencePeerLabRunnerStatusReport
 {
     /// <summary>Creates a reference peer lab runner status report.</summary>
     /// <param name="completedCapabilityCount">The completed runner capability count.</param>
@@ -49,7 +49,7 @@ public sealed class SigtranReferencePeerLabRunnerStatusReport
 /// <summary>
 /// Provides reference external peer lab runner status helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerStatus
+internal static class SigtranReferencePeerLabRunnerStatus
 {
     /// <summary>The completed runner unit count.</summary>
     public const int CompletedUnitCount = 10;

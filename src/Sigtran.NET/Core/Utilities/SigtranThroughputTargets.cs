@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a throughput target surface.
 /// </summary>
-public enum SigtranThroughputSurface
+internal enum SigtranThroughputSurface
 {
     /// <summary>M3UA DATA parsing.</summary>
     M3uaData,
@@ -24,7 +24,7 @@ public enum SigtranThroughputSurface
 /// <summary>
 /// Describes a throughput target.
 /// </summary>
-public sealed class SigtranThroughputTarget
+internal sealed class SigtranThroughputTarget
 {
     /// <summary>Creates a throughput target.</summary>
     /// <param name="surface">The throughput surface.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranThroughputTarget
 /// <summary>
 /// Provides throughput target helpers.
 /// </summary>
-public static class SigtranThroughputTargets
+internal static class SigtranThroughputTargets
 {
     private static readonly SigtranThroughputTarget[] Targets =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes API deprecation policy.
 /// </summary>
-public sealed class SigtranDeprecationPolicy
+internal sealed class SigtranDeprecationPolicy
 {
     /// <summary>Creates a deprecation policy.</summary>
     /// <param name="minimumNoticePeriod">The minimum notice period.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranDeprecationPolicy
 /// <summary>
 /// Provides API deprecation policy helpers.
 /// </summary>
-public static class SigtranDeprecationPolicies
+internal static class SigtranDeprecationPolicies
 {
     /// <summary>Creates the default stable API deprecation policy.</summary>
     /// <returns>The default stable API deprecation policy.</returns>

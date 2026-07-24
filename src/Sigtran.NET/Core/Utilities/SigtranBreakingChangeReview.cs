@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a breaking-change review requirement set.
 /// </summary>
-public sealed class SigtranBreakingChangeReviewPolicy
+internal sealed class SigtranBreakingChangeReviewPolicy
 {
     /// <summary>Creates a breaking-change review policy.</summary>
     /// <param name="requiresApiBaselineDiff">Whether an API baseline diff is required.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranBreakingChangeReviewPolicy
 /// <summary>
 /// Provides breaking-change review policy helpers.
 /// </summary>
-public static class SigtranBreakingChangeReview
+internal static class SigtranBreakingChangeReview
 {
     /// <summary>Creates the default breaking-change review policy.</summary>
     /// <returns>The default breaking-change review policy.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a release artifact kind.
 /// </summary>
-public enum SigtranReleaseArtifactKind
+internal enum SigtranReleaseArtifactKind
 {
     /// <summary>The primary NuGet package.</summary>
     NuGetPackage,
@@ -24,7 +24,7 @@ public enum SigtranReleaseArtifactKind
 /// <summary>
 /// Describes one release artifact.
 /// </summary>
-public sealed class SigtranReleaseArtifact
+internal sealed class SigtranReleaseArtifact
 {
     /// <summary>Creates a release artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranReleaseArtifact
 /// <summary>
 /// Stores release artifacts for one package version.
 /// </summary>
-public sealed class SigtranReleaseArtifactManifest
+internal sealed class SigtranReleaseArtifactManifest
 {
     private readonly List<SigtranReleaseArtifact> _artifacts = [];
 

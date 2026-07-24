@@ -3,7 +3,7 @@ namespace Sigtran.NET.Layers.TCAP;
 /// <summary>
 /// Readiness report for the TCAP BER foundation phase.
 /// </summary>
-public readonly struct TcapReadinessSnapshot
+internal readonly struct TcapReadinessSnapshot
 {
     /// <summary>Creates a TCAP readiness report.</summary>
     /// <param name="hasBerPrimitives">Whether BER TLV primitives are available.</param>
@@ -122,7 +122,7 @@ public readonly struct TcapReadinessSnapshot
 /// <summary>
 /// Provides readiness information for TCAP work.
 /// </summary>
-public static class TcapReadiness
+internal static class TcapReadiness
 {
     /// <summary>The release label for TCAP readiness.</summary>
     public const string ReleaseLabel = "TCAP BER foundation";

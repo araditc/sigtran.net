@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the interoperability lab peer role.
 /// </summary>
-public enum SigtranInteropPeerRole
+internal enum SigtranInteropPeerRole
 {
     /// <summary>The peer acts as a Signalling Gateway.</summary>
     SignallingGateway,
@@ -21,7 +21,7 @@ public enum SigtranInteropPeerRole
 /// <summary>
 /// Identifies how an interoperability peer stack is supported for release evidence.
 /// </summary>
-public enum SigtranInteropPeerSupportModel
+internal enum SigtranInteropPeerSupportModel
 {
     /// <summary>The peer stack is reference and suitable for current production lab runs.</summary>
     ReferencePeerStack,
@@ -39,7 +39,7 @@ public enum SigtranInteropPeerSupportModel
 /// <summary>
 /// Describes an external peer stack used by the interoperability lab.
 /// </summary>
-public sealed class SigtranInteropPeerProfile
+internal sealed class SigtranInteropPeerProfile
 {
     /// <summary>Creates an interoperability peer profile.</summary>
     /// <param name="id">The stable peer id.</param>
@@ -104,7 +104,7 @@ public sealed class SigtranInteropPeerProfile
 /// <summary>
 /// Describes a repeatable interoperability lab template.
 /// </summary>
-public sealed class SigtranInteropLabTemplate
+internal sealed class SigtranInteropLabTemplate
 {
     /// <summary>Creates an interoperability lab template.</summary>
     /// <param name="scenario">The lab scenario.</param>
@@ -150,7 +150,7 @@ public sealed class SigtranInteropLabTemplate
 /// <summary>
 /// Provides official interoperability peer profiles and templates.
 /// </summary>
-public static class SigtranInteropPeerProfiles
+internal static class SigtranInteropPeerProfiles
 {
     /// <summary>The reference external peer reference URL used by the default lab profile.</summary>
     public const string ReferencePeerReferenceUrl = "https://osmocom.org/projects/osmo-stp/wiki";

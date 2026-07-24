@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies external peer interoperability artifact kinds.
 /// </summary>
-public enum SigtranExternalPeerInteropArtifactKind
+internal enum SigtranExternalPeerInteropArtifactKind
 {
     /// <summary>Packet capture artifact.</summary>
     PacketCapture,
@@ -24,7 +24,7 @@ public enum SigtranExternalPeerInteropArtifactKind
 /// <summary>
 /// Describes one external peer interoperability artifact.
 /// </summary>
-public sealed class SigtranExternalPeerInteropArtifact
+internal sealed class SigtranExternalPeerInteropArtifact
 {
     /// <summary>Creates an external peer interoperability artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranExternalPeerInteropArtifact
 /// <summary>
 /// Stores external peer interoperability artifacts.
 /// </summary>
-public sealed class SigtranExternalPeerInteropArtifactManifest
+internal sealed class SigtranExternalPeerInteropArtifactManifest
 {
     private readonly List<SigtranExternalPeerInteropArtifact> _artifacts = [];
     private static readonly SigtranExternalPeerInteropArtifactKind[] RequiredKinds =

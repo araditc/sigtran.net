@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the intended environment for a sample template.
 /// </summary>
-public enum SigtranSampleTemplateEnvironment
+internal enum SigtranSampleTemplateEnvironment
 {
     /// <summary>Local development environment.</summary>
     LocalDevelopment,
@@ -18,7 +18,7 @@ public enum SigtranSampleTemplateEnvironment
 /// <summary>
 /// Describes a runnable sample template.
 /// </summary>
-public sealed class SigtranSampleTemplate
+internal sealed class SigtranSampleTemplate
 {
     /// <summary>Creates a sample template.</summary>
     /// <param name="sampleId">The sample id.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranSampleTemplate
 /// <summary>
 /// Provides developer-facing sample templates.
 /// </summary>
-public static class SigtranSampleTemplates
+internal static class SigtranSampleTemplates
 {
     /// <summary>Returns all official sample templates.</summary>
     /// <returns>The official sample templates.</returns>

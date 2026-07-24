@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a reference external peer lab workflow template.
 /// </summary>
-public sealed class SigtranReferencePeerLabWorkflowTemplate
+internal sealed class SigtranReferencePeerLabWorkflowTemplate
 {
     /// <summary>Creates a reference peer lab workflow template.</summary>
     /// <param name="name">The workflow name.</param>
@@ -91,16 +91,16 @@ public sealed class SigtranReferencePeerLabWorkflowTemplate
 
         builder.AppendLine("    steps:");
         builder.AppendLine("      - name: Checkout");
-        builder.AppendLine("        uses: actions/checkout@v4");
+        builder.AppendLine("        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1");
         builder.AppendLine("      - name: Setup .NET");
-        builder.AppendLine("        uses: actions/setup-dotnet@v4");
+        builder.AppendLine("        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0");
         builder.AppendLine("        with:");
         builder.AppendLine("          dotnet-version: 10.0.x");
         builder.AppendLine("      - name: Run reference peer lab");
         builder.AppendLine("        shell: bash");
         builder.AppendLine("        run: ./scripts/reference-peer-lab/run.sh \"${SIGTRAN_LAB_RUN_ID}\"");
         builder.AppendLine("      - name: Upload reference peer evidence");
-        builder.AppendLine("        uses: actions/upload-artifact@v4");
+        builder.AppendLine("        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1");
         builder.AppendLine("        with:");
         builder.AppendLine("          name: reference-peer-lab-evidence");
         builder.AppendLine("          path: |");
@@ -125,7 +125,7 @@ public sealed class SigtranReferencePeerLabWorkflowTemplate
 /// <summary>
 /// Provides reference external peer lab workflow template helpers.
 /// </summary>
-public static class SigtranReferencePeerLabWorkflows
+internal static class SigtranReferencePeerLabWorkflows
 {
     /// <summary>Creates the default reference external peer lab workflow template.</summary>
     /// <returns>The default reference peer lab workflow template.</returns>

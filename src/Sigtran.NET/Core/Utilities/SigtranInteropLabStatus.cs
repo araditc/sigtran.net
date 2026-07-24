@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides real interoperability lab status.
 /// </summary>
-public static class SigtranInteropLabStatus
+internal static class SigtranInteropLabStatus
 {
     private static readonly string[] Capabilities =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reference external peer lab runner output artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerArtifactOutput
+internal sealed class SigtranReferencePeerLabRunnerArtifactOutput
 {
     /// <summary>Creates a reference peer lab runner output artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -45,7 +45,7 @@ public sealed class SigtranReferencePeerLabRunnerArtifactOutput
 /// <summary>
 /// Describes the expected output materialization plan for a reference external peer lab runner.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerArtifactMaterializationPlan
+internal sealed class SigtranReferencePeerLabRunnerArtifactMaterializationPlan
 {
     private readonly SigtranReferencePeerLabRunnerArtifactOutput[] _outputs;
 
@@ -107,7 +107,7 @@ public sealed class SigtranReferencePeerLabRunnerArtifactMaterializationPlan
 /// <summary>
 /// Provides reference external peer lab runner artifact materialization helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerArtifacts
+internal static class SigtranReferencePeerLabRunnerArtifacts
 {
     /// <summary>Creates the default runner artifact materialization plan from a workspace.</summary>
     /// <param name="workspace">The runner workspace.</param>

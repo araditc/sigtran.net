@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a release automation step kind.
 /// </summary>
-public enum SigtranReleaseAutomationStepKind
+internal enum SigtranReleaseAutomationStepKind
 {
     /// <summary>Restore packages and SDK tools.</summary>
     Restore,
@@ -27,7 +27,7 @@ public enum SigtranReleaseAutomationStepKind
 /// <summary>
 /// Describes one release automation step.
 /// </summary>
-public sealed class SigtranReleaseAutomationStep
+internal sealed class SigtranReleaseAutomationStep
 {
     /// <summary>Creates a release automation step.</summary>
     /// <param name="kind">The step kind.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranReleaseAutomationStep
 /// <summary>
 /// Describes a deterministic release automation plan.
 /// </summary>
-public sealed class SigtranReleaseAutomationPlan
+internal sealed class SigtranReleaseAutomationPlan
 {
     /// <summary>Creates a release automation plan.</summary>
     /// <param name="id">The stable plan id.</param>
@@ -94,7 +94,7 @@ public sealed class SigtranReleaseAutomationPlan
 /// <summary>
 /// Provides official release automation plans.
 /// </summary>
-public static class SigtranReleaseAutomation
+internal static class SigtranReleaseAutomation
 {
     /// <summary>Creates the default release automation plan.</summary>
     /// <returns>The default release automation plan.</returns>

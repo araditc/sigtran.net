@@ -5,7 +5,7 @@ namespace Sigtran.NET.Layers.SCTP;
 /// <summary>
 /// Readiness report for native SCTP implementation.
 /// </summary>
-public sealed class NativeSctpReadinessSnapshot
+internal sealed class NativeSctpReadinessSnapshot
 {
     /// <summary>Creates a native SCTP readiness report.</summary>
     /// <param name="hasPlatformProbe">Whether platform probing is available.</param>
@@ -92,7 +92,7 @@ public sealed class NativeSctpReadinessSnapshot
 /// <summary>
 /// Provides native SCTP readiness information.
 /// </summary>
-public static class NativeSctpReadiness
+internal static class NativeSctpReadiness
 {
     /// <summary>The required native SCTP foundation capability count.</summary>
     public const int RequiredFoundationCapabilityCount = 7;

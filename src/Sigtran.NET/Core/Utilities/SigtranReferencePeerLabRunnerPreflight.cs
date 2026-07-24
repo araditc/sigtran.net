@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reference external peer lab runner preflight check.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerPreflightCheck
+internal sealed class SigtranReferencePeerLabRunnerPreflightCheck
 {
     /// <summary>Creates a reference peer lab runner preflight check.</summary>
     /// <param name="id">The stable check id.</param>
@@ -45,7 +45,7 @@ public sealed class SigtranReferencePeerLabRunnerPreflightCheck
 /// <summary>
 /// Describes reference external peer lab runner preflight output.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerPreflightReport
+internal sealed class SigtranReferencePeerLabRunnerPreflightReport
 {
     private readonly SigtranReferencePeerLabRunnerPreflightCheck[] _checks;
 
@@ -87,7 +87,7 @@ public sealed class SigtranReferencePeerLabRunnerPreflightReport
 /// <summary>
 /// Provides reference external peer lab runner preflight helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerPreflight
+internal static class SigtranReferencePeerLabRunnerPreflight
 {
     /// <summary>Evaluates runner preflight checks.</summary>
     /// <param name="inputBundle">The runner input bundle.</param>

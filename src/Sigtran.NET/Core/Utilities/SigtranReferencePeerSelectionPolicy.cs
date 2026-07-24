@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference peer selection criterion categories.
 /// </summary>
-public enum SigtranReferencePeerSelectionCriterionKind
+internal enum SigtranReferencePeerSelectionCriterionKind
 {
     /// <summary>The peer stack is reference upstream.</summary>
     UpstreamMaintenance,
@@ -27,7 +27,7 @@ public enum SigtranReferencePeerSelectionCriterionKind
 /// <summary>
 /// Describes one reference peer selection criterion.
 /// </summary>
-public sealed class SigtranReferencePeerSelectionCriterion
+internal sealed class SigtranReferencePeerSelectionCriterion
 {
     /// <summary>Creates a reference peer selection criterion.</summary>
     /// <param name="id">The stable criterion id.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReferencePeerSelectionCriterion
 /// <summary>
 /// Describes reference peer selection evaluation output.
 /// </summary>
-public sealed class SigtranReferencePeerSelectionReport
+internal sealed class SigtranReferencePeerSelectionReport
 {
     /// <summary>Creates a reference peer selection report.</summary>
     /// <param name="profileId">The evaluated peer profile id.</param>
@@ -96,7 +96,7 @@ public sealed class SigtranReferencePeerSelectionReport
 /// <summary>
 /// Describes the package-neutral reference peer selection policy.
 /// </summary>
-public sealed class SigtranReferencePeerSelectionPolicy
+internal sealed class SigtranReferencePeerSelectionPolicy
 {
     private readonly SigtranReferencePeerSelectionCriterion[] _criteria;
 

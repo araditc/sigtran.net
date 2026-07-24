@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a reference external peer lab run manifest.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunManifest
+internal sealed class SigtranReferencePeerLabRunManifest
 {
     private readonly SigtranReferencePeerLabTrafficVector[] _trafficVectors;
 
@@ -83,7 +83,7 @@ public sealed class SigtranReferencePeerLabRunManifest
 /// <summary>
 /// Provides reference external peer lab run manifest helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunManifests
+internal static class SigtranReferencePeerLabRunManifests
 {
     /// <summary>Creates the default reference external peer lab run manifest.</summary>
     /// <param name="runId">The stable run id.</param>

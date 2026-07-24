@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides developer experience and adoption status.
 /// </summary>
-public static class SigtranDeveloperExperienceStatus
+internal static class SigtranDeveloperExperienceStatus
 {
     private static readonly string[] Capabilities =
     [

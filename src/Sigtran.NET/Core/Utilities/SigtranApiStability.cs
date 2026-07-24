@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies the public stability level of an SDK API surface.
 /// </summary>
-public enum SigtranApiStabilityLevel
+internal enum SigtranApiStabilityLevel
 {
     /// <summary>The API is experimental and can change before stable release.</summary>
     Experimental,
@@ -18,7 +18,7 @@ public enum SigtranApiStabilityLevel
 /// <summary>
 /// Describes one API stability contract.
 /// </summary>
-public sealed class SigtranApiStabilityContract
+internal sealed class SigtranApiStabilityContract
 {
     /// <summary>Creates an API stability contract.</summary>
     /// <param name="surface">The public API surface.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranApiStabilityContract
 /// <summary>
 /// Provides API stability contract helpers.
 /// </summary>
-public static class SigtranApiStability
+internal static class SigtranApiStability
 {
     private static readonly SigtranApiStabilityContract[] Contracts =
     [

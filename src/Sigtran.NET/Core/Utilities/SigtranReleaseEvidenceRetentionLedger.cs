@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained production evidence ledger entry.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetentionLedgerEntry
+internal sealed class SigtranReleaseEvidenceRetentionLedgerEntry
 {
     /// <summary>Creates a retained production evidence ledger entry.</summary>
     /// <param name="kind">The retained artifact kind.</param>
@@ -82,7 +82,7 @@ public sealed class SigtranReleaseEvidenceRetentionLedgerEntry
 /// <summary>
 /// Describes the retained production evidence retention ledger.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetentionLedger
+internal sealed class SigtranReleaseEvidenceRetentionLedger
 {
     /// <summary>Creates a retained production evidence retention ledger.</summary>
     /// <param name="report">The retained file verification report.</param>
@@ -144,7 +144,7 @@ public sealed class SigtranReleaseEvidenceRetentionLedger
 /// <summary>
 /// Provides retained production evidence retention ledger helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRetentionLedgers
+internal static class SigtranReleaseEvidenceRetentionLedgers
 {
     /// <summary>Creates a default retention ledger from a verified retained file report.</summary>
     /// <param name="report">The retained file verification report.</param>

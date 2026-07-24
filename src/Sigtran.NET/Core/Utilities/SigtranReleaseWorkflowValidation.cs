@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the result of validating a release workflow file.
 /// </summary>
-public sealed class SigtranReleaseWorkflowValidationResult
+internal sealed class SigtranReleaseWorkflowValidationResult
 {
     /// <summary>Creates a release workflow validation result.</summary>
     /// <param name="isValid">Whether the workflow is valid.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranReleaseWorkflowValidationResult
 /// <summary>
 /// Validates the concrete release workflow YAML contract.
 /// </summary>
-public static class SigtranReleaseWorkflowValidation
+internal static class SigtranReleaseWorkflowValidation
 {
     private static readonly string[] RequiredFragments =
     [
@@ -64,7 +64,7 @@ public static class SigtranReleaseWorkflowValidation
         "dotnet nuget verify",
         "actions/attest-build-provenance",
         "actions/attest-sbom",
-        "actions/upload-artifact@v4",
+        "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
         "SIGTRAN_FINAL_SBOM_PATH",
         "SIGTRAN_PUBLIC_API_DIFF_PATH",
         "inputs.channel != 'dry-run'",

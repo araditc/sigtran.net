@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a required NuGet package metadata property.
 /// </summary>
-public sealed class SigtranNuGetMetadataRequirement
+internal sealed class SigtranNuGetMetadataRequirement
 {
     /// <summary>Creates a NuGet metadata requirement.</summary>
     /// <param name="propertyName">The MSBuild property name.</param>
@@ -24,7 +24,7 @@ public sealed class SigtranNuGetMetadataRequirement
 /// <summary>
 /// Describes the NuGet metadata contract required before package publication.
 /// </summary>
-public sealed class SigtranNuGetMetadataContract
+internal sealed class SigtranNuGetMetadataContract
 {
     /// <summary>Creates a NuGet metadata contract.</summary>
     /// <param name="requirements">The required metadata properties.</param>
@@ -86,7 +86,7 @@ public sealed class SigtranNuGetMetadataContract
 /// <summary>
 /// Provides NuGet metadata publication contracts.
 /// </summary>
-public static class SigtranNuGetMetadata
+internal static class SigtranNuGetMetadata
 {
     /// <summary>Creates the default NuGet metadata contract.</summary>
     /// <returns>The default NuGet metadata contract.</returns>

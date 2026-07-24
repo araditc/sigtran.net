@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies reference external peer lab prerequisite categories.
 /// </summary>
-public enum SigtranReferencePeerLabPrerequisiteKind
+internal enum SigtranReferencePeerLabPrerequisiteKind
 {
     /// <summary>The host operating system prerequisite.</summary>
     OperatingSystem,
@@ -27,7 +27,7 @@ public enum SigtranReferencePeerLabPrerequisiteKind
 /// <summary>
 /// Describes one reference external peer lab prerequisite.
 /// </summary>
-public sealed class SigtranReferencePeerLabPrerequisite
+internal sealed class SigtranReferencePeerLabPrerequisite
 {
     /// <summary>Creates a reference external peer lab prerequisite.</summary>
     /// <param name="id">The stable prerequisite id.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranReferencePeerLabPrerequisite
 /// <summary>
 /// Describes reference external peer lab host prerequisite evaluation output.
 /// </summary>
-public sealed class SigtranReferencePeerLabPrerequisiteReport
+internal sealed class SigtranReferencePeerLabPrerequisiteReport
 {
     /// <summary>Creates a reference external peer lab prerequisite report.</summary>
     /// <param name="requiredPrerequisites">The required prerequisites.</param>
@@ -103,7 +103,7 @@ public sealed class SigtranReferencePeerLabPrerequisiteReport
 /// <summary>
 /// Provides reference external peer lab prerequisite helpers.
 /// </summary>
-public static class SigtranReferencePeerLabPrerequisites
+internal static class SigtranReferencePeerLabPrerequisites
 {
     /// <summary>Returns the default reference external peer lab prerequisites.</summary>
     /// <returns>The default reference external peer lab prerequisites.</returns>

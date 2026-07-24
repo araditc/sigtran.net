@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained artifact handed off for production evidence promotion.
 /// </summary>
-public sealed class SigtranReleaseEvidencePromotionHandoffItem
+internal sealed class SigtranReleaseEvidencePromotionHandoffItem
 {
     /// <summary>Creates a production evidence promotion handoff item.</summary>
     /// <param name="kind">The checklist artifact kind.</param>
@@ -42,7 +42,7 @@ public sealed class SigtranReleaseEvidencePromotionHandoffItem
 /// <summary>
 /// Describes the handoff from artifact intake to production evidence promotion.
 /// </summary>
-public sealed class SigtranReleaseEvidencePromotionHandoff
+internal sealed class SigtranReleaseEvidencePromotionHandoff
 {
     /// <summary>Creates a production evidence promotion handoff.</summary>
     /// <param name="report">The dossier intake report.</param>
@@ -106,7 +106,7 @@ public sealed class SigtranReleaseEvidencePromotionHandoff
 /// <summary>
 /// Provides production evidence promotion handoff helpers.
 /// </summary>
-public static class SigtranReleaseEvidencePromotionHandoffs
+internal static class SigtranReleaseEvidencePromotionHandoffs
 {
     /// <summary>Creates the default promotion handoff from a dossier intake report.</summary>
     /// <param name="report">The dossier intake report.</param>

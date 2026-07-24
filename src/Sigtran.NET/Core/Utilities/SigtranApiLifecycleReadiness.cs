@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes API lifecycle readiness.
 /// </summary>
-public sealed class SigtranApiLifecycleReadinessSnapshot
+internal sealed class SigtranApiLifecycleReadinessSnapshot
 {
     /// <summary>Creates an API lifecycle readiness report.</summary>
     /// <param name="hasSurfaceCatalog">Whether an API surface catalog is available.</param>
@@ -74,7 +74,7 @@ public sealed class SigtranApiLifecycleReadinessSnapshot
 /// <summary>
 /// Provides API lifecycle readiness helpers.
 /// </summary>
-public static class SigtranApiLifecycleReadiness
+internal static class SigtranApiLifecycleReadiness
 {
     /// <summary>Returns the current API lifecycle readiness report.</summary>
     /// <returns>The current API lifecycle readiness report.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the CI profile for release automation.
 /// </summary>
-public sealed class SigtranReleaseCiProfile
+internal sealed class SigtranReleaseCiProfile
 {
     /// <summary>Creates a release CI profile.</summary>
     /// <param name="workflowName">The workflow name.</param>
@@ -51,7 +51,7 @@ public sealed class SigtranReleaseCiProfile
 /// <summary>
 /// Provides release CI profile helpers.
 /// </summary>
-public static class SigtranReleaseCiProfiles
+internal static class SigtranReleaseCiProfiles
 {
     /// <summary>Creates the default release CI profile.</summary>
     /// <returns>The default release CI profile.</returns>

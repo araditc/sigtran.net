@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the interoperability lab readiness state.
 /// </summary>
-public sealed class SigtranInteropLabReadinessSnapshot
+internal sealed class SigtranInteropLabReadinessSnapshot
 {
     /// <summary>Creates an interoperability lab readiness report.</summary>
     /// <param name="hasScenarioCatalog">Whether scenario catalog is available.</param>
@@ -81,7 +81,7 @@ public sealed class SigtranInteropLabReadinessSnapshot
 /// <summary>
 /// Provides the current interoperability lab readiness report.
 /// </summary>
-public static class SigtranInteropLabReadiness
+internal static class SigtranInteropLabReadiness
 {
     /// <summary>Returns the current interoperability lab readiness report.</summary>
     /// <returns>The current interoperability lab readiness report.</returns>

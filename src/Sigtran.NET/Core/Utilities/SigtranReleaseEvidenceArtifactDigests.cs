@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one retained production evidence artifact digest.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactDigest
+internal sealed class SigtranReleaseEvidenceArtifactDigest
 {
     /// <summary>Creates a retained production evidence artifact digest.</summary>
     /// <param name="stageId">The execution stage that produced the artifact.</param>
@@ -48,7 +48,7 @@ public sealed class SigtranReleaseEvidenceArtifactDigest
 /// <summary>
 /// Describes the digest manifest for retained production evidence artifacts.
 /// </summary>
-public sealed class SigtranReleaseEvidenceArtifactDigestManifest
+internal sealed class SigtranReleaseEvidenceArtifactDigestManifest
 {
     /// <summary>Creates a retained production evidence artifact digest manifest.</summary>
     /// <param name="sourceManifest">The artifact source manifest.</param>
@@ -98,7 +98,7 @@ public sealed class SigtranReleaseEvidenceArtifactDigestManifest
 /// <summary>
 /// Provides production evidence artifact digest manifest helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceArtifactDigests
+internal static class SigtranReleaseEvidenceArtifactDigests
 {
     /// <summary>Creates a digest manifest using the same digest value for every source.</summary>
     /// <param name="sourceManifest">The artifact source manifest.</param>

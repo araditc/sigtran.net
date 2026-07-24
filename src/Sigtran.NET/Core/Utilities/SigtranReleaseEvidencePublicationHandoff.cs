@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a publication handoff for an approved production evidence run.
 /// </summary>
-public sealed class SigtranReleaseEvidencePublicationHandoff
+internal sealed class SigtranReleaseEvidencePublicationHandoff
 {
     /// <summary>Creates an approved production evidence publication handoff.</summary>
     /// <param name="promotionPackage">The approved run promotion package.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranReleaseEvidencePublicationHandoff
 /// <summary>
 /// Provides approved production evidence publication handoff helpers.
 /// </summary>
-public static class SigtranReleaseEvidencePublicationHandoffs
+internal static class SigtranReleaseEvidencePublicationHandoffs
 {
     /// <summary>Creates a publication handoff for an approved production evidence run.</summary>
     /// <param name="promotionPackage">The approved run promotion package.</param>

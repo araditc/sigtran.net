@@ -6,15 +6,17 @@
     <Nullable>enable</Nullable>
     <PackageId>Sigtran.NET</PackageId>
     <Title>SIGTRAN.NET</Title>
-    <Description>A .NET 10 SDK for building SIGTRAN applications, starting with SCTP, M3UA, SCCP, TCAP, and MAP primitives.</Description>
+    <Description>A .NET 10 SDK for native Linux SCTP, M3UA, M2PA, MTP3, SCCP, TCAP, and MAP SMS signaling applications.</Description>
     <Authors>SIGTRAN.NET contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageTags>sigtran;m3ua;sctp;ss7;telecom;dotnet</PackageTags>
-    <PackageReleaseNotes>Alpha package focused on M3UA framing, typed parsing, ASP lifecycle helpers, routing, diagnostics, and transport abstractions.</PackageReleaseNotes>
+    <PackageTags>sigtran;sctp;m3ua;m2pa;mtp3;sccp;tcap;map;ss7;telecom;dotnet</PackageTags>
+    <PackageReleaseNotes>Release candidate with native Linux SCTP, M3UA and M2PA runtimes, stateful SCCP/TCAP/MAP SMS services, retained interoperability evidence, and production operations APIs.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/araditc/Sigtran.NET.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/araditc/Sigtran.NET</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>rc.2</VersionSuffix>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

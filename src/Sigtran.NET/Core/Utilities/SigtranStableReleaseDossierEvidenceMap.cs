@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable release dossier evidence required before stable publication.
 /// </summary>
-public enum SigtranStableReleaseDossierEvidenceKind
+internal enum SigtranStableReleaseDossierEvidenceKind
 {
     /// <summary>Reference external peer interoperability run evidence.</summary>
     ReferenceExternalPeerRun,
@@ -42,7 +42,7 @@ public enum SigtranStableReleaseDossierEvidenceKind
 /// <summary>
 /// Describes one retained stable release dossier evidence item.
 /// </summary>
-public sealed class SigtranStableReleaseDossierEvidenceItem
+internal sealed class SigtranStableReleaseDossierEvidenceItem
 {
     /// <summary>Creates a retained stable release dossier evidence item.</summary>
     /// <param name="kind">The evidence kind.</param>
@@ -87,7 +87,7 @@ public sealed class SigtranStableReleaseDossierEvidenceItem
 /// <summary>
 /// Maps retained stable release dossier evidence to one stable release target.
 /// </summary>
-public sealed class SigtranStableReleaseDossierEvidenceMap
+internal sealed class SigtranStableReleaseDossierEvidenceMap
 {
     /// <summary>Creates a stable release dossier evidence map.</summary>
     /// <param name="target">The stable release target.</param>
@@ -168,7 +168,7 @@ public sealed class SigtranStableReleaseDossierEvidenceMap
 /// <summary>
 /// Provides stable release dossier evidence map helpers.
 /// </summary>
-public static class SigtranStableReleaseDossierEvidenceMaps
+internal static class SigtranStableReleaseDossierEvidenceMaps
 {
     /// <summary>Creates a complete stable release dossier evidence map for a retained artifact root.</summary>
     /// <param name="target">The stable release target.</param>

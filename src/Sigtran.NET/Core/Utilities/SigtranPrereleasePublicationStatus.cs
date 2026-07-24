@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides prerelease publication status reporting.
 /// </summary>
-public static class SigtranPrereleasePublicationStatus
+internal static class SigtranPrereleasePublicationStatus
 {
     private static readonly string[] Capabilities =
     [

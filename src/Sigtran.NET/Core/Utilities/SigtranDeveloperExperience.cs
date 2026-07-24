@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a developer experience capability area.
 /// </summary>
-public enum SigtranDeveloperExperienceArea
+internal enum SigtranDeveloperExperienceArea
 {
     /// <summary>Getting started material.</summary>
     Quickstart,
@@ -24,7 +24,7 @@ public enum SigtranDeveloperExperienceArea
 /// <summary>
 /// Describes one developer experience capability.
 /// </summary>
-public sealed class SigtranDeveloperExperienceCapability
+internal sealed class SigtranDeveloperExperienceCapability
 {
     /// <summary>Creates a developer experience capability.</summary>
     /// <param name="area">The capability area.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranDeveloperExperienceCapability
 /// <summary>
 /// Provides developer experience capability planning helpers.
 /// </summary>
-public static class SigtranDeveloperExperience
+internal static class SigtranDeveloperExperience
 {
     private static readonly SigtranDeveloperExperienceCapability[] Capabilities =
     [

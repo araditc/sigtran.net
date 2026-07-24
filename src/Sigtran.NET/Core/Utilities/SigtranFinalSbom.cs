@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the final SBOM artifact retained for a release.
 /// </summary>
-public sealed class SigtranFinalSbomArtifact
+internal sealed class SigtranFinalSbomArtifact
 {
     /// <summary>Creates a final SBOM artifact descriptor.</summary>
     /// <param name="packageId">The package id covered by the SBOM.</param>
@@ -79,7 +79,7 @@ public sealed class SigtranFinalSbomArtifact
 /// <summary>
 /// Provides final release SBOM artifact helpers.
 /// </summary>
-public static class SigtranFinalSbom
+internal static class SigtranFinalSbom
 {
     /// <summary>Creates the default final SBOM artifact descriptor.</summary>
     /// <param name="version">The release package version.</param>

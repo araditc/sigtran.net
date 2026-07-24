@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one artifact subject recorded by a provenance attestation.
 /// </summary>
-public sealed class SigtranProvenanceSubject
+internal sealed class SigtranProvenanceSubject
 {
     /// <summary>Creates a provenance subject.</summary>
     /// <param name="name">The subject name.</param>
@@ -32,7 +32,7 @@ public sealed class SigtranProvenanceSubject
 /// <summary>
 /// Describes a release provenance attestation artifact.
 /// </summary>
-public sealed class SigtranProvenanceAttestation
+internal sealed class SigtranProvenanceAttestation
 {
     /// <summary>Creates a release provenance attestation artifact.</summary>
     /// <param name="outputPath">The retained attestation path.</param>
@@ -112,7 +112,7 @@ public sealed class SigtranProvenanceAttestation
 /// <summary>
 /// Provides release provenance attestation helpers.
 /// </summary>
-public static class SigtranProvenanceAttestations
+internal static class SigtranProvenanceAttestations
 {
     /// <summary>Creates a release provenance attestation from retained artifact digests.</summary>
     /// <param name="version">The package version.</param>

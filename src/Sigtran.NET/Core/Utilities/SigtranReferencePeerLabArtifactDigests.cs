@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one digest entry for a reference external peer lab artifact.
 /// </summary>
-public sealed class SigtranReferencePeerLabArtifactDigest
+internal sealed class SigtranReferencePeerLabArtifactDigest
 {
     /// <summary>Creates a reference peer lab artifact digest.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -35,7 +35,7 @@ public sealed class SigtranReferencePeerLabArtifactDigest
 /// <summary>
 /// Describes a digest manifest for reference external peer lab artifacts.
 /// </summary>
-public sealed class SigtranReferencePeerLabArtifactDigestManifest
+internal sealed class SigtranReferencePeerLabArtifactDigestManifest
 {
     private readonly SigtranReferencePeerLabArtifactDigest[] _digests;
 
@@ -90,7 +90,7 @@ public sealed class SigtranReferencePeerLabArtifactDigestManifest
 /// <summary>
 /// Provides reference external peer lab digest manifest helpers.
 /// </summary>
-public static class SigtranReferencePeerLabArtifactDigestManifests
+internal static class SigtranReferencePeerLabArtifactDigestManifests
 {
     /// <summary>Creates a digest-covered manifest from an artifact plan.</summary>
     /// <param name="artifactPlan">The artifact plan.</param>

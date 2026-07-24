@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Aggregates benchmark workload, retained artifacts, latency, resource, and resilience evidence into one publishable report.
 /// </summary>
-public sealed class SigtranPerformanceEvidenceReport
+internal sealed class SigtranPerformanceEvidenceReport
 {
     private readonly SigtranPerformanceLatencyBudgetReport[] _latencyReports;
 
@@ -108,7 +108,7 @@ public sealed class SigtranPerformanceEvidenceReport
 /// <summary>
 /// Creates performance evidence reports from measured evidence.
 /// </summary>
-public static class SigtranPerformanceEvidenceReports
+internal static class SigtranPerformanceEvidenceReports
 {
     /// <summary>Creates a publishable performance evidence report from measured evidence.</summary>
     /// <param name="runPlan">The peer-traffic benchmark run plan.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes SDK capacity assumptions for a deployment profile.
 /// </summary>
-public sealed class SigtranCapacityProfile
+internal sealed class SigtranCapacityProfile
 {
     /// <summary>Creates a capacity profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -50,7 +50,7 @@ public sealed class SigtranCapacityProfile
 /// <summary>
 /// Provides capacity profile helpers.
 /// </summary>
-public static class SigtranCapacityProfiles
+internal static class SigtranCapacityProfiles
 {
     /// <summary>Creates the default enterprise capacity profile.</summary>
     /// <returns>The default enterprise capacity profile.</returns>

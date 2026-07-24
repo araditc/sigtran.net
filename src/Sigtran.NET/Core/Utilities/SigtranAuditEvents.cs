@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies an audit event category.
 /// </summary>
-public enum SigtranAuditEventCategory
+internal enum SigtranAuditEventCategory
 {
     /// <summary>Release and package events.</summary>
     Release,
@@ -24,7 +24,7 @@ public enum SigtranAuditEventCategory
 /// <summary>
 /// Describes one auditable SDK event type.
 /// </summary>
-public sealed class SigtranAuditEventDefinition
+internal sealed class SigtranAuditEventDefinition
 {
     /// <summary>Creates an audit event definition.</summary>
     /// <param name="category">The event category.</param>
@@ -55,7 +55,7 @@ public sealed class SigtranAuditEventDefinition
 /// <summary>
 /// Provides auditable SDK event definitions.
 /// </summary>
-public static class SigtranAuditEvents
+internal static class SigtranAuditEvents
 {
     private static readonly SigtranAuditEventDefinition[] Definitions =
     [

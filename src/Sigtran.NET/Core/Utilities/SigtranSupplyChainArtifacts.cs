@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a supply-chain artifact kind.
 /// </summary>
-public enum SigtranSupplyChainArtifactKind
+internal enum SigtranSupplyChainArtifactKind
 {
     /// <summary>Software bill of materials artifact.</summary>
     Sbom,
@@ -24,7 +24,7 @@ public enum SigtranSupplyChainArtifactKind
 /// <summary>
 /// Describes a supply-chain artifact.
 /// </summary>
-public sealed class SigtranSupplyChainArtifact
+internal sealed class SigtranSupplyChainArtifact
 {
     /// <summary>Creates a supply-chain artifact.</summary>
     /// <param name="kind">The artifact kind.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranSupplyChainArtifact
 /// <summary>
 /// Stores supply-chain artifacts for one release.
 /// </summary>
-public sealed class SigtranSupplyChainArtifactManifest
+internal sealed class SigtranSupplyChainArtifactManifest
 {
     private readonly List<SigtranSupplyChainArtifact> _artifacts = [];
 

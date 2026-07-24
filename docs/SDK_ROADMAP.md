@@ -531,7 +531,16 @@ remain deployment evidence gates.
 - Generate final SBOM and provenance, use trusted timestamped signing, upload
   release artifacts, run protected stable publication, and verify public restore.
 
-Status: Pending.
+Status: Execution controls complete; publication is blocked. Source packing
+defaults to `1.0.0-rc.2`, repository governance types are no longer exported,
+reflection-based RC.1 and stable-candidate API baselines are retained, and the
+release workflow performs API diff, SBOM, provenance/SBOM attestations,
+certificate trust validation, protected confirmation/tag checks, artifact
+upload, public restore verification, and GitHub release creation. The current
+machine-evaluated decision is `NO-GO` because independent M2PA,
+operator/vendor-profile acceptance, 20K TPS, multi-host soak, representative
+Kubernetes SCTP, and organization-trusted signing evidence remain open. No
+stable tag or package is published by this phase.
 
 ## Recommended First Deliverable
 

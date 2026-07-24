@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies data sensitivity handled by the SDK.
 /// </summary>
-public enum SigtranDataSensitivity
+internal enum SigtranDataSensitivity
 {
     /// <summary>Public project metadata.</summary>
     Public,
@@ -18,7 +18,7 @@ public enum SigtranDataSensitivity
 /// <summary>
 /// Describes one data handling rule.
 /// </summary>
-public sealed class SigtranDataHandlingRule
+internal sealed class SigtranDataHandlingRule
 {
     /// <summary>Creates a data handling rule.</summary>
     /// <param name="id">The stable rule id.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranDataHandlingRule
 /// <summary>
 /// Provides data handling classification helpers.
 /// </summary>
-public static class SigtranDataHandling
+internal static class SigtranDataHandling
 {
     private static readonly SigtranDataHandlingRule[] Rules =
     [

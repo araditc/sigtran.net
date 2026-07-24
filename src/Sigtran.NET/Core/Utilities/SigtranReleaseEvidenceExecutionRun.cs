@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one governed production evidence execution run.
 /// </summary>
-public sealed class SigtranReleaseEvidenceExecutionRun
+internal sealed class SigtranReleaseEvidenceExecutionRun
 {
     /// <summary>Creates a production evidence execution run.</summary>
     /// <param name="runId">The stable execution run identifier.</param>
@@ -70,7 +70,7 @@ public sealed class SigtranReleaseEvidenceExecutionRun
 /// <summary>
 /// Provides production evidence execution run helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceExecutionRuns
+internal static class SigtranReleaseEvidenceExecutionRuns
 {
     /// <summary>Creates a release-candidate evidence execution run.</summary>
     /// <param name="version">The release-candidate package version.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes transport configuration defaults.
 /// </summary>
-public sealed class SigtranTransportConfiguration
+internal sealed class SigtranTransportConfiguration
 {
     /// <summary>Creates transport configuration defaults.</summary>
     /// <param name="kind">The transport kind.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranTransportConfiguration
 /// <summary>
 /// Provides transport configuration helpers.
 /// </summary>
-public static class SigtranTransportConfigurations
+internal static class SigtranTransportConfigurations
 {
     /// <summary>Creates the default native SCTP transport configuration.</summary>
     /// <returns>The default native SCTP transport configuration.</returns>

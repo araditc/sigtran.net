@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the package-neutral API naming alignment result.
 /// </summary>
-public sealed class SigtranApiNamingAlignmentSnapshot
+internal sealed class SigtranApiNamingAlignmentSnapshot
 {
     /// <summary>Creates an API naming alignment snapshot.</summary>
     /// <param name="completedUnitCount">The completed work unit count.</param>
@@ -84,7 +84,7 @@ public sealed class SigtranApiNamingAlignmentSnapshot
 /// <summary>
 /// Provides package-neutral API naming alignment status.
 /// </summary>
-public static class SigtranApiNamingAlignmentStatus
+internal static class SigtranApiNamingAlignmentStatus
 {
     private static readonly string[] Capabilities =
     [

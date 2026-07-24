@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Groups the inputs required before production evidence-producing execution can start.
 /// </summary>
-public sealed class SigtranReleasePreflightInput
+internal sealed class SigtranReleasePreflightInput
 {
     /// <summary>Creates production release preflight input.</summary>
     /// <param name="target">The release target lock.</param>
@@ -38,7 +38,7 @@ public sealed class SigtranReleasePreflightInput
 /// <summary>
 /// Reports production release preflight readiness.
 /// </summary>
-public sealed class SigtranReleasePreflightReport
+internal sealed class SigtranReleasePreflightReport
 {
     /// <summary>Creates a production release preflight report.</summary>
     /// <param name="input">The evaluated preflight input.</param>
@@ -72,7 +72,7 @@ public sealed class SigtranReleasePreflightReport
 /// <summary>
 /// Provides production release preflight helpers.
 /// </summary>
-public static class SigtranReleasePreflightChecks
+internal static class SigtranReleasePreflightChecks
 {
     /// <summary>Evaluates production release preflight readiness.</summary>
     /// <param name="input">The preflight input.</param>

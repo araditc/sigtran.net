@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes external peer ASP-to-SG interoperability configuration.
 /// </summary>
-public sealed class SigtranExternalPeerInteropConfiguration
+internal sealed class SigtranExternalPeerInteropConfiguration
 {
     /// <summary>Creates an external peer interoperability configuration.</summary>
     /// <param name="associationName">The association name.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranExternalPeerInteropConfiguration
 /// <summary>
 /// Provides external peer interoperability configuration helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropConfigurations
+internal static class SigtranExternalPeerInteropConfigurations
 {
     /// <summary>Creates the default external peer ASP-to-SG configuration.</summary>
     /// <returns>The default external peer ASP-to-SG configuration.</returns>

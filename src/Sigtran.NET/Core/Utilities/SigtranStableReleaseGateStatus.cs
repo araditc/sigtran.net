@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes final stable release release gate status for one evaluated audit trail.
 /// </summary>
-public sealed class SigtranStableReleaseGateStatusReport
+internal sealed class SigtranStableReleaseGateStatusReport
 {
     /// <summary>Creates a final stable release release gate status report.</summary>
     /// <param name="auditTrail">The stable release audit trail.</param>
@@ -91,7 +91,7 @@ public sealed class SigtranStableReleaseGateStatusReport
 /// <summary>
 /// Describes Phase 43 stable release release gate foundation status.
 /// </summary>
-public static class SigtranStableReleaseGateStatus
+internal static class SigtranStableReleaseGateStatus
 {
     private static readonly string[] CompletedCapabilities =
     [

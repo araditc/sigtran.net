@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a package integrity entry.
 /// </summary>
-public sealed class SigtranPackageIntegrityEntry
+internal sealed class SigtranPackageIntegrityEntry
 {
     /// <summary>Creates a package integrity entry.</summary>
     /// <param name="kind">The package artifact kind.</param>
@@ -29,7 +29,7 @@ public sealed class SigtranPackageIntegrityEntry
 /// <summary>
 /// Tracks package integrity entries required for publication.
 /// </summary>
-public sealed class SigtranPackageIntegrityManifest
+internal sealed class SigtranPackageIntegrityManifest
 {
     private readonly List<SigtranPackageIntegrityEntry> _entries = [];
 

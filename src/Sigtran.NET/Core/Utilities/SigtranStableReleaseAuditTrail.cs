@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable release audit event kinds.
 /// </summary>
-public enum SigtranStableReleaseAuditEventKind
+internal enum SigtranStableReleaseAuditEventKind
 {
     /// <summary>Stable release target was locked.</summary>
     StableTargetLocked,
@@ -36,7 +36,7 @@ public enum SigtranStableReleaseAuditEventKind
 /// <summary>
 /// Describes one stable release audit event.
 /// </summary>
-public sealed class SigtranStableReleaseAuditEvent
+internal sealed class SigtranStableReleaseAuditEvent
 {
     /// <summary>Creates a stable release audit event.</summary>
     /// <param name="id">The stable event identifier.</param>
@@ -94,7 +94,7 @@ public sealed class SigtranStableReleaseAuditEvent
 /// <summary>
 /// Describes the stable release audit trail.
 /// </summary>
-public sealed class SigtranStableReleaseAuditTrail
+internal sealed class SigtranStableReleaseAuditTrail
 {
     /// <summary>Creates a stable release audit trail.</summary>
     /// <param name="report">The retained stable release report.</param>
@@ -177,7 +177,7 @@ public sealed class SigtranStableReleaseAuditTrail
 /// <summary>
 /// Provides stable release audit trail helpers.
 /// </summary>
-public static class SigtranStableReleaseAuditTrails
+internal static class SigtranStableReleaseAuditTrails
 {
     /// <summary>Creates the default stable release audit trail from a retained report.</summary>
     /// <param name="report">The retained stable release report.</param>

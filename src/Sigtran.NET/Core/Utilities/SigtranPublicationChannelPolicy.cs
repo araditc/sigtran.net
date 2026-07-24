@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes publication channel policy evaluation.
 /// </summary>
-public sealed class SigtranPublicationChannelDecision
+internal sealed class SigtranPublicationChannelDecision
 {
     /// <summary>Creates a publication channel decision.</summary>
     /// <param name="allowed">Whether the channel is allowed.</param>
@@ -25,7 +25,7 @@ public sealed class SigtranPublicationChannelDecision
 /// <summary>
 /// Evaluates publication channel rules for NuGet package publication.
 /// </summary>
-public static class SigtranPublicationChannelPolicy
+internal static class SigtranPublicationChannelPolicy
 {
     /// <summary>Evaluates whether a package version can use a publication channel.</summary>
     /// <param name="channel">The publication channel.</param>

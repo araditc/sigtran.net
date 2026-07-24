@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a production deployment profile.
 /// </summary>
-public sealed class SigtranDeploymentProfile
+internal sealed class SigtranDeploymentProfile
 {
     /// <summary>Creates a deployment profile.</summary>
     /// <param name="name">The profile name.</param>
@@ -57,7 +57,7 @@ public sealed class SigtranDeploymentProfile
 /// <summary>
 /// Provides deployment profiles for SDK consumers.
 /// </summary>
-public static class SigtranDeploymentProfiles
+internal static class SigtranDeploymentProfiles
 {
     /// <summary>Creates the recommended production deployment profile.</summary>
     /// <returns>The production deployment profile.</returns>

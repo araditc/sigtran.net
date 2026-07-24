@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained dry-run rehearsal for package publication.
 /// </summary>
-public sealed class SigtranPackagePublicationDryRunRehearsal
+internal sealed class SigtranPackagePublicationDryRunRehearsal
 {
     /// <summary>Creates a package publication dry-run rehearsal.</summary>
     /// <param name="gateExecution">The package publication gate execution.</param>
@@ -79,7 +79,7 @@ public sealed class SigtranPackagePublicationDryRunRehearsal
 /// <summary>
 /// Provides package publication dry-run rehearsal helpers.
 /// </summary>
-public static class SigtranPackagePublicationDryRunRehearsals
+internal static class SigtranPackagePublicationDryRunRehearsals
 {
     /// <summary>Writes a retained dry-run rehearsal report.</summary>
     /// <param name="gateExecution">The package publication gate execution.</param>

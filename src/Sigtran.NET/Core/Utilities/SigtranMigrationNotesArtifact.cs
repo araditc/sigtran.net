@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes retained migration notes for a release.
 /// </summary>
-public sealed class SigtranMigrationNotesArtifact
+internal sealed class SigtranMigrationNotesArtifact
 {
     /// <summary>Creates a retained migration notes artifact.</summary>
     /// <param name="fromVersion">The source version.</param>
@@ -72,7 +72,7 @@ public sealed class SigtranMigrationNotesArtifact
 /// <summary>
 /// Provides retained migration notes artifact helpers.
 /// </summary>
-public static class SigtranMigrationNotesArtifacts
+internal static class SigtranMigrationNotesArtifacts
 {
     /// <summary>Creates the default RC migration notes artifact.</summary>
     /// <param name="fromVersion">The source version.</param>

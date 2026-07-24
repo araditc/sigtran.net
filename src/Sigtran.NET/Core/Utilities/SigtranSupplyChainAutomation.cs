@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a supply-chain automation step kind.
 /// </summary>
-public enum SigtranSupplyChainStepKind
+internal enum SigtranSupplyChainStepKind
 {
     /// <summary>Restore release tooling.</summary>
     RestoreTools,
@@ -27,7 +27,7 @@ public enum SigtranSupplyChainStepKind
 /// <summary>
 /// Describes one supply-chain automation step.
 /// </summary>
-public sealed class SigtranSupplyChainStep
+internal sealed class SigtranSupplyChainStep
 {
     /// <summary>Creates a supply-chain automation step.</summary>
     /// <param name="kind">The step kind.</param>
@@ -58,7 +58,7 @@ public sealed class SigtranSupplyChainStep
 /// <summary>
 /// Describes a supply-chain automation plan.
 /// </summary>
-public sealed class SigtranSupplyChainAutomationPlan
+internal sealed class SigtranSupplyChainAutomationPlan
 {
     /// <summary>Creates a supply-chain automation plan.</summary>
     /// <param name="id">The stable plan id.</param>
@@ -115,7 +115,7 @@ public sealed class SigtranSupplyChainAutomationPlan
 /// <summary>
 /// Provides supply-chain automation plans.
 /// </summary>
-public static class SigtranSupplyChainAutomation
+internal static class SigtranSupplyChainAutomation
 {
     /// <summary>Creates the default supply-chain automation plan.</summary>
     /// <returns>The default supply-chain automation plan.</returns>

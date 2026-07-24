@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a publication credential kind.
 /// </summary>
-public enum SigtranPublicationCredentialKind
+internal enum SigtranPublicationCredentialKind
 {
     /// <summary>NuGet API key used for package upload.</summary>
     NuGetApiKey,
@@ -18,7 +18,7 @@ public enum SigtranPublicationCredentialKind
 /// <summary>
 /// Describes a required publication credential.
 /// </summary>
-public sealed class SigtranPublicationCredential
+internal sealed class SigtranPublicationCredential
 {
     /// <summary>Creates a publication credential requirement.</summary>
     /// <param name="kind">The credential kind.</param>
@@ -39,7 +39,7 @@ public sealed class SigtranPublicationCredential
 /// <summary>
 /// Describes the credential policy required for package publication.
 /// </summary>
-public sealed class SigtranPublicationCredentialPolicy
+internal sealed class SigtranPublicationCredentialPolicy
 {
     /// <summary>Creates a publication credential policy.</summary>
     /// <param name="credentials">The required credentials.</param>
@@ -78,7 +78,7 @@ public sealed class SigtranPublicationCredentialPolicy
 /// <summary>
 /// Provides publication credential policies.
 /// </summary>
-public static class SigtranPublicationCredentials
+internal static class SigtranPublicationCredentials
 {
     /// <summary>Creates the default publication credential policy.</summary>
     /// <returns>The default publication credential policy.</returns>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides supply-chain release execution status.
 /// </summary>
-public static class SigtranSupplyChainReleaseStatus
+internal static class SigtranSupplyChainReleaseStatus
 {
     private static readonly string[] Capabilities =
     [

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a protocol interoperability vector execution plan.
 /// </summary>
-public sealed class SigtranProtocolInteropRunPlan
+internal sealed class SigtranProtocolInteropRunPlan
 {
     /// <summary>Creates a protocol interoperability vector execution plan.</summary>
     /// <param name="vectors">The vectors to execute.</param>
@@ -46,7 +46,7 @@ public sealed class SigtranProtocolInteropRunPlan
 /// <summary>
 /// Provides protocol interoperability vector execution plan helpers.
 /// </summary>
-public static class SigtranProtocolInteropRunPlans
+internal static class SigtranProtocolInteropRunPlans
 {
     /// <summary>Creates the default protocol interoperability vector execution plan.</summary>
     /// <returns>The default protocol interoperability vector execution plan.</returns>

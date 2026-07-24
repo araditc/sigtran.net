@@ -7,7 +7,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one production evidence approval audit event.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovalAuditEvent
+internal sealed class SigtranReleaseEvidenceApprovalAuditEvent
 {
     /// <summary>Creates a production evidence approval audit event.</summary>
     /// <param name="id">The stable event identifier.</param>
@@ -65,7 +65,7 @@ public sealed class SigtranReleaseEvidenceApprovalAuditEvent
 /// <summary>
 /// Describes a production evidence approval audit trail.
 /// </summary>
-public sealed class SigtranReleaseEvidenceApprovalAuditTrail
+internal sealed class SigtranReleaseEvidenceApprovalAuditTrail
 {
     /// <summary>Creates a production evidence approval audit trail.</summary>
     /// <param name="gateResult">The publication handoff gate result.</param>
@@ -125,7 +125,7 @@ public sealed class SigtranReleaseEvidenceApprovalAuditTrail
 /// <summary>
 /// Provides production evidence approval audit trail helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceApprovalAuditTrails
+internal static class SigtranReleaseEvidenceApprovalAuditTrails
 {
     /// <summary>Creates a default approval audit trail from a publication handoff gate result.</summary>
     /// <param name="gateResult">The publication handoff gate result.</param>

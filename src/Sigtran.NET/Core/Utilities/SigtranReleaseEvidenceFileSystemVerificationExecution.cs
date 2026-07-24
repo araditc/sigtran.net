@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes filesystem-backed retained file verification report execution.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemVerificationExecution
+internal sealed class SigtranReleaseEvidenceFileSystemVerificationExecution
 {
     /// <summary>Creates filesystem-backed retained file verification report execution.</summary>
     /// <param name="manifestExecution">The filesystem-backed retained file manifest execution.</param>
@@ -46,7 +46,7 @@ public sealed class SigtranReleaseEvidenceFileSystemVerificationExecution
 /// <summary>
 /// Provides filesystem-backed retained file verification report execution helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemVerificationReports
+internal static class SigtranReleaseEvidenceFileSystemVerificationReports
 {
     /// <summary>Evaluates a filesystem-backed retained file manifest execution.</summary>
     /// <param name="manifestExecution">The filesystem-backed retained file manifest execution.</param>

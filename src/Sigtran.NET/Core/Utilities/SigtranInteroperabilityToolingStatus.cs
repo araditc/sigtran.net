@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides interoperability and tooling status.
 /// </summary>
-public static class SigtranInteroperabilityToolingStatus
+internal static class SigtranInteroperabilityToolingStatus
 {
     private static readonly string[] Capabilities =
     [

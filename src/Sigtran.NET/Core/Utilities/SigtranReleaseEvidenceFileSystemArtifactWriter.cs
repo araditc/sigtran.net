@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes retained filesystem verification artifacts written to disk.
 /// </summary>
-public sealed class SigtranReleaseEvidenceFileSystemArtifactWriteResult
+internal sealed class SigtranReleaseEvidenceFileSystemArtifactWriteResult
 {
     /// <summary>Creates a retained filesystem verification artifact write result.</summary>
     /// <param name="verificationExecution">The filesystem verification execution.</param>
@@ -69,7 +69,7 @@ public sealed class SigtranReleaseEvidenceFileSystemArtifactWriteResult
 /// <summary>
 /// Writes retained filesystem verification artifacts to disk.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemArtifactWriters
+internal static class SigtranReleaseEvidenceFileSystemArtifactWriters
 {
     /// <summary>Writes the filesystem verification report and observation manifest.</summary>
     /// <param name="verificationExecution">The filesystem verification execution.</param>

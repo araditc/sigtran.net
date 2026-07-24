@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes one reference external peer lab runner input file.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerInputFile
+internal sealed class SigtranReferencePeerLabRunnerInputFile
 {
     /// <summary>Creates a reference peer lab runner input file.</summary>
     /// <param name="path">The input file path.</param>
@@ -31,7 +31,7 @@ public sealed class SigtranReferencePeerLabRunnerInputFile
 /// <summary>
 /// Describes the deterministic input bundle for a reference external peer lab runner.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerInputBundle
+internal sealed class SigtranReferencePeerLabRunnerInputBundle
 {
     /// <summary>Creates a reference peer lab runner input bundle.</summary>
     /// <param name="workspace">The runner workspace.</param>
@@ -95,7 +95,7 @@ public sealed class SigtranReferencePeerLabRunnerInputBundle
 /// <summary>
 /// Provides reference external peer lab runner input helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerInputs
+internal static class SigtranReferencePeerLabRunnerInputs
 {
     /// <summary>Creates the default runner input bundle from a reference peer lab run manifest.</summary>
     /// <param name="runManifest">The reference peer lab run manifest.</param>

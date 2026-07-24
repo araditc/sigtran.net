@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes interoperability tooling readiness.
 /// </summary>
-public sealed class SigtranInteroperabilityReadinessSnapshot
+internal sealed class SigtranInteroperabilityReadinessSnapshot
 {
     /// <summary>Creates an interoperability tooling readiness report.</summary>
     /// <param name="hasTraceFormatter">Whether trace formatting is available.</param>
@@ -97,7 +97,7 @@ public sealed class SigtranInteroperabilityReadinessSnapshot
 /// <summary>
 /// Provides the interoperability tooling readiness report.
 /// </summary>
-public static class SigtranInteroperabilityReadiness
+internal static class SigtranInteroperabilityReadiness
 {
     /// <summary>The required foundation capability count.</summary>
     public const int RequiredFoundationCapabilityCount = 8;

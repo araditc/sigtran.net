@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes an approved production evidence publication handoff gate result.
 /// </summary>
-public sealed class SigtranReleaseEvidencePublicationHandoffGateResult
+internal sealed class SigtranReleaseEvidencePublicationHandoffGateResult
 {
     /// <summary>Creates a publication handoff gate result.</summary>
     /// <param name="handoff">The publication handoff under evaluation.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranReleaseEvidencePublicationHandoffGateResult
 /// <summary>
 /// Provides approved production evidence publication handoff gate helpers.
 /// </summary>
-public static class SigtranReleaseEvidencePublicationHandoffGates
+internal static class SigtranReleaseEvidencePublicationHandoffGates
 {
     /// <summary>Evaluates an approved production evidence publication handoff.</summary>
     /// <param name="handoff">The publication handoff under evaluation.</param>

@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes why a production release secret is required.
 /// </summary>
-public enum SigtranReleaseSecretPurpose
+internal enum SigtranReleaseSecretPurpose
 {
     /// <summary>The secret authorizes package publication.</summary>
     PackagePublication,
@@ -18,7 +18,7 @@ public enum SigtranReleaseSecretPurpose
 /// <summary>
 /// Describes one secret required by the production release process.
 /// </summary>
-public sealed class SigtranReleaseSecretRequirement
+internal sealed class SigtranReleaseSecretRequirement
 {
     /// <summary>Creates a production release secret requirement.</summary>
     /// <param name="name">The environment or CI secret name.</param>
@@ -53,7 +53,7 @@ public sealed class SigtranReleaseSecretRequirement
 /// <summary>
 /// Describes available production release secrets without exposing secret values.
 /// </summary>
-public sealed class SigtranReleaseSecretInventory
+internal sealed class SigtranReleaseSecretInventory
 {
     private readonly HashSet<string> availableSecretNames;
 
@@ -77,7 +77,7 @@ public sealed class SigtranReleaseSecretInventory
 /// <summary>
 /// Reports readiness for production release secrets.
 /// </summary>
-public sealed class SigtranReleaseSecretReadiness
+internal sealed class SigtranReleaseSecretReadiness
 {
     /// <summary>Creates a production release secret readiness report.</summary>
     /// <param name="requirements">The configured secret requirements.</param>
@@ -112,7 +112,7 @@ public sealed class SigtranReleaseSecretReadiness
 /// <summary>
 /// Defines the production release secret contract.
 /// </summary>
-public static class SigtranReleaseSecrets
+internal static class SigtranReleaseSecrets
 {
     /// <summary>Creates the default production release secret requirements.</summary>
     /// <returns>The default secret requirements.</returns>

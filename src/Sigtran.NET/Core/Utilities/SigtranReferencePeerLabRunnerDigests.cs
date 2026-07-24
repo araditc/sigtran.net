@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab runner digest generation output.
 /// </summary>
-public sealed class SigtranReferencePeerLabRunnerDigestReport
+internal sealed class SigtranReferencePeerLabRunnerDigestReport
 {
     /// <summary>Creates a reference peer lab runner digest report.</summary>
     /// <param name="collection">The evidence collection.</param>
@@ -47,7 +47,7 @@ public sealed class SigtranReferencePeerLabRunnerDigestReport
 /// <summary>
 /// Provides reference external peer lab runner digest helpers.
 /// </summary>
-public static class SigtranReferencePeerLabRunnerDigests
+internal static class SigtranReferencePeerLabRunnerDigests
 {
     /// <summary>Creates a digest report from collected artifacts and calculated digest values.</summary>
     /// <param name="artifactPlan">The artifact plan.</param>

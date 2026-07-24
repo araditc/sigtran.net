@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides filesystem-backed production evidence execution status reporting.
 /// </summary>
-public static class SigtranReleaseEvidenceFileSystemExecutionStatus
+internal static class SigtranReleaseEvidenceFileSystemExecutionStatus
 {
     private static readonly string[] Capabilities =
     [

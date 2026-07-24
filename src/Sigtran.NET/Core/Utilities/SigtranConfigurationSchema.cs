@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a configuration schema area.
 /// </summary>
-public enum SigtranConfigurationSchemaArea
+internal enum SigtranConfigurationSchemaArea
 {
     /// <summary>Transport configuration.</summary>
     Transport,
@@ -24,7 +24,7 @@ public enum SigtranConfigurationSchemaArea
 /// <summary>
 /// Describes one configuration schema field.
 /// </summary>
-public sealed class SigtranConfigurationSchemaField
+internal sealed class SigtranConfigurationSchemaField
 {
     /// <summary>Creates a configuration schema field.</summary>
     /// <param name="area">The configuration schema area.</param>
@@ -59,7 +59,7 @@ public sealed class SigtranConfigurationSchemaField
 /// <summary>
 /// Provides configuration schema helpers.
 /// </summary>
-public static class SigtranConfigurationSchema
+internal static class SigtranConfigurationSchema
 {
     private static readonly SigtranConfigurationSchemaField[] Fields =
     [

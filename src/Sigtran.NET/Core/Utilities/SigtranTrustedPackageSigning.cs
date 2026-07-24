@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes trusted timestamped package signing evidence retained for a release.
 /// </summary>
-public sealed class SigtranTrustedPackageSigningEvidence
+internal sealed class SigtranTrustedPackageSigningEvidence
 {
     /// <summary>Creates trusted timestamped package signing evidence.</summary>
     /// <param name="packagePath">The signed package path.</param>
@@ -98,7 +98,7 @@ public sealed class SigtranTrustedPackageSigningEvidence
 /// <summary>
 /// Provides trusted timestamped package signing helpers.
 /// </summary>
-public static class SigtranTrustedPackageSigning
+internal static class SigtranTrustedPackageSigning
 {
     /// <summary>Creates release-ready trusted signing evidence from retained digests.</summary>
     /// <param name="version">The signed package version.</param>

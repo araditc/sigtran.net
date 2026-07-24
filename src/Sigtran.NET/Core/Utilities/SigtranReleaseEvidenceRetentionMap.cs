@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies a production evidence retention area.
 /// </summary>
-public enum SigtranReleaseEvidenceRetentionArea
+internal enum SigtranReleaseEvidenceRetentionArea
 {
     /// <summary>Native SCTP packet, trace, and host evidence.</summary>
     NativeSctp,
@@ -33,7 +33,7 @@ public enum SigtranReleaseEvidenceRetentionArea
 /// <summary>
 /// Describes one retained evidence path and retention rule.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetentionRule
+internal sealed class SigtranReleaseEvidenceRetentionRule
 {
     /// <summary>Creates a production evidence retention rule.</summary>
     /// <param name="area">The evidence retention area.</param>
@@ -77,7 +77,7 @@ public sealed class SigtranReleaseEvidenceRetentionRule
 /// <summary>
 /// Describes the production evidence retention map for one release target.
 /// </summary>
-public sealed class SigtranReleaseEvidenceRetentionMap
+internal sealed class SigtranReleaseEvidenceRetentionMap
 {
     /// <summary>Creates a production evidence retention map.</summary>
     /// <param name="target">The release target lock.</param>
@@ -128,7 +128,7 @@ public sealed class SigtranReleaseEvidenceRetentionMap
 /// <summary>
 /// Provides production evidence retention map helpers.
 /// </summary>
-public static class SigtranReleaseEvidenceRetentionMaps
+internal static class SigtranReleaseEvidenceRetentionMaps
 {
     /// <summary>Creates the default production evidence retention map for a release target.</summary>
     /// <param name="target">The release target lock.</param>

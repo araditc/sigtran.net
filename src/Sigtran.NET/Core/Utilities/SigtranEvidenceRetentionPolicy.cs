@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes evidence retention requirements.
 /// </summary>
-public sealed class SigtranEvidenceRetentionPolicy
+internal sealed class SigtranEvidenceRetentionPolicy
 {
     /// <summary>Creates an evidence retention policy.</summary>
     /// <param name="retentionPeriod">The minimum retention period.</param>
@@ -44,7 +44,7 @@ public sealed class SigtranEvidenceRetentionPolicy
 /// <summary>
 /// Provides evidence retention policy helpers.
 /// </summary>
-public static class SigtranEvidenceRetentionPolicies
+internal static class SigtranEvidenceRetentionPolicies
 {
     /// <summary>Creates the default production evidence retention policy.</summary>
     /// <returns>The default production evidence retention policy.</returns>

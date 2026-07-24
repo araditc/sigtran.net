@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Provides performance and capacity readiness status.
 /// </summary>
-public static class SigtranPerformanceStatus
+internal static class SigtranPerformanceStatus
 {
     private static readonly string[] Capabilities =
     [

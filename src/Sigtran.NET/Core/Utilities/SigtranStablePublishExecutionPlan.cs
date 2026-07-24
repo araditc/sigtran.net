@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies stable publish execution command kinds.
 /// </summary>
-public enum SigtranStablePublishExecutionCommandKind
+internal enum SigtranStablePublishExecutionCommandKind
 {
     /// <summary>Validate protected stable publication authorization.</summary>
     ValidateAuthorization,
@@ -30,7 +30,7 @@ public enum SigtranStablePublishExecutionCommandKind
 /// <summary>
 /// Describes one stable publish execution command.
 /// </summary>
-public sealed class SigtranStablePublishExecutionCommand
+internal sealed class SigtranStablePublishExecutionCommand
 {
     /// <summary>Creates a stable publish execution command.</summary>
     /// <param name="kind">The command kind.</param>
@@ -81,7 +81,7 @@ public sealed class SigtranStablePublishExecutionCommand
 /// <summary>
 /// Describes a guarded stable publish execution plan.
 /// </summary>
-public sealed class SigtranStablePublishExecutionPlan
+internal sealed class SigtranStablePublishExecutionPlan
 {
     /// <summary>Creates a guarded stable publish execution plan.</summary>
     /// <param name="authorization">The protected stable publication authorization.</param>
@@ -151,7 +151,7 @@ public sealed class SigtranStablePublishExecutionPlan
 /// <summary>
 /// Provides stable publish execution plan helpers.
 /// </summary>
-public static class SigtranStablePublishExecutionPlans
+internal static class SigtranStablePublishExecutionPlans
 {
     /// <summary>Creates a guarded stable publish execution plan.</summary>
     /// <param name="authorization">The protected stable publication authorization.</param>

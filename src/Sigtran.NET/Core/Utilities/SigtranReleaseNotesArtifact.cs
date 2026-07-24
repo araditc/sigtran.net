@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes a retained release notes artifact.
 /// </summary>
-public sealed class SigtranReleaseNotesArtifact
+internal sealed class SigtranReleaseNotesArtifact
 {
     /// <summary>Creates a retained release notes artifact.</summary>
     /// <param name="notes">The release notes content model.</param>
@@ -60,7 +60,7 @@ public sealed class SigtranReleaseNotesArtifact
 /// <summary>
 /// Provides retained release notes artifact helpers.
 /// </summary>
-public static class SigtranReleaseNotesArtifacts
+internal static class SigtranReleaseNotesArtifacts
 {
     /// <summary>Creates the default RC release notes artifact.</summary>
     /// <param name="version">The RC version.</param>

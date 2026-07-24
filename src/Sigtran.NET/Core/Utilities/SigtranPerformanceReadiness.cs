@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes performance and capacity readiness.
 /// </summary>
-public sealed class SigtranPerformanceReadinessSnapshot
+internal sealed class SigtranPerformanceReadinessSnapshot
 {
     /// <summary>Creates a performance readiness report.</summary>
     /// <param name="hasCapabilityCatalog">Whether the performance capability catalog is available.</param>
@@ -80,7 +80,7 @@ public sealed class SigtranPerformanceReadinessSnapshot
 /// <summary>
 /// Provides performance readiness helpers.
 /// </summary>
-public static class SigtranPerformanceReadiness
+internal static class SigtranPerformanceReadiness
 {
     /// <summary>Returns the current performance readiness report.</summary>
     /// <returns>The current performance readiness report.</returns>

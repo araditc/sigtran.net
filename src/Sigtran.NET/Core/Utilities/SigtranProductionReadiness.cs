@@ -5,7 +5,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes the production release readiness gates for the SDK.
 /// </summary>
-public sealed class SigtranProductionReadinessSnapshot
+internal sealed class SigtranProductionReadinessSnapshot
 {
     private readonly string[] _productionBlockers;
 
@@ -103,7 +103,7 @@ public sealed class SigtranProductionReadinessSnapshot
 /// <summary>
 /// Provides the current production readiness report.
 /// </summary>
-public static class SigtranProductionReadiness
+internal static class SigtranProductionReadiness
 {
     /// <summary>Returns the current production readiness report.</summary>
     /// <returns>The current production readiness report.</returns>

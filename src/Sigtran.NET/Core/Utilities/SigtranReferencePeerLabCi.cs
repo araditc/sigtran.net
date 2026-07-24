@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes reference external peer lab CI execution policy.
 /// </summary>
-public sealed class SigtranReferencePeerLabCiProfile
+internal sealed class SigtranReferencePeerLabCiProfile
 {
     /// <summary>Creates a reference external peer lab CI profile.</summary>
     /// <param name="name">The CI profile name.</param>
@@ -61,7 +61,7 @@ public sealed class SigtranReferencePeerLabCiProfile
 /// <summary>
 /// Provides reference external peer lab CI profile helpers.
 /// </summary>
-public static class SigtranReferencePeerLabCi
+internal static class SigtranReferencePeerLabCi
 {
     /// <summary>Creates the default reference external peer lab CI profile.</summary>
     /// <returns>The default reference external peer lab CI profile.</returns>

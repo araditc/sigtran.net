@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Identifies external peer interoperability execution status.
 /// </summary>
-public enum SigtranExternalPeerInteropRunStatus
+internal enum SigtranExternalPeerInteropRunStatus
 {
     /// <summary>The run is pending.</summary>
     Pending,
@@ -18,7 +18,7 @@ public enum SigtranExternalPeerInteropRunStatus
 /// <summary>
 /// Describes an external peer interoperability execution report.
 /// </summary>
-public sealed class SigtranExternalPeerInteropRunReport
+internal sealed class SigtranExternalPeerInteropRunReport
 {
     /// <summary>Creates an external peer interoperability execution report.</summary>
     /// <param name="plan">The execution plan.</param>

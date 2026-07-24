@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes lawful use and export-control requirements.
 /// </summary>
-public sealed class SigtranExportControlPolicy
+internal sealed class SigtranExportControlPolicy
 {
     /// <summary>Creates an export-control policy.</summary>
     /// <param name="requiresLawfulUseAttestation">Whether lawful-use attestation is required for production deployment.</param>
@@ -43,7 +43,7 @@ public sealed class SigtranExportControlPolicy
 /// <summary>
 /// Provides lawful use and export-control policy helpers.
 /// </summary>
-public static class SigtranExportControlPolicies
+internal static class SigtranExportControlPolicies
 {
     /// <summary>Creates the default lawful-use policy.</summary>
     /// <returns>The default lawful-use policy.</returns>

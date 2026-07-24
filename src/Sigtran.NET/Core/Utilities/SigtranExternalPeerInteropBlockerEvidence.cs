@@ -3,7 +3,7 @@ namespace Sigtran.NET.Core.Utilities;
 /// <summary>
 /// Describes an external peer interoperability execution blocker.
 /// </summary>
-public sealed class SigtranExternalPeerInteropBlocker
+internal sealed class SigtranExternalPeerInteropBlocker
 {
     /// <summary>Creates an external peer interoperability blocker record.</summary>
     /// <param name="environmentName">The lab environment where the blocker was observed.</param>
@@ -56,7 +56,7 @@ public sealed class SigtranExternalPeerInteropBlocker
 /// <summary>
 /// Provides external peer interoperability blocker evidence helpers.
 /// </summary>
-public static class SigtranExternalPeerInteropBlockerEvidence
+internal static class SigtranExternalPeerInteropBlockerEvidence
 {
     /// <summary>Creates the current retained external peer blocker evidence record.</summary>
     /// <returns>The current retained external peer blocker evidence record.</returns>
