@@ -13,6 +13,11 @@ public readonly struct TcapReadinessSnapshot
     /// <param name="hasDialoguePortion">Whether dialogue portions are available.</param>
     /// <param name="hasDialogueState">Whether dialogue state and timeout controls are available.</param>
     /// <param name="hasSessionBuilder">Whether high-level transaction builders are available.</param>
+    /// <param name="hasConcurrentManager">Whether a concurrent dialogue manager is available.</param>
+    /// <param name="hasTransactionCorrelation">Whether local and remote transaction ids are correlated.</param>
+    /// <param name="hasInvokeOutcomes">Whether result, error, and reject outcomes are correlated.</param>
+    /// <param name="hasSharedTimeoutSweep">Whether pending invokes use a shared timeout sweep.</param>
+    /// <param name="hasAbortCleanup">Whether abort and deterministic cleanup are implemented.</param>
     /// <param name="hasInteropVectors">Whether external TCAP interoperability vectors are present.</param>
     public TcapReadinessSnapshot(
         bool hasBerPrimitives,
@@ -22,6 +27,11 @@ public readonly struct TcapReadinessSnapshot
         bool hasDialoguePortion,
         bool hasDialogueState,
         bool hasSessionBuilder,
+        bool hasConcurrentManager,
+        bool hasTransactionCorrelation,
+        bool hasInvokeOutcomes,
+        bool hasSharedTimeoutSweep,
+        bool hasAbortCleanup,
         bool hasInteropVectors)
     {
         HasBerPrimitives = hasBerPrimitives;
@@ -31,6 +41,11 @@ public readonly struct TcapReadinessSnapshot
         HasDialoguePortion = hasDialoguePortion;
         HasDialogueState = hasDialogueState;
         HasSessionBuilder = hasSessionBuilder;
+        HasConcurrentManager = hasConcurrentManager;
+        HasTransactionCorrelation = hasTransactionCorrelation;
+        HasInvokeOutcomes = hasInvokeOutcomes;
+        HasSharedTimeoutSweep = hasSharedTimeoutSweep;
+        HasAbortCleanup = hasAbortCleanup;
         HasInteropVectors = hasInteropVectors;
     }
 
@@ -55,6 +70,21 @@ public readonly struct TcapReadinessSnapshot
     /// <summary>Whether high-level transaction builders are available.</summary>
     public bool HasSessionBuilder { get; }
 
+    /// <summary>Whether a concurrent dialogue manager is available.</summary>
+    public bool HasConcurrentManager { get; }
+
+    /// <summary>Whether local and remote transaction ids are correlated.</summary>
+    public bool HasTransactionCorrelation { get; }
+
+    /// <summary>Whether result, error, and reject outcomes are correlated.</summary>
+    public bool HasInvokeOutcomes { get; }
+
+    /// <summary>Whether pending invokes use a shared timeout sweep.</summary>
+    public bool HasSharedTimeoutSweep { get; }
+
+    /// <summary>Whether abort and deterministic cleanup are implemented.</summary>
+    public bool HasAbortCleanup { get; }
+
     /// <summary>Whether external TCAP interoperability vectors are present.</summary>
     public bool HasInteropVectors { get; }
 
@@ -66,7 +96,12 @@ public readonly struct TcapReadinessSnapshot
         + Count(HasTransactionEnvelope)
         + Count(HasDialoguePortion)
         + Count(HasDialogueState)
-        + Count(HasSessionBuilder);
+        + Count(HasSessionBuilder)
+        + Count(HasConcurrentManager)
+        + Count(HasTransactionCorrelation)
+        + Count(HasInvokeOutcomes)
+        + Count(HasSharedTimeoutSweep)
+        + Count(HasAbortCleanup);
 
     /// <summary>Whether the TCAP foundation is ready.</summary>
     public bool FoundationReady => FoundationCapabilityCount == TcapReadiness.RequiredFoundationCapabilityCount;
@@ -93,7 +128,7 @@ public static class TcapReadiness
     public const string ReleaseLabel = "TCAP BER foundation";
 
     /// <summary>The number of required foundation capabilities.</summary>
-    public const int RequiredFoundationCapabilityCount = 7;
+    public const int RequiredFoundationCapabilityCount = 12;
 
     /// <summary>Explains the remaining production gate.</summary>
     public const string ProductionGateDescription = "External TCAP interoperability vectors and MAP profile validation are required before production claims.";
@@ -110,7 +145,12 @@ public static class TcapReadiness
             "Transaction envelope",
             "Dialogue portion",
             "Dialogue state controls",
-            "Session builder"
+            "Session builder",
+            "Concurrent dialogue manager",
+            "Transaction correlation",
+            "Invoke outcomes",
+            "Shared timeout sweep",
+            "Abort cleanup"
         ];
     }
 
@@ -126,6 +166,11 @@ public static class TcapReadiness
             hasDialoguePortion: true,
             hasDialogueState: true,
             hasSessionBuilder: true,
+            hasConcurrentManager: true,
+            hasTransactionCorrelation: true,
+            hasInvokeOutcomes: true,
+            hasSharedTimeoutSweep: true,
+            hasAbortCleanup: true,
             hasInteropVectors: false);
     }
 }

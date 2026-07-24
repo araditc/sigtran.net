@@ -377,6 +377,8 @@ Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueCon
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
 Run("TCAP session builder creates Begin and End messages", TcapSessionBuilderCreatesBeginAndEndMessages);
 Run("TCAP evidence vectors validate transaction bytes", TcapEvidenceVectorsValidateTransactionBytes);
+Run("TCAP dialogue manager correlates concurrent invokes", TcapDialogueManagerCorrelatesConcurrentInvokes);
+Run("TCAP dialogue manager completes errors rejects and timeouts", TcapDialogueManagerCompletesTerminalOutcomes);
 Run("TCAP readiness reports foundation status", TcapReadinessSnapshotsFoundationStatus);
 Run("MAP SMS operation catalog and parameter set encode BER", MapSmsOperationCatalogAndParameterSetEncodeBer);
 Run("MAP SMS address primitives encode TBCD digits", MapSmsAddressPrimitivesEncodeTbcdDigits);
@@ -652,6 +654,7 @@ static void SigtranProductionReadinessSnapshotsReleaseGates()
     Assert(!report.HasReleaseGovernance, report.Describe());
     Assert(!report.ProductionBlockers.Contains("m2pa-runtime-required"), report.Describe());
     Assert(!report.ProductionBlockers.Contains("sccp-stateful-service-required"), report.Describe());
+    Assert(!report.ProductionBlockers.Contains("tcap-dialogue-manager-required"), report.Describe());
     Assert(report.ProductionBlockers.Contains("end-to-end-ss7-evidence-required"), report.Describe());
     Assert(report.ProductionBlockers.Contains("operator-performance-evidence-required"), report.Describe());
     Assert(report.Describe().Contains("nativeSctp=True", StringComparison.Ordinal), report.Describe());
@@ -7636,11 +7639,258 @@ static void TcapEvidenceVectorsValidateTransactionBytes()
     AssertSequence([0xCC], result.Parameters.Span, "TCAP evidence result parameters");
 }
 
+static void TcapDialogueManagerCorrelatesConcurrentInvokes()
+{
+    (PairedMtp3Network firstNetwork, PairedMtp3Network secondNetwork) =
+        PairedMtp3Network.CreatePair();
+    SccpConnectionlessService firstSccp = new(
+        firstNetwork,
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 0));
+    SccpConnectionlessService secondSccp = new(
+        secondNetwork,
+        new(destinationPointCode: 1, originatingPointCode: 2, signallingLinkSelection: 0));
+    TcapDialogueManagerOptions options = new(
+        eventQueueCapacity: 32,
+        componentQueueCapacity: 32,
+        maximumDialogues: 32,
+        maximumPendingInvokesPerDialogue: 8,
+        invokeTimeout: TimeSpan.FromSeconds(2),
+        timerResolution: TimeSpan.FromMilliseconds(20));
+    TcapDialogueManager first = new(firstSccp, options);
+    TcapDialogueManager second = new(secondSccp, options);
+    SccpPartyAddress firstParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpPartyAddress secondParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 2);
+
+    first.StartAsync().AsTask().GetAwaiter().GetResult();
+    second.StartAsync().AsTask().GetAwaiter().GetResult();
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+    List<TcapInvokeHandle> outbound = [];
+    List<TcapComponentIndication> inbound = [];
+    for (int index = 0; index < 4; index++)
+    {
+        outbound.Add(
+            first.BeginInvokeAsync(
+                    new(
+                        secondParty,
+                        firstParty,
+                        TcapOperationCode.MoForwardShortMessage,
+                        new byte[] { (byte)index }),
+                    timeout.Token)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult());
+    }
+
+    for (int index = 0; index < outbound.Count; index++)
+    {
+        TcapDialogueEvent begin = second.ReceiveAsync(timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        AssertEqual(TcapPackageType.Begin, begin.Transaction.PackageType, "TCAP concurrent Begin event");
+        TcapComponentIndication invoke = second.ReceiveComponentAsync(timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        AssertEqual(TcapComponentType.Invoke, invoke.ComponentType, "TCAP concurrent Invoke component");
+        AssertSequence([(byte)index], invoke.Parameters.Span, "TCAP concurrent Invoke parameters");
+        inbound.Add(invoke);
+    }
+
+    foreach (TcapComponentIndication invoke in inbound)
+    {
+        second.SendResultAsync(
+                invoke.Dialogue,
+                invoke.InvokeId,
+                invoke.OperationCode,
+                new byte[] { (byte)(invoke.Parameters.Span[0] + 10) },
+                endDialogue: true,
+                timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    for (int index = 0; index < outbound.Count; index++)
+    {
+        TcapInvokeOutcome outcome = first.WaitForInvokeAsync(
+                outbound[index],
+                timeout.Token)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        AssertEqual(TcapInvokeOutcomeKind.Result, outcome.Kind, "TCAP correlated result outcome");
+        AssertSequence([(byte)(index + 10)], outcome.Parameters.Span, "TCAP correlated result parameters");
+    }
+
+    Assert(
+        SpinWait.SpinUntil(
+            () => first.GetMetrics().ActiveDialogues == 0,
+            TimeSpan.FromSeconds(2)),
+        "TCAP completed dialogues should be removed");
+    AssertEqual(4L, first.GetMetrics().OpenedDialogues, "TCAP opened dialogue metric");
+    AssertEqual(4L, first.GetMetrics().ClosedDialogues, "TCAP closed dialogue metric");
+    AssertEqual(4L, first.GetMetrics().SentComponents, "TCAP sent component metric");
+    AssertEqual(4L, first.GetMetrics().ReceivedComponents, "TCAP received component metric");
+
+    first.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    second.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    firstSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    secondSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void TcapDialogueManagerCompletesTerminalOutcomes()
+{
+    (PairedMtp3Network firstNetwork, PairedMtp3Network secondNetwork) =
+        PairedMtp3Network.CreatePair();
+    SccpConnectionlessService firstSccp = new(
+        firstNetwork,
+        new(destinationPointCode: 2, originatingPointCode: 1, signallingLinkSelection: 1));
+    SccpConnectionlessService secondSccp = new(
+        secondNetwork,
+        new(destinationPointCode: 1, originatingPointCode: 2, signallingLinkSelection: 1));
+    TcapDialogueManagerOptions options = new(
+        eventQueueCapacity: 16,
+        componentQueueCapacity: 16,
+        maximumDialogues: 16,
+        maximumPendingInvokesPerDialogue: 4,
+        invokeTimeout: TimeSpan.FromMilliseconds(150),
+        timerResolution: TimeSpan.FromMilliseconds(20));
+    TcapDialogueManager first = new(firstSccp, options);
+    TcapDialogueManager second = new(secondSccp, options);
+    SccpPartyAddress firstParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 1);
+    SccpPartyAddress secondParty = new(
+        SccpRoutingIndicator.RouteOnSubsystemNumber,
+        SubsystemNumber.MAP,
+        pointCode: 2);
+
+    first.StartAsync().AsTask().GetAwaiter().GetResult();
+    second.StartAsync().AsTask().GetAwaiter().GetResult();
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+
+    TcapInvokeHandle errorHandle = first.BeginInvokeAsync(
+            new(
+                secondParty,
+                firstParty,
+                TcapOperationCode.MtForwardShortMessage,
+                new byte[] { 0x01 }),
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    _ = second.ReceiveAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+    TcapComponentIndication errorInvoke = second.ReceiveComponentAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    second.SendErrorAsync(
+            errorInvoke.Dialogue,
+            errorInvoke.InvokeId,
+            TcapReturnErrorCode.SystemFailure,
+            new byte[] { 0xEE },
+            endDialogue: true,
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    TcapInvokeOutcome error = first.WaitForInvokeAsync(errorHandle, timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(TcapInvokeOutcomeKind.Error, error.Kind, "TCAP ReturnError outcome");
+    AssertEqual(TcapReturnErrorCode.SystemFailure, error.ErrorCode!.Value, "TCAP ReturnError code");
+
+    TcapInvokeHandle rejectHandle = first.BeginInvokeAsync(
+            new(
+                secondParty,
+                firstParty,
+                TcapOperationCode.AlertServiceCentre,
+                new byte[] { 0x02 }),
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    _ = second.ReceiveAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+    TcapComponentIndication rejectInvoke = second.ReceiveComponentAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    second.SendRejectAsync(
+            rejectInvoke.Dialogue,
+            rejectInvoke.InvokeId,
+            TcapRejectProblemCode.MistypedComponent,
+            endDialogue: true,
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    TcapInvokeOutcome rejected = first.WaitForInvokeAsync(rejectHandle, timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(TcapInvokeOutcomeKind.Reject, rejected.Kind, "TCAP Reject outcome");
+    AssertEqual(TcapRejectProblemCode.MistypedComponent, rejected.ProblemCode!.Value, "TCAP Reject code");
+
+    TcapInvokeHandle timeoutHandle = first.BeginInvokeAsync(
+            new(
+                secondParty,
+                firstParty,
+                TcapOperationCode.ReportSmDeliveryStatus,
+                new byte[] { 0x03 },
+                timeout: TimeSpan.FromMilliseconds(80)),
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    _ = second.ReceiveAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+    TcapComponentIndication timeoutInvoke = second.ReceiveComponentAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    second.ContinueAsync(
+            timeoutInvoke.Dialogue,
+            new(new(TcapPackageType.Continue)),
+            timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    _ = first.ReceiveAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+    TcapInvokeOutcome timedOut = first.WaitForInvokeAsync(timeoutHandle, timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(TcapInvokeOutcomeKind.TimedOut, timedOut.Kind, "TCAP timeout outcome");
+    AssertEqual(1L, first.GetMetrics().TimedOutInvokes, "TCAP timeout metric");
+    first.AbortAsync(timeoutHandle.Dialogue, timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    TcapDialogueEvent aborted = second.ReceiveAsync(timeout.Token)
+        .AsTask()
+        .GetAwaiter()
+        .GetResult();
+    AssertEqual(TcapPackageType.Abort, aborted.Transaction.PackageType, "TCAP Abort event");
+
+    first.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    second.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    firstSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    secondSccp.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
 static void TcapReadinessSnapshotsFoundationStatus()
 {
     AssertEqual("TCAP BER foundation", TcapReadiness.ReleaseLabel, "TCAP readiness label");
-    AssertEqual(7, TcapReadiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
-    AssertEqual(7, TcapReadiness.GetFoundationCapabilities().Count, "TCAP readiness capability name count");
+    AssertEqual(12, TcapReadiness.RequiredFoundationCapabilityCount, "TCAP readiness capability count");
+    AssertEqual(12, TcapReadiness.GetFoundationCapabilities().Count, "TCAP readiness capability name count");
     Assert(
         TcapReadiness.ProductionGateDescription.Contains("interoperability", StringComparison.Ordinal),
         TcapReadiness.ProductionGateDescription);
@@ -7648,8 +7898,13 @@ static void TcapReadinessSnapshotsFoundationStatus()
     TcapReadinessSnapshot report = TcapReadiness.GetReport();
     Assert(report.FoundationReady, "TCAP foundation should be ready");
     Assert(!report.IsProductionReady, "TCAP should not claim production readiness without interop vectors");
-    AssertEqual(7, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
-    Assert(report.Describe().Contains("foundationCapabilities=7/7", StringComparison.Ordinal), report.Describe());
+    AssertEqual(12, report.FoundationCapabilityCount, "TCAP completed foundation capabilities");
+    Assert(report.HasConcurrentManager, "TCAP concurrent manager should be ready");
+    Assert(report.HasTransactionCorrelation, "TCAP transaction correlation should be ready");
+    Assert(report.HasInvokeOutcomes, "TCAP invoke outcomes should be ready");
+    Assert(report.HasSharedTimeoutSweep, "TCAP shared timeout sweep should be ready");
+    Assert(report.HasAbortCleanup, "TCAP abort cleanup should be ready");
+    Assert(report.Describe().Contains("foundationCapabilities=12/12", StringComparison.Ordinal), report.Describe());
 }
 
 static void MapSmsOperationCatalogAndParameterSetEncodeBer()

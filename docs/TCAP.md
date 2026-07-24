@@ -1,12 +1,33 @@
 # TCAP
 
-Phase 4 replaces the early simplified TCAP byte layout with ASN.1 BER-shaped transaction, dialogue, and component primitives.
+SIGTRAN.NET provides ASN.1 BER-shaped transaction, dialogue, and component
+primitives together with a concurrent stateful dialogue manager.
 
 ## Dialogue Contract
 
 `ITcapDialogues` is the official TCAP service boundary consumed by MAP profiles. It depends on `ISccpService` and exposes Begin, Continue, End, and Receive primitives through `TcapDialogueHandle` and request/event models.
 
-`TcapDialogueService` implements this contract over SCCP Unitdata, so MAP code can depend on TCAP dialogue primitives instead of a concrete SCCP implementation.
+`TcapDialogueManager` is the stateful implementation for concurrent workloads.
+It runs over `ISccpService`, correlates local and remote transaction ids, tracks
+components, and exposes bounded transaction and component queues.
+
+`TcapDialogueService` remains as a compatibility implementation for simple
+submission workflows.
+
+```csharp
+TcapDialogueManager manager = new(sccp);
+await manager.StartAsync(ct);
+
+TcapInvokeHandle invoke = await manager.BeginInvokeAsync(
+    new TcapBeginInvokeRequest(
+        called,
+        calling,
+        TcapOperationCode.MoForwardShortMessage,
+        parameters),
+    ct);
+
+TcapInvokeOutcome outcome = await manager.WaitForInvokeAsync(invoke, ct);
+```
 
 ## BER Primitives
 
@@ -121,7 +142,24 @@ dialogue.Begin();
 dialogue.RegisterInvoke(invokeId: 1, sentAt: DateTimeOffset.UtcNow);
 ```
 
-The controller validates invalid transitions, duplicate pending invokes, invoke concurrency limits, and timeout checks. It is intended to become the state core behind higher-level TCAP/MAP APIs.
+The controller validates invalid transitions, duplicate pending invokes, invoke
+concurrency limits, and timeout checks. `TcapDialogueManager` supplies the
+thread-safe runtime registry and lifecycle around these protocol concepts.
+
+## Concurrent Dialogues
+
+The manager keeps independent local and remote transaction ids for every
+dialogue. Begin creates or accepts a new context; Continue updates peer
+correlation; End and Abort complete pending invokes and remove the context.
+
+`ReceiveComponentAsync` delivers Invoke, ReturnResult, ReturnError, and Reject
+components. Inbound invokes are completed with `SendResultAsync`,
+`SendErrorAsync`, or `SendRejectAsync`.
+
+Pending outbound invokes use one shared timer sweep. This avoids creating a
+dedicated delay task for every invoke while preserving per-invoke timeout
+overrides. `SnapshotDialogues` and `GetMetrics` expose current state without
+returning mutable manager internals.
 
 ## Allocation
 
@@ -169,7 +207,11 @@ Each vector stores literal BER expected bytes and validates the current transact
 
 ## Readiness
 
-`TcapReadiness.GetReport()` reports the current TCAP BER foundation status. The foundation is complete when BER primitives, transaction models, component codecs, transaction envelopes, dialogue portions, dialogue state controls, and the session builder are present.
+`TcapReadiness.GetReport()` reports the current TCAP codec and runtime status.
+The foundation includes BER primitives, transaction models, component codecs,
+transaction envelopes, dialogue portions, state controls, the session builder,
+the concurrent manager, transaction correlation, invoke outcomes, shared timeout
+handling, and Abort cleanup.
 
 Production readiness remains false until external TCAP interoperability vectors and MAP profile validation are added.
 

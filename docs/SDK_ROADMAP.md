@@ -458,7 +458,12 @@ shutdown. Independent SCCP peer evidence remains in the end-to-end lab gate.
   invoke tracking, errors, rejects, aborts, and deterministic cleanup.
 - Run through `ISccpService` and expose `ITcapDialogues`.
 
-Status: Pending.
+Status: Implementation complete. `TcapDialogueManager` implements
+`ITcapDialogues` with concurrent local/remote transaction correlation,
+Begin/Continue/End/Abort lifecycle, tracked Invoke components,
+ReturnResult/ReturnError/Reject outcomes, a shared timeout sweep, deterministic
+cleanup, bounded queues, snapshots, failure state, and metrics. Independent TCAP
+peer evidence remains in the end-to-end lab gate.
 
 ## Phase 51 - MAP SMS Service
 

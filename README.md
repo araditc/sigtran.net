@@ -18,7 +18,7 @@ SIGTRAN.NET is currently in a **public release-candidate** track. Version
 Native Linux SCTP and external SCTP/M3UA peer evidence are retained and now feed
 the SDK readiness APIs through a common verification catalog. Stateful M3UA and
 M2PA runtimes are available. Full stable-product readiness remains gated on
-stateful TCAP/MAP services, end-to-end independent-peer evidence,
+stateful MAP workflows, end-to-end independent-peer evidence,
 operator-sized performance evidence, trusted signing, and stable release
 execution.
 
@@ -70,7 +70,7 @@ The current RC engineering track focuses on:
 | SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
 | M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
 | SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. External peer evidence remains. |
-| TCAP | BER and transaction foundations exist; production dialogue management and external evidence remain. |
+| TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. External peer evidence remains. |
 | MAP | SMS codec and facade foundations exist; stateful service workflows and external evidence remain. |
 | Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
 
@@ -158,6 +158,7 @@ Start here:
 - [SCCP](docs/SCCP.md)
 - [Phase 49 SCCP stateful service](docs/PHASE49_SCCP_STATEFUL_SERVICE.md)
 - [TCAP](docs/TCAP.md)
+- [Phase 50 TCAP dialogue manager](docs/PHASE50_TCAP_DIALOGUE_MANAGER.md)
 - [MAP SMS profile](docs/MAP.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)

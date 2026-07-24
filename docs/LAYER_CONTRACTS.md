@@ -60,3 +60,7 @@ swapped in without changing the layers above the relevant interface.
 `ISccpService` owns stateful connectionless data and return indications while
 remaining independent of a concrete M3UA runtime. Its implementation can route
 UDT, XUDT, and LUDT traffic over any `IMtp3Network`.
+
+`TcapDialogueManager` implements `ITcapDialogues` over `ISccpService`. It owns
+transaction and invoke correlation so MAP services do not depend on SCCP
+messages, TCAP BER envelopes, or a concrete dialogue registry.
