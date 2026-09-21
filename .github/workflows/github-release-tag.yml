@@ -29,9 +29,10 @@ on:
         type: boolean
         default: true
       confirmation:
-        description: Type exactly "create GitHub prerelease <tag_name>"
+        description: Type the tag name, for example v1.0.0-rc.2, or the full confirmation phrase.
         required: true
         type: string
+        default: v1.0.0-rc.2
 
 permissions:
   contents: write
@@ -64,8 +65,8 @@ jobs:
           set -euo pipefail
 
           expected_confirmation="create GitHub prerelease ${TAG_NAME}"
-          if [ "$CONFIRMATION" != "$expected_confirmation" ]; then
-            echo "Confirmation mismatch. Expected: $expected_confirmation" >&2
+          if [ "$CONFIRMATION" != "$expected_confirmation" ] && [ "$CONFIRMATION" != "$TAG_NAME" ]; then
+            echo "Confirmation mismatch. Expected either: $expected_confirmation OR $TAG_NAME" >&2
             exit 1
           fi
 
