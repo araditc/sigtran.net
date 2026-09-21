@@ -1,0 +1,156 @@
+name: github-release-tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Git tag to create, for example v1.0.0-rc.2
+        required: true
+        type: string
+        default: v1.0.0-rc.2
+      target_sha:
+        description: Exact commit SHA to tag
+        required: true
+        type: string
+        default: e2c663460823cd29f073467a79c4f761fb7c1002
+      release_title:
+        description: GitHub Release title
+        required: true
+        type: string
+        default: SIGTRAN.NET v1.0.0-rc.2 — .NET 10 SIGTRAN/SS7-over-IP Release Candidate
+      notes_file:
+        description: Release notes file committed in the repository
+        required: true
+        type: string
+        default: docs/releases/v1.0.0-rc.2.md
+      prerelease:
+        description: Mark the GitHub Release as a prerelease
+        required: true
+        type: boolean
+        default: true
+      confirmation:
+        description: Type exactly "create GitHub prerelease <tag_name>"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-release-tag-${{ inputs.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  create-github-release-tag:
+    name: Create GitHub prerelease tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Validate release request
+        shell: bash
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+          TARGET_SHA: ${{ inputs.target_sha }}
+          RELEASE_TITLE: ${{ inputs.release_title }}
+          NOTES_FILE: ${{ inputs.notes_file }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+
+          expected_confirmation="create GitHub prerelease ${TAG_NAME}"
+          if [ "$CONFIRMATION" != "$expected_confirmation" ]; then
+            echo "Confirmation mismatch. Expected: $expected_confirmation" >&2
+            exit 1
+          fi
+
+          if [ "$PRERELEASE" != "true" ]; then
+            echo "This workflow is intentionally limited to prerelease publication." >&2
+            exit 1
+          fi
+
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+            echo "Only RC prerelease tags are allowed by this workflow. Refusing: $TAG_NAME" >&2
+            exit 1
+          fi
+
+          if [[ ! "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "target_sha must be a full 40-character commit SHA." >&2
+            exit 1
+          fi
+
+          if [ ! -f "$NOTES_FILE" ]; then
+            echo "Release notes file not found: $NOTES_FILE" >&2
+            exit 1
+          fi
+
+          git fetch --force --tags origin main
+          git cat-file -e "${TARGET_SHA}^{commit}"
+          git merge-base --is-ancestor "$TARGET_SHA" origin/main
+
+          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
+            existing_sha="$(git rev-list -n 1 "$TAG_NAME")"
+            if [ "$existing_sha" != "$TARGET_SHA" ]; then
+              echo "Tag $TAG_NAME already exists at $existing_sha, not $TARGET_SHA." >&2
+              exit 1
+            fi
+            echo "Tag $TAG_NAME already exists at requested target $TARGET_SHA."
+          else
+            echo "Tag $TAG_NAME does not exist and will be created at $TARGET_SHA."
+          fi
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "GitHub Release already exists for $TAG_NAME. Refusing to overwrite." >&2
+            exit 1
+          fi
+
+          {
+            echo "TAG_NAME=$TAG_NAME"
+            echo "TARGET_SHA=$TARGET_SHA"
+            echo "RELEASE_TITLE=$RELEASE_TITLE"
+            echo "NOTES_FILE=$NOTES_FILE"
+          } >> "$GITHUB_ENV"
+
+      - name: Create annotated tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
+            echo "Tag $TAG_NAME already exists; skipping tag creation."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG_NAME" "$TARGET_SHA" -m "$RELEASE_TITLE"
+            git push origin "refs/tags/$TAG_NAME"
+          fi
+
+      - name: Create GitHub prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$RELEASE_TITLE" \
+            --notes-file "$NOTES_FILE" \
+            --target "$TARGET_SHA" \
+            --prerelease \
+            --latest=false
+
+      - name: Summarize
+        shell: bash
+        run: |
+          {
+            echo "## GitHub prerelease created"
+            echo
+            echo "- Tag: \`$TAG_NAME\`"
+            echo "- Target: \`$TARGET_SHA\`"
+            echo "- Release title: $RELEASE_TITLE"
+            echo "- Notes file: \`$NOTES_FILE\`"
+          } >> "$GITHUB_STEP_SUMMARY"
