@@ -2,88 +2,95 @@
 
 **SIGTRAN.NET is the first open-source .NET 10 SDK dedicated to SIGTRAN and SS7-over-IP protocol engineering.**
 
-The project brings telecom signaling infrastructure to the modern .NET ecosystem, with an engineering focus on M3UA, SCTP, SCCP, TCAP, MAP, byte-level protocol validation, interoperability evidence, and production-oriented release governance.
-
-SIGTRAN.NET is open source under the Apache-2.0 license and welcomes contributors from the telecom, protocol engineering, Linux networking, and .NET communities.
+SIGTRAN.NET brings telecom signaling infrastructure to the modern .NET ecosystem, with a focus on native Linux SCTP, M3UA, M2PA, MTP3, SCCP, TCAP, MAP SMS, byte-level protocol validation, interoperability evidence, and production-oriented release governance.
 
 Repository: <https://github.com/araditc/sigtran.net>
 
 ---
 
-## Status
+## What it is
 
-SIGTRAN.NET is currently in a **public release-candidate** track. Version
-`1.0.0-rc.1` has been published and restored from NuGet.org. Source builds now
-default to the unpublished `1.0.0-rc.2` candidate so ordinary packing cannot
-accidentally create a stable package.
+SIGTRAN.NET is a standards-oriented C#/.NET SDK for building and testing SS7-over-IP and SIGTRAN signaling applications.
 
-Native Linux SCTP, external SCTP/M3UA, and cross-implementation full-stack MAP
-SMS traffic evidence are retained. Stateful M3UA, M2PA, SCCP, TCAP, and MAP SMS
-runtimes are available. Full stable-product readiness remains gated on
-operator/vendor profile interoperability, independent M2PA evidence,
-20K peak and operator-sized multi-host performance evidence, representative
-Kubernetes SCTP validation, trusted signing, and stable release execution.
+The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
-For release history and governance, see:
+---
+
+## Current status
+
+SIGTRAN.NET is currently in a **public release-candidate** track.
+
+- Latest public NuGet prerelease: `Sigtran.NET` `1.0.0-rc.1`.
+- Current source candidate: unpublished `1.0.0-rc.2`.
+- Target framework: `.NET 10` / `net10.0`.
+- License: Apache-2.0.
+- GitHub Releases/tags: pending; the repository currently retains release evidence and release notes, but the GitHub release/tag must still be created from an approved commit.
+
+The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, cross-implementation full-stack MAP SMS traffic, RC publication, package restore, operations-host smoke execution, and performance/resilience runs.
+
+It is **not yet a fully stable operator-grade SS7/SIGTRAN stack**. Stable production claims remain gated on independent M2PA evidence, operator/vendor-profile interoperability evidence, representative multi-host capacity/soak evidence, Kubernetes SCTP validation, trusted signing, and final stable release execution.
+
+Recommended release/status documents:
 
 - [Changelog](CHANGELOG.md)
-- [v0.1.0-alpha release notes](docs/releases/v0.1.0-alpha.md)
+- [v1.0.0-rc.2 release notes draft](docs/releases/v1.0.0-rc.2.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
+- [Stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
+- [Community response templates](docs/community/COMMUNITY_RESPONSES.md)
 
-> RC notice: use the package for controlled integration and lab traffic. Do not
-> claim a complete operator-grade SS7 stack until the remaining runtime, protocol,
-> capacity, and stable-release gates are closed.
+> RC notice: use the SDK for controlled integrations, lab traffic, protocol review, and contributor validation. Do not represent it as a complete stable operator-grade SS7 stack until the remaining stable gates are closed.
+
+---
+
+## Install
+
+The latest public prerelease package is `1.0.0-rc.1`:
+
+```powershell
+dotnet add package Sigtran.NET --version 1.0.0-rc.1
+```
+
+Source builds currently produce the unpublished `1.0.0-rc.2` candidate by default to avoid accidental stable `1.0.0` package creation.
 
 ---
 
 ## Why SIGTRAN.NET?
 
-SS7 and SIGTRAN remain important in telecom signaling, mobile messaging, roaming, interconnection, and carrier-grade integration.
+SS7 and SIGTRAN remain important in telecom signaling, mobile messaging, roaming, interconnection, carrier-grade integration, and legacy-to-modern telecom infrastructure.
 
-The .NET ecosystem has historically had limited native, open-source tooling for this domain. SIGTRAN.NET is designed to close that gap by providing a standards-oriented, testable, and maintainable SDK for SS7-over-IP protocol engineering in C# and .NET 10.
+The .NET ecosystem has historically had limited native open-source tooling for this domain. SIGTRAN.NET is intended to close that gap by providing a testable, maintainable, evidence-driven SDK for SS7-over-IP protocol engineering in C# and .NET 10.
 
 ---
 
-## Current Engineering Focus
+## Current engineering focus
 
 The current RC engineering track focuses on:
 
-- M3UA framing, parsing, routing, diagnostics, and ASP state handling.
-- Transport abstraction for SIGTRAN workloads.
-- Official layer contracts from SCTP through MAP SMS for dependency-injected applications.
-- Linux native SCTP production transport with retained stream/PPID metadata,
-  reconnect, metrics, and graceful-shutdown evidence.
-- External SCTP/M3UA peer validation with PCAP, SDK trace, peer log, and TShark
-  comparison evidence.
-- Cross-implementation MAP SMS traffic through TCAP, SCCP, M3UA, and native SCTP
-  with retained PCAP, traces, field comparison, and digest evidence.
-- Full-stack performance and resilience tooling with a retained 62,000-operation
-  baseline, latency/resource metrics, SCTP failover, and zero-loss recovery.
-- Executable health probes, OpenTelemetry-compatible tracing and metrics,
-  structured JSONL events, validated node configuration, and a containerized
-  M3UA operations host with Kubernetes probes.
-- Stateful SCCP, TCAP, and MAP SMS service layers.
-- M2PA as a parallel MTP2 path.
-- Byte-level tests and protocol validation.
-- Wireshark-friendly diagnostics and trace-oriented tooling.
-- Interoperability lab planning and external peer validation.
-- NuGet/package readiness, documentation, and release governance.
+- M3UA codec, routing, ASP state, diagnostics, and long-running runtime behavior.
+- Native Linux SCTP direction with stream id, PPID, receive metadata, reconnect, metrics, and graceful shutdown evidence.
+- M2PA as a parallel MTP2 path with independent peer evidence still pending.
+- Stateful SCCP service support for UDT/XUDT/LUDT, GT translation, routing, segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership.
+- TCAP dialogue management with Begin/Continue/End/Abort, invoke tracking, result/error/reject handling, timeout scanning, cleanup, snapshots, and metrics.
+- MAP SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre.
+- Cross-implementation MAP SMS traffic through TCAP, SCCP, M3UA, and native SCTP.
+- Runtime health probes, OpenTelemetry-compatible tracing and metrics, structured JSONL events, validated node configuration, container manifests, Kubernetes manifests, and operations runbooks.
+- Byte-level tests, Wireshark-friendly diagnostics, trace comparison, and retained interoperability evidence.
+- NuGet/package readiness, public API governance, and guarded stable release workflow execution.
 
 ---
 
-## Protocol Scope
+## Protocol scope
 
-| Area | Current Direction |
+| Area | Current direction |
 | --- | --- |
-| M3UA | Codec, routing, ASP state, long-running `IMtp3Network` runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence are available. |
-| SCTP | Native Linux SCTP evidence validates stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
-| M2PA | RFC 4165 codec and stateful `IMtp2Link` runtime provide alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
-| SCCP | Stateful `ISccpService` supports UDT/XUDT/LUDT, GT translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Independent C-peer UDT evidence is retained; operator/vendor profile evidence remains. |
-| TCAP | Concurrent `TcapDialogueManager` provides transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, shared timeout scanning, bounded queues, cleanup, snapshots, and metrics. Independent C-peer transaction evidence is retained; operator/vendor profile evidence remains. |
-| MAP | Stateful client/server SMS workflows cover SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre with operation profiles, result/error correlation, typed dispatch, cancellation, and metrics. All five operations have cross-implementation repository-profile evidence; operator/vendor profile evidence remains. |
-| Performance | The retained WSL baseline completed 62,000 full-stack operations without protocol loss at about 13.5K sustained/peak TPS. The 20K peak and multi-host operator qualification gates remain open. |
-| Operations | Runtime health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, and recovery/upgrade runbooks are available. |
-| Tooling | Byte-level tests, protocol diagnostics, trace comparison, and interoperability evidence are core project principles. |
+| M3UA | Codec, routing, ASP state, runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence. |
+| SCTP | Native Linux SCTP validation for stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
+| M2PA | RFC 4165 codec and stateful runtime with alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
+| SCCP | Stateful service for UDT/XUDT/LUDT, global-title translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Operator/vendor profile evidence remains. |
+| TCAP | Dialogue manager for transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, timeout scanning, cleanup, snapshots, and metrics. Operator/vendor profile evidence remains. |
+| MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. |
+| Performance | Retained full-stack performance evidence exists, but representative multi-host capacity and long-duration soak evidence remain stable blockers. |
+| Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. |
 
 ---
 
@@ -96,7 +103,7 @@ The current RC engineering track focuses on:
 
 ---
 
-## Build and Test
+## Build and test
 
 ```powershell
 dotnet build src\Sigtran.NET.sln
@@ -104,11 +111,11 @@ dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
-Public API XML comments are required. Missing public documentation is treated as a build-quality issue so that generated packages remain usable by downstream developers.
+Public API XML comments are required. Missing public documentation is treated as a build-quality issue so generated packages remain usable by downstream developers.
 
 ---
 
-## M3UA Example
+## M3UA example
 
 ```csharp
 using Sigtran.NET.Layers.M3UA;
@@ -160,24 +167,12 @@ Start here:
 - [Architecture](docs/ARCHITECTURE.md)
 - [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
-- [Phase 47 M3UA runtime](docs/PHASE47_M3UA_RUNTIME.md)
 - [M2PA implementation notes](docs/M2PA.md)
-- [Phase 48 M2PA production path](docs/PHASE48_M2PA_PRODUCTION_PATH.md)
 - [SCTP transport](docs/SCTP_TRANSPORT.md)
-- [Phase 45 native SCTP production transport](docs/PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md)
-- [Phase 46 evidence and readiness reconciliation](docs/PHASE46_EVIDENCE_READINESS_RECONCILIATION.md)
 - [SCCP](docs/SCCP.md)
-- [Phase 49 SCCP stateful service](docs/PHASE49_SCCP_STATEFUL_SERVICE.md)
 - [TCAP](docs/TCAP.md)
-- [Phase 50 TCAP dialogue manager](docs/PHASE50_TCAP_DIALOGUE_MANAGER.md)
 - [MAP SMS service](docs/MAP.md)
-- [Phase 51 MAP SMS service](docs/PHASE51_MAP_SMS_SERVICE.md)
-- [Phase 52 end-to-end SS7 traffic lab](docs/PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md)
-- [Phase 53 performance and resilience](docs/PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md)
-- [Phase 54 production operations package](docs/PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md)
 - [Runtime operations](docs/OPERATIONS_RUNTIME.md)
-- [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
-- [Phase 55 stable assessment evidence](docs/evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json)
 - [Public API baseline](docs/PUBLIC_API_BASELINE.md)
 - [Interoperability and tooling](docs/INTEROPERABILITY.md)
 - [Compatibility policy](docs/COMPATIBILITY.md)
@@ -188,10 +183,11 @@ Start here:
 Release and governance:
 
 - [Changelog](CHANGELOG.md)
-- [v0.1.0-alpha release notes](docs/releases/v0.1.0-alpha.md)
+- [v1.0.0-rc.2 release notes draft](docs/releases/v1.0.0-rc.2.md)
 - [RC.1 to RC.2 migration](docs/migrations/1.0.0-rc.1-to-rc.2.md)
-- [Alpha release checklist](docs/ALPHA_RELEASE.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
+- [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
+- [Phase 55 stable assessment evidence](docs/evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json)
 
 ---
 
@@ -199,27 +195,30 @@ Release and governance:
 
 Contributions are welcome.
 
-You can contribute through:
+Useful contribution areas include:
 
-- Code changes.
 - Protocol review.
 - M3UA validation.
 - SCTP testing on Linux.
-- SCCP, TCAP, and MAP standards alignment.
+- Independent M2PA peer validation.
+- SCCP, TCAP, and MAP standards/profile alignment.
 - ASN.1 BER validation.
 - Wireshark trace comparison.
 - Interoperability lab results.
+- Operator/vendor profile validation.
 - Documentation and examples.
 - Performance and memory-allocation review.
 - Issue reports and design discussions.
 
-Good first contribution areas include documentation improvements, protocol test vectors, validation reports, issue triage, and small focused M3UA test cases.
+Good first contribution areas include documentation improvements, protocol test vectors, validation reports, issue triage, and focused M3UA/MAP SMS examples.
 
-Please open an issue or pull request if you want to help. Telecom protocol expertise, .NET infrastructure experience, and real-world signaling validation are especially valuable.
+Please open an issue or pull request if you want to help. Telecom protocol expertise, .NET infrastructure experience, Linux SCTP experience, and real-world signaling validation are especially valuable.
+
+For ready-to-use outreach copy, see [Community response templates](docs/community/COMMUNITY_RESPONSES.md).
 
 ---
 
-## Production-Readiness Policy
+## Production-readiness policy
 
 SIGTRAN.NET is being developed with a conservative production-readiness model.
 
@@ -231,16 +230,14 @@ Stable production support requires:
 - Stateful SCCP, TCAP, and MAP SMS service validation.
 - Operator/vendor-profile end-to-end protocol trace validation.
 - Operator-sized capacity and resilience evidence.
+- Representative Kubernetes SCTP/CNI deployment evidence.
 - Trusted package signing and provenance.
 - Stable package publication evidence.
 - Stable API lifecycle validation.
 - A machine-evaluated `GO` stable release decision.
 - Security, release, compliance, and operations review.
 
-The Linux SCTP, external M3UA, repository-profile full-stack traffic, and
-controlled performance execution gates are complete. Until the remaining gates
-are complete, the package should be treated as release-candidate infrastructure
-for controlled integrations.
+Until those gates are complete, the package should be treated as release-candidate infrastructure for controlled integrations.
 
 ---
 
