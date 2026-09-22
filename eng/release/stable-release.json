@@ -39,9 +39,12 @@
       "id": "independent-m2pa",
       "title": "Independent M2PA interoperability",
       "required": true,
-      "passed": false,
-      "evidence": [],
-      "note": "No retained independent external M2PA peer run exists."
+      "passed": true,
+      "evidence": [
+        "docs/evidence/PHASE56_M2PA_35695182775/reports/summary.json",
+        "docs/evidence/PHASE56_M2PA_35695182775/reports/sha256.txt"
+      ],
+      "note": "Independent RFC 4165 interoperability passed against an independently compiled C/lksctp peer over native Linux SCTP; alignment, proving, Ready, BSN/FSN acknowledgement, Busy/BusyEnded, processor outage/recovery, bidirectional User Data, PCAP, traces, peer events, and digest-covered retained evidence are present."
     },
     {
       "id": "operator-profile",
