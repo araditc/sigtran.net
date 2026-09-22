@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "observedAtUtc": "2026-09-22T06:48:05.863967+00:00",
+  "topology": "single-host controlled two-association load-share",
+  "laneCount": 2,
+  "executionPassed": true,
+  "latencyPassed": true,
+  "resourcePassed": true,
+  "capacityPassed": true,
+  "aggregateThroughputPerSecond": {
+    "sustained": 35933.89583379065,
+    "peak": 34528.53875516387,
+    "soak": 45831.23951057033
+  },
+  "lanes": [
+    {
+      "runId": "phase56-loadshare-35696403076-lane1",
+      "executionPassed": true,
+      "stages": {
+        "sustained": {
+          "throughputPerSecond": 17349.796092183977,
+          "p95Milliseconds": 9.856165,
+          "p99Milliseconds": 13.9342,
+          "peakCpuPercent": 36.41041638084442,
+          "peakWorkingSetMegabytes": 72,
+          "allocatedBytesPerOperation": 9421,
+          "failedOperations": 0
+        },
+        "peak": {
+          "throughputPerSecond": 17151.474533705004,
+          "p95Milliseconds": 13.342329,
+          "p99Milliseconds": 16.326927,
+          "peakCpuPercent": 44.962264953348914,
+          "peakWorkingSetMegabytes": 74,
+          "allocatedBytesPerOperation": 9427,
+          "failedOperations": 0
+        },
+        "soak": {
+          "throughputPerSecond": 19486.16540714589,
+          "p95Milliseconds": 9.053725,
+          "p99Milliseconds": 11.258057,
+          "peakCpuPercent": 28.92389811435794,
+          "peakWorkingSetMegabytes": 79,
+          "allocatedBytesPerOperation": 9361,
+          "failedOperations": 0
+        }
+      }
+    },
+    {
+      "runId": "phase56-loadshare-35696403076-lane2",
+      "executionPassed": true,
+      "stages": {
+        "sustained": {
+          "throughputPerSecond": 18584.09974160668,
+          "p95Milliseconds": 9.243201,
+          "p99Milliseconds": 11.253881,
+          "peakCpuPercent": 34.889136105220786,
+          "peakWorkingSetMegabytes": 72,
+          "allocatedBytesPerOperation": 9428,
+          "failedOperations": 0
+        },
+        "peak": {
+          "throughputPerSecond": 17377.06422145887,
+          "p95Milliseconds": 13.443311,
+          "p99Milliseconds": 16.081077,
+          "peakCpuPercent": 46.253552725821585,
+          "peakWorkingSetMegabytes": 76,
+          "allocatedBytesPerOperation": 9432,
+          "failedOperations": 0
+        },
+        "soak": {
+          "throughputPerSecond": 26345.07410342444,
+          "p95Milliseconds": 6.577433,
+          "p99Milliseconds": 8.541523,
+          "peakCpuPercent": 51.92315770079067,
+          "peakWorkingSetMegabytes": 82,
+          "allocatedBytesPerOperation": 9348,
+          "failedOperations": 0
+        }
+      }
+    }
+  ],
+  "passed": true
+}
