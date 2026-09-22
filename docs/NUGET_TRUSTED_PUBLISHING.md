@@ -1,6 +1,18 @@
 # NuGet Trusted Publishing for SIGTRAN.NET
 
-SIGTRAN.NET should use NuGet.org Trusted Publishing instead of a long-lived API key.
+SIGTRAN.NET uses NuGet.org Trusted Publishing instead of a long-lived API key for the RC.2 publication path.
+
+## Current status
+
+Configured and verified.
+
+- First successful Trusted Publishing run: `35690123501`.
+- OIDC login: PASS.
+- NuGet push for `Sigtran.NET 1.0.0-rc.2`: PASS.
+- Public package visibility: PASS.
+- Fresh .NET 10 restore: PASS.
+- GitHub prerelease evidence attachment: PASS.
+- A second idempotency run detected the public package, skipped publishing, and re-verified public restore successfully.
 
 ## NuGet.org policy
 
