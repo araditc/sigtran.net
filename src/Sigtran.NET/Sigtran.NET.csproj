@@ -10,13 +10,13 @@
     <Authors>SIGTRAN.NET contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>sigtran;sctp;m3ua;m2pa;mtp3;sccp;tcap;map;ss7;telecom;dotnet</PackageTags>
-    <PackageReleaseNotes>Release candidate with native Linux SCTP, M3UA and M2PA runtimes, stateful SCCP/TCAP/MAP SMS services, retained interoperability evidence, and production operations APIs.</PackageReleaseNotes>
+    <PackageReleaseNotes>Unpublished development line after the public 1.0.0-rc.2 release candidate. Stable 1.0.0 remains governed by retained qualification evidence and the protected release workflow.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/araditc/Sigtran.NET.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/araditc/Sigtran.NET</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc.2</VersionSuffix>
+    <VersionSuffix>rc.3-dev</VersionSuffix>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
