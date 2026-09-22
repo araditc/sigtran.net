@@ -146,22 +146,36 @@ with open(path, "w", encoding="utf-8") as stream:
     stream.write("\n")
 PY
 
-cat >"${REPORT_FILE}" <<EOF
-# Phase 56 Independent M2PA Interoperability Run
+cp "${PEER_LOG}" "${REPORT_DIR}/peer-events.txt"
+cp "${SDK_LOG}" "${REPORT_DIR}/sdk-output.txt"
 
-- Run ID: `${RUN_ID}`
+python3 - \
+  "${REPORT_FILE}" \
+  "${RUN_ID}" \
+  "${SDK_EXIT}" \
+  "${PEER_EXIT}" \
+  "${SDK_PASSED}" \
+  "${PEER_PASSED}" \
+  "${SCTP_PACKETS}" \
+  "${RUN_PASSED}" <<'PY'
+import sys
+
+path, run_id, sdk_exit, peer_exit, sdk_passed, peer_passed, packets, run_passed = sys.argv[1:]
+text = f"""# Phase 56 Independent M2PA Interoperability Run
+
+- Run ID: `{run_id}`
 - Protocol: RFC 4165 M2PA over native Linux SCTP
 - SDK implementation: Sigtran.NET `M2paLink`
 - Peer implementation: independent C/lksctp reference peer
 - SCTP PPID: 5
 - Link-status stream: 0
 - User-data stream: 1
-- SDK exit: `${SDK_EXIT}`
-- Peer exit: `${PEER_EXIT}`
-- SDK validation: `${SDK_PASSED}`
-- Peer validation: `${PEER_PASSED}`
-- SCTP packets captured: `${SCTP_PACKETS}`
-- Result: **${RUN_PASSED}**
+- SDK exit: `{sdk_exit}`
+- Peer exit: `{peer_exit}`
+- SDK validation: `{sdk_passed}`
+- Peer validation: `{peer_passed}`
+- SCTP packets captured: `{packets}`
+- Result: **{run_passed}**
 
 ## Exercised behavior
 
@@ -174,9 +188,20 @@ cat >"${REPORT_FILE}" <<EOF
 - Processor Outage / Processor Recovered / Ready recovery handshake
 - retrieval depth returning to zero
 - PCAP, independent peer log, SDK trace, result summary, and SHA-256 retention
-EOF
+"""
+with open(path, "w", encoding="utf-8") as stream:
+    stream.write(text)
+PY
 
-find "${ARTIFACT_ROOT}"   -type f   ! -path "${DIGEST_FILE}"   -print0   | sort -z   | xargs -0 sha256sum >"${DIGEST_FILE}"
+(
+  cd "${ARTIFACT_ROOT}"
+  find pcap trace reports \
+    -type f \
+    ! -path "reports/sha256.txt" \
+    -print0 \
+    | sort -z \
+    | xargs -0 sha256sum
+) >"${DIGEST_FILE}"
 
 echo "M2PA evidence root: ${ARTIFACT_ROOT}"
 echo "M2PA evidence result: ${RUN_PASSED}"
