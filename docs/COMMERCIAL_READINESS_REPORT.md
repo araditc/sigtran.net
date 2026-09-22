@@ -104,7 +104,7 @@ retained manifests instead of stale hard-coded flags.
   publication remains blocked by the four remaining machine-evaluated qualification
   gates and still requires a protected publish run plus verified stable NuGet
   restore evidence.
-- Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
+- Public/stable signing must use the organization's approved CA-issued certificate in the protected release environment. Phase 56 trusted-signing preflight run `35710407279` confirmed that the currently configured certificate is self-issued and is therefore rejected by policy. Retained blocker evidence: `docs/evidence/PHASE56_TRUSTED_SIGNING_BLOCKER_35710407279.md`.
 - Hosted GitHub provenance/SBOM attestations were skipped for dry-run and
   prerelease. Stable assessment run `30088170594` produced and independently
   verified both hosted attestations against the release workflow, source
