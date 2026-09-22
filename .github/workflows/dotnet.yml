@@ -59,6 +59,24 @@ jobs:
             -OutputPath "artifacts/ci-api/Sigtran.NET.api-diff.md" `
             -FailOnAnyChange
 
+      - name: Verify stable evaluator remains fail-closed
+        shell: pwsh
+        run: |
+          ./eng/evaluate-stable-release.ps1 `
+            -ExpectedVersion "1.0.0" `
+            -JsonOutputPath "artifacts/ci-api/stable-release-decision.json" `
+            -MarkdownOutputPath "artifacts/ci-api/stable-release-decision.md"
+          $decision = Get-Content "artifacts/ci-api/stable-release-decision.json" -Raw | ConvertFrom-Json
+          if ($decision.decision -ne "NO-GO") {
+            throw "Stable evaluator must remain NO-GO while qualification gates are open."
+          }
+          if (@($decision.blockers).Count -ne 4) {
+            throw "Stable evaluator must report exactly four required blockers; observed $(@($decision.blockers).Count)."
+          }
+          if (-not $decision.publicApiBaseline.acceptedAdditionsPresent) {
+            throw "Stable evaluator did not retain the accepted public API additions evidence."
+          }
+
       - name: Upload current public API evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -66,6 +84,8 @@ jobs:
           path: |
             artifacts/ci-api/Sigtran.NET.current.public-api.txt
             artifacts/ci-api/Sigtran.NET.api-diff.md
+            artifacts/ci-api/stable-release-decision.json
+            artifacts/ci-api/stable-release-decision.md
           if-no-files-found: error
 
       - name: Pack
