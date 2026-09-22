@@ -1,0 +1,268 @@
+name: phase56-multi-host-soak
+
+on:
+  workflow_dispatch:
+    inputs:
+      soak_minutes:
+        description: Minimum long-duration soak minutes
+        required: true
+        default: "30"
+        type: string
+      confirmation:
+        description: Type exactly "run multi host soak"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: phase56-multi-host-soak
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: [self-hosted, linux, sigtran-performance-lab]
+    environment:
+      name: sigtran-performance
+    timeout-minutes: 120
+    env:
+      RUN_ID: phase56-multihost-${{ github.run_id }}
+      REMOTE_IP: ${{ secrets.PERF_REMOTE_IP }}
+      REMOTE_SCTP_PORT: ${{ secrets.PERF_REMOTE_PORT }}
+      OPC: ${{ vars.PERF_LOCAL_POINT_CODE || '1' }}
+      DPC: ${{ vars.PERF_REMOTE_POINT_CODE || '2' }}
+      NETWORK_INDICATOR: ${{ vars.PERF_NETWORK_INDICATOR || '2' }}
+      PEER_NAME: ${{ vars.PERF_PEER_NAME || 'remote-reference-peer' }}
+      SDK_HOST_ID: ${{ vars.PERF_SDK_HOST_ID }}
+      PEER_HOST_ID: ${{ vars.PERF_PEER_HOST_ID }}
+      CAPTURE_INTERFACE: ${{ vars.PERF_CAPTURE_INTERFACE || 'any' }}
+      RAW_EVIDENCE_ROOT: ${{ vars.PERF_RAW_EVIDENCE_ROOT }}
+      PEER_SSH_HOST: ${{ secrets.PERF_PEER_SSH_HOST }}
+      PEER_SSH_USER: ${{ secrets.PERF_PEER_SSH_USER }}
+      PEER_SSH_PRIVATE_KEY: ${{ secrets.PERF_PEER_SSH_PRIVATE_KEY }}
+      PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
+      PEER_SERVICE: ${{ vars.PERF_PEER_SERVICE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate protected lab configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirmation }}" = "run multi host soak"
+          test -n "$REMOTE_IP"
+          test -n "$REMOTE_SCTP_PORT"
+          test -n "$SDK_HOST_ID"
+          test -n "$PEER_HOST_ID"
+          test "$SDK_HOST_ID" != "$PEER_HOST_ID"
+          test -n "$RAW_EVIDENCE_ROOT"
+          test -n "$PEER_SSH_HOST"
+          test -n "$PEER_SSH_USER"
+          test -n "$PEER_SSH_PRIVATE_KEY"
+          test -n "$PEER_SSH_KNOWN_HOSTS"
+          test -n "$PEER_SERVICE"
+          for cmd in dotnet tcpdump tshark sha256sum python3 ssh; do
+            command -v "$cmd" >/dev/null
+          done
+          sudo -n true >/dev/null
+
+      - name: Configure peer SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$PEER_SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$PEER_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          ssh -o BatchMode=yes "$PEER_SSH_USER@$PEER_SSH_HOST" 'hostname; uname -r'
+
+      - name: Build performance lab
+        run: dotnet build src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj -c Release -m:1
+
+      - name: Run representative multi-host soak and failover
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          soak_minutes="${{ inputs.soak_minutes }}"
+          python3 - "$soak_minutes" <<'PY'
+          import sys
+          value=int(sys.argv[1])
+          if value < 30 or value > 90:
+              raise SystemExit("soak_minutes must be between 30 and 90")
+          PY
+
+          min_soak_seconds=$((soak_minutes * 60))
+          soak_operations=$((min_soak_seconds * 40000))
+          timeout_seconds=$((min_soak_seconds + 1200))
+
+          root="$GITHUB_WORKSPACE/artifacts/multihost/$RUN_ID"
+          raw="$root/raw"
+          safe="$root/safe"
+          mkdir -p "$raw" "$safe"
+
+          metrics="$raw/metrics.json"
+          report="$raw/report.md"
+          trace="$raw/sdk-trace.jsonl"
+          failover_ready="$raw/failover-ready"
+          failover_complete="$raw/failover-complete"
+          pcap="$raw/traffic.pcap"
+
+          ssh "$PEER_SSH_USER@$PEER_SSH_HOST" "sudo systemctl start '$PEER_SERVICE'"
+          ssh "$PEER_SSH_USER@$PEER_SSH_HOST" "sudo systemctl is-active '$PEER_SERVICE'"
+
+          sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U             -w "$pcap" "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT"             >"$raw/tcpdump.log" 2>&1 &
+          tcpdump_pid=$!
+          trap 'sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true' EXIT
+          sleep 1
+
+          timeout "$((timeout_seconds + 120))s" dotnet run             --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj             -c Release --no-build --             --run-id "$RUN_ID"             --artifact-root "$raw"             --remote-ip "$REMOTE_IP"             --remote-port "$REMOTE_SCTP_PORT"             --local-point-code "$OPC"             --remote-point-code "$DPC"             --network-indicator "$NETWORK_INDICATOR"             --peer-name "$PEER_NAME"             --warmup-operations 5000             --sustained-operations 100000             --peak-operations 100000             --recovery-operations 10000             --soak-operations "$soak_operations"             --warmup-concurrency 32             --sustained-concurrency 192             --peak-concurrency 384             --recovery-concurrency 64             --soak-concurrency 192             --timeout-seconds "$timeout_seconds"             --failover-timeout-seconds 30             --metrics "$metrics"             --report "$report"             --trace "$trace"             --failover-ready "$failover_ready"             --failover-complete "$failover_complete"             >"$raw/sdk.log" 2>&1 &
+          sdk_pid=$!
+
+          for _ in $(seq 1 7200); do
+            if [ -s "$failover_ready" ]; then break; fi
+            if ! kill -0 "$sdk_pid" 2>/dev/null; then break; fi
+            sleep 0.25
+          done
+          test -s "$failover_ready"
+
+          ssh "$PEER_SSH_USER@$PEER_SSH_HOST" "sudo systemctl restart '$PEER_SERVICE'"
+          ssh "$PEER_SSH_USER@$PEER_SSH_HOST" "sudo systemctl is-active '$PEER_SERVICE'"
+          touch "$failover_complete"
+
+          wait "$sdk_pid"
+
+          sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
+          wait "$tcpdump_pid" 2>/dev/null || true
+          trap - EXIT
+          sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
+
+          ssh "$PEER_SSH_USER@$PEER_SSH_HOST"             "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl status '$PEER_SERVICE' --no-pager"             >"$raw/peer-host.txt"
+
+          python3 - "$metrics" "$safe/summary.json" "$safe/report.md"             "$min_soak_seconds" "$SDK_HOST_ID" "$PEER_HOST_ID" <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          metrics_path, summary_path, report_path = map(Path, sys.argv[1:4])
+          min_soak=float(sys.argv[4])
+          sdk_host=sys.argv[5]
+          peer_host=sys.argv[6]
+          value=json.loads(metrics_path.read_text())
+          stages={s["Name"]:s for s in value.get("Stages",[])}
+
+          def seconds(value):
+              if not isinstance(value,str):
+                  return 0.0
+              days=0
+              if "." in value and value.split(".",1)[0].isdigit():
+                  d, value=value.split(".",1)
+                  days=int(d)
+              parts=value.split(":")
+              if len(parts)!=3:
+                  return 0.0
+              h,m,s=parts
+              return days*86400 + int(h)*3600 + int(m)*60 + float(s)
+
+          soak=stages.get("soak",{})
+          soak_seconds=seconds(soak.get("Duration"))
+          passed=(
+              value.get("ExecutionPassed") is True
+              and soak.get("FailedOperations")==0
+              and soak_seconds >= min_soak
+              and value.get("Resilience",{}).get("LostOperations")==0
+              and sdk_host != peer_host
+          )
+          result={
+              "schemaVersion":1,
+              "runId":value.get("RunId"),
+              "topology":"representative multi-host",
+              "sdkHostId":sdk_host,
+              "peerHostId":peer_host,
+              "executionPassed":value.get("ExecutionPassed"),
+              "soakDurationSeconds":soak_seconds,
+              "minimumSoakSeconds":min_soak,
+              "soakThroughputPerSecond":soak.get("ThroughputPerSecond"),
+              "soakP95Milliseconds":soak.get("P95Milliseconds"),
+              "soakP99Milliseconds":soak.get("P99Milliseconds"),
+              "soakFailedOperations":soak.get("FailedOperations"),
+              "lostRecoveryOperations":value.get("Resilience",{}).get("LostOperations"),
+              "reconnectAttempts":value.get("Resilience",{}).get("ReconnectAttempts"),
+              "passed":passed,
+          }
+          summary_path.write_text(json.dumps(result,indent=2)+"\n")
+          report_path.write_text(
+              "# Phase 56 Representative Multi-Host Soak\n\n"
+              f"- SDK host id: {sdk_host}\n"
+              f"- Peer host id: {peer_host}\n"
+              f"- Soak duration seconds: {soak_seconds:.1f}\n"
+              f"- Soak throughput TPS: {result['soakThroughputPerSecond']}\n"
+              f"- Failed soak operations: {result['soakFailedOperations']}\n"
+              f"- Lost recovery operations: {result['lostRecoveryOperations']}\n"
+              f"- Result: {passed}\n"
+          )
+          if not passed:
+              raise SystemExit("multi-host soak qualification failed")
+          PY
+
+          sha256sum "$pcap" "$metrics" "$report" "$trace" "$raw/peer-host.txt" > "$safe/raw-evidence.sha256"
+          find "$safe" -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum > "$safe/sha256.txt"
+
+          target="$RAW_EVIDENCE_ROOT/$RUN_ID"
+          mkdir -p "$target"
+          chmod 700 "$target"
+          cp -a "$raw/." "$target/"
+          rm -rf "$raw"
+
+      - name: Retain sanitized evidence branch
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="docs/evidence/PHASE56_MULTIHOST_$GITHUB_RUN_ID"
+          branch="evidence/multihost-$GITHUB_RUN_ID"
+          git fetch origin main
+          git checkout -B "$branch" origin/main
+          mkdir -p "$evidence_dir"
+          cp -a "artifacts/multihost/$RUN_ID/safe/." "$evidence_dir/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$evidence_dir"
+          git commit -m "evidence: retain representative multi-host soak $GITHUB_RUN_ID"
+          git push origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Open evidence review pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.evidence.outputs.branch }}
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.evidence_dir }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/multihost-pr.md"
+          cat >"$body" <<EOF
+          Phase 56 representative multi-host long-duration soak/failover evidence.
+
+          SDK and peer hosts are required to be distinct. Raw packet/log evidence
+          remains on protected lab storage; this PR contains the sanitized
+          qualification summary and digests only.
+
+          Retained evidence: $EVIDENCE_DIR
+          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Merging this PR does not automatically promote the stable manifest gate.
+          EOF
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH"             --title "evidence: retain multi-host soak run $GITHUB_RUN_ID"             --body-file "$body"
