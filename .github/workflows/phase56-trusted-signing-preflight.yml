@@ -1,10 +1,6 @@
 name: phase56-trusted-signing-preflight
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/phase56-trusted-signing-preflight.yml'
   workflow_dispatch:
 
 permissions:
