@@ -29,10 +29,10 @@ jobs:
       SIGTRAN_RECOVERY_OPERATIONS: 2000
       SIGTRAN_SOAK_OPERATIONS: 10000
       SIGTRAN_WARMUP_CONCURRENCY: 32
-      SIGTRAN_SUSTAINED_CONCURRENCY: 128
-      SIGTRAN_PEAK_CONCURRENCY: 256
+      SIGTRAN_SUSTAINED_CONCURRENCY: 192
+      SIGTRAN_PEAK_CONCURRENCY: 384
       SIGTRAN_RECOVERY_CONCURRENCY: 64
-      SIGTRAN_SOAK_CONCURRENCY: 128
+      SIGTRAN_SOAK_CONCURRENCY: 192
 
     steps:
       - name: Checkout
@@ -64,6 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           metrics="artifacts/performance/${RUN_ID}/metrics/${RUN_ID}-metrics.json"
+          cat "$metrics"
           python3 - "$metrics" <<'PY'
           import json
           import sys
