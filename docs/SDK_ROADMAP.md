@@ -1,556 +1,237 @@
 # SIGTRAN.NET SDK Roadmap
 
-This roadmap is based on the current repository and the supplied SIGTRAN references:
+This document is the current high-level roadmap for SIGTRAN.NET. Detailed historical phase records remain in [Phase Index](PHASE_INDEX.md) and the linked phase documents; the active execution checkpoint, acceptance boundaries, and dependency order are maintained in [Roadmap Execution](ROADMAP_EXECUTION.md).
 
-- Tekelec EAGLE SS7-over-IP using SIGTRAN, rev B
-- ETSI EG 202 360 V1.1.1 SIGTRAN scenarios
-- Nokia MCAS 6.1.1 SS7/SIGTRAN User Guide
-- M2PA Internet-Draft 13, with RFC 4165 used as the standards-track baseline
-- RFC 4666 for M3UA and RFC 9260 for SCTP
+The roadmap is grounded in the repository's protocol references, including RFC 4666 for M3UA, RFC 4165 for M2PA, RFC 9260 for SCTP, the applicable ITU-T/ETSI SS7/SIGTRAN material, and the MAP/TCAP profile references already cited by the protocol documents.
 
 ## Current Assessment
 
-The current repository has moved beyond proof-of-concept status into a foundation-complete SDK with governed release contracts, protocol evidence vectors, native SCTP readiness contracts, retained external C SCTP peer evidence, retained peer-traffic benchmark evidence, retained internal timestamped RC signing evidence, a passing protected release workflow dry-run, and a public NuGet prerelease package. Stable commercial publication is still blocked until approved stable package publication and stable NuGet publication evidence are complete.
+SIGTRAN.NET has moved beyond proof-of-concept status into a public release-candidate SDK with stateful SCTP/M3UA/M2PA/SCCP/TCAP/MAP SMS runtime surfaces, retained Linux SCTP and independent peer evidence, release governance, public NuGet prerelease publication, and production-oriented operations tooling.
 
-For a concise map of every phase and its primary documents, see [Phase Index](PHASE_INDEX.md).
+The latest immutable public prerelease is `Sigtran.NET 1.0.0-rc.2`. Source development after that release uses unpublished package identity `1.0.0-rc.3-dev`; source changes must not be republished under the RC.2 identity. Stable `1.0.0` remains governed by `eng/release/stable-release.json` and `eng/evaluate-stable-release.ps1`.
 
-## Phase 0 - SDK Foundation
+Phase 56 closed two qualification gates:
 
-- Target .NET 10 and prepare NuGet package metadata.
-- Add a repeatable test project and binary golden-vector tests.
-- Introduce strict network-byte-order helpers and reject malformed TLVs.
-- Separate demo/testing transports from production SCTP transport contracts.
-- Define package namespaces, public API rules, diagnostics, logging, and versioning.
+- independent RFC 4165 M2PA interoperability;
+- the numeric 20K TPS capacity target using controlled two-association load-share evidence.
 
-## Phase 1 - M3UA Core
+Four required stable gates remain open:
 
-- Implement RFC 4666 common header, TLV parser/writer, padding, and error handling.
-- Model message classes and types: Management, Transfer, SSNM, ASPTM, ASP, RKM.
-- Add Protocol Data, Network Appearance, Routing Context, Traffic Mode, Error Code, Status, ASP Identifier, Heartbeat Data, and related parameters.
-- Implement ASP state machines for ASP Up, ASP Active, Notify, Heartbeat, and Error.
-- Support SG/ASP/IPSP roles, routing contexts, traffic modes, and correlation IDs.
+1. `operator-profile` — authorized operator/vendor SCCP/TCAP/MAP SMS acceptance evidence;
+2. `multi-host-soak` — representative separate-host long-duration soak/failover evidence;
+3. `kubernetes-sctp` — representative Kubernetes SCTP/CNI deployment evidence;
+4. `trusted-signing` — organization-approved CA-issued stable package signing identity.
 
-## Phase 2 - SCTP Transport
+The current machine-evaluated stable decision is therefore `NO-GO`. The closed numeric capacity gate must not be generalized into a broad multi-host or operator capacity claim.
 
-- Keep the TCP adapter as a development-only transport.
-- Add a production SCTP abstraction over platform SCTP where available.
-- Support SCTP streams, PPID selection, association lifecycle events, reconnect, heartbeats, multi-homing-ready configuration, and cancellation-safe async I/O.
-- Document OS support limits clearly for Windows and Linux deployments.
+## Stable 1.0 Scope Lock
 
-## Phase 3 - MTP3 And SCCP
+The stable 1.0 protocol surface is intentionally constrained to the already established stack:
 
-- Implement MTP3 routing label encoding and service information octet handling.
-- Replace simplified SCCP UDT encoding with ITU-T Q.713-style message structures.
-- Add SCCP UDT/XUDT/LUDT parsing, called/calling party address indicators, SSN, global title formats, segmentation/reassembly, return cause, and protocol classes.
-- Add route-on-SSN and route-on-GT APIs suitable for SMS/MAP users.
+- native Linux SCTP transport;
+- M3UA codec/runtime and MTP3 network boundary;
+- M2PA runtime and MTP2 link boundary;
+- connectionless SCCP service for UDT/XUDT/LUDT and service-return behavior;
+- TCAP dialogue/component management;
+- the current five-operation MAP SMS profile;
+- diagnostics, health, metrics, configuration, packaging, evidence, and release controls required by those layers.
 
-Status: SDK foundation is complete for internal APIs and byte-level tests. Production claims still require external SCCP interoperability vectors and trace validation.
+The following capabilities are explicitly post-1.0 and do not expand the current stable candidate:
 
-## Phase 4 - TCAP
+- SCCP connection-oriented classes 2/3 and CR/CC/CREF/RLSD/RLC/DT1/DT2/AK/IT/ERR/RSR/RSC flows;
+- broader MAP mobility, authentication, and subscriber-interrogation operations;
+- SUA, M2UA, and IUA adaptation modules;
+- a separately consumable protocol TestKit;
+- larger fuzzing campaigns and measured zero/low-copy optimization beyond the release-candidate baseline.
 
-- Replace simplified TCAP encoding with ASN.1 BER.
-- Implement dialogue portions, transaction IDs, Begin, Continue, End, Abort, Unidirectional, Invoke, ReturnResult, ReturnError, and Reject.
-- Add dialogue state, invoke timers, duplicate detection, abort/error propagation, and allocation policies for transaction IDs.
+## Completed Foundation — Phases 0–56
 
-Status: SDK foundation is complete for BER primitives, transaction envelopes, component codecs, dialogue portions, state controls, allocation helpers, and session builders. Production claims still require external TCAP interoperability vectors and MAP profile validation.
+Phases 0–56 established the SDK foundation and production-readiness machinery. The canonical per-phase status is maintained in [Phase Index](PHASE_INDEX.md), with the individual phase documents retaining design rationale and evidence references.
 
-## Phase 5 - MAP SMS Profile
+The completed foundation includes:
 
-- Add MAP operation models and ASN.1 bindings for common SMS flows.
-- Prioritize MO-ForwardSM, MT-ForwardSM, SRI-SM, ReportSM-DeliveryStatus, AlertServiceCentre, error mapping, and extension containers.
-- Provide high-level client APIs that hide SCCP/TCAP plumbing without blocking access to lower-level protocol objects.
+- .NET 10 package and protocol primitives;
+- M3UA message families, routing, ASP lifecycle, RKM, diagnostics, and production runtime;
+- native Linux SCTP transport with stream/PPID metadata, reconnect, queue metrics, graceful shutdown, and retained peer traffic;
+- RFC 4165 M2PA codec/runtime with retained independent C/lksctp evidence;
+- MTP3 routing boundaries;
+- connectionless SCCP UDT/XUDT/LUDT, GT translation, bounded segmentation/reassembly, route policy, and UDTS handling;
+- TCAP BER, dialogue state, concurrent transaction/invoke correlation, outcomes, timeouts, and cleanup;
+- MAP SMS SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, AlertServiceCentre, typed client/server workflows, errors, extensions, and operation profiles;
+- cross-implementation full-stack MAP SMS traffic through native SCTP/M3UA/SCCP/TCAP;
+- production health, telemetry, structured events, configuration validation, container/Kubernetes manifests, and operations runbooks;
+- release automation, SBOM/provenance/API-baseline controls, protected publication gates, NuGet Trusted Publishing for RC.2, and stable `GO/NO-GO` evaluation;
+- controlled performance/resilience evidence plus the Phase 56 numeric 20K TPS gate closure.
 
-Status: SDK foundation is complete for MAP SMS operation metadata, typed SMS parameters, TCAP client builders, errors, and extensions. Production claims still require external MAP SMS interoperability vectors and operator-profile validation.
+Historical phase text must be interpreted through the latest retained evidence. Older statements saying independent M2PA or the numeric 20K TPS gate are still open are superseded by Phase 56 evidence and the source-controlled stable manifest.
 
-## Phase 6 - Interoperability And Tooling
+## Phase 57 — Approved Roadmap Execution And 1.0 Scope Lock
 
-- Build Wireshark-friendly trace logging and hex dump helpers.
-- Add conformance vectors from RFC examples and vendor configuration scenarios.
-- Add simulator components for SG, ASP, and MAP SMS test flows.
-- Provide samples for ASP-to-SG, IPSP, SCCP/MAP SMS, and local TCP test transport.
-- Add CI for build, formatting, package validation, and protocol golden tests.
+Phase 57 is the active roadmap-execution phase. It does not renumber prior history.
 
-Status: SDK foundation is complete for trace formatting, conformance vector inventory, built-in M3UA/MAP vectors, simulator scripts, MAP SMS flows, local TCP sample scenarios, sample catalog, CI verification profile, and interoperability readiness reporting. Production claims still require external interoperability lab evidence and native SCTP verification.
+### 57A — Baseline Reconciliation
 
-## Phase 7 - ProductionReadiness And Release Hardening
+Goals:
 
-- Define commercial readiness gates and make blocked gates visible in public APIs.
-- Capture native SCTP verification status and OS support limits.
-- Track external interoperability evidence from real peer stacks and packet traces.
-- Add release candidate manifests, package governance, security policy, compatibility policy, observability guidance, and deployment profiles.
-- Finalize release automation and documentation for commercial adoption.
+- keep README, readiness, phase index, changelog, and source package identity aligned with retained evidence;
+- preserve public RC.2 as immutable evidence while using an unpublished development identity for later source changes;
+- freeze the 1.0 scope above;
+- make the four remaining stable gates explicit and machine-verifiable;
+- prevent administrative issue closure or repository-only simulation from being treated as production evidence.
 
-Status: SDK foundation is complete for commercial readiness gates, native SCTP support matrix, external interoperability evidence tracking, release candidate manifests, package governance, security policy, compatibility policy, observability profile, deployment profiles, and Phase 7 status reporting. Internal release readiness is available; commercial production readiness remains blocked until native SCTP verification, external interoperability evidence, package signing, and SBOM automation are complete.
+Exit criteria:
 
-## Phase 8 - Native SCTP Production Transport
+- current-status documentation agrees with the stable manifest;
+- ordinary development pack output cannot collide with public `1.0.0-rc.2` or stable `1.0.0`;
+- exact-head CI verifies the development package identity;
+- the roadmap checkpoint names the next dependency-valid work package.
 
-- Probe Linux native SCTP socket creation using `SocketType.Stream` and IP protocol number `132`.
-- Add native SCTP socket factory, connector, listener, send/receive path, lifecycle events, health snapshots, and reconnect integration.
-- Add Linux-focused integration test hooks that can run when SCTP kernel support is available.
-- Keep Windows and macOS contract-only until a verified provider is selected.
+### 57B — Operator Profile Framework
 
-Status: SDK foundation is complete for Linux native SCTP platform probing, socket creation, endpoint planning, socket adaptation, client connect, server listen/accept, lab profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until Linux SCTP lab verification passes with real kernel SCTP support and peer traffic.
+Goals:
 
-## Phase 9 - Real Interoperability Lab
+- provide typed, validated network/SCCP/TCAP/MAP SMS profile configuration for the currently implemented protocol surface;
+- reuse existing SCCP global-title translation and MAP SMS operation-profile primitives rather than creating competing policy models;
+- validate the implemented ITU 14-bit point-code boundary, two-bit network indicator, global-title translation rules, MAP SMS operation allowlists, application contexts/timeouts, and strict compatibility behavior;
+- fail closed for unsupported variants and ambiguous settings;
+- provide deterministic validation findings suitable for configuration tooling and automated tests.
 
-- Define required lab scenarios for Linux native SCTP, external peer M3UA ASP-to-SG, and MAP SMS trace comparison.
-- Capture PCAPs, SDK traces, peer configuration, peer logs, and comparison reports.
-- Convert passing lab runs into release evidence that can unlock commercial readiness gates.
-- Keep evidence pending until artifacts are real and reviewable.
+The first implementation slice deliberately supports only the capabilities already implemented by the 1.0 stack. Declaring ANSI-style point-code formats, permissive compatibility behavior, unsupported MAP operations, or conflicting routing rules must fail explicitly rather than silently approximating the peer profile.
 
-Status: Phase 9 is foundation-ready for scenario catalog, artifact manifests, run reports, external peer lab template, trace comparison, evidence promotion, opt-in CI profile, readiness reporting, and commercial gate integration. Production readiness remains blocked until real external lab artifacts are captured and promoted.
+A valid SDK profile is not operator acceptance evidence. The `operator-profile` stable gate closes only after authorized traffic is retained against a real operator/vendor profile with sanitized configuration, trace/PCAP comparison, peer observations, deviation classification, and digest coverage.
 
-## Phase 10 - Release Automation And Supply Chain
+## Multi-Association M3UA HA Runtime
 
-- Define deterministic release automation steps for restore, build, test, pack, validation, and publish.
-- Track package artifacts, checksums, SBOM requirements, signing requirements, and provenance.
-- Add release channel rules, version/release-note requirements, and publish gates.
-- Keep commercial release blocked until signing, SBOM, provenance, native SCTP verification, and external interoperability evidence are complete.
+After the operator-profile foundation is admitted, the next runtime expansion builds carrier topology composition around the existing `M3uaRuntime` and official lower-layer contracts.
 
-Status: Phase 10 is foundation-ready for release automation plan, artifact manifest, SBOM plan, package signing plan, provenance tracking, release notes validation, publish channels, release gate evaluation, release CI profile, and phase documentation. Stable commercial publication remains blocked until real signing, SBOM generation, native SCTP verification, and external interoperability evidence are complete.
+Planned capabilities:
 
-## Phase 11 - Developer Experience And Adoption
+- application-server, ASP/association-pool, and route-set composition;
+- active/standby and protocol-defined Loadshare/Override/Broadcast behavior;
+- multiple signalling gateways and routing-context membership;
+- SLS-aware distribution that preserves ordering requirements;
+- health-aware association selection, graceful drain, reconnect coordination, and fencing;
+- bounded backpressure and per-association telemetry;
+- explicit ambiguous-send outcomes rather than an unsupported exactly-once promise;
+- deterministic fault tests before external qualification.
 
-- Add quickstarts, sample inventories, configuration profiles, troubleshooting guidance, and adoption gates.
-- Make the shortest M3UA ASP-to-SG path clear for new users.
-- Keep production claims tied to readiness and interoperability evidence.
+Transport or peer failure after dispatch must never cause blind replay of an operation whose acceptance state is unknown.
 
-Status: Phase 11 is foundation-ready for capability catalog, M3UA quickstart, sample templates, configuration profiles, troubleshooting index, API reference index, adoption gates, documentation readiness, developer experience CI profile, and phase documentation. Enterprise production adoption remains blocked until commercial readiness is complete.
+## Representative Multi-Host Qualification
 
-## Phase 12 - Production Operations And Support
+The separate `multi-host-soak` gate requires genuine separate-host evidence. Multiple associations on one machine are useful controlled capacity evidence but are not multi-host qualification.
 
-- Add operational runbook, incident, health, recovery, and support foundations.
-- Keep operations readiness separate from commercial production readiness.
-- Make production support expectations visible to enterprise adopters.
+The qualification track covers:
 
-Status: Phase 12 is foundation-ready for operations capability catalog, runbook catalog, incident response targets, health check matrix, rollback plan, maintenance policy, support handbook, operations readiness, operations CI profile, and phase documentation. Production operations remain blocked until commercial readiness is complete.
+- process and peer restart;
+- association reset and host loss;
+- delay, loss, network partition, and route withdrawal/recovery;
+- queue/backpressure recovery and graceful drain;
+- duplicate, ambiguous, lost, and orphaned transaction/dialogue observations;
+- CPU, memory, allocation, latency, throughput, and failover timing.
 
-## Phase 13 - Compliance And Audit Readiness
+The planned evidence ladder is short smoke, one-hour stress, multi-hour soak, and a release-grade long-duration run. Exact duration and topology are recorded with the evidence rather than inferred from the roadmap. The gate closes only with digest-covered retained artifacts from an authorized representative environment.
 
-- Add compliance capability, audit-event, evidence-retention, license, data-handling, and lawful-use foundations.
-- Keep compliance foundation readiness separate from enterprise production compliance claims.
-- Make audit and governance expectations visible to open-source and commercial adopters.
+## Representative Kubernetes SCTP Qualification
 
-Status: Phase 13 is foundation-ready for compliance capability catalog, audit event catalog, evidence retention policy, license compliance policy, data handling classification, export-control policy, compliance readiness, compliance CI profile, commercial compliance gate, and phase documentation. Enterprise compliance claims remain blocked until commercial readiness is complete and adopters complete their own legal, regulatory, export-control, privacy, and operator-authorization reviews.
+The `kubernetes-sctp` gate validates deployment behavior, not only manifest syntax.
 
-## Phase 14 - Performance Capacity And Benchmark Readiness
+Required qualification areas include:
 
-- Add performance capability, benchmark-scenario, capacity, throughput, latency, load-test, and resource-budget foundations.
-- Keep performance foundation readiness separate from production throughput, latency, and capacity claims.
-- Make benchmark evidence expectations visible to enterprise adopters.
+- Linux kernel SCTP support;
+- CNI or explicitly documented `hostNetwork` SCTP behavior;
+- NetworkPolicy/firewall/service path behavior;
+- startup, liveness, and readiness probes;
+- graceful termination and traffic drain;
+- rolling update and rollback;
+- pod and node restart, node drain, rescheduling, and disruption policy;
+- reconnect behavior and retained metrics/logs.
 
-Status: Phase 14 is foundation-ready for performance capability catalog, benchmark scenario catalog, capacity profile, throughput targets, latency budgets, load-test plan, resource budget, performance readiness, performance CI profile, and phase documentation. Production performance claims remain blocked until representative native SCTP and external-peer benchmark evidence is captured and retained.
+A local manifest test or non-representative development cluster cannot close this stable gate.
 
-## Phase 15 - API Stability Deprecation And Migration Readiness
+## Trusted Stable Signing And `1.0.0`
 
-- Add public API surface catalog, stability contracts, version-line matrix, deprecation policy, migration guide catalog, breaking-change review, and API baseline foundations.
-- Keep API lifecycle foundation readiness separate from stable API lifecycle claims.
-- Make API-shaping changes visible and reviewable for open-source and commercial adopters.
+Trusted Publishing/OIDC authenticates package publication; it is not a substitute for the stable author-signing identity required by repository policy.
 
-Status: Phase 15 is foundation-ready for API surface catalog, stability contracts, version matrix, deprecation policy, migration guide catalog, breaking-change review policy, public API baseline, API lifecycle readiness, API lifecycle CI profile, and phase documentation. Stable API lifecycle claims remain blocked until wider commercial readiness is complete and protocol surfaces have the required validation evidence.
+The existing Phase 56 preflight retained that the configured signing certificate is self-issued and therefore rejected. Stable publication requires an organization-approved CA-issued code-signing certificate, trusted timestamp verification, complete package/SBOM/provenance/API evidence, a `GO` machine decision, protected environment approval, exact tag/commit binding, publication, and verified public restore.
 
-## Phase 16 - Configuration Policy And Environment Readiness
+No stable tag or package may be created while any required manifest gate remains false.
 
-- Add configuration schema, validation, environment matrix, secret policy, transport configuration, routing configuration, readiness, and CI foundations.
-- Keep configuration foundation readiness separate from production configuration claims.
-- Make production secret, routing, transport, and evidence expectations visible to enterprise adopters.
+## Post-1.0 — SCCP Connection-Oriented
 
-Status: Phase 16 is foundation-ready for configuration schema, validation helpers, environment matrix, secret policy, transport configuration, routing configuration, configuration readiness, configuration CI profile, commercial configuration gate, and phase documentation. Production configuration claims remain blocked until wider commercial readiness is complete and deployment-specific review is performed.
+Add SCCP classes 2/3 and the connection-oriented state machine/messages required for CR, CC, CREF, RLSD, RLC, DT1, DT2, AK, IT, ERR, RSR, and RSC, including local references, sequencing, timers, reset, and flow control.
 
-## Phase 17 - Native SCTP Lab Verification
+Exit requires standards vectors, deterministic state/timer tests, bounded resource behavior, and independent interoperability evidence before broad support claims.
 
-- Add native SCTP lab scenarios, artifact manifests, run plan, command set, run reports, evidence registry, readiness, and CI profile.
-- Keep lab framework readiness separate from native SCTP production verification.
-- Make Linux SCTP evidence requirements explicit before commercial production claims.
+## Post-1.0 — MAP Core Expansion
 
-Status: Phase 17 is foundation-ready for native SCTP lab scenario catalog, artifact manifest, run plan, command set, run report, evidence registry, lab readiness, lab CI profile, commercial gate, and phase documentation. Native SCTP production verification remains blocked until complete passing Linux SCTP lab evidence is captured.
+Expand MAP modularly beyond the SMS profile, initially targeting:
 
-## Phase 18 - External Peer Interop Execution
+- `updateLocation`;
+- `cancelLocation`;
+- `insertSubscriberData`;
+- `deleteSubscriberData`;
+- `purgeMS`;
+- `sendAuthenticationInfo`;
+- `provideSubscriberInfo`;
+- `anyTimeInterrogation`.
 
-- Add external peer environment, ASP-to-SG configuration, trace expectations, artifact manifest, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
-- Keep execution foundation readiness separate from verified external peer evidence.
-- Make required external peer artifacts explicit before commercial interoperability claims.
+Encoding, application contexts, errors, and workflow behavior must be based on primary standards and synthetic or explicitly authorized lab evidence. Real subscriber identifiers, authentication vectors, and unauthorized network queries must never be used as convenience test data.
 
-Status: Phase 18 is foundation-ready and has RC-grade external peer evidence from `commercial-external-peer-20260627T111932Z`, including PCAP, SDK trace, peer log, configuration, TShark decode, comparison output, run report, and digests. Stable publication still requires the protected release workflow to attach reviewed evidence to the final release run.
+## Post-1.0 — Modular SIGTRAN Adaptations
 
-## Phase 19 - SCCP TCAP MAP Interop Vectors
+Add independent modules in dependency order:
 
-- Add SCCP, TCAP, and MAP SMS protocol vector catalog, external references, artifact manifest, comparison rules, run plan, command set, run reports, evidence registry, readiness, and CI metadata.
-- Keep vector foundation readiness separate from verified higher-layer protocol evidence.
-- Make required reference vectors, SDK vectors, and comparison reports explicit before commercial SCCP, TCAP, or MAP SMS interoperability claims.
+1. SUA — RFC 3868;
+2. M2UA — RFC 3331;
+3. IUA — RFC 4233.
 
-Status: Phase 19 is foundation-ready for SCCP, TCAP, and MAP SMS protocol interoperability vectors. Verification remains blocked until real external reference vectors, SDK-generated vectors, and reviewed comparison reports are captured and promoted for every required vector.
+Each module requires reviewed package boundaries, protocol/vector tests, interoperability evidence, and compatibility/migration documentation. Partial support must not be described as a complete SIGTRAN suite.
 
-## Phase 20 - Production Evidence Dossier
+## Post-1.0 — Protocol TestKit
 
-- Add commercial evidence requirements, artifact contract, manifest, bundle, gate, readiness report, CI metadata, and status reporting.
-- Consolidate native SCTP, external peer, protocol-vector, release provenance, package, SBOM, and signing evidence into one release dossier contract.
-- Normalize source status capability labels so source-level metadata uses domain names instead of roadmap phase labels.
+Extract reusable deterministic test capabilities from the existing lab tooling:
 
-Status: Phase 20 is foundation-ready for commercial evidence dossier assembly. Production evidence readiness remains blocked until real retained artifacts, digest coverage, native SCTP verification, external peer verification, protocol vector verification, and release governance are complete.
+- deterministic transport and clock;
+- SG/ASP/MAP simulations;
+- fault injection;
+- golden protocol vectors;
+- sanitized PCAP replay and trace comparison;
+- executable protocol scenarios.
 
-## Phase 21 - Supply Chain Automation
+Small deterministic helpers may be introduced earlier when they are required to prove an active work package, but the consumer-facing TestKit remains a separate post-1.0 deliverable.
 
-- Add supply-chain automation plan, SBOM generation contract, package signing contract, signature verification contract, provenance attestation contract, artifact manifest, gate, readiness report, CI profile, and status reporting.
-- Connect SBOM and package-signing policies to ordered release-security commands.
-- Keep supply-chain foundation readiness separate from release promotion readiness.
+## Post-1.0 — Defensive Robustness And Fuzzing
 
-Status: Phase 21 is foundation-ready for supply-chain automation. Promotion readiness remains blocked until real SBOMs, package signatures, timestamp receipts, provenance attestations, verification reports, signing secrets, and commercial evidence are retained.
+Exercise malformed lengths/TLVs, SCCP pointers and segmentation, BER nesting and length bounds, dialogue/invoke exhaustion, queue pressure, and replay/duplicate behavior in isolated owned test environments.
 
-## Phase 22 - Release Workflow Orchestration
+Acceptance invariants include:
 
-- Add release workflow trigger, stage, secret, supply-chain, commercial-evidence, and publish contracts.
-- Keep workflow contract readiness separate from a concrete workflow file.
-- Split the workflow work into smaller committed parts so each part can be tested, documented, packed, committed, and pushed independently.
+- no process crash;
+- no unbounded CPU or memory growth;
+- no parser loop or buffer over-read;
+- bounded queues and state;
+- no leaked dialogue, invoke, or reassembly context after failure cleanup.
 
-Status: Phase 22 Part 1 is contract-ready for release workflow orchestration. Full orchestration remains blocked until a concrete release workflow file is added and validated.
+Targeted negative tests remain part of normal feature work and are not postponed until the large fuzzing campaign.
 
-## Phase 23 - Release Workflow Completion
+## Post-1.0 — Measured Low-Allocation Pipeline
 
-- Add the concrete release workflow file, YAML validation, publish guard, artifact retention, permission policy, concurrency policy, environment contract, promotion gate, and final status alignment.
-- Keep release workflow orchestration readiness separate from commercial release promotion.
-- Require real commercial evidence and supply-chain promotion evidence before a package can be promoted.
+Optimize only after measuring the active workload. Candidate techniques include `ReadOnlySequence<byte>`, `IBufferWriter<byte>`, pooled buffers, `MemoryPool<byte>`, reduced intermediate arrays, and tighter buffer-lifetime ownership across SCCP/TCAP/MAP paths.
 
-Status: Phase 23 is foundation-ready for release workflow orchestration. Release promotion remains blocked until real evidence, signing, SBOM, provenance, and publish credentials are available.
+The previously discussed sub-4-KB allocation figure is an optimization objective, not a release promise. Every optimization report must publish workload, runtime/hardware/topology, allocation, throughput, and latency together, and must not trade protocol correctness or maintainability for one synthetic number.
 
-## Phase 24 - Package Publication Readiness
+## Evidence And Claim Discipline
 
-- Add release version and tag policy, NuGet metadata contract, package layout, dry-run publish plan, credential policy, channel policy, package integrity manifest, publication evidence manifest, publication gate, readiness status, and documentation.
-- Keep NuGet publication separate from publication foundation readiness.
-- Require live commercial evidence, supply-chain artifacts, signing material, provenance, and NuGet credentials before any real package upload.
+For all roadmap stages:
 
-Status: Phase 24 is foundation-ready for package publication readiness. Public RC NuGet publication is complete for `Sigtran.NET` version `1.0.0-rc.1`; stable NuGet publication remains blocked until retained stable commercial evidence, trusted stable signing, provenance, and protected stable publish approval are available.
+- source-head changes invalidate earlier exact-head CI/review evidence;
+- external qualification claims require the exact tested candidate and retained digest-covered artifacts;
+- in-repository or independently compiled local peers prove only the tested profile, not broad vendor certification;
+- raw subscriber data, operator topology, secrets, private keys, authentication vectors, and unredacted operator traces do not belong in this public repository;
+- a passing build, readiness DTO, issue closure, or generated manifest is not production qualification by itself;
+- stable gate changes are made only from real evidence and the machine evaluator.
 
-## Phase 25 - Production Release Execution And Evidence
+## Current Execution Pointer
 
-- Retain real Linux SCTP, external peer, packet capture, trace, comparison, SBOM, signing, provenance, benchmark, public API baseline, workflow, dry-run, and publication gate evidence.
-- Keep blocker evidence explicit instead of manufacturing passing artifacts.
-- Promote only when all retained evidence areas are passing and digest-covered.
-
-Status: Phase 25 has execution evidence in place. Linux SCTP loopback evidence is retained from a real Ubuntu 22.04 VM, external C SCTP peer evidence is retained for the RC gate, peer-traffic benchmark evidence is retained, internal timestamped RC signing evidence is retained, protected release workflow dry-run `28289987418` passed with artifact upload and `publish=false`, and protected prerelease publication workflow `28290586511` published `Sigtran.NET` version `1.0.0-rc.1` to NuGet.org. The legacy OpenSS7/IPSS7 attempt remains retained blocker evidence for Linux 5.15 `open_softirq` compatibility. Stable commercial publication remains blocked on stable package publication approval, public/stable signing policy execution, and stable NuGet publication evidence.
-
-## Phase 26 - API Naming Alignment
-
-- Replace package-specific SDK source contracts with package-neutral external SIGTRAN peer contracts.
-- Keep legacy OpenSS7/IPSS7 evidence as retained blocker evidence, not as the permanent commercial gate.
-- Add reference peer selection, lab environment, artifact, run, comparison, and readiness contracts without naming public APIs after a peer package.
-- Document any selected peer package only in lab profile notes, configuration examples, and retained evidence.
-
-Status: Phase 26 is foundation-complete for package-neutral API naming alignment. `SigtranApiNamingAlignmentStatus` now gates source naming, public labels, external peer readiness, reference peer selection, and commercial release gate alignment. Production release remains blocked until a reference external SIGTRAN peer run produces passing PCAP, peer logs, SDK traces, configuration, comparison evidence, and digest-covered release artifacts.
-
-## Phase 27 - Reference External Peer Lab
-
-- Canonicalize the SDK name as `Sigtran.NET` across source namespaces, project paths, package id, scripts, CI workflows, docs, and release evidence names.
-- Bind a reference external SIGTRAN peer package through package-neutral configuration and environment variables.
-- Define host prerequisites, peer config, artifact naming, command scripts, traffic vectors, evidence promotion, readiness, and commercial gate alignment.
-- Keep selected package details outside public SDK type names.
-
-Status: Phase 27 is foundation-complete. It has canonical `Sigtran.NET` naming, a package-neutral reference peer lab binding catalog, host prerequisite readiness modeling, validated lab configuration contracts, deterministic retained artifact planning, an ordered command plan, reference peer traffic vectors, a digest-covered evidence promotion gate, manual self-hosted CI policy, and final status reporting. Production release remains blocked until the reference peer lab produces passing digest-covered evidence.
-
-## Phase 28 - Reference Peer Lab Automation And Evidence Handoff
-
-- Aggregate reference peer lab contracts into an executable run manifest.
-- Render environment files, command scripts, workflow templates, comparison reports, and evidence handoff bundles.
-- Keep automation package-neutral and separate planned contracts from retained commercial evidence.
-
-Status: Phase 28 is foundation-complete. It has a run manifest that aggregates binding, configuration, artifact, command, traffic vector, and CI contracts, deterministic environment file rendering, command script rendering, reference peer comparison reporting, run reporting, artifact digest manifests, evidence bundle handoff for promotion reports, a manual self-hosted workflow template, a commercial readiness bridge, and automation status reporting. Production readiness still requires a real reference peer lab execution with digest-covered retained artifacts.
-
-## Phase 29 - Reference Peer Lab Runner Materialization
-
-- Materialize reference peer lab runner workspace directories, inputs, commands, expected outputs, evidence collection, and handoff checks.
-- Keep runner materialization package-neutral and separate from real retained lab evidence.
-- Prepare the SDK for a real reference external peer lab run without manufacturing passing artifacts.
-
-Status: Phase 29 is foundation-complete. It has deterministic reference peer lab runner workspace, execution input bundle, output artifact materialization, preflight, command manifest, evidence collection, digest generation, comparison handoff, workflow readiness, and status reporting contracts. Production readiness still requires a real reference peer lab execution with retained digest-covered runner evidence.
-
-## Phase 30 - Reference Peer Lab Runner Operationalization
-
-- Operationalize runner materialization with reviewable file creation, execution logs, command outcomes, artifact verification, provenance, failure handling, retry policy, evidence packaging, and operator handoff.
-- Keep runner operations package-neutral and separate from real retained lab evidence.
-- Prepare real reference peer lab execution without manufacturing passing artifacts.
-
-Status: Phase 30 is foundation-complete. It has reviewable file materialization plan rendering, execution log, command outcome, artifact verification, runner provenance, failure classification, retry policy, evidence package manifest, operator handoff, and operations status contracts. Production readiness still requires real reference peer execution with retained digest-covered evidence and operator handoff artifacts.
-
-## Phase 31 - Native SCTP Production Hardening
-
-- Harden native SCTP stream and PPID framing before send.
-- Add reconnect orchestration, backpressure policy, cancellation contracts, multi-homing readiness, association lifecycle journaling, fault classification, and recovery decisions.
-- Keep production readiness blocked until retained Linux SCTP and external peer evidence prove the hardened contracts against real traffic.
-
-Status: Phase 31 is foundation-complete. The outbound stream and PPID framing contract, association lifecycle journal, reconnect schedule, send backpressure policy, cancellation/timeout policy, multi-homing readiness checks, fault recovery decisions, transport diagnostics snapshots, production hardening readiness gate, and status report are available. Production readiness remains blocked until retained Linux SCTP and external peer evidence are complete.
-
-## Phase 32 - SCCP TCAP MAP Evidence Upgrade
-
-- Add byte-level evidence vectors for SCCP, TCAP, and MAP SMS.
-- Validate SDK encoders and decoders against deterministic expected bytes and trace-order expectations.
-- Report and correct mismatches before upgrading readiness claims from foundation-only to evidence-backed.
-- Keep external interoperability evidence as a commercial promotion gate.
-
-Status: Phase 32 is complete for SDK evidence-backed behavior. The shared protocol evidence vector and byte-level mismatch validation contract is available. SCCP has deterministic UDT, XUDT, LUDT, and UDTS evidence vectors. TCAP has deterministic Begin/Invoke/Dialogue and End/ReturnResult evidence vectors. MAP SMS has deterministic MO-ForwardSM, MT-ForwardSM, SendRoutingInfoForSM, ReportSM-DeliveryStatus, and AlertServiceCentre evidence vectors. A cross-layer evidence bundle aggregates vector counts, duplicate-id checks, and validation pass/fail status. Ordered trace validation compares `SigtranTraceFrame` sequences against those vectors, mismatch classification recommends whether correction belongs to protocol labels, codec/vector bytes, missing capture frames, or extra artifact mapping, readiness gates separate SDK evidence-backed status from production evidence claims, status reporting summarizes completed capabilities, and final sweeps validated naming/package-neutrality. Production evidence remains blocked until retained external interoperability artifacts exist.
-
-## Phase 33 - Performance And Resilience Evidence
-
-- Capture real peer-traffic benchmark evidence with warmup, sustained, and peak stages.
-- Track latency P95/P99, throughput, message loss, CPU, memory, allocation, and failover behavior.
-- Produce a publishable performance report with retained artifact references.
-- Keep production performance claims blocked until retained benchmark evidence is complete and reviewed.
-
-Status: Phase 33 is foundation-complete. Peer-traffic benchmark workload evidence maps the commercial load-test plan into warmup, sustained, and peak stages with target/actual message-rate checks and message-loss validation. Retained artifact manifests and run plans require digest-covered PCAP, SDK trace, peer logs/configuration, metrics, latency profile, resource profile, resilience log, and benchmark report artifacts. Latency percentile evidence evaluates P95/P99 measurements against SDK latency budgets, resource evidence evaluates CPU, working set, and allocation measurements against commercial resource budgets, resilience evidence gates failover on event coverage, recovery time, and zero message loss, publishable Markdown reports aggregate all gates, production performance evidence gates connect publishable reports to wider commercial readiness, manual self-hosted runner/CI handoff metadata defines real execution commands and artifact upload patterns, status reporting documents current blockers, and final sweeps validated naming/package-neutrality. Production performance claims remain blocked until retained real peer benchmark evidence and commercial readiness are complete.
-
-## Phase 34 - Supply Chain Release Execution
-
-- Generate and retain the final versioned SBOM artifact.
-- Require trusted timestamped package signing and verification evidence.
-- Produce provenance attestation evidence for package, SBOM, source, and workflow identity.
-- Retain public API diff artifacts before publication.
-- Upload release artifacts from the workflow with digest coverage and promotion gates.
-
-Status: Phase 34 is foundation-complete. The final SBOM artifact contract is available and requires SPDX JSON, package/version alignment, workflow outputs, and digest coverage. Trusted timestamped signing evidence now requires certificate identity, HTTPS timestamp authority, retained timestamp receipt, verification report, and digest coverage. Provenance attestation now links package and SBOM subjects to source commit, release workflow identity, OIDC issuer, and retained digests. Public API diff artifacts now retain baseline/current paths, diff digest, member change counts, and breaking-change approval state. Release artifact upload now covers package, symbols, SBOM, signing, timestamp, provenance, API diff, and digest artifacts with 90-day retention. The ordered command plan defines SBOM, signing, verification, provenance, API diff, digest, and upload execution. The release gate aggregates those contracts with commercial evidence readiness. The concrete GitHub Actions release workflow now performs SBOM generation, signing, verification, GitHub attestations, public API diff retention, digest creation, and artifact upload. Status reporting and final validation keep promotion blocked until retained release-run artifacts and commercial evidence are available.
-
-## Phase 35 - RC Publish And Production Gate
-
-- Rehearse releases with a dry-run plan that cannot upload to NuGet.
-- Gate NuGet prerelease publication separately from stable publication.
-- Produce final commercial readiness, release notes, and migration notes artifacts.
-- Decide RC versus stable based on retained release evidence and commercial readiness.
-
-Status: Phase 35 is foundation-complete. The dry-run release rehearsal plan is available and requires package creation, package verification, retained evidence, and no NuGet upload command. Gated prerelease publication requires an RC/prerelease version, explicit publish request, NuGet API key availability, dry-run success, and supply-chain release readiness; stable versions are rejected by this gate. Retained release notes artifacts require versioned Markdown, digest coverage, publishable content, breaking-change section, and migration notes link. Retained migration notes artifacts require versioned Markdown, digest coverage, migration entries, code-sample requirement, and experimental SCCP/TCAP/MAP boundary statements. Final commercial readiness reporting separates RC prerelease readiness from stable commercial readiness and retains current blockers. RC/stable decisioning recommends `Blocked`, `Prerelease`, or `Stable` from retained readiness evidence. RC publication evidence requires package, symbols, dry-run, notes, migration, readiness, decision, and digest artifacts before upload. The release workflow has explicit `dry-run`, `prerelease`, and `stable` channel wiring with retained dry-run evidence and RC publication gating. The retained prerelease workflow run `28290586511` published `Sigtran.NET` version `1.0.0-rc.1` to NuGet.org. Stable publication remains blocked until commercial evidence, trusted stable signing, and protected stable approval are complete.
-
-## Phase 36 - Production Evidence Readiness Lockdown
-
-- Lock the release-candidate target before evidence-producing work starts.
-- Validate required secrets, artifact roots, evidence checklists, preflight inputs, protected environments, and dossier handoff.
-- Produce a go/no-go decision that blocks lab execution and RC publication when readiness prerequisites are missing.
-- Keep stable publication blocked until commercial evidence is complete.
-
-Status: Phase 36 is foundation-complete. The release target lock binds an RC version to a pinned source commit, release channel, and versioned artifact root. Secret readiness defines publish, signing, and provenance requirements without exposing secret values. Evidence retention mapping binds all commercial artifact areas to the target artifact root with one-year retention and digest coverage. The commercial evidence checklist requires packet capture, logs, traces, configuration, comparison, SBOM, signing, provenance, benchmark, API, workflow, publication, and readiness-report artifacts. Release preflight aggregates target, secrets, retention, and checklist blockers before execution starts. Protected release environments separate dry-run, prerelease, and stable publication with approval and protected-ref rules. Evidence dossier handoff maps checklist items to retained paths, reviewer roles, digest verification, and redaction review. The go/no-go gate separates no-go, evidence execution, RC publication, and stable publication decisions. Status reporting exposes completed capabilities and keeps publication blockers explicit. Final validation is complete. RC publication is complete; stable publication remains blocked until retained stable commercial release evidence is complete.
-
-## Phase 37 - Production Evidence Execution Orchestration
-
-- Create a governed execution run identity for evidence-producing work.
-- Define execution stages, operator commands, environment contracts, artifact collection, digest and redaction verification, blocker handling, retry/resume behavior, and execution status.
-- Keep the phase separate from real passing evidence: orchestration can prepare a run, but publication remains blocked until retained artifacts prove execution success.
-
-Status: Phase 37 is foundation-complete. Evidence execution run identity binds a locked release target to a stable run id, operator identity, UTC start time, and run-scoped artifact root. The stage catalog covers readiness preflight, native SCTP lab, external peer interoperability, protocol validation, performance benchmark, supply-chain evidence, release workflow dry-run, and dossier assembly with run-scoped artifact roots. The operator command plan maps every stage to an ordered run-id-aware command and requires protected approval for supply-chain, workflow, and dossier assembly execution. The environment contract binds run identity, lab inputs, and protected secrets while preventing fixed secret values from being stored. Artifact collection maps all checklist artifacts to known stage roots and retained output paths. Digest and redaction verification requires digest coverage for every artifact and redaction review for trace-bearing evidence. Blocker classification categorizes readiness, environment, command, native SCTP, external peer, artifact, digest, redaction, and approval failures with retryability guidance. Retry/resume applies bounded retries and manual-correction gates for non-retryable failures. Status reporting exposes completed capabilities, orchestration readiness, retained evidence readiness, publication readiness, and current blockers. Final validation is complete. Production publication remains blocked until real retained execution artifacts are produced, verified, redacted where needed, and approved.
-
-## Phase 38 - Production Evidence Artifact Intake
-
-- Receive real execution artifacts into a run-scoped commercial dossier.
-- Register artifact sources, digests, redaction reviews, completeness results, dossier reports, promotion handoff, and execution-to-dossier bridging.
-- Keep intake foundation separate from commercial publication: intake can prove that artifacts are ready for review, but publication remains blocked until all retained evidence is complete and approved.
-
-Status: Phase 38 is foundation-complete. Artifact intake target identity binds a stable intake id, reviewer identity, UTC receipt time, and run-scoped dossier root to a governed commercial evidence execution run. Artifact source registration maps every required expected execution artifact to a concrete source path and unique retained dossier path while rejecting floating `artifacts/latest` aliases. Digest coverage records SHA-256 values for every retained source and blocks invalid digest values. Redaction review requires approved reviewer records for trace-bearing retained artifacts. Completeness evaluation reports explicit source, digest, and redaction blockers. Dossier reporting renders a retained Markdown summary with run, intake, reviewer, counts, completion state, and blockers. Promotion handoff includes all digest-covered retained artifacts and the dossier intake report. Execution-to-dossier bridge assembles the intake pipeline from a governed execution run. Status reporting exposes completed capabilities, foundation readiness, real artifact evidence readiness, publication readiness, and current blockers. Final validation is complete. Production publication remains blocked until real artifact files are retained, digest-calculated, redaction-reviewed, and approved.
-
-## Phase 39 - Production Evidence File Verification
-
-- Verify retained commercial evidence files against promotion handoff digests.
-- Track file existence, size, observation time, digest match, retention, integrity sealing, publication attachment, promotion gate, and operator command contracts.
-- Keep file verification separate from real lab execution: verification contracts can evaluate retained files, but publication remains blocked until real files are present and approved.
-
-Status: Phase 39 is foundation-complete. Retained file evidence item verification checks existence, non-empty size, SHA-256 validity, digest match, and UTC observation time. Retained file manifest coverage verifies that every promotion-required handoff item has a unique verified retained file. File verification reporting exposes missing, empty, invalid digest, digest mismatch, non-UTC observation, duplicate path, and incomplete handoff blockers. Retention ledger modeling binds verified files to reviewer identity, immutable retention, UTC retention windows, and minimum duration checks. Integrity sealing computes and validates a deterministic aggregate SHA-256 digest over the ledger. Publication attachment planning covers sealed ledger entries, validates attachment digests, includes the commercial readiness report, and blocks trace-bearing attachments without redaction approval. Verified promotion gating requires ready attachments, ready integrity seal, ready retention ledger, verified file report, commercial readiness report presence, and explicit approval before evidence can move into release publication decisions. Command planning orders observation, digest computation, comparison, report, ledger, seal, attachment, and promotion-gate work for workflow materialization. Status reporting separates foundation readiness from real retained file evidence and commercial publication readiness. Production publication remains blocked until real retained file evidence is captured and approved.
-
-## Phase 40 - Production Evidence Filesystem Execution
-
-- Execute retained evidence file observation against the local filesystem.
-- Build verification manifests, reports, retained artifacts, ledger, seal, attachments, promotion gate, and command materialization from observed files.
-- Keep filesystem execution separate from commercial publication: helpers can verify real files, but publication remains blocked until retained evidence comes from an approved commercial run.
-
-Status: Phase 40 is foundation-complete. Filesystem observation reads retained files from disk, computes real SHA-256 digests, records file existence and size, and maps observations into the retained file verification model. Filesystem manifest execution observes every promotion handoff item, supports retained-path-to-local-path overrides, and builds retained file manifests from real observations. Filesystem verification report execution evaluates those manifests and exposes retained file blockers from real files. Verification artifact writing retains a Markdown report and tab-separated observation manifest on disk. Retention ledger execution creates ledger entries from filesystem-backed verification reports and written artifacts. Integrity seal execution seals filesystem-backed ledgers with deterministic aggregate SHA-256 digests. Publication attachment execution creates release dossier attachments from the filesystem-backed seal and requires approved redaction state for trace-bearing artifacts. Promotion execution evaluates filesystem-backed attachments through reviewer approval, UTC evaluation, and explicit blockers. Command materialization writes the ordered execution plan to a retained shell script. Status reporting now tracks ten completed capabilities including documentation and clears final validation blockers. Production publication remains blocked until a real approved commercial run is retained and approved.
-
-## Phase 41 - Approved Production Run Publication Handoff
-
-- Bind a filesystem-backed promotion execution to a reviewable commercial evidence run.
-- Record approval checklist, reviewer approvals, retained reports, promotion package, publication handoff, blocker gates, and audit trail.
-- Keep approval handoff separate from commercial publication: the SDK can prepare approval records, but publication remains blocked until a real approved run is retained.
-
-Status: Phase 41 is foundation-complete. Approved run target identity binds package version, source commit, operator identity, UTC run timing, retained artifact root, and filesystem-backed promotion execution. Approval checklist requires verified filesystem promotion, ready report/ledger/seal/attachments, approved trace redaction, promotion approval, and reviewer approval records. Reviewer approval manifest records release, security, and operations approvals with UTC timestamps and a deterministic checklist SHA-256 digest. Approval report writing renders retained Markdown reports with run identity, checklist digest, reviewer roles, UTC write time, and report SHA-256 digest coverage. Approved run promotion package collects approval report, integrity seal, publication attachment, and promotion gate artifact references with required digest coverage. Publication handoff binds the approved package to requested channel, requester identity, UTC handoff time, explicit publish intent, and channel version policy. Publication handoff gate reports blockers for package readiness, publish intent, UTC timing, channel/version policy, and stable commercial readiness approval. Approval audit trail records digest-covered lifecycle events for run target, checklist, manifest, report, package, handoff, and gate. Command materialization writes the ordered approval workflow to a retained shell script. Status reporting now tracks ten completed capabilities including documentation and clears final validation blockers. RC publication evidence is retained; stable package publication remains blocked until a real approved stable commercial run is retained and approved.
-
-## Phase 42 - Production Package Publication Gate Integration
-
-- Connect approved commercial evidence handoff records to package publication gate execution.
-- Bind package artifacts, credentials, publication evidence, publish guard, channel policy, dry-run rehearsal, guarded publish commands, and final status.
-- Keep live publication blocked until retained release evidence and a protected approved publication run exist.
-
-Status: Phase 42 is foundation-complete. Package publication requests derive from approved handoff gates and preserve package version, channel, requester, run id, promotion package id, and UTC request time. Publication artifacts bind nupkg/snupkg paths, retained sizes, SHA-256 digests, version-matched paths, and package integrity manifest projection. Credential readiness evaluates NuGet and signing secret names without storing secret values. Publication evidence assembly creates the final evidence manifest from package integrity, supply-chain readiness, and approved commercial evidence readiness. Publish guard and channel policy bridges enforce manual dispatch, publish intent, version tags, NuGet API key availability, prerelease channel rules, and stable commercial readiness. Final gate execution aggregates credentials, evidence, metadata, layout, guard, and channel blockers. Dry-run rehearsal writes retained non-publishing Markdown output, guarded command materialization writes a release script using environment-based `NUGET_API_KEY`, and status reporting tracks ten completed capabilities. RC package publication is complete; stable package publication remains blocked until retained stable release evidence and protected stable approval exist.
-
-## Phase 43 - Stable Production Release Gate
-
-- Lock the stable release target and bind it to a matching `v{version}` tag.
-- Map the complete stable commercial dossier and require reviewed readiness before decisioning.
-- Gate stable tag creation, protected publication authorization, guarded publish execution, final report retention, audit trail, and final status.
-- Keep the gate foundation separate from real stable publication evidence.
-
-Status: Phase 43 is foundation-complete. The SDK can model the stable release target, retained dossier evidence, approved readiness checklist, stable decision, stable tag commands, protected publication authorization, guarded stable publish execution plan, final commercial report, audit trail, and final stable gate status. Stable commercial release remains blocked until real retained stable release evidence is verified, a protected stable publication run completes, and actual NuGet publication evidence is retained and verified.
-
-## Phase 44 - Layer Contracts And Package Boundaries
-
-- Define official layer contracts for SCTP, MTP2, MTP3, SCCP, TCAP, and MAP SMS.
-- Keep namespace ownership aligned with protocol layers and dependency direction.
-- Adapt existing SCTP and M3UA implementation paths to the official contracts.
-- Provide concrete composition points for SCCP, TCAP, and MAP SMS over lower-layer interfaces.
-- Document how consumers should wire applications through interfaces instead of concrete implementations.
-
-Status: Phase 44 is complete. `ISctpAssociation`, `ISctpTransport`, `IMtp2Link`, `IMtp3Network`, `ISccpService`, `ITcapDialogues`, and `IMapSmsService` are available. Existing SCTP adapters and `M3uaTransportSession` support the official transport contract, `M3uaMtp3Network` exposes M3UA as MTP3, and SCCP/TCAP/MAP service classes compose through lower-layer interfaces. Production readiness still depends on retained native SCTP, external peer, benchmark, supply-chain, and stable publication evidence.
-
-## Phase 45 - Native SCTP Production Transport
-
-- Use Linux lksctp metadata APIs for real stream id, PPID, unordered flag, and receive metadata.
-- Add production transport options for backpressure, timeout, reconnect, and metadata policy.
-- Track send/receive queue metrics, lifecycle events, fault recovery decisions, and graceful shutdowns.
-- Validate reconnect behavior and metadata through a repeatable Linux sample.
-- Retain PCAP, logs, SDK trace, TShark comparison, report, and SHA-256 digests from the sample run.
-
-Status: Phase 45 is evidence-complete for native Linux SCTP loopback. The native SCTP adapter uses lksctp metadata calls, records queue metrics and diagnostics, enforces backpressure, supports graceful shutdown, and the connector records reconnect attempts. Run `phase45-native-sctp-20260701T103951Z` retained PCAP/log/trace/comparison/report/digest artifacts and validated stream id `1`, PPID `3`, receive metadata, reconnect, and graceful shutdown. Independent external peer interoperability remains a separate production gate.
-
-## Phase 46 - Evidence And Readiness Reconciliation
-
-- Store retained verification results in a package-neutral technical catalog.
-- Feed native SCTP, interoperability, and product readiness from one source.
-- Report passed Linux SCTP and M3UA evidence without clearing unrelated gates.
-- Keep higher-layer, performance, signing, and stable publication blockers explicit.
-
-Status: Complete. `SigtranVerificationCatalogs.CreateCurrent()` records the
-retained repository evidence. Native Linux SCTP and external M3UA readiness now
-report passing evidence, while full product readiness remains blocked.
-
-## Phase 47 - M3UA Production Runtime API
-
-- Add a long-running ASP/SG runtime over `ISctpTransport`.
-- Coordinate ASP lifecycle, routing contexts, traffic modes, heartbeat, restart,
-  reconnect, failover, and fault recovery.
-- Expose bounded queues, runtime events, metrics, and graceful shutdown.
-
-Status: Complete. `M3uaRuntime` implements `IMtp3Network` and provides a
-single-reader ASP runtime with bounded traffic queues, heartbeat supervision,
-session replacement, reconnect/failover policy, runtime events, metrics,
-cancellation, and graceful shutdown sends.
-
-## Phase 48 - M2PA Production Path
-
-- Implement M2PA link alignment, proving, status, sequence, acknowledgement,
-  retransmission, congestion, and recovery semantics.
-- Expose the runtime through `IMtp2Link`.
-- Validate against independent M2PA traces and peer traffic.
-
-Status: Implementation complete. `M2paLink` implements `IMtp2Link` over
-`ISctpTransport` with RFC 4165 framing, stream/PPID policy, alignment, proving,
-Ready, 24-bit sequencing, acknowledgement, retrieval retention, Busy flow
-control, processor-outage recovery, metrics, cancellation, graceful stop, and
-transport replacement. Independent external M2PA peer evidence remains in the
-end-to-end traffic lab gate.
-
-## Phase 49 - SCCP Stateful Service Layer
-
-- Implement connectionless service primitives over `IMtp3Network`.
-- Complete global-title routing, segmentation/reassembly, return handling, and
-  route policy.
-- Validate UDT, XUDT, LUDT, and service-return behavior.
-
-Status: Implementation complete. `SccpConnectionlessService` now owns a
-cancellable `IMtp3Network` receive loop and exposes bounded stateful indications.
-It supports UDT/XUDT/LUDT selection, GT translation, application route policy,
-ordered bounded XUDT reassembly, UDTS return handling, metrics, and deterministic
-shutdown. Independent SCCP peer evidence remains in the end-to-end lab gate.
-
-## Phase 50 - TCAP Dialogue Manager
-
-- Implement concurrent dialogue lifecycle, transaction correlation, timers,
-  invoke tracking, errors, rejects, aborts, and deterministic cleanup.
-- Run through `ISccpService` and expose `ITcapDialogues`.
-
-Status: Implementation complete. `TcapDialogueManager` implements
-`ITcapDialogues` with concurrent local/remote transaction correlation,
-Begin/Continue/End/Abort lifecycle, tracked Invoke components,
-ReturnResult/ReturnError/Reject outcomes, a shared timeout sweep, deterministic
-cleanup, bounded queues, snapshots, failure state, and metrics. Independent TCAP
-peer evidence remains in the end-to-end lab gate.
-
-## Phase 51 - MAP SMS Service
-
-- Implement stateful SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and
-  AlertServiceCentre workflows.
-- Add MAP error mapping, operation profiles, cancellation, and operator samples.
-
-Status: Implementation complete. `MapSmsService` now executes and correlates all
-five supported SMS operations through `ITcapComponentDialogues`.
-`MapSmsOperationProfiles` supplies standardized local operation values,
-application contexts, and timeouts. `MapSmsServer` performs typed inbound
-dispatch with Result/Error/Reject responses, cancellation, validation, and
-metrics. Paired-stack tests cover every operation and MAP error mapping.
-Phase 52 adds cross-implementation evidence for all five operations;
-operator/vendor profile validation remains.
-
-## Phase 52 - End-To-End SS7 Traffic Lab
-
-- Execute MAP over TCAP over SCCP over M3UA over SCTP against an independent peer.
-- Retain PCAP, peer log, SDK trace, configuration, field comparison, report, and
-  SHA-256 manifests.
-
-Status: Complete for repository-profile cross-implementation traffic. The .NET
-lab endpoint completed all five supported MAP SMS operations against an
-independently compiled C/lksctp peer. Passing run
-`end-to-end-20260724T085858Z` retained 23 SCTP packets, ten M3UA DATA messages,
-five peer-parsed MAP invokes, five peer-built results, SDK trace, configuration,
-TShark fields, comparison, report, and SHA-256 manifests. Operator/vendor
-profile validation and independent M2PA traffic remain separate gates.
-
-## Phase 53 - Operator-Sized Performance And Resilience
-
-- Measure warmup, sustained, peak, reconnect, failover, and soak workloads across
-  separate hosts or VMs.
-- Report TPS, P95/P99 latency, CPU, memory, allocations, queue pressure, and loss.
-
-Status: Implementation and controlled baseline execution are complete.
-`Sigtran.NET.PerformanceLab` and
-`scripts/run-full-stack-performance-lab.sh` execute warmup, sustained, peak,
-failover, recovery, and soak against the independent C/lksctp peer. Run
-`performance-20260724T093659Z` completed 62,000 full-stack transactions without
-loss, measured about 13.5K TPS across sustained/peak/soak, kept sustained and
-peak P95 below 15 ms, and restored traffic in about 1.27 seconds. The run did
-not satisfy the 20K peak target and is single-host WSL loopback, so
-operator-sized multi-host qualification remains open.
-
-## Phase 54 - Production Operations Package
-
-- Provide health checks, metrics, structured logs, OpenTelemetry integration,
-  configuration validation, container deployment, runbooks, and upgrade/rollback
-  guidance.
-
-Status: Implementation complete. `SigtranHealthService` and the built-in
-SCTP/M3UA probes provide executable liveness/readiness inputs.
-`SigtranTelemetry` exposes BCL activities and metrics consumable by
-OpenTelemetry providers; `M3uaRuntimeObserver` emits structured JSONL events.
-Validated environment configuration, a native SCTP/M3UA operations host,
-Docker/Compose/Kubernetes material, and recovery/upgrade runbooks are included.
-Representative Kubernetes SCTP network validation and operator alert review
-remain deployment evidence gates.
-
-## Phase 55 - Stable Release Execution
-
-- Freeze the public API baseline and stable SemVer target.
-- Generate final SBOM and provenance, use trusted timestamped signing, upload
-  release artifacts, run protected stable publication, and verify public restore.
-
-Status: Execution controls complete; publication is blocked. Source packing
-defaults to `1.0.0-rc.2`, repository governance types are no longer exported,
-reflection-based RC.1 and stable-candidate API baselines are retained, and the
-release workflow performs API diff, SBOM, provenance/SBOM attestations,
-certificate trust validation, protected confirmation/tag checks, artifact
-upload, public restore verification, and GitHub release creation. The current
-machine-evaluated decision is `NO-GO` because independent M2PA,
-operator/vendor-profile acceptance, 20K TPS, multi-host soak, representative
-Kubernetes SCTP, and organization-trusted signing evidence remain open. No
-stable tag or package is published by this phase. Stable assessment run
-`30088170594` completed the non-publishing release path and retained verified
-package/SBOM attestations plus all release artifact bundles.
-
-## Recommended First Deliverable
-
-The first useful SDK release should be an alpha package focused on M3UA over a transport abstraction:
-
-- Correct M3UA binary parser/writer
-- ASP state-machine API
-- Protocol Data send/receive
-- Routing context and network appearance support
-- Structured diagnostics and test vectors
-- Clear experimental labels for SCCP, TCAP, and MAP until their encodings are replaced with standards-based implementations
+Use [Roadmap Execution](ROADMAP_EXECUTION.md) for the current work package, dependency state, and acceptance checkpoint. Use [Phase Index](PHASE_INDEX.md) to navigate historical phase documents and retained evidence.
