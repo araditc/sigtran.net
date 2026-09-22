@@ -1,0 +1,79 @@
+name: attach-rc2-assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/attach-rc2-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    env:
+      TAG_NAME: v1.0.0-rc.2
+      RELEASE_VERSION: 1.0.0-rc.2
+      EXPECTED_TARGET_SHA: e2c663460823cd29f073467a79c4f761fb7c1002
+
+    steps:
+      - name: Checkout exact RC tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: v1.0.0-rc.2
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Verify tag target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-list -n 1 "$TAG_NAME")" = "$EXPECTED_TARGET_SHA"
+
+      - name: Build test pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore src/Sigtran.NET.sln
+          dotnet build src/Sigtran.NET.sln --configuration Release --no-restore
+          dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
+          dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build /p:Version="$RELEASE_VERSION"
+          mkdir -p artifacts/release
+          cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" artifacts/release/
+          cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.snupkg" artifacts/release/
+          sha256sum artifacts/release/* > "artifacts/release/Sigtran.NET.$RELEASE_VERSION.sha256"
+
+      - name: Install SBOM tool
+        run: dotnet tool install --global Microsoft.Sbom.DotNetTool --version 4.1.5
+
+      - name: Generate SBOM
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/sbom
+          sbom-tool generate -b src/Sigtran.NET/bin/Release -bc . -pn Sigtran.NET -pv "$RELEASE_VERSION" -ps Sigtran.NET -nsb https://github.com/araditc/sigtran.net -m artifacts/sbom
+          sbom_source="$(find artifacts/sbom -name '*.spdx.json' -o -name 'manifest.spdx.json' | head -n 1)"
+          test -n "$sbom_source"
+          cp "$sbom_source" "artifacts/release/Sigtran.NET.$RELEASE_VERSION.spdx.json"
+
+      - name: Upload assets to GitHub prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null
+          gh release upload "$TAG_NAME" artifacts/release/* --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Upload retained workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sigtran-rc2-release-assets
+          path: artifacts/release
+          retention-days: 90
