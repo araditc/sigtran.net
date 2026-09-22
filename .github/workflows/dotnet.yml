@@ -33,5 +33,22 @@ jobs:
       - name: Test operator profile framework
         run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
 
+      - name: Verify development package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:PackageVersion | tail -n 1 | tr -d '\r')"
+          version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:Version | tail -n 1 | tr -d '\r')"
+          test "$package_version" = "1.0.0-rc.3-dev"
+          test "$version" = "1.0.0-rc.3-dev"
+
       - name: Pack
         run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build
+
+      - name: Verify development package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.3-dev.nupkg
+          test -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.3-dev.snupkg
+          test ! -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.2.nupkg
