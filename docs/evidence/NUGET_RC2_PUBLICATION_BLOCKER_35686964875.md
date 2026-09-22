@@ -30,3 +30,11 @@ The GitHub prerelease itself is complete and currently contains:
 - `Sigtran.NET.1.0.0-rc.2.snupkg`
 - `Sigtran.NET.1.0.0-rc.2.spdx.json`
 - `Sigtran.NET.1.0.0-rc.2.sha256`
+
+## Resolution
+
+RESOLVED on workflow run `35690123501`.
+
+The project migrated RC.2 publication to NuGet Trusted Publishing / GitHub OIDC. OIDC login, NuGet push, public visibility, and fresh .NET 10 restore all passed.
+
+Successful evidence: `docs/evidence/NUGET_RC2_TRUSTED_PUBLISHING_35690123501.md`.
