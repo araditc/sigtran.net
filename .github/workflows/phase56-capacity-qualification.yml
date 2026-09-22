@@ -1,12 +1,6 @@
-name: phase56-capacity-qualification
+name: phase56-single-association-capacity-diagnostic
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/phase56-capacity-qualification.yml'
-      - 'scripts/run-full-stack-performance-lab.sh'
-      - 'src/Sigtran.NET.PerformanceLab/**'
   workflow_dispatch:
 
 permissions:
