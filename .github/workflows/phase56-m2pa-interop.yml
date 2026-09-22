@@ -1,0 +1,109 @@
+name: phase56-m2pa-interop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/interop-peer/m2pa_reference_peer.c'
+      - 'src/Sigtran.NET.M2paInteropLab/**'
+      - 'scripts/run-m2pa-interop-lab.sh'
+      - '.github/workflows/phase56-m2pa-interop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: phase56-m2pa-interop
+  cancel-in-progress: false
+
+jobs:
+  interop:
+    runs-on: ubuntu-24.04
+    env:
+      RUN_ID: phase56-m2pa-${{ github.run_id }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/artifacts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install native SCTP and packet tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y             libsctp-dev             lksctp-tools             tcpdump             tshark
+
+      - name: Run independent C/.NET M2PA interoperability lab
+        shell: bash
+        env:
+          SIGTRAN_RUN_ID: ${{ env.RUN_ID }}
+          SIGTRAN_ARTIFACT_ROOT: ${{ env.ARTIFACT_ROOT }}
+        run: bash scripts/run-m2pa-interop-lab.sh
+
+      - name: Upload retained M2PA evidence artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase56-m2pa-evidence
+          path: artifacts/m2pa/${{ env.RUN_ID }}
+          retention-days: 90
+
+      - name: Prepare evidence branch
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="evidence/m2pa-${GITHUB_RUN_ID}"
+          evidence_dir="docs/evidence/PHASE56_M2PA_${GITHUB_RUN_ID}"
+          source_dir="artifacts/m2pa/${RUN_ID}"
+
+          git checkout -b "$branch"
+          mkdir -p "$evidence_dir"
+          cp -a "$source_dir/logs" "$evidence_dir/"
+          cp -a "$source_dir/trace" "$evidence_dir/"
+          cp -a "$source_dir/pcap" "$evidence_dir/"
+          cp -a "$source_dir/reports" "$evidence_dir/"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$evidence_dir"
+          git commit -m "evidence: retain independent M2PA interop run ${GITHUB_RUN_ID}"
+          git push origin "$branch"
+
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Open evidence pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.evidence.outputs.branch }}
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.evidence_dir }}
+        run: |
+          set -euo pipefail
+          gh pr create             --repo "$GITHUB_REPOSITORY"             --base main             --head "$BRANCH"             --title "evidence: retain independent M2PA interoperability run ${GITHUB_RUN_ID}"             --body "Phase 56 independent RFC 4165 M2PA interoperability evidence.
+
+Implementation boundary:
+- Sigtran.NET M2paLink over native Linux SCTP
+- independently compiled C/lksctp peer with no SDK linkage
+- PPID 5, link-status stream 0, user-data stream 1
+
+The run exercises alignment/proving/ready, two User Data round trips, BSN/FSN acknowledgements, Busy/Busy Ended, and Processor Outage/Recovery.
+
+Retained evidence directory: \`$EVIDENCE_DIR\`
+Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: Summary
+        shell: bash
+        run: |
+          report="artifacts/m2pa/${RUN_ID}/reports/report.md"
+          cat "$report" >> "$GITHUB_STEP_SUMMARY"
