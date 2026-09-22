@@ -58,11 +58,12 @@
       "id": "capacity-target",
       "title": "20K TPS capacity target",
       "required": true,
-      "passed": false,
+      "passed": true,
       "evidence": [
-        "docs/evidence/PHASE53_PERFORMANCE_20260724T093659Z/metrics/performance-20260724T093659Z-metrics.json"
+        "docs/evidence/PHASE56_CAPACITY_35696403076/aggregate/summary.json",
+        "docs/evidence/PHASE56_CAPACITY_35696403076/sha256.txt"
       ],
-      "note": "The current controlled baseline is about 13.5K TPS and does not meet the 20K target."
+      "note": "Phase 56 two-association native-SCTP load-share qualification passed the numeric 20K TPS gate: aggregate sustained 35.9K TPS, peak 34.5K TPS, soak 45.8K TPS, with latency/resource criteria passing and zero failed operations. Representative multi-host soak remains a separate gate."
     },
     {
       "id": "multi-host-soak",
