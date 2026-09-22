@@ -20,8 +20,8 @@ The project is designed for telecom engineers, protocol specialists, .NET infras
 
 SIGTRAN.NET is currently in a **public release-candidate** track.
 
-- Latest public NuGet prerelease: `Sigtran.NET` `1.0.0-rc.1`.
-- Current source candidate: unpublished `1.0.0-rc.2`.
+- Latest public NuGet prerelease: `Sigtran.NET` `1.0.0-rc.2`.
+- Current public RC: `Sigtran.NET` `1.0.0-rc.2`.
 - Target framework: `.NET 10` / `net10.0`.
 - License: Apache-2.0.
 - GitHub prerelease/tag: `v1.0.0-rc.2` is published and points to the approved RC source commit.
@@ -33,7 +33,7 @@ It is **not yet a fully stable operator-grade SS7/SIGTRAN stack**. Stable produc
 Recommended release/status documents:
 
 - [Changelog](CHANGELOG.md)
-- [v1.0.0-rc.2 release notes draft](docs/releases/v1.0.0-rc.2.md)
+- [v1.0.0-rc.2 release notes](docs/releases/v1.0.0-rc.2.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 - [Stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
 - [Community response templates](docs/community/COMMUNITY_RESPONSES.md)
@@ -44,13 +44,13 @@ Recommended release/status documents:
 
 ## Install
 
-The latest public prerelease package is `1.0.0-rc.1`:
+The latest public prerelease package is `1.0.0-rc.2`:
 
 ```powershell
-dotnet add package Sigtran.NET --version 1.0.0-rc.1
+dotnet add package Sigtran.NET --version 1.0.0-rc.2
 ```
 
-Source builds currently produce the unpublished `1.0.0-rc.2` candidate by default to avoid accidental stable `1.0.0` package creation.
+Source builds and the public prerelease are aligned on `1.0.0-rc.2`; stable `1.0.0` remains gated by the stable-release decision.
 
 ---
 
@@ -183,7 +183,7 @@ Start here:
 Release and governance:
 
 - [Changelog](CHANGELOG.md)
-- [v1.0.0-rc.2 release notes draft](docs/releases/v1.0.0-rc.2.md)
+- [v1.0.0-rc.2 release notes](docs/releases/v1.0.0-rc.2.md)
 - [RC.1 to RC.2 migration](docs/migrations/1.0.0-rc.1-to-rc.2.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 - [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
