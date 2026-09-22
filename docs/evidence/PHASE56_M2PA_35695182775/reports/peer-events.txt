@@ -1,0 +1,40 @@
+2026-09-22T06:31:49Z event=listening endpoint=127.0.0.1:2907
+2026-09-22T06:31:50Z event=association-accepted endpoint=127.0.0.1:2907
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=16777215 fsn=16777215 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=9 stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=16777215 fsn=16777215 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=1 stream=0
+2026-09-22T06:31:50Z event=link-status-send status=alignment stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=16777215 fsn=16777215 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=2 stream=0
+2026-09-22T06:31:50Z event=link-status-send status=proving stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=16777215 fsn=16777215 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=4 stream=0
+2026-09-22T06:31:50Z event=link-status-send status=ready stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=1 stream=1 bsn=16777215 fsn=0 bytes=55 ppid=5
+2026-09-22T06:31:50Z event=ack-send result=success
+2026-09-22T06:31:50Z event=user-data-echo operation=1 peerFsn=0 clientFsn=0 payloadBytes=39
+2026-09-22T06:31:50Z event=m2pa-receive type=1 stream=1 bsn=0 fsn=0 bytes=16 ppid=5
+2026-09-22T06:31:50Z event=ack-receive bsn=0 fsn=0 ackCount=1
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=0 fsn=0 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=7 stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=0 bsn=0 fsn=0 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=8 stream=0
+2026-09-22T06:31:50Z event=m2pa-receive type=1 stream=1 bsn=0 fsn=0 bytes=16 ppid=5
+2026-09-22T06:31:50Z event=ack-receive bsn=0 fsn=0 ackCount=2
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=1 bsn=0 fsn=0 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=5 stream=1
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=1 bsn=0 fsn=0 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=6 stream=1
+2026-09-22T06:31:50Z event=link-status-send status=ready stream=1
+2026-09-22T06:31:50Z event=m2pa-receive type=2 stream=1 bsn=0 fsn=0 bytes=20 ppid=5
+2026-09-22T06:31:50Z event=link-status status=4 stream=1
+2026-09-22T06:31:50Z event=processor-recovery-complete ready-on-stream=1
+2026-09-22T06:31:50Z event=m2pa-receive type=1 stream=1 bsn=0 fsn=1 bytes=55 ppid=5
+2026-09-22T06:31:50Z event=ack-send result=success
+2026-09-22T06:31:50Z event=user-data-echo operation=2 peerFsn=1 clientFsn=1 payloadBytes=39
+2026-09-22T06:31:50Z event=m2pa-receive type=1 stream=1 bsn=1 fsn=1 bytes=16 ppid=5
+2026-09-22T06:31:50Z event=ack-receive bsn=1 fsn=1 ackCount=3
+2026-09-22T06:31:51Z event=m2pa-receive type=2 stream=0 bsn=1 fsn=1 bytes=20 ppid=5
+2026-09-22T06:31:51Z event=link-status status=9 stream=0
+2026-09-22T06:31:51Z event=complete data=2 expected=2 acks=3 alignment=1 initialReady=1 busy=1 busyEnded=1 processorOutage=1 processorRecovered=1 recoveryReady=1 outOfService=1 passed=true
