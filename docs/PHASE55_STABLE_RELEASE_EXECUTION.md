@@ -57,15 +57,24 @@ source commit, GitHub-hosted runner identity, OIDC issuer, and Rekor timestamp.
 See the
 [retained stable assessment summary](evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json).
 
+## Phase 56 M2PA Gate Closure
+
+Phase 56 run `35695182775` passed RFC 4165 interoperability between
+Sigtran.NET `M2paLink` and an independently compiled C/lksctp peer. The
+retained evidence contains a 39-packet native SCTP PCAP, independent peer
+events, SDK state/metric results, SDK trace, report, and relative SHA-256
+manifest. The run validates PPID 5, streams 0/1, alignment/proving/Ready,
+24-bit BSN/FSN acknowledgements, bidirectional User Data, Busy/BusyEnded, and
+processor outage/recovery. The `independent-m2pa` gate is now closed.
+
 ## Current Decision
 
 The current decision is `NO-GO`. Passing repository evidence covers native
-Linux SCTP, independent M3UA, repository-profile full-stack MAP SMS traffic,
+Linux SCTP, independent M3UA, independent M2PA, repository-profile full-stack MAP SMS traffic,
 runtime operations, and the public API baseline.
 
 Open required gates are:
 
-- independent external M2PA interoperability;
 - operator/vendor profile acceptance;
 - 20K TPS target;
 - representative multi-host soak/failover;
@@ -84,6 +93,6 @@ gates pass.
 ## Publication Result
 
 No stable tag or NuGet package is created while the decision is `NO-GO`.
-`1.0.0-rc.1` remains the latest public package. Source packaging defaults to
-the next RC candidate so an ordinary `dotnet pack` cannot accidentally produce
-a stable package.
+`1.0.0-rc.2` is the latest public package and is verified through NuGet Trusted
+Publishing/OIDC and a clean .NET 10 restore. Source packaging remains on the RC
+line so an ordinary `dotnet pack` cannot accidentally produce a stable package.
