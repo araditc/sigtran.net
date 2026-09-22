@@ -89,17 +89,19 @@ retained manifests instead of stale hard-coded flags.
 - Retained evidence:
   `docs/evidence/PHASE56_M2PA_35695182775/`.
 - The stable manifest now declares `independent-m2pa` passing.
+- Phase 56 aggregate load-share capacity run `35696403076` passed the numeric 20K TPS gate using two independent native-SCTP/M3UA lanes. Aggregate sustained throughput was approximately `35.9K TPS`, aggregate peak approximately `34.5K TPS`, and aggregate soak approximately `45.8K TPS`, with zero failed operations and passing latency/resource limits. Retained evidence is under `docs/evidence/PHASE56_CAPACITY_35696403076/`.
+- The stable manifest now declares `capacity-target` passing. The separate representative multi-host soak/failover gate remains open.
 
 ## Remaining Production Blockers
 
-- The current full-stack benchmark is real Linux SCTP peer traffic evidence,
-  but it is single-host WSL loopback. It reached about 13.5K TPS and did not
-  meet the 20K peak target. Do not use it for broad operator capacity claims
-  until a representative multi-host deployment benchmark passes.
+- The numeric 20K TPS capacity gate is now closed by Phase 56 controlled
+  two-association load-share evidence. This remains a single-host controlled
+  qualification and must not be used for broad operator capacity claims until
+  the separate representative multi-host long-duration soak/failover gate passes.
 - Package publication evidence is closed for the public RC prerelease. Stable
   assessment run `30088170594` completed successfully and retained package,
   SBOM, API, digest, decision, and hosted attestation evidence. Live stable
-  publication remains blocked by the five remaining machine-evaluated qualification
+  publication remains blocked by the four remaining machine-evaluated qualification
   gates and still requires a protected publish run plus verified stable NuGet
   restore evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
@@ -121,8 +123,8 @@ retained manifests instead of stale hard-coded flags.
   Cluster network, firewall, readiness, termination, and rollback behavior need
   validation in the adopting operator environment.
 - The machine-evaluated stable decision is `NO-GO`. Stable publication is
-  blocked by operator/vendor profile acceptance, 20K TPS capacity, multi-host
-  soak, representative Kubernetes SCTP, and organization-trusted signing evidence.
+  blocked by operator/vendor profile acceptance, multi-host soak,
+  representative Kubernetes SCTP, and organization-trusted signing evidence.
 
 ## Production Decision
 
