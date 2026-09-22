@@ -34,6 +34,24 @@ if (-not [string]::IsNullOrWhiteSpace($ExpectedVersion) -and
 
 $baselineFullPath = Join-Path $root $manifest.publicApiBaseline
 $baselinePresent = Test-Path -LiteralPath $baselineFullPath -PathType Leaf
+$acceptedAdditionsPath = if ($manifest.PSObject.Properties.Name -contains "publicApiAcceptedAdditions") {
+    [string]$manifest.publicApiAcceptedAdditions
+}
+else {
+    ""
+}
+$acceptedAdditionsFullPath = if (-not [string]::IsNullOrWhiteSpace($acceptedAdditionsPath)) {
+    Join-Path $root $acceptedAdditionsPath
+}
+else {
+    $null
+}
+$acceptedAdditionsPresent = if ($null -ne $acceptedAdditionsFullPath) {
+    Test-Path -LiteralPath $acceptedAdditionsFullPath -PathType Leaf
+}
+else {
+    $true
+}
 $gateResults = @()
 $blockers = @()
 
@@ -80,6 +98,9 @@ foreach ($gate in $manifest.gates) {
 if (-not $baselinePresent) {
     $blockers += "public-api-baseline: $($manifest.publicApiBaseline) is missing."
 }
+if (-not $acceptedAdditionsPresent) {
+    $blockers += "public-api-baseline: $acceptedAdditionsPath is missing."
+}
 
 $decision = if ($blockers.Count -eq 0) { "GO" } else { "NO-GO" }
 $commit = (git -C $root rev-parse HEAD).Trim()
@@ -95,6 +116,16 @@ $report = [ordered]@{
         sha256 = if ($baselinePresent) {
             (
                 Get-FileHash -LiteralPath $baselineFullPath -Algorithm SHA256
+            ).Hash.ToLowerInvariant()
+        }
+        else {
+            $null
+        }
+        acceptedAdditionsPath = $acceptedAdditionsPath
+        acceptedAdditionsPresent = $acceptedAdditionsPresent
+        acceptedAdditionsSha256 = if ($acceptedAdditionsPresent -and $null -ne $acceptedAdditionsFullPath) {
+            (
+                Get-FileHash -LiteralPath $acceptedAdditionsFullPath -Algorithm SHA256
             ).Hash.ToLowerInvariant()
         }
         else {
