@@ -135,6 +135,16 @@ jobs:
           set -euo pipefail
           gh release upload "$TAG_NAME"             artifacts/evidence/NUGET_RC2_TRUSTED_PUBLISHING.md             --repo "$GITHUB_REPOSITORY"             --clobber
 
+      - name: Refresh GitHub prerelease notes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git show origin/main:docs/releases/v1.0.0-rc.2.md > "$RUNNER_TEMP/rc2-release-notes.md"
+          gh release edit "$TAG_NAME"             --repo "$GITHUB_REPOSITORY"             --title "SIGTRAN.NET v1.0.0-rc.2 — .NET 10 SIGTRAN/SS7-over-IP Release Candidate"             --notes-file "$RUNNER_TEMP/rc2-release-notes.md"             --prerelease
+
       - name: Upload workflow evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
