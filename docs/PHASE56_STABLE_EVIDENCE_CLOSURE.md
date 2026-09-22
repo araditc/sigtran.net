@@ -124,6 +124,27 @@ Four required stable gates remain open:
 4. **trusted-signing** — organization-approved stable signing identity and
    trusted timestamped package verification.
 
+## Trusted Signing Gate
+
+Status: **OPEN — CA-issued certificate required**
+
+Phase 56 preflight run `35710407279` confirmed:
+
+- stable candidate build/test/pack: PASS;
+- signing certificate secret: present;
+- certificate password secret: present;
+- configured signing certificate: **self-issued**;
+- stable policy result: REJECTED before fingerprint promotion or signing.
+
+The current certificate cannot close the stable signing gate. Replace it with an
+organization-controlled CA-issued code-signing certificate suitable for NuGet
+author signing, then rerun
+`.github/workflows/phase56-trusted-signing-preflight.yml` manually through the
+protected `nuget-stable` environment.
+
+Retained blocker evidence:
+`docs/evidence/PHASE56_TRUSTED_SIGNING_BLOCKER_35710407279.md`.
+
 ## Exit Criteria
 
 Phase 56 exits only when every required gate in
