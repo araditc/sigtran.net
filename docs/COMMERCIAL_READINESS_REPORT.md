@@ -2,7 +2,7 @@
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
-Source builds now default to unpublished version `1.0.0-rc.2`. Stable release
+Source builds and the public prerelease are aligned on `1.0.0-rc.2`. Stable release
 manifest `eng/release/stable-release.json` and
 `eng/evaluate-stable-release.ps1` produce the authoritative machine decision.
 
@@ -30,6 +30,7 @@ retained manifests instead of stale hard-coded flags.
 - Protected release workflow dry-run `28289987418` passed on commit `fd1224143361307673e4ec7b14e732098aa78a5e` with `publish=false`. It uploaded `sigtran-package`, `sigtran-symbols`, `sigtran-supply-chain`, and `sigtran-release-dry-run` artifacts and retained package, SBOM, signing verification, timestamp, digest, API diff, dry-run, and local provenance marker evidence.
 - Protected prerelease publication workflow `28290586511` passed on commit `914fc333fc3b99184af9781d25585928583a3239` with `publish=true`. It pushed `Sigtran.NET.1.0.0-rc.1.nupkg` and `Sigtran.NET.1.0.0-rc.1.snupkg` to NuGet.org, uploaded package, symbols, supply-chain, and dry-run artifacts, and retained publication evidence at `docs/evidence/NUGET_PRERELEASE_PUBLISH_28290586511.json`.
 - NuGet.org visibility and restore evidence passed for `Sigtran.NET` version `1.0.0-rc.1`: the package page returned HTTP 200, the flat-container index includes `1.0.0-rc.1`, the flat-container package returned HTTP 200, and a clean `dotnet add package Sigtran.NET --version 1.0.0-rc.1` restore succeeded.
+- Trusted Publishing/OIDC publication workflow `35690123501` passed for `Sigtran.NET` version `1.0.0-rc.2`: GitHub OIDC login succeeded, NuGet push succeeded, the public package became visible, and a clean .NET 10 restore succeeded. Retained evidence is recorded at `docs/evidence/NUGET_RC2_TRUSTED_PUBLISHING_35690123501.md` and attached to GitHub prerelease `v1.0.0-rc.2`.
 - Final local readiness run `20260627T130623Z` evaluated the retained evidence manifest and reported `LocalEvidenceReady=true`, `ProductionReady=true`, and no commercial blockers for the internal RC gate.
 - Native SCTP transport run `phase45-native-sctp-20260701T103951Z` passed on
   kernel `5.15.0-181-generic` with stream `1`, PPID `3`, receive metadata,
