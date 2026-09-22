@@ -3,6 +3,7 @@
   "packageId": "Sigtran.NET",
   "version": "1.0.0",
   "publicApiBaseline": "eng/api/Sigtran.NET.1.0.public-api.txt",
+  "publicApiAcceptedAdditions": "eng/api/Sigtran.NET.1.0.accepted-additions.txt",
   "gates": [
     {
       "id": "native-linux-sctp",
@@ -105,9 +106,10 @@
       "required": true,
       "passed": true,
       "evidence": [
-        "eng/api/Sigtran.NET.1.0.public-api.txt"
+        "eng/api/Sigtran.NET.1.0.public-api.txt",
+        "eng/api/Sigtran.NET.1.0.accepted-additions.txt"
       ],
-      "note": "The 1.0 public API member baseline is version controlled and workflow-compared."
+      "note": "The 1.0 public API baseline and explicitly admitted pre-stable additions are version controlled and workflow-compared as one candidate contract."
     },
     {
       "id": "protected-publication",
