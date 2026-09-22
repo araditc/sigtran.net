@@ -219,22 +219,32 @@ jobs:
           set -euo pipefail
           evidence_dir="docs/evidence/PHASE56_CAPACITY_$GITHUB_RUN_ID"
           branch="evidence/capacity-$GITHUB_RUN_ID"
-          git checkout -b "$branch"
-          mkdir -p "$evidence_dir/lane1" "$evidence_dir/lane2" "$evidence_dir/aggregate"
-          cp -a "artifacts/capacity-aggregate/$RUN_ID/." "$evidence_dir/aggregate/"
-          cp -a "artifacts/performance/$RUN_ID-lane1/metrics/." "$evidence_dir/lane1/"
-          cp -a "artifacts/performance/$RUN_ID-lane1/reports/." "$evidence_dir/lane1/"
-          cp -a "artifacts/performance/$RUN_ID-lane2/metrics/." "$evidence_dir/lane2/"
-          cp -a "artifacts/performance/$RUN_ID-lane2/reports/." "$evidence_dir/lane2/"
+          staging="$RUNNER_TEMP/capacity-evidence"
+          mkdir -p "$staging/lane1" "$staging/lane2" "$staging/aggregate"
+
+          cp -a "artifacts/capacity-aggregate/$RUN_ID/." "$staging/aggregate/"
+          cp -a "artifacts/performance/$RUN_ID-lane1/metrics/." "$staging/lane1/"
+          cp -a "artifacts/performance/$RUN_ID-lane1/reports/." "$staging/lane1/"
+          cp -a "artifacts/performance/$RUN_ID-lane1/trace/." "$staging/lane1/"
+          cp -a "artifacts/performance/$RUN_ID-lane2/metrics/." "$staging/lane2/"
+          cp -a "artifacts/performance/$RUN_ID-lane2/reports/." "$staging/lane2/"
+          cp -a "artifacts/performance/$RUN_ID-lane2/trace/." "$staging/lane2/"
           (
-            cd "$evidence_dir"
+            cd "$staging"
             find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum > sha256.txt
           )
+
+          git fetch origin main
+          git checkout -B "$branch" origin/main
+          mkdir -p "$evidence_dir"
+          cp -a "$staging/." "$evidence_dir/"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$evidence_dir"
           git commit -m "evidence: retain aggregate 20K TPS capacity run $GITHUB_RUN_ID"
           git push origin "$branch"
+
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
           echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
 
