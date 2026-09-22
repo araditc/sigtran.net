@@ -33,14 +33,30 @@ jobs:
       - name: Test operator profile framework
         run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
 
-      - name: Verify development package identity
+      - name: Verify development and release package identity
         shell: bash
         run: |
           set -euo pipefail
           package_version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:PackageVersion | tail -n 1 | tr -d '\r')"
           version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:Version | tail -n 1 | tr -d '\r')"
+          override_version="1.0.0-release-override-test"
+          override_package_version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo /p:Version="$override_version" -getProperty:PackageVersion | tail -n 1 | tr -d '\r')"
           test "$package_version" = "1.0.0-rc.3-dev"
           test "$version" = "1.0.0-rc.3-dev"
+          test "$override_package_version" = "$override_version"
+
+      - name: Generate current public API snapshot
+        shell: pwsh
+        run: |
+          ./eng/generate-public-api-baseline.ps1 `
+            -OutputPath "artifacts/ci-api/Sigtran.NET.current.public-api.txt"
+
+      - name: Upload current public API snapshot
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: current-public-api
+          path: artifacts/ci-api/Sigtran.NET.current.public-api.txt
+          if-no-files-found: error
 
       - name: Pack
         run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build
