@@ -64,15 +64,21 @@ jobs:
       - name: Resolve Version
         shell: bash
         run: |
-          release_version="${{ inputs.version }}"
-          if [ -z "$release_version" ]; then
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            release_version="${{ inputs.version }}"
+            release_channel="${{ inputs.channel }}"
+          else
             release_version="${GITHUB_REF_NAME#v}"
+            case "$release_version" in
+              *-*) release_channel="prerelease" ;;
+              *) release_channel="stable" ;;
+            esac
           fi
-          release_channel="${{ inputs.channel }}"
-          if [ -z "$release_channel" ]; then
-            release_channel="stable"
-          fi
+
           test -n "$release_version"
+          test -n "$release_channel"
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
           echo "SIGTRAN_RELEASE_CHANNEL=$release_channel" >> "$GITHUB_ENV"
 
