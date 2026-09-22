@@ -90,17 +90,38 @@ The independent peer is implemented in C/lksctp and does not link to or reuse
 Sigtran.NET protocol code. The `independent-m2pa` gate is therefore promoted
 to passed in `eng/release/stable-release.json`.
 
+## Capacity Target Gate
+
+Status: **CLOSED**
+
+### Execution
+
+- Workflow: `.github/workflows/phase56-loadshare-capacity.yml`
+- Passing run: `35696403076`
+- Topology: controlled single-host two-association native-SCTP/M3UA load-share
+- Aggregate sustained throughput: approximately `35.9K TPS`
+- Aggregate peak throughput: approximately `34.5K TPS`
+- Aggregate soak throughput: approximately `45.8K TPS`
+- Failed operations: `0`
+- Aggregate latency/resource checks: PASS
+
+### Retained evidence
+
+`docs/evidence/PHASE56_CAPACITY_35696403076/`
+
+This closes only the numeric `capacity-target` gate. It does **not** close the
+separate representative multi-host long-duration soak/failover gate.
+
 ## Remaining Required Gates
 
-Five required stable gates remain open:
+Four required stable gates remain open:
 
 1. **operator-profile** — retained operator or vendor SCCP/TCAP/MAP SMS
    acceptance evidence.
-2. **capacity-target** — retained evidence meeting the 20K TPS stable target.
-3. **multi-host-soak** — representative multi-host long-duration soak/failover.
-4. **kubernetes-sctp** — representative Kubernetes SCTP/CNI deployment,
+2. **multi-host-soak** — representative multi-host long-duration soak/failover.
+3. **kubernetes-sctp** — representative Kubernetes SCTP/CNI deployment,
    termination, readiness, and rollback evidence.
-5. **trusted-signing** — organization-approved stable signing identity and
+4. **trusted-signing** — organization-approved stable signing identity and
    trusted timestamped package verification.
 
 ## Exit Criteria
