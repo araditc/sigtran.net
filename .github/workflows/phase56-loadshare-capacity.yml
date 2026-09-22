@@ -1,0 +1,261 @@
+name: phase56-loadshare-capacity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase56-loadshare-capacity.yml'
+      - 'scripts/run-full-stack-performance-lab.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: phase56-loadshare-capacity
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    env:
+      RUN_ID: phase56-loadshare-${{ github.run_id }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/artifacts
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install SCTP and packet tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libsctp-dev lksctp-tools tcpdump tshark gzip
+
+      - name: Prebuild performance lab
+        run: dotnet build src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj -c Release -m:1
+
+      - name: Run two independent load-share lanes
+        id: lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          run_lane() {
+            local lane="$1"
+            local port="$2"
+            (
+              export SIGTRAN_SKIP_BUILD=true
+              export SIGTRAN_ARTIFACT_ROOT="$ARTIFACT_ROOT"
+              export SIGTRAN_RUN_ID="$RUN_ID-$lane"
+              export REMOTE_SCTP_PORT="$port"
+              export PEER_NAME="independent-c-reference-peer-$lane"
+              export SIGTRAN_WARMUP_OPERATIONS=1000
+              export SIGTRAN_SUSTAINED_OPERATIONS=20000
+              export SIGTRAN_PEAK_OPERATIONS=20000
+              export SIGTRAN_RECOVERY_OPERATIONS=1000
+              export SIGTRAN_SOAK_OPERATIONS=10000
+              export SIGTRAN_WARMUP_CONCURRENCY=16
+              export SIGTRAN_SUSTAINED_CONCURRENCY=96
+              export SIGTRAN_PEAK_CONCURRENCY=128
+              export SIGTRAN_RECOVERY_CONCURRENCY=32
+              export SIGTRAN_SOAK_CONCURRENCY=96
+              bash scripts/run-full-stack-performance-lab.sh
+            )
+          }
+
+          set +e
+          run_lane lane1 2906 >"$RUNNER_TEMP/lane1.log" 2>&1 &
+          lane1_pid=$!
+          run_lane lane2 2907 >"$RUNNER_TEMP/lane2.log" 2>&1 &
+          lane2_pid=$!
+
+          wait "$lane1_pid"
+          lane1_rc=$?
+          wait "$lane2_pid"
+          lane2_rc=$?
+          set -e
+
+          cat "$RUNNER_TEMP/lane1.log"
+          cat "$RUNNER_TEMP/lane2.log"
+
+          echo "lane1_rc=$lane1_rc" >> "$GITHUB_OUTPUT"
+          echo "lane2_rc=$lane2_rc" >> "$GITHUB_OUTPUT"
+
+          test "$lane1_rc" -eq 0
+          test "$lane2_rc" -eq 0
+
+      - name: Evaluate aggregate 20K TPS target
+        shell: bash
+        run: |
+          set -euo pipefail
+          lane1="artifacts/performance/$RUN_ID-lane1/metrics/$RUN_ID-lane1-metrics.json"
+          lane2="artifacts/performance/$RUN_ID-lane2/metrics/$RUN_ID-lane2-metrics.json"
+          output_dir="artifacts/capacity-aggregate/$RUN_ID"
+          mkdir -p "$output_dir"
+
+          python3 - "$lane1" "$lane2" "$output_dir/summary.json" "$output_dir/report.md" <<'PY'
+          import json
+          import sys
+          from datetime import datetime, timezone
+
+          lane_paths=sys.argv[1:3]
+          summary_path=sys.argv[3]
+          report_path=sys.argv[4]
+          lanes=[]
+          for path in lane_paths:
+              with open(path, encoding="utf-8") as stream:
+                  value=json.load(stream)
+              stages={stage["Name"]:stage for stage in value["Stages"]}
+              lanes.append((value,stages))
+
+          aggregate={}
+          for stage_name in ("sustained","peak","soak"):
+              aggregate[stage_name]=sum(stages[stage_name]["ThroughputPerSecond"] for _,stages in lanes)
+
+          execution_passed=all(value["ExecutionPassed"] for value,_ in lanes)
+          latency_passed=all(
+              stages[name]["P95Milliseconds"] <= 20
+              and stages[name]["P99Milliseconds"] <= 50
+              for _,stages in lanes
+              for name in ("sustained","peak","soak")
+          )
+          resource_passed=all(
+              stages[name]["PeakCpuPercent"] <= 90
+              and stages[name]["PeakWorkingSetMegabytes"] <= 1024
+              and stages[name]["AllocatedBytesPerOperation"] <= 32768
+              for _,stages in lanes
+              for name in ("sustained","peak","soak")
+          )
+          capacity_passed=(
+              aggregate["sustained"] >= 10000
+              and aggregate["peak"] >= 20000
+              and aggregate["soak"] >= 10000
+          )
+          passed=execution_passed and latency_passed and resource_passed and capacity_passed
+
+          result={
+              "schemaVersion":1,
+              "observedAtUtc":datetime.now(timezone.utc).isoformat(),
+              "topology":"single-host controlled two-association load-share",
+              "laneCount":2,
+              "executionPassed":execution_passed,
+              "latencyPassed":latency_passed,
+              "resourcePassed":resource_passed,
+              "capacityPassed":capacity_passed,
+              "aggregateThroughputPerSecond":aggregate,
+              "lanes":[{
+                  "runId":value["RunId"],
+                  "executionPassed":value["ExecutionPassed"],
+                  "stages":{name:{
+                      "throughputPerSecond":stages[name]["ThroughputPerSecond"],
+                      "p95Milliseconds":stages[name]["P95Milliseconds"],
+                      "p99Milliseconds":stages[name]["P99Milliseconds"],
+                      "peakCpuPercent":stages[name]["PeakCpuPercent"],
+                      "peakWorkingSetMegabytes":stages[name]["PeakWorkingSetMegabytes"],
+                      "allocatedBytesPerOperation":stages[name]["AllocatedBytesPerOperation"],
+                      "failedOperations":stages[name]["FailedOperations"]
+                  } for name in ("sustained","peak","soak")}
+              } for value,stages in lanes],
+              "passed":passed
+          }
+
+          with open(summary_path,"w",encoding="utf-8") as stream:
+              json.dump(result,stream,indent=2)
+              stream.write("\n")
+
+          lines=[
+              "# Phase 56 Two-Association Load-Share Capacity Qualification",
+              "",
+              "- Topology: controlled single-host, two independent native-SCTP associations",
+              f"- Aggregate sustained TPS: `{aggregate['sustained']:.1f}`",
+              f"- Aggregate peak TPS: `{aggregate['peak']:.1f}`",
+              f"- Aggregate soak TPS: `{aggregate['soak']:.1f}`",
+              f"- Execution passed: `{execution_passed}`",
+              f"- Latency limits passed: `{latency_passed}`",
+              f"- Resource limits passed: `{resource_passed}`",
+              f"- 20K capacity target passed: `{capacity_passed}`",
+              f"- Overall result: **{passed}**",
+              "",
+              "This closes only the numeric capacity-target gate when passing.",
+              "It does not satisfy or imply the separate representative multi-host soak gate."
+          ]
+          with open(report_path,"w",encoding="utf-8") as stream:
+              stream.write("\n".join(lines)+"\n")
+
+          print(json.dumps(result,indent=2))
+          raise SystemExit(0 if passed else 1)
+          PY
+
+      - name: Upload controlled capacity evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase56-loadshare-capacity-evidence
+          path: |
+            artifacts/capacity-aggregate/${{ env.RUN_ID }}
+            artifacts/performance/${{ env.RUN_ID }}-lane1/metrics
+            artifacts/performance/${{ env.RUN_ID }}-lane1/reports
+            artifacts/performance/${{ env.RUN_ID }}-lane1/config
+            artifacts/performance/${{ env.RUN_ID }}-lane2/metrics
+            artifacts/performance/${{ env.RUN_ID }}-lane2/reports
+            artifacts/performance/${{ env.RUN_ID }}-lane2/config
+          retention-days: 90
+
+      - name: Retain passing evidence
+        if: success()
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="docs/evidence/PHASE56_CAPACITY_$GITHUB_RUN_ID"
+          branch="evidence/capacity-$GITHUB_RUN_ID"
+          git checkout -b "$branch"
+          mkdir -p "$evidence_dir/lane1" "$evidence_dir/lane2" "$evidence_dir/aggregate"
+          cp -a "artifacts/capacity-aggregate/$RUN_ID/." "$evidence_dir/aggregate/"
+          cp -a "artifacts/performance/$RUN_ID-lane1/metrics/." "$evidence_dir/lane1/"
+          cp -a "artifacts/performance/$RUN_ID-lane1/reports/." "$evidence_dir/lane1/"
+          cp -a "artifacts/performance/$RUN_ID-lane2/metrics/." "$evidence_dir/lane2/"
+          cp -a "artifacts/performance/$RUN_ID-lane2/reports/." "$evidence_dir/lane2/"
+          (
+            cd "$evidence_dir"
+            find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum > sha256.txt
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$evidence_dir"
+          git commit -m "evidence: retain aggregate 20K TPS capacity run $GITHUB_RUN_ID"
+          git push origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Open capacity evidence pull request
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.evidence.outputs.branch }}
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.evidence_dir }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/capacity-pr.md"
+          cat >"$body" <<EOF
+          Phase 56 controlled aggregate 20K TPS capacity qualification.
+
+          Two independent native-SCTP/M3UA full-stack lanes run concurrently
+          under Loadshare traffic mode. This evidence closes only the numeric
+          capacity-target gate; representative multi-host soak remains separate.
+
+          Retained evidence: `$EVIDENCE_DIR`
+          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          EOF
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH"             --title "evidence: retain aggregate 20K TPS capacity run $GITHUB_RUN_ID"             --body-file "$body"
