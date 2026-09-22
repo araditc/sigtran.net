@@ -121,11 +121,15 @@ gcc \
     -o "${PEER_BINARY}" \
     2>&1 | tee "${PEER_BUILD_LOG}"
 
-dotnet build \
-    "${REPOSITORY_ROOT}/src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj" \
-    -c Release \
-    -m:1 \
-    2>&1 | tee "${SDK_BUILD_LOG}"
+if [[ "${SIGTRAN_SKIP_BUILD:-false}" == "true" ]]; then
+    echo "dotnet build skipped by SIGTRAN_SKIP_BUILD=true" >"${SDK_BUILD_LOG}"
+else
+    dotnet build \
+        "${REPOSITORY_ROOT}/src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj" \
+        -c Release \
+        -m:1 \
+        2>&1 | tee "${SDK_BUILD_LOG}"
+fi
 
 CAPTURE_LAUNCH_PID=""
 CAPTURE_PID=""
