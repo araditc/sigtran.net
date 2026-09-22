@@ -1,0 +1,220 @@
+{
+  "RunId": "phase56-loadshare-35696403076-lane1",
+  "CompletedAtUtc": "2026-09-22T06:47:56.7001611+00:00",
+  "ExecutionPassed": true,
+  "CapacityQualified": false,
+  "Stages": [
+    {
+      "Name": "warmup",
+      "RequestedOperations": 1000,
+      "SuccessfulOperations": 1000,
+      "FailedOperations": 0,
+      "Concurrency": 16,
+      "Duration": "00:00:00.1912601",
+      "ThroughputPerSecond": 5228.48205140539,
+      "P50Milliseconds": 1.176423,
+      "P95Milliseconds": 2.700229,
+      "P99Milliseconds": 79.12658,
+      "MaximumMilliseconds": 105.602991,
+      "AllocatedBytesPerOperation": 9814,
+      "AverageCpuPercent": 17.029223980560804,
+      "PeakCpuPercent": 24.22522383632676,
+      "PeakWorkingSetMegabytes": 54,
+      "Gen2Collections": 0,
+      "Errors": [],
+      "Passed": true
+    },
+    {
+      "Name": "sustained",
+      "RequestedOperations": 20000,
+      "SuccessfulOperations": 20000,
+      "FailedOperations": 0,
+      "Concurrency": 96,
+      "Duration": "00:00:01.1527513",
+      "ThroughputPerSecond": 17349.796092183977,
+      "P50Milliseconds": 5.192166,
+      "P95Milliseconds": 9.856165,
+      "P99Milliseconds": 13.9342,
+      "MaximumMilliseconds": 23.41548,
+      "AllocatedBytesPerOperation": 9421,
+      "AverageCpuPercent": 28.51477503525371,
+      "PeakCpuPercent": 36.41041638084442,
+      "PeakWorkingSetMegabytes": 72,
+      "Gen2Collections": 0,
+      "Errors": [],
+      "Passed": true
+    },
+    {
+      "Name": "peak",
+      "RequestedOperations": 20000,
+      "SuccessfulOperations": 20000,
+      "FailedOperations": 0,
+      "Concurrency": 128,
+      "Duration": "00:00:01.1660805",
+      "ThroughputPerSecond": 17151.474533705004,
+      "P50Milliseconds": 7.082994,
+      "P95Milliseconds": 13.342329,
+      "P99Milliseconds": 16.326927,
+      "MaximumMilliseconds": 22.435003,
+      "AllocatedBytesPerOperation": 9427,
+      "AverageCpuPercent": 29.08718205526355,
+      "PeakCpuPercent": 44.962264953348914,
+      "PeakWorkingSetMegabytes": 74,
+      "Gen2Collections": 0,
+      "Errors": [],
+      "Passed": true
+    },
+    {
+      "Name": "recovery",
+      "RequestedOperations": 1000,
+      "SuccessfulOperations": 1000,
+      "FailedOperations": 0,
+      "Concurrency": 32,
+      "Duration": "00:00:00.1438124",
+      "ThroughputPerSecond": 6953.503314039679,
+      "P50Milliseconds": 1.560191,
+      "P95Milliseconds": 4.496717,
+      "P99Milliseconds": 89.933121,
+      "MaximumMilliseconds": 90.882241,
+      "AllocatedBytesPerOperation": 9450,
+      "AverageCpuPercent": 4.152434433961104,
+      "PeakCpuPercent": 7.5113503393400425,
+      "PeakWorkingSetMegabytes": 79,
+      "Gen2Collections": 0,
+      "Errors": [],
+      "Passed": true
+    },
+    {
+      "Name": "soak",
+      "RequestedOperations": 10000,
+      "SuccessfulOperations": 10000,
+      "FailedOperations": 0,
+      "Concurrency": 96,
+      "Duration": "00:00:00.5131846",
+      "ThroughputPerSecond": 19486.16540714589,
+      "P50Milliseconds": 4.662236,
+      "P95Milliseconds": 9.053725,
+      "P99Milliseconds": 11.258057,
+      "MaximumMilliseconds": 15.173098,
+      "AllocatedBytesPerOperation": 9361,
+      "AverageCpuPercent": 21.866815520120767,
+      "PeakCpuPercent": 28.92389811435794,
+      "PeakWorkingSetMegabytes": 79,
+      "Gen2Collections": 0,
+      "Errors": [],
+      "Passed": true
+    }
+  ],
+  "Resilience": {
+    "FailoverStartedUtc": "2026-09-22T06:47:54.2582122+00:00",
+    "AssociationRecoveredUtc": "2026-09-22T06:47:55.9401393+00:00",
+    "TrafficRestoredUtc": "2026-09-22T06:47:56.0850108+00:00",
+    "AssociationRecovery": "00:00:01.6819271",
+    "TrafficRestoration": "00:00:01.8267986",
+    "ReconnectAttempts": 1,
+    "LostOperations": 0
+  },
+  "RuntimeEvents": [
+    {
+      "TimestampUtc": "2026-09-22T06:47:51.6725105+00:00",
+      "Kind": "StateChanged",
+      "State": "Starting",
+      "Detail": "runtime-start"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:51.7001987+00:00",
+      "Kind": "StateChanged",
+      "State": "Active",
+      "Detail": "asp-active"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:51.7003998+00:00",
+      "Kind": "AspActivated",
+      "State": "Active",
+      "Detail": "asp-startup-complete"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:53.817178+00:00",
+      "Kind": "HeartbeatAcknowledged",
+      "State": "Active",
+      "Detail": null
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:55.8154438+00:00",
+      "Kind": "FaultObserved",
+      "State": "Active",
+      "Detail": "Broken pipe"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:55.815744+00:00",
+      "Kind": "ReconnectScheduled",
+      "State": "Active",
+      "Detail": "attempt=1 delayMs=100"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:55.8157613+00:00",
+      "Kind": "StateChanged",
+      "State": "Reconnecting",
+      "Detail": "reconnect-scheduled"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:55.9204989+00:00",
+      "Kind": "StateChanged",
+      "State": "Active",
+      "Detail": "asp-active"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:55.9205371+00:00",
+      "Kind": "AspActivated",
+      "State": "Active",
+      "Detail": "asp-startup-complete"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6198573+00:00",
+      "Kind": "StateChanged",
+      "State": "Stopping",
+      "Detail": "runtime-stop"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6984869+00:00",
+      "Kind": "FaultObserved",
+      "State": "Stopping",
+      "Detail": "The active M3UA session ended."
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6985776+00:00",
+      "Kind": "ReconnectScheduled",
+      "State": "Stopping",
+      "Detail": "attempt=1 delayMs=100"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6985832+00:00",
+      "Kind": "StateChanged",
+      "State": "Reconnecting",
+      "Detail": "reconnect-scheduled"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6987438+00:00",
+      "Kind": "StateChanged",
+      "State": "Stopped",
+      "Detail": "runtime-stopped"
+    },
+    {
+      "TimestampUtc": "2026-09-22T06:47:56.6987525+00:00",
+      "Kind": "ShutdownCompleted",
+      "State": "Stopped",
+      "Detail": "runtime-stopped"
+    }
+  ],
+  "LayerCounters": {
+    "M3uaSent": 52000,
+    "M3uaReceived": 52000,
+    "ReconnectAttempts": 1,
+    "Faults": 1,
+    "SccpSent": 52000,
+    "SccpReceived": 52000,
+    "TcapOpened": 52000,
+    "TcapClosed": 52000,
+    "TcapDroppedDialogueEvents": 51872
+  }
+}
