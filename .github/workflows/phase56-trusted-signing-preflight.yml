@@ -46,21 +46,70 @@ jobs:
           mkdir -p artifacts/signing
           cp "src/Sigtran.NET/bin/Release/Sigtran.NET.$RELEASE_VERSION.nupkg" artifacts/signing/
 
-      - name: Validate organization signing certificate
+      - name: Discover organization signing certificate identity
         shell: bash
         env:
           SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-          TRUSTED_SHA256: ${{ vars.TRUSTED_SIGNING_CERTIFICATE_SHA256 }}
         run: |
           set -euo pipefail
           test -n "$SIGNING_CERTIFICATE"
           test -n "$SIGNING_CERTIFICATE_PASSWORD"
-          test -n "$TRUSTED_SHA256"
+
           pfx="$RUNNER_TEMP/stable-signing.pfx"
+          cert="$RUNNER_TEMP/stable-signing.crt"
+          chain="$RUNNER_TEMP/stable-signing-chain.pem"
+
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$pfx"
-          SIGNING_CERTIFICATE_PASSWORD="$SIGNING_CERTIFICATE_PASSWORD"             bash eng/verify-signing-certificate.sh "$pfx" "$TRUSTED_SHA256"             | tee artifacts/signing/certificate-verification.txt
+
+          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -clcerts -nokeys             -out "$cert"
+
+          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -cacerts -nokeys             -out "$chain"
+
+          subject="$(openssl x509 -in "$cert" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')"
+          issuer="$(openssl x509 -in "$cert" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')"
+          sha256="$(openssl x509 -in "$cert" -noout -fingerprint -sha256 | cut -d= -f2 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          not_before="$(openssl x509 -in "$cert" -noout -startdate | cut -d= -f2-)"
+          not_after="$(openssl x509 -in "$cert" -noout -enddate | cut -d= -f2-)"
+
+          if [ "$subject" = "$issuer" ]; then
+            echo "Stable signing certificate must not be self-issued." >&2
+            exit 1
+          fi
+
+          openssl x509 -in "$cert" -checkend 2592000 -noout
+
+          if [ -s "$chain" ]; then
+            openssl verify -CApath /etc/ssl/certs -untrusted "$chain" "$cert"               | tee artifacts/signing/certificate-chain-verification.txt
+          else
+            openssl verify -CApath /etc/ssl/certs "$cert"               | tee artifacts/signing/certificate-chain-verification.txt
+          fi
+
+          {
+            echo "subject=$subject"
+            echo "issuer=$issuer"
+            echo "sha256=$sha256"
+            echo "notBefore=$not_before"
+            echo "notAfter=$not_after"
+          } | tee artifacts/signing/certificate-identity.txt
+
           echo "SIGNING_PFX=$pfx" >> "$GITHUB_ENV"
+          echo "DISCOVERED_SIGNING_CERTIFICATE_SHA256=$sha256" >> "$GITHUB_ENV"
+
+      - name: Validate protected certificate fingerprint
+        shell: bash
+        env:
+          SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+          TRUSTED_SHA256: ${{ vars.TRUSTED_SIGNING_CERTIFICATE_SHA256 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$TRUSTED_SHA256" ]; then
+            echo "TRUSTED_SIGNING_CERTIFICATE_SHA256 is not configured." >&2
+            echo "Set it to: $DISCOVERED_SIGNING_CERTIFICATE_SHA256" >&2
+            exit 3
+          fi
+
+          SIGNING_CERTIFICATE_PASSWORD="$SIGNING_CERTIFICATE_PASSWORD"             bash eng/verify-signing-certificate.sh               "$SIGNING_PFX"               "$TRUSTED_SHA256"             | tee artifacts/signing/certificate-verification.txt
 
       - name: Sign and timestamp stable candidate
         shell: bash
