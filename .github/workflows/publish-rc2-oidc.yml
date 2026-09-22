@@ -1,6 +1,10 @@
 name: publish-rc2-oidc
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-rc2-oidc.yml'
   workflow_dispatch:
 
 permissions:
