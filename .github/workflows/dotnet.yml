@@ -30,5 +30,8 @@ jobs:
       - name: Test
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
 
+      - name: Test operator profile framework
+        run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
+
       - name: Pack
         run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build
