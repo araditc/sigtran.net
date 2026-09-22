@@ -24,7 +24,7 @@ SIGTRAN.NET is currently in a **public release-candidate** track.
 - Current source candidate: unpublished `1.0.0-rc.2`.
 - Target framework: `.NET 10` / `net10.0`.
 - License: Apache-2.0.
-- GitHub Releases/tags: pending; the repository currently retains release evidence and release notes, but the GitHub release/tag must still be created from an approved commit.
+- GitHub prerelease/tag: `v1.0.0-rc.2` is published and points to the approved RC source commit.
 
 The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, cross-implementation full-stack MAP SMS traffic, RC publication, package restore, operations-host smoke execution, and performance/resilience runs.
 
