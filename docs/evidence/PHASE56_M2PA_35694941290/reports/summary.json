@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "runId": "phase56-m2pa-35694941290",
+  "observedAtUtc": "2026-09-22T06:28:32.976123+00:00",
+  "protocol": "RFC 4165 M2PA over native Linux SCTP",
+  "peerImplementation": "independent C/lksctp reference peer",
+  "sdkExitCode": 0,
+  "peerExitCode": 0,
+  "sdkPassed": true,
+  "peerPassed": true,
+  "sctpPacketCount": 39,
+  "passed": true
+}

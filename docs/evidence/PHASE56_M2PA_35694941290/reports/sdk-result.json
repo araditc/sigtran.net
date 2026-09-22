@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "runId": "phase56-m2pa-35694941290",
+  "passed": true,
+  "remote": {
+    "RemoteIp": "127.0.0.1",
+    "RemotePort": 2907
+  },
+  "source": "Sigtran.NET.M2paInteropLab",
+  "protocol": {
+    "rfc": "RFC 4165",
+    "ppid": 5,
+    "linkStatusStream": 0,
+    "userDataStream": 1
+  },
+  "metrics": {
+    "state": "InService",
+    "SentUserData": 2,
+    "ReceivedUserData": 2,
+    "SentAcknowledgements": 3,
+    "ReceivedAcknowledgements": 2,
+    "SentLinkStatus": 9,
+    "ReceivedLinkStatus": 4,
+    "AcknowledgedUserData": 2,
+    "DiscardedOutOfOrder": 0,
+    "RetrievalDepth": 0
+  },
+  "transitions": [
+    {
+      "previous": "OutOfService",
+      "current": "Aligning",
+      "ObservedAtUtc": "2026-09-22T06:28:31.7920408+00:00",
+      "Reason": "alignment-started"
+    },
+    {
+      "previous": "Aligning",
+      "current": "Proving",
+      "ObservedAtUtc": "2026-09-22T06:28:31.8031885+00:00",
+      "Reason": "peer-alignment-observed"
+    },
+    {
+      "previous": "Proving",
+      "current": "InService",
+      "ObservedAtUtc": "2026-09-22T06:28:31.9141114+00:00",
+      "Reason": "alignment-ready"
+    },
+    {
+      "previous": "InService",
+      "current": "ProcessorOutage",
+      "ObservedAtUtc": "2026-09-22T06:28:31.9734642+00:00",
+      "Reason": "local-processor-outage"
+    },
+    {
+      "previous": "ProcessorOutage",
+      "current": "InService",
+      "ObservedAtUtc": "2026-09-22T06:28:32.0313042+00:00",
+      "Reason": "peer-ready"
+    }
+  ]
+}

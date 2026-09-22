@@ -1,0 +1,14 @@
+﻿{"observedAtUtc":"2026-09-22T06:28:31.6435205+00:00","eventName":"sctp-connected","payload":{"remote":"127.0.0.1","port":2907,"attempts":["attempt=1 successful=True delay=- reason=connected"],"health":"Sigtran.NET.Layers.SCTP.SctpTransportHealth"}}
+{"observedAtUtc":"2026-09-22T06:28:31.7920408+00:00","eventName":"m2pa-state","payload":{"previous":"OutOfService","current":"Aligning","ObservedAtUtc":"2026-09-22T06:28:31.7920408+00:00","Reason":"alignment-started"}}
+{"observedAtUtc":"2026-09-22T06:28:31.8031885+00:00","eventName":"m2pa-state","payload":{"previous":"Aligning","current":"Proving","ObservedAtUtc":"2026-09-22T06:28:31.8031885+00:00","Reason":"peer-alignment-observed"}}
+{"observedAtUtc":"2026-09-22T06:28:31.9141114+00:00","eventName":"m2pa-state","payload":{"previous":"Proving","current":"InService","ObservedAtUtc":"2026-09-22T06:28:31.9141114+00:00","Reason":"alignment-ready"}}
+{"observedAtUtc":"2026-09-22T06:28:31.9143311+00:00","eventName":"alignment-complete","payload":{"state":"InService"}}
+{"observedAtUtc":"2026-09-22T06:28:31.920848+00:00","eventName":"user-data-roundtrip","payload":{"sequence":1,"bytes":39}}
+{"observedAtUtc":"2026-09-22T06:28:31.9721131+00:00","eventName":"busy-cycle-complete","payload":{}}
+{"observedAtUtc":"2026-09-22T06:28:31.9734642+00:00","eventName":"m2pa-state","payload":{"previous":"InService","current":"ProcessorOutage","ObservedAtUtc":"2026-09-22T06:28:31.9734642+00:00","Reason":"local-processor-outage"}}
+{"observedAtUtc":"2026-09-22T06:28:32.0313042+00:00","eventName":"m2pa-state","payload":{"previous":"ProcessorOutage","current":"InService","ObservedAtUtc":"2026-09-22T06:28:32.0313042+00:00","Reason":"peer-ready"}}
+{"observedAtUtc":"2026-09-22T06:28:32.0317675+00:00","eventName":"processor-recovery-complete","payload":{"state":"InService"}}
+{"observedAtUtc":"2026-09-22T06:28:32.0341753+00:00","eventName":"user-data-roundtrip","payload":{"sequence":2,"bytes":39}}
+{"observedAtUtc":"2026-09-22T06:28:32.1467047+00:00","eventName":"complete","payload":{"passed":true}}
+{"observedAtUtc":"2026-09-22T06:28:32.148679+00:00","eventName":"m2pa-state","payload":{"previous":"InService","current":"ShuttingDown","ObservedAtUtc":"2026-09-22T06:28:32.148679+00:00","Reason":"shutdown-started"}}
+{"observedAtUtc":"2026-09-22T06:28:32.1533046+00:00","eventName":"m2pa-state","payload":{"previous":"ShuttingDown","current":"OutOfService","ObservedAtUtc":"2026-09-22T06:28:32.1533046+00:00","Reason":"link-stopped"}}
