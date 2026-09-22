@@ -52,7 +52,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 45 | Native SCTP production transport | [Phase 45 Native SCTP Production Transport](PHASE45_NATIVE_SCTP_PRODUCTION_TRANSPORT.md), [Phase 45 Summary](PHASE45_SUMMARY.md), [SCTP Transport](SCTP_TRANSPORT.md) | Evidence complete for Linux SCTP loopback; external peer evidence is tracked separately |
 | 46 | Evidence and readiness reconciliation | [Phase 46 Evidence And Readiness Reconciliation](PHASE46_EVIDENCE_READINESS_RECONCILIATION.md), [Phase 46 Summary](PHASE46_SUMMARY.md) | Complete; retained SCTP/M3UA evidence is reflected by readiness APIs |
 | 47 | M3UA production runtime API | [Phase 47 M3UA Runtime](PHASE47_M3UA_RUNTIME.md), [Phase 47 Summary](PHASE47_SUMMARY.md), [M3UA](M3UA.md) | Complete; long-running ASP runtime implements IMtp3Network |
-| 48 | M2PA production path | [Phase 48 M2PA Production Path](PHASE48_M2PA_PRODUCTION_PATH.md), [Phase 48 Summary](PHASE48_SUMMARY.md), [M2PA](M2PA.md) | Implementation complete; external peer evidence pending |
+| 48 | M2PA production path | [Phase 48 M2PA Production Path](PHASE48_M2PA_PRODUCTION_PATH.md), [Phase 48 Summary](PHASE48_SUMMARY.md), [M2PA](M2PA.md) | Implementation complete; independent RFC 4165 C/lksctp peer evidence retained in Phase 56 |
 | 49 | SCCP stateful service layer | [Phase 49 SCCP Stateful Service](PHASE49_SCCP_STATEFUL_SERVICE.md), [Phase 49 Summary](PHASE49_SUMMARY.md), [SCCP](SCCP.md) | Implementation complete; external peer evidence pending |
 | 50 | TCAP dialogue manager | [Phase 50 TCAP Dialogue Manager](PHASE50_TCAP_DIALOGUE_MANAGER.md), [Phase 50 Summary](PHASE50_SUMMARY.md), [TCAP](TCAP.md) | Implementation complete; external peer evidence pending |
 | 51 | MAP SMS service | [Phase 51 MAP SMS Service](PHASE51_MAP_SMS_SERVICE.md), [Phase 51 Summary](PHASE51_SUMMARY.md), [MAP SMS](MAP.md) | Implementation complete; independent peer evidence pending |
@@ -60,6 +60,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 53 | Operator-sized performance and resilience | [Phase 53 Performance And Resilience](PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md), [Phase 53 Summary](PHASE53_SUMMARY.md), [Performance Foundation](PHASE14_PERFORMANCE.md) | Implementation and controlled 62K-operation baseline complete; 20K peak and multi-host operator qualification pending |
 | 54 | Production operations package | [Phase 54 Production Operations Package](PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md), [Phase 54 Summary](PHASE54_SUMMARY.md), [Runtime Operations](OPERATIONS_RUNTIME.md) | Implementation complete; representative Kubernetes SCTP validation remains |
 | 55 | Stable release execution | [Phase 55 Stable Release Execution](PHASE55_STABLE_RELEASE_EXECUTION.md), [Phase 55 Summary](PHASE55_SUMMARY.md), [Public API Baseline](PUBLIC_API_BASELINE.md) | Assessment run 30088170594 complete with verified attestations; machine decision NO-GO and no stable publication |
+| 56 | Stable evidence closure | [Phase 56 Stable Evidence Closure](PHASE56_STABLE_EVIDENCE_CLOSURE.md) | Active; independent M2PA gate closed, five required stable gates remain |
 
 ## Current Production Gate
 
@@ -67,6 +68,6 @@ The retained verification catalog now reports native Linux SCTP, external SCTP
 peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
 prerelease publication evidence. Phase 52 also retains cross-implementation
 M3UA/SCCP/TCAP/MAP SMS traffic evidence. Full product readiness remains blocked
-on operator/vendor profile validation, independent M2PA peer traffic,
-20K peak and multi-host operator performance, representative Kubernetes SCTP
-validation, a trusted release identity, and protected stable publication.
+on operator/vendor profile validation, 20K peak and multi-host operator
+performance, representative Kubernetes SCTP validation, a trusted stable
+signing identity, and protected stable publication.
