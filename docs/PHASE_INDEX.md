@@ -57,17 +57,20 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 50 | TCAP dialogue manager | [Phase 50 TCAP Dialogue Manager](PHASE50_TCAP_DIALOGUE_MANAGER.md), [Phase 50 Summary](PHASE50_SUMMARY.md), [TCAP](TCAP.md) | Implementation complete; external peer evidence pending |
 | 51 | MAP SMS service | [Phase 51 MAP SMS Service](PHASE51_MAP_SMS_SERVICE.md), [Phase 51 Summary](PHASE51_SUMMARY.md), [MAP SMS](MAP.md) | Implementation complete; independent peer evidence pending |
 | 52 | End-to-end SS7 traffic lab | [Phase 52 End-To-End SS7 Traffic Lab](PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md), [Phase 52 Summary](PHASE52_SUMMARY.md), [Interoperability](INTEROPERABILITY.md) | Complete for repository-profile cross-implementation traffic; operator/vendor profile evidence remains |
-| 53 | Operator-sized performance and resilience | [Phase 53 Performance And Resilience](PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md), [Phase 53 Summary](PHASE53_SUMMARY.md), [Performance Foundation](PHASE14_PERFORMANCE.md) | Implementation and controlled 62K-operation baseline complete; 20K peak and multi-host operator qualification pending |
+| 53 | Operator-sized performance and resilience | [Phase 53 Performance And Resilience](PHASE53_OPERATOR_PERFORMANCE_RESILIENCE.md), [Phase 53 Summary](PHASE53_SUMMARY.md), [Performance Foundation](PHASE14_PERFORMANCE.md) | Controlled 62K-operation baseline plus Phase 56 two-association qualification retained; numeric 20K TPS gate closed, representative multi-host soak/failover still pending |
 | 54 | Production operations package | [Phase 54 Production Operations Package](PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md), [Phase 54 Summary](PHASE54_SUMMARY.md), [Runtime Operations](OPERATIONS_RUNTIME.md) | Implementation complete; representative Kubernetes SCTP validation remains |
 | 55 | Stable release execution | [Phase 55 Stable Release Execution](PHASE55_STABLE_RELEASE_EXECUTION.md), [Phase 55 Summary](PHASE55_SUMMARY.md), [Public API Baseline](PUBLIC_API_BASELINE.md) | Assessment run 30088170594 complete with verified attestations; machine decision NO-GO and no stable publication |
-| 56 | Stable evidence closure | [Phase 56 Stable Evidence Closure](PHASE56_STABLE_EVIDENCE_CLOSURE.md) | Active; independent M2PA gate closed, five required stable gates remain |
+| 56 | Stable evidence closure | [Phase 56 Stable Evidence Closure](PHASE56_STABLE_EVIDENCE_CLOSURE.md) | Active; independent M2PA and numeric capacity gates closed; four required stable gates remain |
+| 57 | Approved roadmap execution and 1.0 scope lock | [Roadmap Execution](ROADMAP_EXECUTION.md) | Active; 57A baseline reconciliation and 57B operator profile framework |
 
 ## Current Production Gate
 
-The retained verification catalog now reports native Linux SCTP, external SCTP
-peer traffic, M3UA interoperability, RC SBOM/provenance/API baseline, and
-prerelease publication evidence. Phase 52 also retains cross-implementation
-M3UA/SCCP/TCAP/MAP SMS traffic evidence. Full product readiness remains blocked
-on operator/vendor profile validation, 20K peak and multi-host operator
-performance, representative Kubernetes SCTP validation, a trusted stable
-signing identity, and protected stable publication.
+The retained verification catalog reports native Linux SCTP, external SCTP peer
+traffic, independent M3UA, independent M2PA, repository-profile full-stack MAP
+SMS traffic, RC SBOM/provenance/API-baseline evidence, and the closed numeric
+20K TPS capacity gate. Stable product readiness remains blocked on four required
+gates: operator/vendor profile acceptance, representative multi-host
+long-duration soak/failover, representative Kubernetes SCTP deployment, and an
+organization-trusted stable signing identity. Protected stable publication may
+execute only after those gates are retained as passing evidence and the machine
+evaluator returns `GO`.
