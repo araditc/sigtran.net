@@ -1,0 +1,136 @@
+name: phase56-capacity-qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase56-capacity-qualification.yml'
+      - 'scripts/run-full-stack-performance-lab.sh'
+      - 'src/Sigtran.NET.PerformanceLab/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: phase56-capacity-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    env:
+      RUN_ID: phase56-capacity-${{ github.run_id }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/artifacts
+      SIGTRAN_WARMUP_OPERATIONS: 2000
+      SIGTRAN_SUSTAINED_OPERATIONS: 30000
+      SIGTRAN_PEAK_OPERATIONS: 30000
+      SIGTRAN_RECOVERY_OPERATIONS: 2000
+      SIGTRAN_SOAK_OPERATIONS: 10000
+      SIGTRAN_WARMUP_CONCURRENCY: 32
+      SIGTRAN_SUSTAINED_CONCURRENCY: 128
+      SIGTRAN_PEAK_CONCURRENCY: 256
+      SIGTRAN_RECOVERY_CONCURRENCY: 64
+      SIGTRAN_SOAK_CONCURRENCY: 128
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install SCTP and packet tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y libsctp-dev lksctp-tools tcpdump tshark gzip
+
+      - name: Run controlled 20K TPS qualification
+        shell: bash
+        env:
+          SIGTRAN_RUN_ID: ${{ env.RUN_ID }}
+          SIGTRAN_ARTIFACT_ROOT: ${{ env.ARTIFACT_ROOT }}
+        run: bash scripts/run-full-stack-performance-lab.sh
+
+      - name: Require capacity qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          metrics="artifacts/performance/${RUN_ID}/metrics/${RUN_ID}-metrics.json"
+          python3 - "$metrics" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as stream:
+              value=json.load(stream)
+          if value.get("ExecutionPassed") is not True:
+              raise SystemExit("ExecutionPassed is false")
+          if value.get("CapacityQualified") is not True:
+              stages={s["Name"]: s for s in value.get("Stages", [])}
+              peak=stages.get("peak", {}).get("ThroughputPerSecond")
+              sustained=stages.get("sustained", {}).get("ThroughputPerSecond")
+              soak=stages.get("soak", {}).get("ThroughputPerSecond")
+              raise SystemExit(f"CapacityQualified is false: sustained={sustained} peak={peak} soak={soak}")
+          PY
+
+      - name: Upload qualification artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase56-capacity-evidence
+          path: artifacts/performance/${{ env.RUN_ID }}
+          retention-days: 90
+
+      - name: Retain passing capacity evidence
+        if: success()
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="artifacts/performance/${RUN_ID}"
+          evidence_dir="docs/evidence/PHASE56_CAPACITY_${GITHUB_RUN_ID}"
+          branch="evidence/capacity-${GITHUB_RUN_ID}"
+
+          git checkout -b "$branch"
+          mkdir -p "$evidence_dir"
+          cp -a "$source_dir/config" "$evidence_dir/"
+          cp -a "$source_dir/metrics" "$evidence_dir/"
+          cp -a "$source_dir/comparison" "$evidence_dir/"
+          cp -a "$source_dir/reports" "$evidence_dir/"
+          cp -a "$source_dir/trace" "$evidence_dir/"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$evidence_dir"
+          git commit -m "evidence: retain 20K TPS qualification run $GITHUB_RUN_ID"
+          git push origin "$branch"
+
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Open passing evidence pull request
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.evidence.outputs.branch }}
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.evidence_dir }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/capacity-pr.md"
+          cat >"$body" <<EOF
+          Phase 56 controlled 20K TPS qualification evidence.
+
+          This run is a single-host Linux/native-SCTP capacity qualification only.
+          It does not close or imply the separate representative multi-host soak gate.
+
+          Retained evidence: `$EVIDENCE_DIR`
+          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          EOF
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH"             --title "evidence: retain 20K TPS qualification run $GITHUB_RUN_ID"             --body-file "$body"
