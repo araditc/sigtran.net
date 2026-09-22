@@ -4,7 +4,7 @@ All notable changes to SIGTRAN.NET will be documented in this file.
 
 This project follows Semantic Versioning once the public API reaches a stable release. During the alpha phase, breaking API changes may still occur as protocol behavior, transport abstractions, and interoperability evidence are finalized.
 
-## [1.0.0-rc.2] - Unreleased
+## [1.0.0-rc.2] - 2026-09-22
 
 ### Added
 
@@ -23,7 +23,7 @@ This project follows Semantic Versioning once the public API reaches a stable re
 
 ### Release status
 
-Unpublished. Stable `1.0.0` remains blocked by the retained `NO-GO` decision.
+Published as both a GitHub prerelease and NuGet prerelease. NuGet publication was verified through Trusted Publishing/OIDC and a clean .NET 10 restore. Stable `1.0.0` remains blocked by the retained `NO-GO` decision.
 
 ## [0.1.0-alpha] - 2026-06-27
 
