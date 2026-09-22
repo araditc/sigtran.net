@@ -76,6 +76,20 @@ retained manifests instead of stale hard-coded flags.
   `nuget-stable` environment is restricted to protected branches and requires
   reviewer approval.
 
+## Phase 56 Evidence Closure
+
+- Phase 56 independent M2PA interoperability run `35695182775` passed on
+  GitHub-hosted Ubuntu using native Linux SCTP against an independently compiled
+  C/lksctp peer with no SDK linkage.
+- The retained run contains 39 SCTP packets and validates RFC 4165 PPID 5,
+  link-status stream 0, user-data stream 1, alignment/proving/Ready,
+  24-bit BSN/FSN acknowledgements, two bidirectional User Data round trips,
+  Busy/BusyEnded, processor outage/recovery, zero out-of-order discards, and
+  zero residual retrieval depth.
+- Retained evidence:
+  `docs/evidence/PHASE56_M2PA_35695182775/`.
+- The stable manifest now declares `independent-m2pa` passing.
+
 ## Remaining Production Blockers
 
 - The current full-stack benchmark is real Linux SCTP peer traffic evidence,
@@ -85,7 +99,7 @@ retained manifests instead of stale hard-coded flags.
 - Package publication evidence is closed for the public RC prerelease. Stable
   assessment run `30088170594` completed successfully and retained package,
   SBOM, API, digest, decision, and hosted attestation evidence. Live stable
-  publication remains blocked by the six machine-evaluated qualification
+  publication remains blocked by the five remaining machine-evaluated qualification
   gates and still requires a protected publish run plus verified stable NuGet
   restore evidence.
 - Public/stable signing must use the organization's approved trusted certificate in the protected release environment; the current signing evidence is internal self-signed RC evidence.
@@ -94,7 +108,8 @@ retained manifests instead of stale hard-coded flags.
   verified both hosted attestations against the release workflow, source
   commit, OIDC issuer, GitHub-hosted runner identity, and Rekor timestamp.
 - M3UA and M2PA provide stateful runtime implementations through `IMtp3Network`
-  and `IMtp2Link`. Independent external M2PA peer evidence remains.
+  and `IMtp2Link`. Phase 56 run `35695182775` closes the independent M2PA gate
+  with retained RFC 4165 traffic against an independently compiled C/lksctp peer.
 - SCCP, TCAP, and MAP SMS provide stateful runtime implementations and now have
   cross-implementation traffic evidence for the repository profile. A separate
   operator or vendor profile run is still required before broad SS7 network
@@ -106,9 +121,8 @@ retained manifests instead of stale hard-coded flags.
   Cluster network, firewall, readiness, termination, and rollback behavior need
   validation in the adopting operator environment.
 - The machine-evaluated stable decision is `NO-GO`. Stable publication is
-  blocked by independent external M2PA, operator/vendor profile acceptance,
-  20K TPS capacity, multi-host soak, representative Kubernetes SCTP, and
-  organization-trusted signing evidence.
+  blocked by operator/vendor profile acceptance, 20K TPS capacity, multi-host
+  soak, representative Kubernetes SCTP, and organization-trusted signing evidence.
 
 ## Production Decision
 
