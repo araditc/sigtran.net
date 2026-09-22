@@ -51,11 +51,21 @@ jobs:
           ./eng/generate-public-api-baseline.ps1 `
             -OutputPath "artifacts/ci-api/Sigtran.NET.current.public-api.txt"
 
-      - name: Upload current public API snapshot
+      - name: Verify admitted 1.0 public API contract
+        shell: pwsh
+        run: |
+          ./eng/compare-public-api.ps1 `
+            -CurrentPath "artifacts/ci-api/Sigtran.NET.current.public-api.txt" `
+            -OutputPath "artifacts/ci-api/Sigtran.NET.api-diff.md" `
+            -FailOnAnyChange
+
+      - name: Upload current public API evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: current-public-api
-          path: artifacts/ci-api/Sigtran.NET.current.public-api.txt
+          path: |
+            artifacts/ci-api/Sigtran.NET.current.public-api.txt
+            artifacts/ci-api/Sigtran.NET.api-diff.md
           if-no-files-found: error
 
       - name: Pack
