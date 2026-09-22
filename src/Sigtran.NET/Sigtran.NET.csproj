@@ -19,7 +19,7 @@
     <!-- Kept as a prerelease sentinel for the existing protected-release regression; actual development/package identity is explicit below. -->
     <VersionSuffix>rc.2</VersionSuffix>
     <Version>1.0.0-rc.3-dev</Version>
-    <PackageVersion>1.0.0-rc.3-dev</PackageVersion>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">$(Version)</PackageVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
