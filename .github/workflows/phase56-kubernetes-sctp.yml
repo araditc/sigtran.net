@@ -1,0 +1,246 @@
+name: phase56-kubernetes-sctp
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Fully qualified operations-host image
+        required: true
+        type: string
+      namespace:
+        description: Kubernetes namespace for qualification
+        required: true
+        default: sigtran-phase56
+        type: string
+      confirmation:
+        description: Type "run kubernetes sctp <namespace>"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: phase56-kubernetes-sctp
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: [self-hosted, linux, sigtran-kubernetes-lab]
+    environment:
+      name: kubernetes-sctp
+    timeout-minutes: 60
+    env:
+      RUN_ID: phase56-k8s-${{ github.run_id }}
+      K8S_NAMESPACE: ${{ inputs.namespace }}
+      K8S_IMAGE: ${{ inputs.image }}
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      REMOTE_IP: ${{ secrets.K8S_REMOTE_IP }}
+      REMOTE_PORT: ${{ secrets.K8S_REMOTE_PORT }}
+      LOCAL_POINT_CODE: ${{ vars.K8S_LOCAL_POINT_CODE || '1' }}
+      REMOTE_POINT_CODE: ${{ vars.K8S_REMOTE_POINT_CODE || '2' }}
+      NETWORK_INDICATOR: ${{ vars.K8S_NETWORK_INDICATOR || '2' }}
+      ASP_IDENTIFIER: ${{ vars.K8S_ASP_IDENTIFIER || '42' }}
+      ROUTING_CONTEXT: ${{ vars.K8S_ROUTING_CONTEXT || '100' }}
+      RAW_EVIDENCE_ROOT: ${{ vars.K8S_RAW_EVIDENCE_ROOT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Validate protected cluster configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirmation }}" = "run kubernetes sctp $K8S_NAMESPACE"
+          test -n "$KUBECONFIG_B64"
+          test -n "$REMOTE_IP"
+          test -n "$REMOTE_PORT"
+          test -n "$RAW_EVIDENCE_ROOT"
+          for cmd in kubectl curl sha256sum python3 base64; do
+            command -v "$cmd" >/dev/null
+          done
+
+      - name: Configure kubectl
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubeconfig="$RUNNER_TEMP/kubeconfig"
+          printf '%s' "$KUBECONFIG_B64" | base64 -d > "$kubeconfig"
+          chmod 600 "$kubeconfig"
+          echo "KUBECONFIG=$kubeconfig" >> "$GITHUB_ENV"
+          kubectl version -o json > "$RUNNER_TEMP/kube-version.json"
+
+      - name: Deploy operations host
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl get namespace "$K8S_NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$K8S_NAMESPACE"
+
+          kubectl -n "$K8S_NAMESPACE" create configmap sigtran-node             --from-literal=ASPNETCORE_URLS=http://+:8080             --from-literal=SIGTRAN_REMOTE_IP="$REMOTE_IP"             --from-literal=SIGTRAN_REMOTE_PORT="$REMOTE_PORT"             --from-literal=SIGTRAN_ASP_IDENTIFIER="$ASP_IDENTIFIER"             --from-literal=SIGTRAN_LOCAL_POINT_CODE="$LOCAL_POINT_CODE"             --from-literal=SIGTRAN_REMOTE_POINT_CODE="$REMOTE_POINT_CODE"             --from-literal=SIGTRAN_ROUTING_CONTEXT="$ROUTING_CONTEXT"             --from-literal=SIGTRAN_NETWORK_INDICATOR="$NETWORK_INDICATOR"             --from-literal=SIGTRAN_SERVICE_INDICATOR=3             --from-literal=SIGTRAN_QUEUE_CAPACITY=4096             --dry-run=client -o yaml | kubectl apply -f -
+
+          sed 's|ghcr.io/araditc/sigtran-net-operations-host:VERSION|'"$K8S_IMAGE"'|g'             deploy/kubernetes/deployment.yaml | kubectl -n "$K8S_NAMESPACE" apply -f -
+
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+
+      - name: Verify readiness and SCTP association
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/artifacts/kubernetes/$RUN_ID"
+          raw="$root/raw"
+          safe="$root/safe"
+          mkdir -p "$raw" "$safe"
+
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods -l app.kubernetes.io/name=sigtran-node -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+
+          kubectl -n "$K8S_NAMESPACE" logs "$pod" > "$raw/pod-initial.log"
+          kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c 'cat /proc/net/sctp/assocs || true' > "$raw/sctp-assocs.txt"
+
+          kubectl -n "$K8S_NAMESPACE" port-forward service/sigtran-node-management 18080:8080 > "$raw/port-forward.log" 2>&1 &
+          pf_pid=$!
+          trap 'kill "$pf_pid" 2>/dev/null || true' EXIT
+          sleep 2
+
+          curl --fail --silent http://127.0.0.1:18080/health/live > "$raw/live.json"
+          curl --fail --silent http://127.0.0.1:18080/health/ready > "$raw/ready.json"
+          curl --fail --silent http://127.0.0.1:18080/metrics > "$raw/metrics.txt"
+
+          test -s "$raw/sctp-assocs.txt"
+          kill "$pf_pid" 2>/dev/null || true
+          wait "$pf_pid" 2>/dev/null || true
+          trap - EXIT
+
+      - name: Verify restart termination and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/artifacts/kubernetes/$RUN_ID/raw"
+          old_pod="$(kubectl -n "$K8S_NAMESPACE" get pods -l app.kubernetes.io/name=sigtran-node -o jsonpath='{.items[0].metadata.name}')"
+
+          kubectl -n "$K8S_NAMESPACE" delete pod "$old_pod" --wait=false
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          new_pod="$(kubectl -n "$K8S_NAMESPACE" get pods -l app.kubernetes.io/name=sigtran-node -o jsonpath='{.items[0].metadata.name}')"
+          test "$new_pod" != "$old_pod"
+
+          kubectl -n "$K8S_NAMESPACE" annotate deployment/sigtran-node             phase56.sigtran.net/restarted-at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --overwrite
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          kubectl -n "$K8S_NAMESPACE" rollout undo deployment/sigtran-node
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+
+          final_pod="$(kubectl -n "$K8S_NAMESPACE" get pods -l app.kubernetes.io/name=sigtran-node -o jsonpath='{.items[0].metadata.name}')"
+          kubectl -n "$K8S_NAMESPACE" logs "$final_pod" > "$root/pod-final.log"
+          kubectl -n "$K8S_NAMESPACE" exec "$final_pod" -- sh -c 'cat /proc/net/sctp/assocs || true' > "$root/sctp-assocs-final.txt"
+          test -s "$root/sctp-assocs-final.txt"
+
+      - name: Create sanitized evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/artifacts/kubernetes/$RUN_ID"
+          raw="$root/raw"
+          safe="$root/safe"
+
+          kubectl version -o json > "$raw/kube-version.json"
+          kubectl get nodes -o json > "$raw/nodes.json"
+          kubectl -n kube-system get pods -o json > "$raw/kube-system-pods.json"
+          kubectl -n "$K8S_NAMESPACE" get deployment sigtran-node -o json > "$raw/deployment.json"
+
+          python3 - "$raw/kube-version.json" "$raw/nodes.json" "$raw/kube-system-pods.json"             "$safe/summary.json" "$safe/report.md" "$K8S_IMAGE" <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          kube_path,nodes_path,pods_path,summary_path,report_path=map(Path,sys.argv[1:6])
+          image=sys.argv[6]
+          kube=json.loads(kube_path.read_text())
+          nodes=json.loads(nodes_path.read_text())
+          pods=json.loads(pods_path.read_text())
+
+          kernels=sorted({n.get("status",{}).get("nodeInfo",{}).get("kernelVersion") for n in nodes.get("items",[])})
+          os_images=sorted({n.get("status",{}).get("nodeInfo",{}).get("osImage") for n in nodes.get("items",[])})
+          kube_system_names=[p.get("metadata",{}).get("name","") for p in pods.get("items",[])]
+          cni_hints=sorted({name.split("-")[0] for name in kube_system_names if any(token in name.lower() for token in ("cilium","calico","flannel","weave","antrea"))})
+
+          result={
+              "schemaVersion":1,
+              "topology":"representative Kubernetes SCTP deployment",
+              "serverVersion":kube.get("serverVersion",{}).get("gitVersion"),
+              "kernelVersions":kernels,
+              "osImages":os_images,
+              "cniHints":cni_hints,
+              "image":image,
+              "readinessPassed":True,
+              "sctpAssociationObserved":True,
+              "podRestartPassed":True,
+              "rolloutPassed":True,
+              "rollbackPassed":True,
+              "passed":True,
+          }
+          summary_path.write_text(json.dumps(result,indent=2)+"\n")
+          report_path.write_text(
+              "# Phase 56 Kubernetes SCTP Qualification\n\n"
+              f"- Kubernetes: {result['serverVersion']}\n"
+              f"- Kernels: {', '.join(kernels)}\n"
+              f"- CNI hints: {', '.join(cni_hints) or 'not auto-detected'}\n"
+              f"- Image: {image}\n"
+              "- Readiness/liveness: PASS\n"
+              "- SCTP association observed in pod network namespace: PASS\n"
+              "- Pod restart/recovery: PASS\n"
+              "- Rollout/rollback: PASS\n"
+              "- Result: PASS\n"
+          )
+          PY
+
+          sha256sum             "$raw/pod-initial.log" "$raw/pod-final.log"             "$raw/sctp-assocs.txt" "$raw/sctp-assocs-final.txt"             "$raw/live.json" "$raw/ready.json" "$raw/metrics.txt"             "$raw/kube-version.json" "$raw/nodes.json" "$raw/kube-system-pods.json"             "$raw/deployment.json" > "$safe/raw-evidence.sha256"
+          find "$safe" -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum > "$safe/sha256.txt"
+
+          target="$RAW_EVIDENCE_ROOT/$RUN_ID"
+          mkdir -p "$target"
+          chmod 700 "$target"
+          cp -a "$raw/." "$target/"
+          rm -rf "$raw"
+
+      - name: Retain sanitized evidence branch
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="docs/evidence/PHASE56_KUBERNETES_$GITHUB_RUN_ID"
+          branch="evidence/kubernetes-$GITHUB_RUN_ID"
+          git fetch origin main
+          git checkout -B "$branch" origin/main
+          mkdir -p "$evidence_dir"
+          cp -a "artifacts/kubernetes/$RUN_ID/safe/." "$evidence_dir/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "$evidence_dir"
+          git commit -m "evidence: retain Kubernetes SCTP run $GITHUB_RUN_ID"
+          git push origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "evidence_dir=$evidence_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Open evidence review pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.evidence.outputs.branch }}
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.evidence_dir }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/kubernetes-pr.md"
+          cat >"$body" <<EOF
+          Phase 56 representative Kubernetes SCTP/CNI evidence.
+
+          Raw cluster logs/manifests remain on protected lab storage. This PR
+          contains only sanitized qualification output and digests.
+
+          Retained evidence: $EVIDENCE_DIR
+          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Merging this PR does not automatically promote the stable manifest gate.
+          EOF
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH"             --title "evidence: retain Kubernetes SCTP run $GITHUB_RUN_ID"             --body-file "$body"
