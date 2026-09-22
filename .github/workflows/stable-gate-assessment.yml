@@ -1,0 +1,38 @@
+name: stable-gate-assessment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'eng/release/stable-release.json'
+      - 'eng/evaluate-stable-release.ps1'
+      - 'eng/api/Sigtran.NET.1.0.public-api.txt'
+      - 'docs/evidence/**'
+      - '.github/workflows/stable-gate-assessment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assess:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Evaluate stable release gates
+        shell: pwsh
+        run: ./eng/evaluate-stable-release.ps1 -ExpectedVersion "1.0.0" -JsonOutputPath "artifacts/stable-gate/stable-release-decision.json" -MarkdownOutputPath "artifacts/stable-gate/stable-release-decision.md"
+
+      - name: Publish decision in job summary
+        shell: bash
+        run: cat artifacts/stable-gate/stable-release-decision.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload stable gate assessment
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stable-gate-assessment
+          path: artifacts/stable-gate
+          retention-days: 90
