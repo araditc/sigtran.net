@@ -107,6 +107,7 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
 
     private readonly M3uaAssociationDispatcher _dispatcher;
     private readonly Channel<DispatchWorkItem>[] _lanes;
+    private readonly SemaphoreSlim[] _admissionGates;
     private readonly Task[] _workers;
     private readonly ConcurrentDictionary<string, AssociationCounters> _associationCounters =
         new(StringComparer.OrdinalIgnoreCase);
@@ -134,6 +135,7 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
         }
 
         _lanes = new Channel<DispatchWorkItem>[SlsLaneCount];
+        _admissionGates = new SemaphoreSlim[SlsLaneCount];
         _workers = new Task[SlsLaneCount];
         for (int lane = 0; lane < SlsLaneCount; lane++)
         {
@@ -146,6 +148,7 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
                     AllowSynchronousContinuations = false
                 });
             _lanes[lane] = channel;
+            _admissionGates[lane] = new SemaphoreSlim(1, 1);
             _workers[lane] = RunLaneAsync(channel.Reader);
         }
     }
@@ -160,21 +163,53 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
 
         DispatchWorkItem work = new(message, ct);
         int lane = message.RoutingLabel.SignallingLinkSelection;
+        bool admitted = false;
 
         Interlocked.Increment(ref _pendingDispatches);
         try
         {
-            await _lanes[lane].Writer.WriteAsync(work, ct).ConfigureAwait(false);
-            Interlocked.Increment(ref _admittedDispatches);
-        }
-        catch (ChannelClosedException) when (Volatile.Read(ref _disposed) != 0)
-        {
-            Interlocked.Decrement(ref _pendingDispatches);
-            throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
+            SemaphoreSlim admissionGate = _admissionGates[lane];
+            await admissionGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                ChannelWriter<DispatchWorkItem> writer = _lanes[lane].Writer;
+                while (await writer.WaitToWriteAsync(ct).ConfigureAwait(false))
+                {
+                    ThrowIfDisposed();
+
+                    // Admission must be visible before the work item can become
+                    // visible to the lane worker. Serializing writers per SLS lets
+                    // us reserve the bounded slot, account admission, then publish
+                    // with TryWrite without another producer consuming that slot.
+                    Interlocked.Increment(ref _admittedDispatches);
+                    if (writer.TryWrite(work))
+                    {
+                        admitted = true;
+                        break;
+                    }
+
+                    // The only expected race here is disposal completing the
+                    // channel between WaitToWriteAsync and TryWrite.
+                    Interlocked.Decrement(ref _admittedDispatches);
+                }
+
+                if (!admitted)
+                {
+                    throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
+                }
+            }
+            finally
+            {
+                admissionGate.Release();
+            }
         }
         catch
         {
-            Interlocked.Decrement(ref _pendingDispatches);
+            if (!admitted)
+            {
+                Interlocked.Decrement(ref _pendingDispatches);
+            }
+
             throw;
         }
 
@@ -195,12 +230,20 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
                 Interlocked.Read(ref entry.Value.Ambiguous)))
             .ToArray();
 
+        // Read terminal counters before the cumulative admission counter. Since
+        // admission is recorded before publication, this ordering guarantees a
+        // snapshot never reports more terminal work than admitted work.
+        long completedDispatches = Interlocked.Read(ref _completedDispatches);
+        long canceledDispatches = Interlocked.Read(ref _canceledDispatches);
+        long faultedDispatches = Interlocked.Read(ref _faultedDispatches);
+        long admittedDispatches = Interlocked.Read(ref _admittedDispatches);
+
         return new M3uaHaDispatchCoordinatorSnapshot(
             Volatile.Read(ref _pendingDispatches),
-            Interlocked.Read(ref _admittedDispatches),
-            Interlocked.Read(ref _completedDispatches),
-            Interlocked.Read(ref _canceledDispatches),
-            Interlocked.Read(ref _faultedDispatches),
+            admittedDispatches,
+            completedDispatches,
+            canceledDispatches,
+            faultedDispatches,
             Interlocked.Read(ref _sentOutcomes),
             Interlocked.Read(ref _notDispatchedOutcomes),
             Interlocked.Read(ref _ambiguousOutcomes),
