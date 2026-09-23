@@ -17,6 +17,9 @@ await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopW
 await RunAsync("HA runtime keeps shared shutdown alive after one waiter cancels", CancelledStopWaiterDoesNotCancelSupervisorAsync);
 await RunAsync("HA runtime stops peer lanes after a synchronous stop failure", SynchronousStopFailureDoesNotSkipPeerShutdownAsync);
 await RunAsync("HA runtime ignores a captured late event after lane detach", CapturedLateRuntimeEventIsIgnoredAfterDetachAsync);
+await RunAsync("HA runtime diagnostics cannot recover a faulted route", RuntimeHealthEventRegressions.DiagnosticsCannotRecoverFaultedRouteAsync);
+await RunAsync("HA runtime diagnostics cannot clear terminal fault", RuntimeHealthEventRegressions.DiagnosticsCannotClearTerminalFaultAsync);
+await RunAsync("HA runtime startup completion cannot clear an observed fault", RuntimeHealthEventRegressions.StartupCompletionCannotClearObservedFaultAsync);
 
 static async Task DuplicateLaneNamesFailClosedAsync()
 {
