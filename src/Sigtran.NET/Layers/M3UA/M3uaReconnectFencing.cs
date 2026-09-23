@@ -138,14 +138,6 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        if (ct.IsCancellationRequested)
-        {
-            throw new M3uaAssociationSendException(
-                $"Association '{AssociationName}' dispatch was cancelled before sender invocation.",
-                dispatchMayHaveOccurred: false,
-                new OperationCanceledException(ct));
-        }
-
         long generation;
         lock (_sync)
         {
@@ -165,13 +157,24 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
 
         try
         {
+            // Cancellation can race while this call is waiting for the generation
+            // admission lock. Recheck after the lease is acquired and before the
+            // inner sender is invoked so that path remains provably pre-dispatch.
+            if (ct.IsCancellationRequested)
+            {
+                throw new M3uaAssociationSendException(
+                    $"Association '{AssociationName}' dispatch was cancelled before sender invocation.",
+                    dispatchMayHaveOccurred: false,
+                    new OperationCanceledException(ct));
+            }
+
             await _inner.SendAsync(message, ct).ConfigureAwait(false);
         }
         catch (M3uaAssociationSendException ex) when (!ex.DispatchMayHaveOccurred)
         {
-            // The inner sender proved that transport dispatch did not occur.
-            // Preserve the current generation so a higher-level policy can make
-            // the explicit safe-retry/failover decision.
+            // The inner sender, or this admission boundary, proved that transport
+            // dispatch did not occur. Preserve the current generation so a
+            // higher-level policy can make the explicit safe-retry/failover decision.
             throw;
         }
         catch (M3uaAssociationSendException)
