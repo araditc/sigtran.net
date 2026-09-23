@@ -15,8 +15,8 @@ static void LoadsharePreservesDeterministicSlsAffinity()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.Loadshare,
         M3uaTrafficModeType.Loadshare,
-        new("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
-        new("b", "sg-b", 0, M3uaAssociationOperationalState.Active, [100]));
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 0, M3uaAssociationOperationalState.Active, [100]));
 
     string first = Single(pool.SelectTargets(CreateTransfer(sls: 3, routingContext: 100))).Name;
     string second = Single(pool.SelectTargets(CreateTransfer(sls: 3, routingContext: 100))).Name;
@@ -34,8 +34,8 @@ static void ActiveStandbyRequiresExplicitPromotion()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.ActiveStandby,
         M3uaTrafficModeType.Override,
-        new("primary", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
-        new("standby", "sg-b", 1, M3uaAssociationOperationalState.Standby, [100]));
+        new M3uaAssociationDefinition("primary", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("standby", "sg-b", 1, M3uaAssociationOperationalState.Standby, [100]));
 
     Equal(
         "primary",
@@ -60,8 +60,8 @@ static void DrainingAndFencedAssociationsReceiveNoNewTraffic()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.Broadcast,
         M3uaTrafficModeType.Broadcast,
-        new("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
-        new("b", "sg-b", 0, M3uaAssociationOperationalState.Active, [100]));
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 0, M3uaAssociationOperationalState.Active, [100]));
 
     pool.SetState("a", M3uaAssociationOperationalState.Draining);
     IReadOnlyList<M3uaAssociationDefinition> afterDrain =
@@ -81,9 +81,9 @@ static void BroadcastSelectsAllEligibleActiveAssociations()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.Broadcast,
         M3uaTrafficModeType.Broadcast,
-        new("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
-        new("b", "sg-b", 1, M3uaAssociationOperationalState.Active, [100]),
-        new("c", "sg-c", 2, M3uaAssociationOperationalState.Standby, [100]));
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 1, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("c", "sg-c", 2, M3uaAssociationOperationalState.Standby, [100]));
 
     IReadOnlyList<M3uaAssociationDefinition> selected =
         pool.SelectTargets(CreateTransfer(sls: 7, routingContext: 100));
@@ -98,7 +98,7 @@ static void RoutingContextMembershipFailsClosed()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.Loadshare,
         M3uaTrafficModeType.Loadshare,
-        new("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
 
     Equal(
         0,
@@ -112,7 +112,7 @@ static void RoutingContextMembershipFailsClosed()
     M3uaAssociationPool wildcard = CreatePool(
         M3uaNodeRoutingMode.Override,
         M3uaTrafficModeType.Override,
-        new("wildcard", "sg-w", 0, M3uaAssociationOperationalState.Active));
+        new M3uaAssociationDefinition("wildcard", "sg-w", 0, M3uaAssociationOperationalState.Active));
 
     Equal(
         "wildcard",
@@ -125,8 +125,8 @@ static void DuplicateAssociationNamesFailClosed()
     Throws<ArgumentException>(() => CreatePool(
         M3uaNodeRoutingMode.Override,
         M3uaTrafficModeType.Override,
-        new("dup", "sg-a", 0, M3uaAssociationOperationalState.Active),
-        new("DUP", "sg-b", 1, M3uaAssociationOperationalState.Active)));
+        new M3uaAssociationDefinition("dup", "sg-a", 0, M3uaAssociationOperationalState.Active),
+        new M3uaAssociationDefinition("DUP", "sg-b", 1, M3uaAssociationOperationalState.Active)));
 }
 
 static void DuplicateRoutingContextMembershipFailsClosed()
@@ -145,7 +145,7 @@ static void NodePolicyRemainsSeparateFromNegotiatedTrafficMode()
     M3uaAssociationPool pool = CreatePool(
         M3uaNodeRoutingMode.ActiveStandby,
         M3uaTrafficModeType.Loadshare,
-        new("a", "sg-a", 0, M3uaAssociationOperationalState.Active));
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active));
 
     Equal(
         M3uaNodeRoutingMode.ActiveStandby,
