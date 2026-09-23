@@ -7,8 +7,11 @@ await RunAsync("HA runtime rejects duplicate lane names", DuplicateLaneNamesFail
 await RunAsync("HA runtime fails when no lane activates", AllLaneStartupFailureFailsClosedAsync);
 await RunAsync("HA runtime isolates startup failure", StartupFailureDoesNotBlockHealthyLaneAsync);
 await RunAsync("HA runtime does not wait for a slow peer lane", SlowStartupDoesNotGateHealthyLaneAsync);
+await RunAsync("HA runtime converges concurrent startup waits", ConcurrentStartupWaitersShareReadinessAsync);
+await RunAsync("HA runtime keeps startup alive after one waiter cancels", CancelledStartupWaiterDoesNotCancelSupervisorAsync);
 await RunAsync("HA runtime applies bounded aggregate backpressure", BoundedFanInPreservesAssociationIdentityAsync);
 await RunAsync("HA runtime isolates terminal lane fault", TerminalLaneFaultDoesNotStopHealthyLaneAsync);
+await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopWaitersShareShutdownAsync);
 
 static async Task DuplicateLaneNamesFailClosedAsync()
 {
@@ -66,6 +69,49 @@ static async Task SlowStartupDoesNotGateHealthyLaneAsync()
     healthy.Emit(CreateTransfer(sls: 4, routingContext: 100));
     M3uaHaInboundTransfer inbound = await supervisor.ReceiveAsync(timeout.Token).ConfigureAwait(false);
     Equal("healthy", inbound.AssociationName, "Healthy traffic must flow while another association is still starting.");
+}
+
+static async Task ConcurrentStartupWaitersShareReadinessAsync()
+{
+    FakeRuntimeLane delayed = new("delayed", manualStart: true);
+    await using M3uaHaRuntimeSupervisor supervisor = new([delayed], inboundCapacity: 1);
+
+    Task first = supervisor.StartAsync().AsTask();
+    await WaitUntilAsync(
+        () => delayed.State == M3uaRuntimeState.Starting,
+        "The synthetic lane did not enter startup.")
+        .ConfigureAwait(false);
+
+    Task second = supervisor.StartAsync().AsTask();
+    await Task.Delay(TimeSpan.FromMilliseconds(50)).ConfigureAwait(false);
+    Equal(false, first.IsCompleted, "The first startup waiter must remain pending before activation.");
+    Equal(false, second.IsCompleted, "A concurrent startup waiter must share readiness instead of returning early.");
+
+    delayed.Activate();
+    await WaitAllAsync(first, second).ConfigureAwait(false);
+    Equal(M3uaRuntimeState.Active, Lane(supervisor.GetSnapshot(), "delayed").State, "Both startup waiters must converge on the same activation.");
+}
+
+static async Task CancelledStartupWaiterDoesNotCancelSupervisorAsync()
+{
+    FakeRuntimeLane delayed = new("delayed", manualStart: true);
+    await using M3uaHaRuntimeSupervisor supervisor = new([delayed], inboundCapacity: 1);
+
+    Task owner = supervisor.StartAsync().AsTask();
+    await WaitUntilAsync(
+        () => delayed.State == M3uaRuntimeState.Starting,
+        "The synthetic lane did not enter startup.")
+        .ConfigureAwait(false);
+
+    using CancellationTokenSource cancelledWaiter = new();
+    Task observer = supervisor.StartAsync(cancelledWaiter.Token).AsTask();
+    cancelledWaiter.Cancel();
+    await ThrowsAsync<OperationCanceledException>(() => observer).ConfigureAwait(false);
+    Equal(false, owner.IsCompleted, "Cancelling one startup wait must not cancel the shared supervisor startup.");
+
+    delayed.Activate();
+    await WaitAllAsync(owner).ConfigureAwait(false);
+    Equal(M3uaRuntimeState.Active, Lane(supervisor.GetSnapshot(), "delayed").State, "The original startup wait must still complete after activation.");
 }
 
 static async Task BoundedFanInPreservesAssociationIdentityAsync()
@@ -137,6 +183,32 @@ static async Task TerminalLaneFaultDoesNotStopHealthyLaneAsync()
     Equal((byte)9, inbound.Message.RoutingLabel.SignallingLinkSelection, "Healthy-lane payload metadata must be preserved.");
 }
 
+static async Task ConcurrentStopWaitersShareShutdownAsync()
+{
+    FakeRuntimeLane lane = new("a", stallStop: true);
+    M3uaHaRuntimeSupervisor supervisor = new([lane], inboundCapacity: 1);
+    await supervisor.StartAsync().ConfigureAwait(false);
+
+    Task first = supervisor.StopAsync().AsTask();
+    await WaitUntilAsync(
+        () => lane.StopCalls == 1,
+        "The first shutdown did not reach the association lane.")
+        .ConfigureAwait(false);
+
+    Task second = supervisor.StopAsync().AsTask();
+    await Task.Delay(TimeSpan.FromMilliseconds(50)).ConfigureAwait(false);
+    Equal(false, first.IsCompleted, "The first shutdown waiter must remain pending while lane shutdown is blocked.");
+    Equal(false, second.IsCompleted, "A concurrent shutdown waiter must share the same shutdown task instead of returning early.");
+    Equal(1, lane.StopCalls, "Concurrent supervisor shutdown waits must not invoke lane shutdown twice.");
+
+    lane.ReleaseStop();
+    await WaitAllAsync(first, second).ConfigureAwait(false);
+    Equal(1, lane.StopCalls, "The shared shutdown path must call lane shutdown exactly once.");
+    Equal(M3uaRuntimeState.Stopped, lane.State, "The lane must be stopped before either supervisor shutdown waiter completes.");
+
+    await supervisor.DisposeAsync().ConfigureAwait(false);
+}
+
 static M3uaHaRuntimeLaneSnapshot Lane(
     M3uaHaRuntimeSupervisorSnapshot snapshot,
     string associationName)
@@ -178,6 +250,12 @@ static async Task WaitUntilAsync(
             throw new InvalidOperationException(failureMessage);
         }
     }
+}
+
+static async Task WaitAllAsync(params Task[] tasks)
+{
+    using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(2));
+    await Task.WhenAll(tasks).WaitAsync(timeout.Token).ConfigureAwait(false);
 }
 
 static async Task RunAsync(string name, Func<Task> test)
@@ -225,22 +303,35 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         Channel.CreateUnbounded<Mtp3TransferMessage>();
     private readonly bool _failStart;
     private readonly bool _stallStart;
+    private readonly bool _manualStart;
+    private readonly bool _stallStop;
+    private readonly TaskCompletionSource<bool> _activation =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<bool> _stopRelease =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
     private volatile M3uaRuntimeState _state = M3uaRuntimeState.Stopped;
     private long _received;
+    private int _stopCalls;
 
     internal FakeRuntimeLane(
         string associationName,
         bool failStart = false,
-        bool stallStart = false)
+        bool stallStart = false,
+        bool manualStart = false,
+        bool stallStop = false)
     {
         AssociationName = associationName;
         _failStart = failStart;
         _stallStart = stallStart;
+        _manualStart = manualStart;
+        _stallStop = stallStop;
     }
 
     public string AssociationName { get; }
 
     public M3uaRuntimeState State => _state;
+
+    internal int StopCalls => Volatile.Read(ref _stopCalls);
 
     public event EventHandler<M3uaRuntimeEventArgs>? RuntimeEvent;
 
@@ -262,6 +353,13 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
             return;
         }
 
+        if (_manualStart)
+        {
+            _state = M3uaRuntimeState.Starting;
+            Raise(M3uaRuntimeEventKind.StateChanged, "synthetic gated startup");
+            await _activation.Task.WaitAsync(ct).ConfigureAwait(false);
+        }
+
         _state = M3uaRuntimeState.Active;
         Raise(M3uaRuntimeEventKind.AspActivated, "synthetic active");
     }
@@ -275,12 +373,20 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         return message;
     }
 
-    public ValueTask StopAsync(CancellationToken ct = default)
+    public async ValueTask StopAsync(CancellationToken ct = default)
     {
+        Interlocked.Increment(ref _stopCalls);
+        _state = M3uaRuntimeState.Stopping;
+        Raise(M3uaRuntimeEventKind.StateChanged, "synthetic stopping");
+
+        if (_stallStop)
+        {
+            await _stopRelease.Task.WaitAsync(ct).ConfigureAwait(false);
+        }
+
         _state = M3uaRuntimeState.Stopped;
         _inbound.Writer.TryComplete();
         Raise(M3uaRuntimeEventKind.ShutdownCompleted, "synthetic stopped");
-        return ValueTask.CompletedTask;
     }
 
     public M3uaRuntimeMetrics GetMetrics() => new(
@@ -294,6 +400,10 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         heartbeatTimeouts: 0,
         reconnectAttempts: 0,
         faults: _state == M3uaRuntimeState.Faulted ? 1 : 0);
+
+    internal void Activate() => _activation.TrySetResult(true);
+
+    internal void ReleaseStop() => _stopRelease.TrySetResult(true);
 
     internal void Emit(Mtp3TransferMessage message)
     {
