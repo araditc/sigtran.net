@@ -246,10 +246,10 @@ static async Task RuntimeHealthFeedsRouteAdmissionAsync()
         routePool: pool);
     Mtp3TransferMessage transfer = CreateTransfer(sls: 1, routingContext: 100);
 
-    Equal(0, pool.SelectTargets(transfer).Count,
-        "A bound route pool must fail closed while its runtime lanes are stopped.");
     Equal(M3uaRuntimeState.Stopped, Route(pool, "a").RuntimeState,
         "Initial bound health must reflect the stopped runtime lane.");
+    Equal(0, pool.SelectTargets(transfer).Count,
+        "A bound route pool must fail closed while its runtime lanes are stopped.");
     Equal(M3uaAssociationOperationalState.Active, Route(pool, "a").State,
         "Binding runtime health must not rewrite local node-routing role.");
 
@@ -491,6 +491,18 @@ static void Equal<T>(T expected, T actual, string message)
     {
         throw new InvalidOperationException(
             $"{message} Expected={expected}; Actual={actual}.");
+    }
+}
+
+static void Equal(
+    M3uaRuntimeState expected,
+    M3uaRuntimeState? actual,
+    string message)
+{
+    if (actual != expected)
+    {
+        throw new InvalidOperationException(
+            $"{message} Expected={expected}; Actual={actual?.ToString() ?? "<unbound>"}.");
     }
 }
 
