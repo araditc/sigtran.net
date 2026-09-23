@@ -5,6 +5,7 @@ await RunAsync("Coordinator rejects non-positive lane capacity", RejectsNonPosit
 await RunAsync("Same SLS dispatches remain ordered", SameSlsDispatchesRemainOrdered);
 await RunAsync("Different SLS lanes dispatch concurrently", DifferentSlsLanesDispatchConcurrently);
 await RunAsync("Bounded lane backpressure blocks admission", BoundedLaneBackpressureBlocksAdmission);
+await RunAsync("Admission accounting never trails terminal work", AdmissionAccountingNeverTrailsTerminalWork);
 await RunAsync("Cancelled queued dispatch never touches sender", CancelledQueuedDispatchNeverTouchesSender);
 await RunAsync("Ambiguous outcome fences association and updates metrics", AmbiguousOutcomeFencesAssociationAndUpdatesMetrics);
 await RunAsync("Dispose drains admitted work and rejects new dispatch", DisposeDrainsAdmittedWorkAndRejectsNewDispatch);
@@ -94,6 +95,38 @@ static async Task BoundedLaneBackpressureBlocksAdmission()
     Equal(3L, drained.AdmittedDispatches, "All transfers should be admitted after pressure clears.");
     Equal(3L, drained.CompletedDispatches, "All admitted transfers should complete.");
     Equal(0, drained.PendingDispatches, "The lane should be fully drained.");
+}
+
+static async Task AdmissionAccountingNeverTrailsTerminalWork()
+{
+    FakeSender sender = new("a");
+    M3uaAssociationDispatcher dispatcher = CreateDispatcher(sender);
+    await using M3uaHaDispatchCoordinator coordinator = new(dispatcher, perSlsQueueCapacity: 1);
+
+    Task[] dispatches = Enumerable.Range(0, 256)
+        .Select(_ => (Task)coordinator.DispatchAsync(CreateTransfer(8)).AsTask())
+        .ToArray();
+
+    while (dispatches.Any(task => !task.IsCompleted))
+    {
+        AssertAdmissionAccounting(coordinator.GetSnapshot());
+        await Task.Yield();
+    }
+
+    await Task.WhenAll(dispatches).ConfigureAwait(false);
+    AssertAdmissionAccounting(coordinator.GetSnapshot());
+}
+
+static void AssertAdmissionAccounting(M3uaHaDispatchCoordinatorSnapshot snapshot)
+{
+    long terminal = snapshot.CompletedDispatches
+        + snapshot.CanceledDispatches
+        + snapshot.FaultedDispatches;
+    if (terminal > snapshot.AdmittedDispatches)
+    {
+        throw new InvalidOperationException(
+            $"Terminal dispatch accounting cannot lead admission. Admitted={snapshot.AdmittedDispatches}; Terminal={terminal}.");
+    }
 }
 
 static async Task CancelledQueuedDispatchNeverTouchesSender()
