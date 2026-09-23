@@ -2,17 +2,24 @@
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
-Source builds and the public prerelease are aligned on `1.0.0-rc.2`. Stable release
-manifest `eng/release/stable-release.json` and
+The latest public prerelease is immutable `1.0.0-rc.2`. Current source development
+uses unpublished package identity `1.0.0-rc.3-dev`; it is not a published release
+candidate. Stable release manifest `eng/release/stable-release.json` and
 `eng/evaluate-stable-release.ps1` produce the authoritative machine decision.
 
-The readiness APIs now consume `SigtranVerificationCatalogs.CreateCurrent()`.
+The readiness APIs consume `SigtranVerificationCatalogs.CreateCurrent()`.
 Native Linux SCTP and external SCTP/M3UA evidence report passing status from their
 retained manifests instead of stale hard-coded flags.
 
+The source tree now also contains a fail-closed network/operator profile
+foundation for the implemented ITU connectionless SCCP and MAP SMS surface.
+That implementation is configuration validation only: it does not change the
+`operator-profile` stable gate, which remains open until real authorized
+operator/vendor acceptance evidence is retained.
+
 ## Passed Evidence
 
-- SDK codebase builds, tests, and packs successfully.
+- SDK codebase builds, tests, and packs successfully on the retained RC baseline; development changes must independently pass exact-head CI before admission.
 - Linux SCTP smoke capture exists from a real Ubuntu 22.04 VM and records association setup, M3UA ASPUP/ASPACTIVE/DATA/HEARTBEAT traffic, DATA exchange, and clean shutdown.
 - Native SCTP VM run `commercial-native-sctp-20260627T073300Z` passed on host `sigtrannet`, Ubuntu 22.04.1 LTS, kernel `5.15.0-181-generic`: trace events `18`, M3UA events `14`, Payload DATA trace events `2`, PCAP bytes `2106`.
 - Native SCTP retained evidence digests for run `commercial-native-sctp-20260627T073300Z`: PCAP `7215966b1f46578ecfbb090285269ff64e20249a5a72dcb3ff135db0c24a2248`, SDK trace `a16b1f337ebe56091ece7497597163c111543daa485a2e9f4e2fc73472ae17f8`, comparison TSV `abe082aea2423d53f6e78c814a5c408e0f77b4c06604316e3879bd977f369deb`, run report `0933d0ce1d95dd494f1a89c0f2bd84c81bc89a96a36eeb62e118c6302cf9f1b4`.
@@ -65,7 +72,7 @@ retained manifests instead of stale hard-coded flags.
   actual exported types. Repository governance/evidence types are internal.
   Reflection baselines retain 6,440 RC.1 members and 2,185 stable-candidate
   members; the intentional prerelease break is documented for RC.2.
-- The stable workflow now pins the SBOM tool, compares the public API baseline,
+- The stable workflow pins the SBOM tool, compares the public API baseline,
   evaluates retained evidence, validates certificate chain/fingerprint/expiry,
   requires a matching existing tag and exact confirmation, uses a protected
   environment, uploads artifacts, verifies public NuGet restore, and creates a
@@ -88,13 +95,13 @@ retained manifests instead of stale hard-coded flags.
   zero residual retrieval depth.
 - Retained evidence:
   `docs/evidence/PHASE56_M2PA_35695182775/`.
-- The stable manifest now declares `independent-m2pa` passing.
+- The stable manifest declares `independent-m2pa` passing.
 - Phase 56 aggregate load-share capacity run `35696403076` passed the numeric 20K TPS gate using two independent native-SCTP/M3UA lanes. Aggregate sustained throughput was approximately `35.9K TPS`, aggregate peak approximately `34.5K TPS`, and aggregate soak approximately `45.8K TPS`, with zero failed operations and passing latency/resource limits. Retained evidence is under `docs/evidence/PHASE56_CAPACITY_35696403076/`.
-- The stable manifest now declares `capacity-target` passing. The separate representative multi-host soak/failover gate remains open.
+- The stable manifest declares `capacity-target` passing. The separate representative multi-host soak/failover gate remains open.
 
 ## Remaining Production Blockers
 
-- The numeric 20K TPS capacity gate is now closed by Phase 56 controlled
+- The numeric 20K TPS capacity gate is closed by Phase 56 controlled
   two-association load-share evidence. This remains a single-host controlled
   qualification and must not be used for broad operator capacity claims until
   the separate representative multi-host long-duration soak/failover gate passes.
@@ -112,16 +119,17 @@ retained manifests instead of stale hard-coded flags.
 - M3UA and M2PA provide stateful runtime implementations through `IMtp3Network`
   and `IMtp2Link`. Phase 56 run `35695182775` closes the independent M2PA gate
   with retained RFC 4165 traffic against an independently compiled C/lksctp peer.
-- SCCP, TCAP, and MAP SMS provide stateful runtime implementations and now have
+- SCCP, TCAP, and MAP SMS provide stateful runtime implementations and have
   cross-implementation traffic evidence for the repository profile. A separate
   operator or vendor profile run is still required before broad SS7 network
-  interoperability can be claimed.
-- The retained soak contains 20,000 operations, not the long-duration
-  multi-host soak required for an operator capacity claim.
+  interoperability can be claimed. The SDK-side profile framework does not
+  substitute for that external evidence.
+- The retained long-running workload is not the representative multi-host
+  soak/failover qualification required for an operator capacity claim.
 - The container and Kubernetes manifests build with the solution, but no
   representative cluster SCTP/CNI deployment evidence has yet been retained.
   Cluster network, firewall, readiness, termination, and rollback behavior need
-  validation in the adopting operator environment.
+  validation in an authorized representative environment.
 - The machine-evaluated stable decision is `NO-GO`. Stable publication is
   blocked by operator/vendor profile acceptance, multi-host soak,
   representative Kubernetes SCTP, and organization-trusted signing evidence.

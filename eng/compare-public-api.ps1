@@ -1,5 +1,6 @@
 param(
     [string]$BaselinePath = "eng/api/Sigtran.NET.1.0.public-api.txt",
+    [string]$AcceptedAdditionsPath = "eng/api/Sigtran.NET.1.0.accepted-additions.txt",
     [string]$CurrentPath = "artifacts/api/Sigtran.NET-current.public-api.txt",
     [string]$OutputPath = "artifacts/api/Sigtran.NET.api-diff.md",
     [switch]$FailOnBreaking,
@@ -11,13 +12,36 @@ $ErrorActionPreference = "Stop"
 $root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $baselineFullPath = Resolve-Path (Join-Path $root $BaselinePath)
 $currentFullPath = Resolve-Path (Join-Path $root $CurrentPath)
+$acceptedAdditionsFullPath = $null
+if (-not [string]::IsNullOrWhiteSpace($AcceptedAdditionsPath)) {
+    $candidate = Join-Path $root $AcceptedAdditionsPath
+    if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+        $acceptedAdditionsFullPath = Resolve-Path $candidate
+    }
+    else {
+        throw "Accepted public API additions file '$AcceptedAdditionsPath' is missing."
+    }
+}
 $outputFullPath = Join-Path $root $OutputPath
 $outputDirectory = Split-Path $outputFullPath -Parent
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 
-$baseline = @(
+$baselineLines = @(
     Get-Content -LiteralPath $baselineFullPath |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+)
+$acceptedAdditionLines = if ($null -ne $acceptedAdditionsFullPath) {
+    @(
+        Get-Content -LiteralPath $acceptedAdditionsFullPath |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+}
+else {
+    @()
+}
+$baseline = @(
+    $baselineLines + $acceptedAdditionLines |
+        Where-Object { $_ -match "^[TCMPFE]:" } |
         Sort-Object -Unique
 )
 $current = @(
@@ -42,8 +66,10 @@ $lines = @(
     "# Sigtran.NET Public API Diff"
     ""
     "- Baseline: ``$BaselinePath``"
+    "- Accepted additions: ``$AcceptedAdditionsPath``"
     "- Current surface: ``$CurrentPath``"
     "- Baseline members: $($baseline.Count)"
+    "- Accepted addition members: $($acceptedAdditionLines.Count)"
     "- Current members: $($current.Count)"
     "- Added members: $($added.Count)"
     "- Removed members: $($removed.Count)"
@@ -78,9 +104,11 @@ $outputHash = (
 
 [ordered]@{
     BaselinePath = $BaselinePath
+    AcceptedAdditionsPath = $AcceptedAdditionsPath
     CurrentPath = $CurrentPath
     OutputPath = $OutputPath
     BaselineMemberCount = $baseline.Count
+    AcceptedAdditionMemberCount = $acceptedAdditionLines.Count
     CurrentMemberCount = $current.Count
     AddedMemberCount = $added.Count
     RemovedMemberCount = $removed.Count

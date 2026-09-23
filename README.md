@@ -22,23 +22,25 @@ SIGTRAN.NET is currently in a **public release-candidate** track.
 
 - Latest public NuGet prerelease: `Sigtran.NET` `1.0.0-rc.2`.
 - Current public RC: `Sigtran.NET` `1.0.0-rc.2`.
+- Current source-development package identity: unpublished `1.0.0-rc.3-dev`.
 - Target framework: `.NET 10` / `net10.0`.
 - License: Apache-2.0.
 - GitHub prerelease/tag: `v1.0.0-rc.2` is published and points to the approved RC source commit.
 
-The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, cross-implementation full-stack MAP SMS traffic, RC publication, package restore, operations-host smoke execution, and performance/resilience runs.
+The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, independent RFC 4165 M2PA traffic, cross-implementation full-stack MAP SMS traffic, the numeric 20K TPS capacity gate, RC publication, package restore, operations-host smoke execution, and performance/resilience runs.
 
-It is **not yet a fully stable operator-grade SS7/SIGTRAN stack**. Stable production claims remain gated on independent M2PA evidence, operator/vendor-profile interoperability evidence, representative multi-host capacity/soak evidence, Kubernetes SCTP validation, trusted signing, and final stable release execution.
+It is **not yet a fully stable operator-grade SS7/SIGTRAN stack**. Stable production claims remain gated on operator/vendor-profile interoperability evidence, representative multi-host long-duration soak/failover evidence, representative Kubernetes SCTP validation, organization-trusted signing, and the protected stable release decision/execution.
 
 Recommended release/status documents:
 
 - [Changelog](CHANGELOG.md)
+- [Roadmap execution checkpoint](docs/ROADMAP_EXECUTION.md)
 - [v1.0.0-rc.2 release notes](docs/releases/v1.0.0-rc.2.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 - [Stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
 - [Community response templates](docs/community/COMMUNITY_RESPONSES.md)
 
-> RC notice: use the SDK for controlled integrations, lab traffic, protocol review, and contributor validation. Do not represent it as a complete stable operator-grade SS7 stack until the remaining stable gates are closed.
+> RC notice: use the public RC for controlled integrations, lab traffic, protocol review, and contributor validation. Do not represent it as a complete stable operator-grade SS7 stack until the remaining stable gates are closed.
 
 ---
 
@@ -50,7 +52,7 @@ The latest public prerelease package is `1.0.0-rc.2`:
 dotnet add package Sigtran.NET --version 1.0.0-rc.2
 ```
 
-Source builds and the public prerelease are aligned on `1.0.0-rc.2`; stable `1.0.0` remains gated by the stable-release decision.
+The public prerelease remains immutable at `1.0.0-rc.2`. The repository now builds an unpublished `1.0.0-rc.3-dev` development identity so source changes cannot collide with the published RC. Stable `1.0.0` remains gated by the machine-evaluated stable-release decision.
 
 ---
 
@@ -64,11 +66,12 @@ The .NET ecosystem has historically had limited native open-source tooling for t
 
 ## Current engineering focus
 
-The current RC engineering track focuses on:
+The current engineering track focuses on:
 
-- M3UA codec, routing, ASP state, diagnostics, and long-running runtime behavior.
-- Native Linux SCTP direction with stream id, PPID, receive metadata, reconnect, metrics, and graceful shutdown evidence.
-- M2PA as a parallel MTP2 path with independent peer evidence still pending.
+- Operator/network profile validation for the implemented ITU/MAP SMS surface, with strict separation between SDK-valid configuration and real operator acceptance evidence.
+- Multi-association M3UA high-availability composition and representative multi-host qualification.
+- Native Linux SCTP stream id, PPID, receive metadata, reconnect, metrics, and graceful shutdown behavior.
+- M2PA as a parallel MTP2 path with retained independent RFC 4165 C/lksctp evidence.
 - Stateful SCCP service support for UDT/XUDT/LUDT, GT translation, routing, segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership.
 - TCAP dialogue management with Begin/Continue/End/Abort, invoke tracking, result/error/reject handling, timeout scanning, cleanup, snapshots, and metrics.
 - MAP SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre.
@@ -83,14 +86,14 @@ The current RC engineering track focuses on:
 
 | Area | Current direction |
 | --- | --- |
-| M3UA | Codec, routing, ASP state, runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence. |
+| M3UA | Codec, routing, ASP state, runtime, bounded queues, heartbeat supervision, reconnect/failover hooks, diagnostics, and external peer evidence. Multi-association HA composition is the next runtime expansion. |
 | SCTP | Native Linux SCTP validation for stream id, PPID, receive metadata, reconnect, metrics, graceful shutdown, and external peer traffic. |
-| M2PA | RFC 4165 codec and stateful runtime with alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, and transport replacement. Independent peer evidence remains. |
-| SCCP | Stateful service for UDT/XUDT/LUDT, global-title translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Operator/vendor profile evidence remains. |
+| M2PA | RFC 4165 codec and stateful runtime with alignment, proving, 24-bit sequencing, acknowledgement, retrieval retention, congestion handling, processor-outage recovery, metrics, transport replacement, and retained independent C/lksctp evidence. |
+| SCCP | Stateful connectionless service for UDT/XUDT/LUDT, global-title translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Operator/vendor profile evidence remains; connection-oriented SCCP is post-1.0. |
 | TCAP | Dialogue manager for transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, timeout scanning, cleanup, snapshots, and metrics. Operator/vendor profile evidence remains. |
-| MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. |
-| Performance | Retained full-stack performance evidence exists, but representative multi-host capacity and long-duration soak evidence remain stable blockers. |
-| Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. |
+| MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. Broader MAP is post-1.0. |
+| Performance | The numeric 20K TPS gate is closed by controlled two-association evidence; representative multi-host long-duration soak/failover remains a separate stable blocker. |
+| Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. Representative Kubernetes SCTP/CNI qualification remains open. |
 
 ---
 
@@ -108,6 +111,7 @@ The current RC engineering track focuses on:
 ```powershell
 dotnet build src\Sigtran.NET.sln
 dotnet run --project src\Sigtran.NET.Tests\Sigtran.NET.Tests.csproj
+dotnet run --project src\Sigtran.NET.ProfileTests\Sigtran.NET.ProfileTests.csproj
 dotnet pack src\Sigtran.NET\Sigtran.NET.csproj -c Release
 ```
 
@@ -164,6 +168,8 @@ if (!M3uaTypedMessageParser.TryParseSignallingCongestion(
 Start here:
 
 - [SDK roadmap](docs/SDK_ROADMAP.md)
+- [Roadmap execution checkpoint](docs/ROADMAP_EXECUTION.md)
+- [Operator/network profiles](docs/OPERATOR_PROFILES.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Layer contracts](docs/LAYER_CONTRACTS.md)
 - [M3UA implementation notes](docs/M3UA.md)
@@ -187,6 +193,7 @@ Release and governance:
 - [RC.1 to RC.2 migration](docs/migrations/1.0.0-rc.1-to-rc.2.md)
 - [Production readiness report](docs/COMMERCIAL_READINESS_REPORT.md)
 - [Phase 55 stable release execution](docs/PHASE55_STABLE_RELEASE_EXECUTION.md)
+- [Phase 56 stable evidence closure](docs/PHASE56_STABLE_EVIDENCE_CLOSURE.md)
 - [Phase 55 stable assessment evidence](docs/evidence/PHASE55_STABLE_ASSESSMENT_20260724T110519Z.json)
 
 ---
@@ -200,7 +207,6 @@ Useful contribution areas include:
 - Protocol review.
 - M3UA validation.
 - SCTP testing on Linux.
-- Independent M2PA peer validation.
 - SCCP, TCAP, and MAP standards/profile alignment.
 - ASN.1 BER validation.
 - Wireshark trace comparison.
@@ -229,7 +235,7 @@ Stable production support requires:
 - Independent M2PA peer evidence.
 - Stateful SCCP, TCAP, and MAP SMS service validation.
 - Operator/vendor-profile end-to-end protocol trace validation.
-- Operator-sized capacity and resilience evidence.
+- Representative multi-host long-duration capacity/resilience evidence.
 - Representative Kubernetes SCTP/CNI deployment evidence.
 - Trusted package signing and provenance.
 - Stable package publication evidence.
@@ -237,7 +243,7 @@ Stable production support requires:
 - A machine-evaluated `GO` stable release decision.
 - Security, release, compliance, and operations review.
 
-Until those gates are complete, the package should be treated as release-candidate infrastructure for controlled integrations.
+Until those gates are complete, the public package should be treated as release-candidate infrastructure for controlled integrations.
 
 ---
 

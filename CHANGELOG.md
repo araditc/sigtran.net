@@ -2,7 +2,27 @@
 
 All notable changes to SIGTRAN.NET will be documented in this file.
 
-This project follows Semantic Versioning once the public API reaches a stable release. During the alpha phase, breaking API changes may still occur as protocol behavior, transport abstractions, and interoperability evidence are finalized.
+This project follows Semantic Versioning once the public API reaches a stable release. Before the first stable release, breaking API changes may still occur when they are required to align protocol behavior, naming, packaging, or interoperability with the intended stable SDK surface.
+
+## [Unreleased]
+
+Current source development package identity: `1.0.0-rc.3-dev`. This is not a published release candidate and must not be represented as one.
+
+### Added
+
+- Initial fail-closed network/operator profile foundation for the implemented ITU 14-bit, connectionless SCCP, and MAP SMS surface.
+- Deterministic structured validation for network indicator, point-code format, compatibility mode, SCCP global-title translation rules, and MAP SMS operation allowlists.
+- Synthetic operator-profile documentation and dedicated CI regression tests.
+- Durable roadmap-execution checkpoint with a frozen stable 1.0 protocol scope.
+
+### Changed
+
+- Development package/version identity moved past the immutable public `1.0.0-rc.2` artifact so later source changes cannot collide with the published RC.
+- Phase 53/55/56 readiness text now reflects that independent M2PA and the numeric 20K TPS capacity gate are closed; four stable gates remain open.
+
+### Release status
+
+No package from this section has been published. Stable `1.0.0` remains blocked by operator/vendor profile acceptance, representative multi-host soak/failover, representative Kubernetes SCTP qualification, and an organization-trusted signing identity.
 
 ## [1.0.0-rc.2] - 2026-09-22
 
@@ -16,8 +36,7 @@ This project follows Semantic Versioning once the public API reaches a stable re
 
 ### Changed
 
-- Normal package builds now produce `1.0.0-rc.2` rather than accidental stable
-  `1.0.0` packages.
+- Normal package builds for the RC.2 source line produced `1.0.0-rc.2` rather than accidental stable `1.0.0` packages.
 - Repository release/evidence governance types are internal and no longer part
   of the consumer API.
 

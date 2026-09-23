@@ -30,5 +30,71 @@ jobs:
       - name: Test
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
 
+      - name: Test operator profile framework
+        run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
+
+      - name: Verify development and release package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:PackageVersion | tail -n 1 | tr -d '\r')"
+          version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo -getProperty:Version | tail -n 1 | tr -d '\r')"
+          override_version="1.0.0-release-override-test"
+          override_package_version="$(dotnet msbuild src/Sigtran.NET/Sigtran.NET.csproj -nologo /p:Version="$override_version" -getProperty:PackageVersion | tail -n 1 | tr -d '\r')"
+          test "$package_version" = "1.0.0-rc.3-dev"
+          test "$version" = "1.0.0-rc.3-dev"
+          test "$override_package_version" = "$override_version"
+
+      - name: Generate current public API snapshot
+        shell: pwsh
+        run: |
+          ./eng/generate-public-api-baseline.ps1 `
+            -OutputPath "artifacts/ci-api/Sigtran.NET.current.public-api.txt"
+
+      - name: Verify admitted 1.0 public API contract
+        shell: pwsh
+        run: |
+          ./eng/compare-public-api.ps1 `
+            -CurrentPath "artifacts/ci-api/Sigtran.NET.current.public-api.txt" `
+            -OutputPath "artifacts/ci-api/Sigtran.NET.api-diff.md" `
+            -FailOnAnyChange
+
+      - name: Verify stable evaluator remains fail-closed
+        shell: pwsh
+        run: |
+          ./eng/evaluate-stable-release.ps1 `
+            -ExpectedVersion "1.0.0" `
+            -JsonOutputPath "artifacts/ci-api/stable-release-decision.json" `
+            -MarkdownOutputPath "artifacts/ci-api/stable-release-decision.md"
+          $decision = Get-Content "artifacts/ci-api/stable-release-decision.json" -Raw | ConvertFrom-Json
+          if ($decision.decision -ne "NO-GO") {
+            throw "Stable evaluator must remain NO-GO while qualification gates are open."
+          }
+          if (@($decision.blockers).Count -ne 4) {
+            throw "Stable evaluator must report exactly four required blockers; observed $(@($decision.blockers).Count)."
+          }
+          if (-not $decision.publicApiBaseline.acceptedAdditionsPresent) {
+            throw "Stable evaluator did not retain the accepted public API additions evidence."
+          }
+
+      - name: Upload current public API evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: current-public-api
+          path: |
+            artifacts/ci-api/Sigtran.NET.current.public-api.txt
+            artifacts/ci-api/Sigtran.NET.api-diff.md
+            artifacts/ci-api/stable-release-decision.json
+            artifacts/ci-api/stable-release-decision.md
+          if-no-files-found: error
+
       - name: Pack
         run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build
+
+      - name: Verify development package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.3-dev.nupkg
+          test -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.3-dev.snupkg
+          test ! -f src/Sigtran.NET/bin/Release/Sigtran.NET.1.0.0-rc.2.nupkg
