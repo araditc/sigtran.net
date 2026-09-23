@@ -163,13 +163,19 @@ internal sealed class M3uaAssociationDispatcher
                 await SendOnceAsync(target, message, ct).ConfigureAwait(false);
             outcomes.Add(outcome);
 
-            if (outcome.Disposition == M3uaDispatchDisposition.Sent
-                || outcome.Disposition == M3uaDispatchDisposition.Ambiguous)
+            if (outcome.Disposition == M3uaDispatchDisposition.Sent)
             {
                 return outcomes;
             }
 
             _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
+            if (outcome.Disposition == M3uaDispatchDisposition.Ambiguous)
+            {
+                // Once transport acceptance is uncertain, changing association
+                // health is allowed but replay is not.
+                return outcomes;
+            }
+
             if (_pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby)
             {
                 TryPromoteNextStandby();
@@ -200,6 +206,8 @@ internal sealed class M3uaAssociationDispatcher
                 await SendOnceAsync(target, message, ct).ConfigureAwait(false);
             outcomes.Add(outcome);
 
+            // Broadcast already selected every eligible path. Never substitute
+            // or replay one failed fanout leg on another association.
             if (outcome.Disposition != M3uaDispatchDisposition.Sent)
             {
                 _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
@@ -253,7 +261,7 @@ internal sealed class M3uaAssociationDispatcher
             .Where(route => route.State == M3uaAssociationOperationalState.Standby)
             .OrderBy(route => route.Priority)
             .ThenBy(route => route.Name, StringComparer.Ordinal)
-            .Cast<M3uaAssociationRouteSnapshot?>()
+            .Select(route => (M3uaAssociationRouteSnapshot?)route)
             .FirstOrDefault();
 
         if (!candidate.HasValue)
