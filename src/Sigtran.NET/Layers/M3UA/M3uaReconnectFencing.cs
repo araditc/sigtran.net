@@ -47,13 +47,16 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
 {
     private readonly object _sync = new();
     private readonly IM3uaAssociationSender _inner;
+    private readonly Action? _beforeGenerationAdmission;
     private TaskCompletionSource<bool>? _drainCompletion;
     private long _generation;
     private int _inFlightDispatches;
     private bool _acceptingDispatch;
     private M3uaAssociationFenceReason _fenceReason;
 
-    internal M3uaReconnectFencedAssociationSender(IM3uaAssociationSender inner)
+    internal M3uaReconnectFencedAssociationSender(
+        IM3uaAssociationSender inner,
+        Action? beforeGenerationAdmission = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         if (string.IsNullOrWhiteSpace(inner.AssociationName))
@@ -62,6 +65,8 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
                 "Association sender name is required.",
                 nameof(inner));
         }
+
+        _beforeGenerationAdmission = beforeGenerationAdmission;
     }
 
     public string AssociationName => _inner.AssociationName;
@@ -138,6 +143,12 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
     {
         ArgumentNullException.ThrowIfNull(message);
 
+        // Internal deterministic test seam only. It is deliberately positioned
+        // immediately before generation admission, i.e. after the location where
+        // a historical early cancellation check used to live. Production callers
+        // leave this null and incur only a null check.
+        _beforeGenerationAdmission?.Invoke();
+
         long generation;
         lock (_sync)
         {
@@ -167,7 +178,7 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
                 throw new M3uaAssociationSendException(
                     $"Association '{AssociationName}' dispatch was cancelled before sender invocation.",
                     dispatchMayHaveOccurred: false,
-                    new OperationCanceledException(ct),
+                    innerException: new OperationCanceledException(ct),
                     callerCancellation: true);
             }
 
