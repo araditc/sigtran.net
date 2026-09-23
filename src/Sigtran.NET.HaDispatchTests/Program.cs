@@ -7,8 +7,12 @@ await RunAsync("No eligible route fails closed without transport send", NoEligib
 await RunAsync("Active standby retries only proven pre-dispatch failure", ActiveStandbyRetriesOnlyProvenPreDispatchFailure);
 await RunAsync("Ambiguous active-standby send is fenced without replay", AmbiguousActiveStandbySendIsFencedWithoutReplay);
 await RunAsync("Unknown transport failure is ambiguous and not replayed", UnknownTransportFailureIsAmbiguousAndNotReplayed);
+await RunAsync("In-flight cancellation is ambiguous and fenced", InFlightCancellationIsAmbiguousAndFenced);
 await RunAsync("Loadshare reroutes after proven pre-dispatch failure", LoadshareReroutesAfterProvenPreDispatchFailure);
+await RunAsync("Active standby promotion respects routing context", ActiveStandbyPromotionRespectsRoutingContext);
+await RunAsync("Concurrent standby failover is atomic", ConcurrentStandbyFailoverIsAtomic);
 await RunAsync("Broadcast attempts each selected association exactly once", BroadcastAttemptsEachSelectedAssociationExactlyOnce);
+await RunAsync("Broadcast cancellation preserves completed fanout ownership", BroadcastCancellationPreservesCompletedFanoutOwnership);
 await RunAsync("Cancellation before selection sends nothing", CancellationBeforeSelectionSendsNothing);
 
 static Task DispatcherRejectsMissingAssociationSenders()
@@ -82,7 +86,7 @@ static async Task ActiveStandbyRetriesOnlyProvenPreDispatchFailure()
     Equal(
         M3uaAssociationOperationalState.Faulted,
         snapshot.Single(route => route.Name == "primary").State,
-        "The proven failed primary must be fenced from new traffic.");
+        "A proven pre-dispatch failure must remain distinguishable from ambiguous ownership.");
     Equal(
         M3uaAssociationOperationalState.Active,
         snapshot.Single(route => route.Name == "backup").State,
@@ -110,9 +114,9 @@ static async Task AmbiguousActiveStandbySendIsFencedWithoutReplay()
 
     IReadOnlyList<M3uaAssociationRouteSnapshot> snapshot = pool.GetSnapshot();
     Equal(
-        M3uaAssociationOperationalState.Faulted,
+        M3uaAssociationOperationalState.Fenced,
         snapshot.Single(route => route.Name == "primary").State,
-        "The uncertain association must be fenced from later traffic.");
+        "Uncertain ownership must remain fenced for reconciliation rather than ordinary fault recovery.");
     Equal(
         M3uaAssociationOperationalState.Standby,
         snapshot.Single(route => route.Name == "backup").State,
@@ -137,6 +141,35 @@ static async Task UnknownTransportFailureIsAmbiguousAndNotReplayed()
     Equal(M3uaDispatchDisposition.Ambiguous, outcomes[0].Disposition, "Unknown exception must be ambiguous.");
     Equal(1, first.Calls, "First association call count mismatch.");
     Equal(0, second.Calls, "Unknown exception must not trigger replay on another path.");
+    Equal(
+        M3uaAssociationOperationalState.Fenced,
+        pool.GetSnapshot().Single(route => route.Name == "a").State,
+        "Unclassified transport failure must fence the association.");
+}
+
+static async Task InFlightCancellationIsAmbiguousAndFenced()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Override,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 1, M3uaAssociationOperationalState.Active, [100]));
+    using CancellationTokenSource cts = new();
+    InFlightCancelSender first = new("a", cts);
+    FakeSender second = new("b", FakeBehavior.Success);
+    M3uaAssociationDispatcher dispatcher = new(pool, [first, second]);
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes =
+        await dispatcher.DispatchAsync(CreateTransfer(0, 100), cts.Token);
+
+    Equal(1, outcomes.Count, "Cancellation raised from an invoked sender must retain an ownership result.");
+    Equal(M3uaDispatchDisposition.Ambiguous, outcomes[0].Disposition, "In-flight cancellation must fail closed as ambiguous.");
+    Equal(1, first.Calls, "The selected sender must be invoked once.");
+    Equal(0, second.Calls, "In-flight cancellation ambiguity must not trigger replay.");
+    Equal(
+        M3uaAssociationOperationalState.Fenced,
+        pool.GetSnapshot().Single(route => route.Name == "a").State,
+        "In-flight cancellation ambiguity must fence the association.");
 }
 
 static async Task LoadshareReroutesAfterProvenPreDispatchFailure()
@@ -162,6 +195,67 @@ static async Task LoadshareReroutesAfterProvenPreDispatchFailure()
     Equal(1, second.Calls, "Healthy loadshare lane must be attempted once.");
 }
 
+static async Task ActiveStandbyPromotionRespectsRoutingContext()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.ActiveStandby,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("primary", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("wrong-context", "sg-b", 1, M3uaAssociationOperationalState.Standby, [200]),
+        new M3uaAssociationDefinition("matching-backup", "sg-c", 2, M3uaAssociationOperationalState.Standby, [100]));
+    FakeSender primary = new("primary", FakeBehavior.PreDispatchFailure);
+    FakeSender wrong = new("wrong-context", FakeBehavior.Success);
+    FakeSender matching = new("matching-backup", FakeBehavior.Success);
+    M3uaAssociationDispatcher dispatcher = new(pool, [primary, wrong, matching]);
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes =
+        await dispatcher.DispatchAsync(CreateTransfer(1, 100));
+
+    Equal(2, outcomes.Count, "A matching standby should receive the safe retry.");
+    Equal("matching-backup", outcomes[1].AssociationName, "Failover must skip standby routes that cannot carry the transfer routing context.");
+    Equal(M3uaDispatchDisposition.Sent, outcomes[1].Disposition, "The matching backup should send successfully.");
+    Equal(0, wrong.Calls, "An incompatible standby must never be invoked for the transfer.");
+    Equal(1, matching.Calls, "The compatible standby must be invoked once.");
+
+    IReadOnlyList<M3uaAssociationRouteSnapshot> snapshot = pool.GetSnapshot();
+    Equal(M3uaAssociationOperationalState.Standby, snapshot.Single(route => route.Name == "wrong-context").State, "Incompatible standby state must be preserved.");
+    Equal(M3uaAssociationOperationalState.Active, snapshot.Single(route => route.Name == "matching-backup").State, "Compatible standby must be promoted.");
+}
+
+static async Task ConcurrentStandbyFailoverIsAtomic()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.ActiveStandby,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("primary", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("backup", "sg-b", 1, M3uaAssociationOperationalState.Standby, [100]));
+    CoordinatedPreDispatchSender primary = new("primary", expectedConcurrentCalls: 2);
+    ConcurrentSuccessSender backup = new("backup");
+    M3uaAssociationDispatcher dispatcher = new(pool, [primary, backup]);
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> first =
+        dispatcher.DispatchAsync(CreateTransfer(2, 100)).AsTask();
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> second =
+        dispatcher.DispatchAsync(CreateTransfer(3, 100)).AsTask();
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome>[] results = await Task.WhenAll(first, second);
+
+    foreach (IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes in results)
+    {
+        Equal(2, outcomes.Count, "Concurrent proven pre-dispatch failures must each complete structured failover.");
+        Equal(M3uaDispatchDisposition.NotDispatched, outcomes[0].Disposition, "Primary failure must remain pre-dispatch.");
+        Equal("backup", outcomes[1].AssociationName, "Both transfers should converge on the promoted backup.");
+        Equal(M3uaDispatchDisposition.Sent, outcomes[1].Disposition, "Promoted backup should complete both independent transfers.");
+    }
+
+    Equal(2, primary.Calls, "Both transfers must reach the original active sender before coordinated failure.");
+    Equal(2, backup.Calls, "The single promoted backup should carry both independent retries without stale-promotion exceptions.");
+    Equal(
+        1,
+        pool.GetSnapshot().Count(route => route.State == M3uaAssociationOperationalState.Active),
+        "Concurrent failover must retain exactly one active association.");
+}
+
 static async Task BroadcastAttemptsEachSelectedAssociationExactlyOnce()
 {
     M3uaAssociationPool pool = CreatePool(
@@ -183,8 +277,30 @@ static async Task BroadcastAttemptsEachSelectedAssociationExactlyOnce()
     Equal(1, second.Calls, "Healthy broadcast leg must be sent exactly once.");
 
     IReadOnlyList<M3uaAssociationRouteSnapshot> snapshot = pool.GetSnapshot();
-    Equal(M3uaAssociationOperationalState.Faulted, snapshot.Single(route => route.Name == "a").State, "Failed fanout association must be fenced.");
+    Equal(M3uaAssociationOperationalState.Fenced, snapshot.Single(route => route.Name == "a").State, "Ambiguous fanout association must be fenced.");
     Equal(M3uaAssociationOperationalState.Active, snapshot.Single(route => route.Name == "b").State, "Healthy fanout association must remain active.");
+}
+
+static async Task BroadcastCancellationPreservesCompletedFanoutOwnership()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Broadcast,
+        M3uaTrafficModeType.Broadcast,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 1, M3uaAssociationOperationalState.Active, [100]));
+    using CancellationTokenSource cts = new();
+    CancelAfterSuccessSender first = new("a", cts);
+    FakeSender second = new("b", FakeBehavior.Success);
+    M3uaAssociationDispatcher dispatcher = new(pool, [first, second]);
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes =
+        await dispatcher.DispatchAsync(CreateTransfer(5, 100), cts.Token);
+
+    Equal(2, outcomes.Count, "Started broadcast must return ownership for completed and skipped legs.");
+    Equal(M3uaDispatchDisposition.Sent, outcomes[0].Disposition, "Completed first fanout leg must remain Sent.");
+    Equal(M3uaDispatchDisposition.NotDispatched, outcomes[1].Disposition, "Cancellation before the second sender must be explicit NotDispatched.");
+    Equal(1, first.Calls, "First fanout sender must be invoked once.");
+    Equal(0, second.Calls, "Cancellation before second invocation must prevent transport access.");
 }
 
 static async Task CancellationBeforeSelectionSendsNothing()
@@ -317,5 +433,110 @@ internal sealed class FakeSender : IM3uaAssociationSender
                 new InvalidOperationException("Synthetic unclassified transport fault.")),
             _ => throw new InvalidOperationException($"Unsupported behavior {behavior}.")
         };
+    }
+}
+
+internal sealed class InFlightCancelSender : IM3uaAssociationSender
+{
+    private readonly CancellationTokenSource _cts;
+    private int _calls;
+
+    internal InFlightCancelSender(string associationName, CancellationTokenSource cts)
+    {
+        AssociationName = associationName;
+        _cts = cts;
+    }
+
+    public string AssociationName { get; }
+
+    internal int Calls => Volatile.Read(ref _calls);
+
+    public ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        Interlocked.Increment(ref _calls);
+        _cts.Cancel();
+        return ValueTask.FromException(new OperationCanceledException("Synthetic in-flight cancellation.", ct));
+    }
+}
+
+internal sealed class CancelAfterSuccessSender : IM3uaAssociationSender
+{
+    private readonly CancellationTokenSource _cts;
+    private int _calls;
+
+    internal CancelAfterSuccessSender(string associationName, CancellationTokenSource cts)
+    {
+        AssociationName = associationName;
+        _cts = cts;
+    }
+
+    public string AssociationName { get; }
+
+    internal int Calls => Volatile.Read(ref _calls);
+
+    public ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref _calls);
+        _cts.Cancel();
+        return ValueTask.CompletedTask;
+    }
+}
+
+internal sealed class CoordinatedPreDispatchSender : IM3uaAssociationSender
+{
+    private readonly int _expectedConcurrentCalls;
+    private readonly TaskCompletionSource<bool> _release =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int _calls;
+
+    internal CoordinatedPreDispatchSender(string associationName, int expectedConcurrentCalls)
+    {
+        AssociationName = associationName;
+        _expectedConcurrentCalls = expectedConcurrentCalls;
+    }
+
+    public string AssociationName { get; }
+
+    internal int Calls => Volatile.Read(ref _calls);
+
+    public async ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ct.ThrowIfCancellationRequested();
+        int calls = Interlocked.Increment(ref _calls);
+        if (calls >= _expectedConcurrentCalls)
+        {
+            _release.TrySetResult(true);
+        }
+
+        await _release.Task.WaitAsync(TimeSpan.FromSeconds(5), ct).ConfigureAwait(false);
+        throw new M3uaAssociationSendException(
+            "Synthetic coordinated pre-dispatch failure.",
+            dispatchMayHaveOccurred: false);
+    }
+}
+
+internal sealed class ConcurrentSuccessSender : IM3uaAssociationSender
+{
+    private int _calls;
+
+    internal ConcurrentSuccessSender(string associationName)
+    {
+        AssociationName = associationName;
+    }
+
+    public string AssociationName { get; }
+
+    internal int Calls => Volatile.Read(ref _calls);
+
+    public ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref _calls);
+        return ValueTask.CompletedTask;
     }
 }
