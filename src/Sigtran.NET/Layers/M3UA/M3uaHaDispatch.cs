@@ -172,7 +172,7 @@ internal sealed class M3uaAssociationDispatcher
             _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
             if (_pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby)
             {
-                _pool.TryPromoteNextStandby();
+                TryPromoteNextStandby();
             }
         }
 
@@ -245,5 +245,23 @@ internal sealed class M3uaAssociationDispatcher
                 M3uaDispatchDisposition.Ambiguous,
                 ex.Message);
         }
+    }
+
+    private bool TryPromoteNextStandby()
+    {
+        M3uaAssociationRouteSnapshot? candidate = _pool.GetSnapshot()
+            .Where(route => route.State == M3uaAssociationOperationalState.Standby)
+            .OrderBy(route => route.Priority)
+            .ThenBy(route => route.Name, StringComparer.Ordinal)
+            .Cast<M3uaAssociationRouteSnapshot?>()
+            .FirstOrDefault();
+
+        if (!candidate.HasValue)
+        {
+            return false;
+        }
+
+        _pool.PromoteStandby(candidate.Value.Name);
+        return true;
     }
 }
