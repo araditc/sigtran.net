@@ -260,6 +260,14 @@ static async Task SynchronousStopFailureDoesNotSkipPeerShutdownAsync()
     Equal(M3uaRuntimeState.Stopped, healthy.State,
         "The healthy peer lane must finish shutdown even when another lane throws synchronously.");
 
+    M3uaHaRuntimeSupervisorSnapshot stopped = supervisor.GetSnapshot();
+    Equal(M3uaRuntimeState.Faulted, Lane(stopped, "failing").State,
+        "A lane whose shutdown throws must remain attributable as faulted in supervisor diagnostics.");
+    Equal(1L, Lane(stopped, "failing").FaultEvents,
+        "A shutdown failure without a runtime fault event must still contribute one lane fault diagnostic.");
+    Equal(M3uaRuntimeState.Stopped, Lane(stopped, "healthy").State,
+        "A successfully stopped peer must be reflected as stopped in supervisor diagnostics.");
+
     await ThrowsAsync<InvalidOperationException>(() => supervisor.DisposeAsync().AsTask())
         .ConfigureAwait(false);
 }
