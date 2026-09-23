@@ -61,6 +61,9 @@ internal sealed class M3uaAssociationDefinition
 
         Array.Sort(values);
         _routingContexts = values;
+        // A caller must not mutate membership after pool admission by casting
+        // an IReadOnlyList back to its underlying array.
+        RoutingContexts = Array.AsReadOnly(values);
     }
 
     internal string Name { get; }
@@ -71,7 +74,7 @@ internal sealed class M3uaAssociationDefinition
 
     internal M3uaAssociationOperationalState InitialState { get; }
 
-    internal IReadOnlyList<uint> RoutingContexts => _routingContexts;
+    internal IReadOnlyList<uint> RoutingContexts { get; }
 
     internal bool MatchesRoutingContext(uint? routingContext)
     {
@@ -118,6 +121,10 @@ internal readonly struct M3uaAssociationRouteSnapshot
 
 internal sealed class M3uaAssociationPool
 {
+    // Mtp3RoutingLabel currently admits ITU labels with four-bit SLS only.
+    // A stable SLS-affinity membership cannot reach more than 16 targets.
+    private const int SlsAffinityTargetLimit = 16;
+
     private sealed class Slot
     {
         internal Slot(M3uaAssociationDefinition definition)
@@ -170,6 +177,22 @@ internal sealed class M3uaAssociationPool
             }
         }
 
+        // Active/standby is a pool-wide local policy. Initial configuration may
+        // name zero or one active path; all later activation requires promotion.
+        if (nodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby
+            && definitions.Count(definition =>
+                definition.InitialState == M3uaAssociationOperationalState.Active) > 1)
+        {
+            throw new ArgumentException(
+                "Active/standby node routing allows at most one initially Active association.",
+                nameof(associations));
+        }
+
+        if (nodeRoutingMode == M3uaNodeRoutingMode.Loadshare)
+        {
+            ValidateLoadshareMembership(definitions);
+        }
+
         NodeRoutingMode = nodeRoutingMode;
         ProtocolTrafficMode = protocolTrafficMode;
     }
@@ -187,7 +210,15 @@ internal sealed class M3uaAssociationPool
 
         lock (_sync)
         {
-            GetSlot(associationName).State = state;
+            Slot slot = GetSlot(associationName);
+            if (NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby
+                && state == M3uaAssociationOperationalState.Active)
+            {
+                throw new InvalidOperationException(
+                    "Use PromoteStandby to activate an association in active/standby node routing.");
+            }
+
+            slot.State = state;
         }
     }
 
@@ -276,6 +307,37 @@ internal sealed class M3uaAssociationPool
                     slot.SelectedTransfers,
                     slot.Definition.RoutingContexts.ToArray()))
                 .ToArray();
+        }
+    }
+
+    private static void ValidateLoadshareMembership(M3uaAssociationDefinition[] associations)
+    {
+        // Count configured membership, including inactive paths. Otherwise a
+        // later reconnect/activation could admit an unreachable 17th target.
+        int wildcardCount = associations.Count(definition => definition.RoutingContexts.Count == 0);
+        if (wildcardCount > SlsAffinityTargetLimit)
+        {
+            throw new ArgumentException(
+                $"Loadshare allows at most {SlsAffinityTargetLimit} unscoped associations with four-bit SLS.",
+                nameof(associations));
+        }
+
+        Dictionary<uint, int> membershipCounts = new();
+        foreach (M3uaAssociationDefinition definition in associations)
+        {
+            foreach (uint context in definition.RoutingContexts)
+            {
+                membershipCounts.TryGetValue(context, out int count);
+                count++;
+                if (count + wildcardCount > SlsAffinityTargetLimit)
+                {
+                    throw new ArgumentException(
+                        $"Loadshare routing context {context} exceeds {SlsAffinityTargetLimit} configured targets, including unscoped associations.",
+                        nameof(associations));
+                }
+
+                membershipCounts[context] = count;
+            }
         }
     }
 
