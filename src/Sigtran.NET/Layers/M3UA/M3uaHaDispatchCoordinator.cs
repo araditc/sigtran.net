@@ -94,6 +94,8 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
         {
             Message = message;
             CancellationToken = cancellationToken;
+            AdmissionCommitted = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
             Completion = new(
                 TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -102,15 +104,22 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
 
         internal CancellationToken CancellationToken { get; }
 
+        internal TaskCompletionSource<bool> AdmissionCommitted { get; }
+
         internal TaskCompletionSource<IReadOnlyList<M3uaAssociationDispatchOutcome>> Completion { get; }
     }
 
     private readonly M3uaAssociationDispatcher _dispatcher;
     private readonly Channel<DispatchWorkItem>[] _lanes;
-    private readonly SemaphoreSlim[] _admissionGates;
     private readonly Task[] _workers;
     private readonly ConcurrentDictionary<string, AssociationCounters> _associationCounters =
         new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _lifecycleSync = new();
+    private readonly TaskCompletionSource<bool> _dispatchesDrained =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<bool> _disposeCompletion =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int _activeDispatches;
     private int _pendingDispatches;
     private int _disposed;
     private long _admittedDispatches;
@@ -135,7 +144,6 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
         }
 
         _lanes = new Channel<DispatchWorkItem>[SlsLaneCount];
-        _admissionGates = new SemaphoreSlim[SlsLaneCount];
         _workers = new Task[SlsLaneCount];
         for (int lane = 0; lane < SlsLaneCount; lane++)
         {
@@ -148,7 +156,6 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
                     AllowSynchronousContinuations = false
                 });
             _lanes[lane] = channel;
-            _admissionGates[lane] = new SemaphoreSlim(1, 1);
             _workers[lane] = RunLaneAsync(channel.Reader);
         }
     }
@@ -158,65 +165,46 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ThrowIfDisposed();
-        ct.ThrowIfCancellationRequested();
-
-        DispatchWorkItem work = new(message, ct);
-        int lane = message.RoutingLabel.SignallingLinkSelection;
-        bool admitted = false;
-
-        Interlocked.Increment(ref _pendingDispatches);
+        BeginDispatch();
         try
         {
-            SemaphoreSlim admissionGate = _admissionGates[lane];
-            await admissionGate.WaitAsync(ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+
+            DispatchWorkItem work = new(message, ct);
+            int lane = message.RoutingLabel.SignallingLinkSelection;
+
+            Interlocked.Increment(ref _pendingDispatches);
             try
             {
-                ChannelWriter<DispatchWorkItem> writer = _lanes[lane].Writer;
-                while (await writer.WaitToWriteAsync(ct).ConfigureAwait(false))
-                {
-                    ThrowIfDisposed();
-
-                    // Admission must be visible before the work item can become
-                    // visible to the lane worker. Serializing writers per SLS lets
-                    // us reserve the bounded slot, account admission, then publish
-                    // with TryWrite without another producer consuming that slot.
-                    Interlocked.Increment(ref _admittedDispatches);
-                    if (writer.TryWrite(work))
-                    {
-                        admitted = true;
-                        break;
-                    }
-
-                    // The only expected race here is disposal completing the
-                    // channel between WaitToWriteAsync and TryWrite.
-                    Interlocked.Decrement(ref _admittedDispatches);
-                }
-
-                if (!admitted)
-                {
-                    throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
-                }
+                // The bounded channel owns admission pressure. The worker may read
+                // the item immediately after WriteAsync succeeds, so it waits on
+                // AdmissionCommitted before invoking the dispatcher. This lets the
+                // producer publish the cumulative admission count first without a
+                // counter rollback window.
+                await _lanes[lane].Writer.WriteAsync(work, ct).ConfigureAwait(false);
+                Interlocked.Increment(ref _admittedDispatches);
+                work.AdmissionCommitted.TrySetResult(true);
             }
-            finally
-            {
-                admissionGate.Release();
-            }
-        }
-        catch
-        {
-            if (!admitted)
+            catch (ChannelClosedException) when (Volatile.Read(ref _disposed) != 0)
             {
                 Interlocked.Decrement(ref _pendingDispatches);
+                throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
+            }
+            catch
+            {
+                Interlocked.Decrement(ref _pendingDispatches);
+                throw;
             }
 
-            throw;
+            // Once admitted, ownership remains with the coordinator until the queued
+            // operation returns a structured outcome or observes its cancellation.
+            // The caller cannot abandon the completion wait and misclassify a send.
+            return await work.Completion.Task.ConfigureAwait(false);
         }
-
-        // Once admitted, ownership remains with the coordinator until the queued
-        // operation returns a structured outcome or observes its cancellation.
-        // The caller cannot abandon the completion wait and misclassify a send.
-        return await work.Completion.Task.ConfigureAwait(false);
+        finally
+        {
+            EndDispatch();
+        }
     }
 
     internal M3uaHaDispatchCoordinatorSnapshot GetSnapshot()
@@ -230,9 +218,10 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
                 Interlocked.Read(ref entry.Value.Ambiguous)))
             .ToArray();
 
-        // Read terminal counters before the cumulative admission counter. Since
-        // admission is recorded before publication, this ordering guarantees a
-        // snapshot never reports more terminal work than admitted work.
+        // Terminal state is recorded only after the worker observes the per-item
+        // admission commit. Reading terminal counters before the cumulative
+        // admission counter therefore prevents a snapshot from observing terminal
+        // work ahead of its admission.
         long completedDispatches = Interlocked.Read(ref _completedDispatches);
         long canceledDispatches = Interlocked.Read(ref _canceledDispatches);
         long faultedDispatches = Interlocked.Read(ref _faultedDispatches);
@@ -253,23 +242,58 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        bool ownsDisposal;
+        lock (_lifecycleSync)
         {
+            ownsDisposal = _disposed == 0;
+            if (ownsDisposal)
+            {
+                _disposed = 1;
+                if (_activeDispatches == 0)
+                {
+                    _dispatchesDrained.TrySetResult(true);
+                }
+            }
+        }
+
+        if (!ownsDisposal)
+        {
+            await _disposeCompletion.Task.ConfigureAwait(false);
             return;
         }
 
-        foreach (Channel<DispatchWorkItem> lane in _lanes)
+        try
         {
-            lane.Writer.TryComplete();
-        }
+            foreach (Channel<DispatchWorkItem> lane in _lanes)
+            {
+                lane.Writer.TryComplete();
+            }
 
-        await Task.WhenAll(_workers).ConfigureAwait(false);
+            // Workers drain every item already accepted by a lane. DispatchAsync
+            // attempts that were still waiting for bounded admission observe the
+            // closed writer and settle before _dispatchesDrained completes. This
+            // prevents disposal from returning while admission accounting is still
+            // changing.
+            await Task.WhenAll(_workers).ConfigureAwait(false);
+            await _dispatchesDrained.Task.ConfigureAwait(false);
+            _disposeCompletion.TrySetResult(true);
+        }
+        catch (Exception ex)
+        {
+            _disposeCompletion.TrySetException(ex);
+            throw;
+        }
     }
 
     private async Task RunLaneAsync(ChannelReader<DispatchWorkItem> reader)
     {
         await foreach (DispatchWorkItem work in reader.ReadAllAsync().ConfigureAwait(false))
         {
+            // WriteAsync can make an item visible before its producer continuation
+            // runs. Never invoke transport or record terminal state until the
+            // producer has committed the cumulative admission count.
+            await work.AdmissionCommitted.Task.ConfigureAwait(false);
+
             try
             {
                 IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes =
@@ -292,6 +316,31 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
             finally
             {
                 Interlocked.Decrement(ref _pendingDispatches);
+            }
+        }
+    }
+
+    private void BeginDispatch()
+    {
+        lock (_lifecycleSync)
+        {
+            if (_disposed != 0)
+            {
+                throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
+            }
+
+            _activeDispatches++;
+        }
+    }
+
+    private void EndDispatch()
+    {
+        lock (_lifecycleSync)
+        {
+            _activeDispatches--;
+            if (_disposed != 0 && _activeDispatches == 0)
+            {
+                _dispatchesDrained.TrySetResult(true);
             }
         }
     }
@@ -347,14 +396,6 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
             case M3uaDispatchDisposition.Ambiguous:
                 Interlocked.Increment(ref counters.Ambiguous);
                 break;
-        }
-    }
-
-    private void ThrowIfDisposed()
-    {
-        if (Volatile.Read(ref _disposed) != 0)
-        {
-            throw new ObjectDisposedException(nameof(M3uaHaDispatchCoordinator));
         }
     }
 }
