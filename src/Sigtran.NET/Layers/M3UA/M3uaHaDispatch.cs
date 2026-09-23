@@ -189,6 +189,15 @@ internal sealed class M3uaAssociationDispatcher
 
                 outcome = await SendOnceAsync(lease.Definition, message, ct)
                     .ConfigureAwait(false);
+
+                if (outcome.Disposition != M3uaDispatchDisposition.Sent)
+                {
+                    // Publish route ineligibility before releasing the dispatch
+                    // lease so a contender cannot reacquire a failed Active path.
+                    bool ambiguousFailure =
+                        outcome.Disposition == M3uaDispatchDisposition.Ambiguous;
+                    _pool.ApplyDispatchFailureState(associationName, ambiguousFailure);
+                }
             }
 
             outcomes.Add(outcome);
@@ -198,8 +207,6 @@ internal sealed class M3uaAssociationDispatcher
             }
 
             bool ambiguous = outcome.Disposition == M3uaDispatchDisposition.Ambiguous;
-            _pool.ApplyDispatchFailureState(associationName, ambiguous);
-
             if (ambiguous)
             {
                 return outcomes;
