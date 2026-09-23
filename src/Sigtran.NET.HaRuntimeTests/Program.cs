@@ -14,6 +14,7 @@ await RunAsync("HA runtime isolates terminal lane fault", TerminalLaneFaultDoesN
 await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopWaitersShareShutdownAsync);
 await RunAsync("HA runtime keeps shared shutdown alive after one waiter cancels", CancelledStopWaiterDoesNotCancelSupervisorAsync);
 await RunAsync("HA runtime stops peer lanes after a synchronous stop failure", SynchronousStopFailureDoesNotSkipPeerShutdownAsync);
+await RunAsync("HA runtime ignores a captured late event after lane detach", CapturedLateRuntimeEventIsIgnoredAfterDetachAsync);
 
 static async Task DuplicateLaneNamesFailClosedAsync()
 {
@@ -272,6 +273,35 @@ static async Task SynchronousStopFailureDoesNotSkipPeerShutdownAsync()
         .ConfigureAwait(false);
 }
 
+static async Task CapturedLateRuntimeEventIsIgnoredAfterDetachAsync()
+{
+    FakeRuntimeLane lane = new("a");
+    M3uaHaRuntimeSupervisor supervisor = new([lane], inboundCapacity: 1);
+
+    await supervisor.StartAsync().ConfigureAwait(false);
+    lane.CaptureRuntimeEventHandler();
+    await supervisor.StopAsync().ConfigureAwait(false);
+
+    M3uaHaRuntimeLaneSnapshot stopped = Lane(supervisor.GetSnapshot(), "a");
+    Equal(M3uaRuntimeState.Stopped, stopped.State,
+        "The lane must be stopped before a captured late callback is replayed.");
+    Equal(0L, stopped.FaultEvents,
+        "No fault must be recorded before the synthetic late callback.");
+
+    lane.RaiseCapturedRuntimeEvent(
+        M3uaRuntimeEventKind.FaultObserved,
+        M3uaRuntimeState.Faulted,
+        "synthetic late callback after detach");
+
+    M3uaHaRuntimeLaneSnapshot afterLateCallback = Lane(supervisor.GetSnapshot(), "a");
+    Equal(M3uaRuntimeState.Stopped, afterLateCallback.State,
+        "A callback captured before unsubscription must not mutate supervisor state after lane detach.");
+    Equal(0L, afterLateCallback.FaultEvents,
+        "A callback captured before unsubscription must not mutate fault diagnostics after lane detach.");
+
+    await supervisor.DisposeAsync().ConfigureAwait(false);
+}
+
 static M3uaHaRuntimeLaneSnapshot Lane(
     M3uaHaRuntimeSupervisorSnapshot snapshot,
     string associationName)
@@ -374,6 +404,7 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
     private readonly TaskCompletionSource<bool> _stopRelease =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private volatile M3uaRuntimeState _state = M3uaRuntimeState.Stopped;
+    private EventHandler<M3uaRuntimeEventArgs>? _capturedRuntimeEvent;
     private long _received;
     private int _stopCalls;
 
@@ -467,6 +498,23 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
     internal void Activate() => _activation.TrySetResult(true);
 
     internal void ReleaseStop() => _stopRelease.TrySetResult(true);
+
+    internal void CaptureRuntimeEventHandler() => _capturedRuntimeEvent = RuntimeEvent;
+
+    internal void RaiseCapturedRuntimeEvent(
+        M3uaRuntimeEventKind kind,
+        M3uaRuntimeState state,
+        string detail)
+    {
+        _capturedRuntimeEvent?.Invoke(
+            this,
+            new M3uaRuntimeEventArgs(
+                kind,
+                state,
+                DateTimeOffset.UtcNow,
+                AssociationName,
+                detail));
+    }
 
     internal void Emit(Mtp3TransferMessage message)
     {
