@@ -131,14 +131,9 @@ internal sealed class M3uaAssociationDispatcher
 
         HashSet<string> attempted = new(StringComparer.OrdinalIgnoreCase);
         List<M3uaAssociationDispatchOutcome> outcomes = new();
-        // Active/standby dispatch must evaluate active policy role and live runtime
-        // health atomically before the first sender invocation. Reusing the same
-        // lease path for initial admission and proven-safe retry lets a healthy
-        // standby take ownership when the policy-active runtime is already known
-        // unhealthy, without manufacturing a transport failure or replaying an
-        // ambiguous transaction.
-        bool acquireFailoverLease =
+        bool initialActiveStandbyAdmission =
             _pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby;
+        bool acquireFailoverLease = false;
         int decisionBudget = Math.Max(_associationCount * 2, 1);
 
         for (int decision = 0; decision < decisionBudget; decision++)
@@ -146,20 +141,32 @@ internal sealed class M3uaAssociationDispatcher
             ct.ThrowIfCancellationRequested();
 
             M3uaAssociationDispatchLease? lease;
-            if (acquireFailoverLease)
+            if (initialActiveStandbyAdmission)
             {
+                // Initial node-policy failover is deliberately narrower than a
+                // proven-safe retry. A matching policy-Active route must exist;
+                // only its known runtime ineligibility may trigger atomic standby
+                // promotion before any sender invocation.
+                lease = _pool.TryAcquireInitialActiveStandbyDispatchLease(message);
+                initialActiveStandbyAdmission = false;
+                if (lease is null)
+                {
+                    outcomes.Add(new M3uaAssociationDispatchOutcome(
+                        null,
+                        M3uaDispatchDisposition.NoRoute,
+                        "No routing-context-compatible policy-active association was dispatchable."));
+                    return outcomes;
+                }
+            }
+            else if (acquireFailoverLease)
+            {
+                // Reaching this path means a sender was invoked and positively
+                // reported that dispatch did not occur. Only that proven-safe
+                // outcome permits ordinary active/standby retry promotion.
                 lease = _pool.TryAcquireFailoverDispatchLease(message);
                 acquireFailoverLease = false;
                 if (lease is null)
                 {
-                    if (outcomes.Count == 0)
-                    {
-                        outcomes.Add(new M3uaAssociationDispatchOutcome(
-                            null,
-                            M3uaDispatchDisposition.NoRoute,
-                            "No eligible active or standby association matched the transfer."));
-                    }
-
                     return outcomes;
                 }
             }
