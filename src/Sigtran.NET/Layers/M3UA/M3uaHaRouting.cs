@@ -93,6 +93,7 @@ internal readonly struct M3uaAssociationRouteSnapshot
         string signalingGateway,
         int priority,
         M3uaAssociationOperationalState state,
+        M3uaRuntimeState? runtimeState,
         int inFlightDispatches,
         long selectedTransfers,
         IReadOnlyList<uint> routingContexts)
@@ -101,6 +102,7 @@ internal readonly struct M3uaAssociationRouteSnapshot
         SignalingGateway = signalingGateway;
         Priority = priority;
         State = state;
+        RuntimeState = runtimeState;
         InFlightDispatches = inFlightDispatches;
         SelectedTransfers = selectedTransfers;
         RoutingContexts = routingContexts;
@@ -112,7 +114,18 @@ internal readonly struct M3uaAssociationRouteSnapshot
 
     internal int Priority { get; }
 
+    /// <summary>
+    /// Local node-routing policy state. This remains independent from the live
+    /// runtime lifecycle state so health changes do not silently rewrite role.
+    /// </summary>
     internal M3uaAssociationOperationalState State { get; }
+
+    /// <summary>
+    /// Live runtime lifecycle observed by the HA runtime supervisor when the
+    /// association pool is bound to runtime lanes. Null means no runtime-health
+    /// source has been bound and preserves the pre-composition routing behavior.
+    /// </summary>
+    internal M3uaRuntimeState? RuntimeState { get; }
 
     internal int InFlightDispatches { get; }
 
@@ -158,6 +171,8 @@ internal sealed class M3uaAssociationPool
         internal M3uaAssociationDefinition Definition { get; }
 
         internal M3uaAssociationOperationalState State { get; set; }
+
+        internal M3uaRuntimeState? RuntimeState { get; set; }
 
         internal int DispatchLeases { get; set; }
 
@@ -267,6 +282,23 @@ internal sealed class M3uaAssociationPool
         }
     }
 
+    /// <summary>
+    /// Updates live runtime health without mutating local node-routing role.
+    /// A bound route is eligible for new dispatch only while its runtime is Active.
+    /// </summary>
+    internal void SetRuntimeState(string associationName, M3uaRuntimeState state)
+    {
+        if (!Enum.IsDefined(state))
+        {
+            throw new ArgumentOutOfRangeException(nameof(state));
+        }
+
+        lock (_sync)
+        {
+            GetSlot(associationName).RuntimeState = state;
+        }
+    }
+
     internal void BeginDrain(string associationName)
     {
         lock (_sync)
@@ -329,6 +361,12 @@ internal sealed class M3uaAssociationPool
                     $"Association '{associationName}' cannot be promoted while graceful drain is active.");
             }
 
+            if (!IsRuntimeEligible(promoted))
+            {
+                throw new InvalidOperationException(
+                    $"Association '{associationName}' cannot be promoted while its bound runtime is not Active.");
+            }
+
             PromoteStandbyLocked(promoted);
         }
     }
@@ -363,6 +401,7 @@ internal sealed class M3uaAssociationPool
         {
             Slot slot = GetSlot(associationName);
             if (slot.State != M3uaAssociationOperationalState.Active
+                || !IsRuntimeEligible(slot)
                 || slot.DrainRequested
                 || !slot.Definition.MatchesRoutingContext(message.RoutingContext))
             {
@@ -393,6 +432,7 @@ internal sealed class M3uaAssociationPool
             Slot? active = _slots.Values
                 .Where(slot =>
                     slot.State == M3uaAssociationOperationalState.Active
+                    && IsRuntimeEligible(slot)
                     && !slot.DrainRequested
                     && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                 .OrderBy(slot => slot.Definition.Priority)
@@ -405,6 +445,7 @@ internal sealed class M3uaAssociationPool
                 selected = _slots.Values
                     .Where(slot =>
                         slot.State == M3uaAssociationOperationalState.Standby
+                        && IsRuntimeEligible(slot)
                         && !slot.DrainRequested
                         && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                     .OrderBy(slot => slot.Definition.Priority)
@@ -437,6 +478,7 @@ internal sealed class M3uaAssociationPool
             Slot[] active = _slots.Values
                 .Where(slot =>
                     slot.State == M3uaAssociationOperationalState.Active
+                    && IsRuntimeEligible(slot)
                     && !slot.DrainRequested
                     && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                 .OrderBy(slot => slot.Definition.Priority)
@@ -483,6 +525,7 @@ internal sealed class M3uaAssociationPool
                     slot.Definition.SignalingGateway,
                     slot.Definition.Priority,
                     slot.State,
+                    slot.RuntimeState,
                     slot.DispatchLeases,
                     slot.SelectedTransfers,
                     slot.Definition.RoutingContexts.ToArray()))
@@ -583,6 +626,10 @@ internal sealed class M3uaAssociationPool
 
         drainCompletion?.TrySetResult(true);
     }
+
+    private static bool IsRuntimeEligible(Slot slot) =>
+        !slot.RuntimeState.HasValue
+        || slot.RuntimeState.Value == M3uaRuntimeState.Active;
 
     private Slot GetSlot(string associationName)
     {
