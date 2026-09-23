@@ -162,6 +162,8 @@ internal sealed class M3uaAssociationPool
 
         internal long SelectedTransfers { get; set; }
 
+        internal bool DrainRequested { get; set; }
+
         internal TaskCompletionSource<bool>? DrainCompletion { get; set; }
     }
 
@@ -241,9 +243,13 @@ internal sealed class M3uaAssociationPool
                     "Use PromoteStandby to activate an association in active/standby node routing.");
             }
 
-            bool drainPending = slot.DispatchLeases > 0
-                && slot.DrainCompletion is { Task.IsCompleted: false };
-            if (drainPending)
+            if (state == M3uaAssociationOperationalState.Draining)
+            {
+                BeginDrainLocked(slot, associationName);
+                return;
+            }
+
+            if (slot.DrainRequested && slot.DispatchLeases > 0)
             {
                 if (state != slot.State)
                 {
@@ -255,10 +261,8 @@ internal sealed class M3uaAssociationPool
             }
 
             slot.State = state;
-            if (state != M3uaAssociationOperationalState.Draining)
-            {
-                slot.DrainCompletion = null;
-            }
+            slot.DrainRequested = false;
+            slot.DrainCompletion = null;
         }
     }
 
@@ -267,26 +271,7 @@ internal sealed class M3uaAssociationPool
         lock (_sync)
         {
             Slot slot = GetSlot(associationName);
-            if (slot.State is M3uaAssociationOperationalState.Reconnecting
-                or M3uaAssociationOperationalState.Fenced
-                or M3uaAssociationOperationalState.Faulted)
-            {
-                throw new InvalidOperationException(
-                    $"Association '{associationName}' cannot begin graceful drain from state {slot.State}.");
-            }
-
-            slot.State = M3uaAssociationOperationalState.Draining;
-            if (slot.DispatchLeases == 0)
-            {
-                slot.DrainCompletion = null;
-                return;
-            }
-
-            if (slot.DrainCompletion is null || slot.DrainCompletion.Task.IsCompleted)
-            {
-                slot.DrainCompletion = new(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
-            }
+            BeginDrainLocked(slot, associationName);
         }
     }
 
@@ -298,22 +283,21 @@ internal sealed class M3uaAssociationPool
         lock (_sync)
         {
             Slot slot = GetSlot(associationName);
+            if (!slot.DrainRequested)
+            {
+                throw new InvalidOperationException(
+                    $"Association '{associationName}' is not draining.");
+            }
+
             if (slot.DispatchLeases == 0)
             {
-                if (slot.State != M3uaAssociationOperationalState.Draining
-                    && slot.DrainCompletion is null)
-                {
-                    throw new InvalidOperationException(
-                        $"Association '{associationName}' is not draining.");
-                }
-
                 return ValueTask.CompletedTask;
             }
 
             if (slot.DrainCompletion is null)
             {
                 throw new InvalidOperationException(
-                    $"Association '{associationName}' has in-flight dispatches but no active drain.");
+                    $"Association '{associationName}' has in-flight dispatches but no active drain waiter.");
             }
 
             waitTask = slot.DrainCompletion.Task;
@@ -336,6 +320,12 @@ internal sealed class M3uaAssociationPool
             {
                 throw new InvalidOperationException(
                     $"Association '{associationName}' is not in Standby state.");
+            }
+
+            if (promoted.DrainRequested)
+            {
+                throw new InvalidOperationException(
+                    $"Association '{associationName}' cannot be promoted while graceful drain is active.");
             }
 
             PromoteStandbyLocked(promoted);
@@ -372,6 +362,7 @@ internal sealed class M3uaAssociationPool
         {
             Slot slot = GetSlot(associationName);
             if (slot.State != M3uaAssociationOperationalState.Active
+                || slot.DrainRequested
                 || !slot.Definition.MatchesRoutingContext(message.RoutingContext))
             {
                 return null;
@@ -401,6 +392,7 @@ internal sealed class M3uaAssociationPool
             Slot? active = _slots.Values
                 .Where(slot =>
                     slot.State == M3uaAssociationOperationalState.Active
+                    && !slot.DrainRequested
                     && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                 .OrderBy(slot => slot.Definition.Priority)
                 .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
@@ -412,6 +404,7 @@ internal sealed class M3uaAssociationPool
                 selected = _slots.Values
                     .Where(slot =>
                         slot.State == M3uaAssociationOperationalState.Standby
+                        && !slot.DrainRequested
                         && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                     .OrderBy(slot => slot.Definition.Priority)
                     .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
@@ -443,6 +436,7 @@ internal sealed class M3uaAssociationPool
             Slot[] active = _slots.Values
                 .Where(slot =>
                     slot.State == M3uaAssociationOperationalState.Active
+                    && !slot.DrainRequested
                     && slot.Definition.MatchesRoutingContext(message.RoutingContext))
                 .OrderBy(slot => slot.Definition.Priority)
                 .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
@@ -495,6 +489,34 @@ internal sealed class M3uaAssociationPool
         }
     }
 
+    private void BeginDrainLocked(Slot slot, string associationName)
+    {
+        if (slot.State == M3uaAssociationOperationalState.Reconnecting)
+        {
+            throw new InvalidOperationException(
+                $"Association '{associationName}' cannot begin graceful drain from state {slot.State}.");
+        }
+
+        slot.DrainRequested = true;
+        if (slot.State is not M3uaAssociationOperationalState.Fenced
+            and not M3uaAssociationOperationalState.Faulted)
+        {
+            slot.State = M3uaAssociationOperationalState.Draining;
+        }
+
+        if (slot.DispatchLeases == 0)
+        {
+            slot.DrainCompletion = null;
+            return;
+        }
+
+        if (slot.DrainCompletion is null || slot.DrainCompletion.Task.IsCompleted)
+        {
+            slot.DrainCompletion = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+    }
+
     private static void ValidateLoadshareMembership(M3uaAssociationDefinition[] associations)
     {
         int wildcardCount = associations.Count(definition => definition.RoutingContexts.Count == 0);
@@ -535,6 +557,7 @@ internal sealed class M3uaAssociationPool
         }
 
         promoted.State = M3uaAssociationOperationalState.Active;
+        promoted.DrainRequested = false;
         promoted.DrainCompletion = null;
     }
 
@@ -551,7 +574,7 @@ internal sealed class M3uaAssociationPool
             }
 
             slot.DispatchLeases--;
-            if (slot.DispatchLeases == 0)
+            if (slot.DispatchLeases == 0 && slot.DrainRequested)
             {
                 drainCompletion = slot.DrainCompletion;
             }
