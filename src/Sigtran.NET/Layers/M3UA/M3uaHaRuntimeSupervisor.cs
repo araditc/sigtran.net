@@ -131,7 +131,9 @@ internal readonly struct M3uaHaRuntimeSupervisorSnapshot
 /// This component intentionally handles only runtime lifecycle isolation and
 /// inbound fan-in. Outbound traffic remains governed by the HA routing,
 /// dispatcher, and coordinator path so queue acceptance is not mislabeled as
-/// peer/network acceptance.
+/// peer/network acceptance. When an association pool is bound, this supervisor
+/// is the source of live runtime health only; it never rewrites local node-role
+/// policy or negotiated M3UA traffic mode.
 /// </remarks>
 internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
 {
@@ -163,6 +165,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
     private readonly object _sync = new();
     private readonly Dictionary<string, LaneContext> _lanes;
     private readonly Channel<M3uaHaInboundTransfer> _inbound;
+    private readonly M3uaAssociationPool? _routePool;
     private CancellationTokenSource? _lifetime;
     private Task? _startupTask;
     private Task? _stopTask;
@@ -176,7 +179,8 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
 
     internal M3uaHaRuntimeSupervisor(
         IEnumerable<IM3uaAssociationRuntimeLane> lanes,
-        int inboundCapacity = 1024)
+        int inboundCapacity = 1024,
+        M3uaAssociationPool? routePool = null)
     {
         if (inboundCapacity <= 0)
         {
@@ -210,6 +214,32 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             throw new ArgumentException(
                 "At least one association runtime lane is required.",
                 nameof(lanes));
+        }
+
+        _routePool = routePool;
+        if (_routePool is not null)
+        {
+            string[] laneNames = _lanes.Keys
+                .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            string[] routeNames = _routePool.GetSnapshot()
+                .Select(static route => route.Name)
+                .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            if (!laneNames.SequenceEqual(routeNames, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "Bound M3UA runtime lanes must exactly match association-pool membership.",
+                    nameof(routePool));
+            }
+
+            foreach (LaneContext context in _lanes.Values)
+            {
+                _routePool.SetRuntimeState(
+                    context.Lane.AssociationName,
+                    context.State);
+            }
         }
 
         InboundCapacity = inboundCapacity;
@@ -260,7 +290,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                 int index = 0;
                 foreach (LaneContext context in _lanes.Values)
                 {
-                    context.State = M3uaRuntimeState.Starting;
+                    UpdateLaneStateLocked(context, M3uaRuntimeState.Starting);
                     context.Startup = new TaskCompletionSource<bool>(
                         TaskCreationOptions.RunContinuationsAsynchronously);
                     context.Lifetime = CancellationTokenSource.CreateLinkedTokenSource(
@@ -467,14 +497,14 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             await context.Lane.StopAsync(CancellationToken.None).ConfigureAwait(false);
             lock (_sync)
             {
-                context.State = context.Lane.State;
+                UpdateLaneStateLocked(context, context.Lane.State);
             }
         }
         catch
         {
             lock (_sync)
             {
-                context.State = M3uaRuntimeState.Faulted;
+                UpdateLaneStateLocked(context, M3uaRuntimeState.Faulted);
             }
 
             if (Interlocked.Read(ref context.FaultEvents) == faultEventsBefore)
@@ -495,7 +525,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             activated = true;
             lock (_sync)
             {
-                context.State = context.Lane.State;
+                UpdateLaneStateLocked(context, context.Lane.State);
             }
 
             context.Startup!.TrySetResult(true);
@@ -533,7 +563,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             {
                 if (context.State != M3uaRuntimeState.Faulted)
                 {
-                    context.State = M3uaRuntimeState.Faulted;
+                    UpdateLaneStateLocked(context, M3uaRuntimeState.Faulted);
                     countTerminalFault = true;
                 }
             }
@@ -588,12 +618,31 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                 Interlocked.Increment(ref context.FaultEvents);
             }
 
-            context.State = args.State;
+            // M3uaRuntime raises FaultObserved before it transitions to
+            // Reconnecting/Faulted. Exclude the lane immediately instead of
+            // leaving a known-faulting association dispatch-eligible in that gap.
+            M3uaRuntimeState observedState = args.State;
+            if (observedState != M3uaRuntimeState.Faulted
+                && args.Kind is M3uaRuntimeEventKind.FaultObserved
+                    or M3uaRuntimeEventKind.ReconnectScheduled)
+            {
+                observedState = M3uaRuntimeState.Reconnecting;
+            }
 
-            if (args.State == M3uaRuntimeState.Faulted)
+            UpdateLaneStateLocked(context, observedState);
+
+            if (observedState == M3uaRuntimeState.Faulted)
             {
                 context.Lifetime?.Cancel();
             }
         }
+    }
+
+    private void UpdateLaneStateLocked(
+        LaneContext context,
+        M3uaRuntimeState state)
+    {
+        context.State = state;
+        _routePool?.SetRuntimeState(context.Lane.AssociationName, state);
     }
 }
