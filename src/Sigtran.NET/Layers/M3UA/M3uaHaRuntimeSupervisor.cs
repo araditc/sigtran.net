@@ -390,7 +390,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         try
         {
             Task[] stopTasks = contexts
-                .Select(context => context.Lane.StopAsync(CancellationToken.None).AsTask())
+                .Select(StopLaneAsync)
                 .ToArray();
             await Task.WhenAll(stopTasks).ConfigureAwait(false);
         }
@@ -449,6 +449,11 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         {
             throw stopFailure;
         }
+    }
+
+    private static async Task StopLaneAsync(LaneContext context)
+    {
+        await context.Lane.StopAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
     private async Task RunLaneAsync(LaneContext context, CancellationToken ct)
