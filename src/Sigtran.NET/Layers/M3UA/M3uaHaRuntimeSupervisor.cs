@@ -424,14 +424,22 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         {
             foreach (LaneContext context in contexts)
             {
-                if (context.EventHandler is not null)
+                EventHandler<M3uaRuntimeEventArgs>? handler;
+                CancellationTokenSource? laneLifetime;
+                lock (_sync)
                 {
-                    context.Lane.RuntimeEvent -= context.EventHandler;
+                    handler = context.EventHandler;
                     context.EventHandler = null;
+                    laneLifetime = context.Lifetime;
+                    context.Lifetime = null;
                 }
 
-                context.Lifetime?.Dispose();
-                context.Lifetime = null;
+                if (handler is not null)
+                {
+                    context.Lane.RuntimeEvent -= handler;
+                }
+
+                laneLifetime?.Dispose();
             }
 
             lifetime?.Dispose();
@@ -565,19 +573,27 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         LaneContext context,
         M3uaRuntimeEventArgs args)
     {
-        if (args.Kind == M3uaRuntimeEventKind.FaultObserved)
-        {
-            Interlocked.Increment(ref context.FaultEvents);
-        }
-
         lock (_sync)
         {
-            context.State = args.State;
-        }
+            // A publisher may already have captured the delegate when teardown
+            // unsubscribes it. Ignore that late callback after the lane has been
+            // detached, and serialize fault cancellation with lifetime disposal.
+            if (context.EventHandler is null)
+            {
+                return;
+            }
 
-        if (args.State == M3uaRuntimeState.Faulted)
-        {
-            context.Lifetime?.Cancel();
+            if (args.Kind == M3uaRuntimeEventKind.FaultObserved)
+            {
+                Interlocked.Increment(ref context.FaultEvents);
+            }
+
+            context.State = args.State;
+
+            if (args.State == M3uaRuntimeState.Faulted)
+            {
+                context.Lifetime?.Cancel();
+            }
         }
     }
 }
