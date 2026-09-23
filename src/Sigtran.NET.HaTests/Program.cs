@@ -4,6 +4,10 @@ using Sigtran.NET.Layers.MTP3;
 Run("Loadshare preserves deterministic SLS affinity", LoadsharePreservesDeterministicSlsAffinity);
 Run("Active standby requires explicit promotion", ActiveStandbyRequiresExplicitPromotion);
 Run("Draining and fenced associations receive no new traffic", DrainingAndFencedAssociationsReceiveNoNewTraffic);
+Run("Graceful drain waits for in-flight dispatch leases", GracefulDrainWaitsForInFlightDispatchLeases);
+Run("Drain reactivation waits for in-flight dispatches", DrainReactivationWaitsForInFlightDispatches);
+Run("Dispatch failure does not strand a drain waiter", DispatchFailureDoesNotStrandDrainWaiter);
+Run("Drain without in-flight dispatch completes immediately", DrainWithoutInFlightDispatchCompletesImmediately);
 Run("Broadcast selects all eligible active associations", BroadcastSelectsAllEligibleActiveAssociations);
 Run("Routing context membership fails closed", RoutingContextMembershipFailsClosed);
 Run("Duplicate association names fail closed", DuplicateAssociationNamesFailClosed);
@@ -86,6 +90,91 @@ static void DrainingAndFencedAssociationsReceiveNoNewTraffic()
         0,
         pool.SelectTargets(CreateTransfer(sls: 0, routingContext: 100)).Count,
         "A fenced association must receive no new transfers.");
+}
+
+static void GracefulDrainWaitsForInFlightDispatchLeases()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Override,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+    Mtp3TransferMessage transfer = CreateTransfer(0, 100);
+    M3uaAssociationDispatchLease lease = pool.TryAcquireDispatchLease("a", transfer)
+        ?? throw new InvalidOperationException("Expected an active association dispatch lease.");
+
+    pool.BeginDrain("a");
+    M3uaAssociationRouteSnapshot draining = Single(pool.GetSnapshot());
+    Equal(M3uaAssociationOperationalState.Draining, draining.State, "BeginDrain must make the route immediately ineligible for new work.");
+    Equal(1, draining.InFlightDispatches, "The in-flight lease must remain visible while drain is pending.");
+    Equal(0, pool.SelectTargets(transfer).Count, "A draining route must reject new selections before existing work completes.");
+
+    Task drained = pool.WaitForDrainedAsync("a").AsTask();
+    Equal(false, drained.IsCompleted, "Drain completion must wait for the in-flight dispatch lease.");
+
+    lease.Dispose();
+    drained.GetAwaiter().GetResult();
+    M3uaAssociationRouteSnapshot completed = Single(pool.GetSnapshot());
+    Equal(0, completed.InFlightDispatches, "Drain completion must observe zero in-flight dispatch leases.");
+    Equal(M3uaAssociationOperationalState.Draining, completed.State, "Completing the drain must not silently reactivate the route.");
+}
+
+static void DrainReactivationWaitsForInFlightDispatches()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Loadshare,
+        M3uaTrafficModeType.Loadshare,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+    Mtp3TransferMessage transfer = CreateTransfer(1, 100);
+    M3uaAssociationDispatchLease lease = pool.TryAcquireDispatchLease("a", transfer)
+        ?? throw new InvalidOperationException("Expected an active association dispatch lease.");
+
+    pool.BeginDrain("a");
+    Throws<InvalidOperationException>(() =>
+        pool.SetState("a", M3uaAssociationOperationalState.Active));
+    Equal(M3uaAssociationOperationalState.Draining, Single(pool.GetSnapshot()).State, "Rejected reactivation must preserve Draining state.");
+
+    lease.Dispose();
+    pool.WaitForDrainedAsync("a").AsTask().GetAwaiter().GetResult();
+    pool.SetState("a", M3uaAssociationOperationalState.Active);
+    Equal("a", Single(pool.SelectTargets(transfer)).Name, "A fully drained route may be explicitly reactivated in non-active-standby modes.");
+}
+
+static void DispatchFailureDoesNotStrandDrainWaiter()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Override,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+    Mtp3TransferMessage transfer = CreateTransfer(2, 100);
+    M3uaAssociationDispatchLease lease = pool.TryAcquireDispatchLease("a", transfer)
+        ?? throw new InvalidOperationException("Expected an active association dispatch lease.");
+
+    pool.BeginDrain("a");
+    pool.ApplyDispatchFailureState("a", ambiguous: true);
+    Equal(M3uaAssociationOperationalState.Fenced, Single(pool.GetSnapshot()).State, "An ambiguous in-flight failure must retain fenced precedence over Draining.");
+
+    Task drained = pool.WaitForDrainedAsync("a").AsTask();
+    Equal(false, drained.IsCompleted, "Failure state must not complete the drain while a lease remains held.");
+    lease.Dispose();
+    drained.GetAwaiter().GetResult();
+
+    M3uaAssociationRouteSnapshot snapshot = Single(pool.GetSnapshot());
+    Equal(M3uaAssociationOperationalState.Fenced, snapshot.State, "Drain completion must not erase the stronger failure state.");
+    Equal(0, snapshot.InFlightDispatches, "The failed draining route must settle all in-flight leases.");
+    Equal(0, pool.SelectTargets(transfer).Count, "A fenced route must remain ineligible after its drain settles.");
+}
+
+static void DrainWithoutInFlightDispatchCompletesImmediately()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Override,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+
+    pool.BeginDrain("a");
+    Task drained = pool.WaitForDrainedAsync("a").AsTask();
+    Equal(true, drained.IsCompletedSuccessfully, "A route with no in-flight dispatches should already be drained.");
+    Equal(0, Single(pool.GetSnapshot()).InFlightDispatches, "Immediate drain must report no in-flight work.");
 }
 
 static void BroadcastSelectsAllEligibleActiveAssociations()
