@@ -168,17 +168,22 @@ internal sealed class M3uaAssociationDispatcher
                 return outcomes;
             }
 
-            _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
+            _pool.SetState(
+                target.Name,
+                outcome.Disposition == M3uaDispatchDisposition.Ambiguous
+                    ? M3uaAssociationOperationalState.Fenced
+                    : M3uaAssociationOperationalState.Faulted);
+
             if (outcome.Disposition == M3uaDispatchDisposition.Ambiguous)
             {
-                // Once transport acceptance is uncertain, changing association
-                // health is allowed but replay is not.
+                // Once transport acceptance is uncertain, preserve a fenced
+                // reconciliation boundary and never replay the transfer.
                 return outcomes;
             }
 
             if (_pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby)
             {
-                TryPromoteNextStandby();
+                _pool.TryPromoteStandbyFor(message);
             }
         }
 
@@ -189,6 +194,7 @@ internal sealed class M3uaAssociationDispatcher
         Mtp3TransferMessage message,
         CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         IReadOnlyList<M3uaAssociationDefinition> targets = _pool.SelectTargets(message);
         if (targets.Count == 0)
         {
@@ -199,9 +205,30 @@ internal sealed class M3uaAssociationDispatcher
         }
 
         List<M3uaAssociationDispatchOutcome> outcomes = new(targets.Count);
-        foreach (M3uaAssociationDefinition target in targets)
+        for (int index = 0; index < targets.Count; index++)
         {
-            ct.ThrowIfCancellationRequested();
+            M3uaAssociationDefinition target = targets[index];
+            if (ct.IsCancellationRequested)
+            {
+                if (outcomes.Count == 0)
+                {
+                    ct.ThrowIfCancellationRequested();
+                }
+
+                // Once any fanout leg has been attempted, do not discard its
+                // ownership result by throwing. Record remaining legs as known
+                // not-dispatched work and return the complete fanout picture.
+                for (int remaining = index; remaining < targets.Count; remaining++)
+                {
+                    outcomes.Add(new M3uaAssociationDispatchOutcome(
+                        targets[remaining].Name,
+                        M3uaDispatchDisposition.NotDispatched,
+                        "Dispatch was cancelled before this association sender was invoked."));
+                }
+
+                return outcomes;
+            }
+
             M3uaAssociationDispatchOutcome outcome =
                 await SendOnceAsync(target, message, ct).ConfigureAwait(false);
             outcomes.Add(outcome);
@@ -210,7 +237,11 @@ internal sealed class M3uaAssociationDispatcher
             // or replay one failed fanout leg on another association.
             if (outcome.Disposition != M3uaDispatchDisposition.Sent)
             {
-                _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
+                _pool.SetState(
+                    target.Name,
+                    outcome.Disposition == M3uaDispatchDisposition.Ambiguous
+                        ? M3uaAssociationOperationalState.Fenced
+                        : M3uaAssociationOperationalState.Faulted);
             }
         }
 
@@ -230,10 +261,6 @@ internal sealed class M3uaAssociationDispatcher
                 target.Name,
                 M3uaDispatchDisposition.Sent);
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
         catch (M3uaAssociationSendException ex)
         {
             return new M3uaAssociationDispatchOutcome(
@@ -245,31 +272,13 @@ internal sealed class M3uaAssociationDispatcher
         }
         catch (Exception ex)
         {
-            // Unknown transport exceptions fail closed as ambiguous. The
-            // dispatcher must not replay a transfer once peer acceptance is
-            // uncertain.
+            // Once the sender has been invoked, an unclassified exception,
+            // including OperationCanceledException, cannot prove that peer or
+            // transport acceptance did not occur. Fail closed as ambiguous.
             return new M3uaAssociationDispatchOutcome(
                 target.Name,
                 M3uaDispatchDisposition.Ambiguous,
                 ex.Message);
         }
-    }
-
-    private bool TryPromoteNextStandby()
-    {
-        M3uaAssociationRouteSnapshot? candidate = _pool.GetSnapshot()
-            .Where(route => route.State == M3uaAssociationOperationalState.Standby)
-            .OrderBy(route => route.Priority)
-            .ThenBy(route => route.Name, StringComparer.Ordinal)
-            .Select(route => (M3uaAssociationRouteSnapshot?)route)
-            .FirstOrDefault();
-
-        if (!candidate.HasValue)
-        {
-            return false;
-        }
-
-        _pool.PromoteStandby(candidate.Value.Name);
-        return true;
     }
 }
