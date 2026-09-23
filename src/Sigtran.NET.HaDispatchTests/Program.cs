@@ -14,6 +14,9 @@ await RunAsync("Concurrent standby failover is atomic", ConcurrentStandbyFailove
 await RunAsync("Broadcast attempts each selected association exactly once", BroadcastAttemptsEachSelectedAssociationExactlyOnce);
 await RunAsync("Broadcast cancellation preserves completed fanout ownership", BroadcastCancellationPreservesCompletedFanoutOwnership);
 await RunAsync("Cancellation before selection sends nothing", CancellationBeforeSelectionSendsNothing);
+await RunAsync("Fenced ownership cannot be downgraded by pre-dispatch failure", FencedOwnershipCannotBeDowngraded);
+await RunAsync("Concurrent cross-context failover keeps retry targets bound", ConcurrentCrossContextFailoverKeepsRetryTargetsBound);
+await RunAsync("Broadcast revalidates each leg before sender invocation", BroadcastRevalidatesEachLegBeforeSenderInvocation);
 
 static Task DispatcherRejectsMissingAssociationSenders()
 {
@@ -319,6 +322,95 @@ static async Task CancellationBeforeSelectionSendsNothing()
     Equal(0, sender.Calls, "A pre-cancelled dispatch must not touch transport.");
 }
 
+static Task FencedOwnershipCannotBeDowngraded()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Override,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]));
+
+    pool.SetState("a", M3uaAssociationOperationalState.Fenced);
+    pool.ApplyDispatchFailureState("a", ambiguous: false);
+
+    Equal(
+        M3uaAssociationOperationalState.Fenced,
+        pool.GetSnapshot().Single().State,
+        "A later proven pre-dispatch result must not downgrade an existing fenced ownership boundary.");
+
+    pool.ApplyDispatchFailureState("a", ambiguous: true);
+    Equal(
+        M3uaAssociationOperationalState.Fenced,
+        pool.GetSnapshot().Single().State,
+        "Repeated ambiguous evidence must retain the fenced state.");
+
+    return Task.CompletedTask;
+}
+
+static async Task ConcurrentCrossContextFailoverKeepsRetryTargetsBound()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.ActiveStandby,
+        M3uaTrafficModeType.Override,
+        new M3uaAssociationDefinition("primary", "sg-a", 0, M3uaAssociationOperationalState.Active, [100, 200]),
+        new M3uaAssociationDefinition("backup-100", "sg-b", 1, M3uaAssociationOperationalState.Standby, [100]),
+        new M3uaAssociationDefinition("backup-200", "sg-c", 2, M3uaAssociationOperationalState.Standby, [200]));
+
+    CoordinatedPreDispatchSender primary = new("primary", expectedConcurrentCalls: 2);
+    ConcurrentSuccessSender backup100 = new("backup-100");
+    ConcurrentSuccessSender backup200 = new("backup-200");
+    M3uaAssociationDispatcher dispatcher = new(pool, [primary, backup100, backup200]);
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> for100 =
+        dispatcher.DispatchAsync(CreateTransfer(1, 100)).AsTask();
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> for200 =
+        dispatcher.DispatchAsync(CreateTransfer(2, 200)).AsTask();
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome>[] results =
+        await Task.WhenAll(for100, for200).ConfigureAwait(false);
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome> result100 =
+        results.Single(result => result.Count == 2 && result[1].AssociationName == "backup-100");
+    IReadOnlyList<M3uaAssociationDispatchOutcome> result200 =
+        results.Single(result => result.Count == 2 && result[1].AssociationName == "backup-200");
+
+    Equal(M3uaDispatchDisposition.Sent, result100[1].Disposition, "Context 100 retry must stay bound to its compatible promoted route.");
+    Equal(M3uaDispatchDisposition.Sent, result200[1].Disposition, "Context 200 retry must stay bound to its compatible promoted route.");
+    Equal(1, backup100.Calls, "Context 100 backup should receive exactly one bound retry.");
+    Equal(1, backup200.Calls, "Context 200 backup should receive exactly one bound retry.");
+}
+
+static async Task BroadcastRevalidatesEachLegBeforeSenderInvocation()
+{
+    M3uaAssociationPool pool = CreatePool(
+        M3uaNodeRoutingMode.Broadcast,
+        M3uaTrafficModeType.Broadcast,
+        new M3uaAssociationDefinition("a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100]),
+        new M3uaAssociationDefinition("b", "sg-b", 1, M3uaAssociationOperationalState.Active, [100]));
+
+    GateSuccessSender first = new("a");
+    FakeSender second = new("b", FakeBehavior.Success);
+    M3uaAssociationDispatcher dispatcher = new(pool, [first, second]);
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> dispatch =
+        dispatcher.DispatchAsync(CreateTransfer(7, 100)).AsTask();
+
+    await first.Entered.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+    pool.SetState("b", M3uaAssociationOperationalState.Fenced);
+    first.Release();
+
+    IReadOnlyList<M3uaAssociationDispatchOutcome> outcomes =
+        await dispatch.ConfigureAwait(false);
+
+    Equal(2, outcomes.Count, "Broadcast must retain an outcome for each originally selected leg.");
+    Equal(M3uaDispatchDisposition.Sent, outcomes[0].Disposition, "The admitted first leg should complete normally.");
+    Equal(M3uaDispatchDisposition.NotDispatched, outcomes[1].Disposition, "A leg fenced before admission must not invoke its sender.");
+    Equal(0, second.Calls, "A stale broadcast target must be rejected before transport invocation.");
+    Equal(
+        M3uaAssociationOperationalState.Fenced,
+        pool.GetSnapshot().Single(route => route.Name == "b").State,
+        "Broadcast revalidation must preserve the concurrent fenced boundary.");
+}
+
 static M3uaAssociationPool CreatePool(
     M3uaNodeRoutingMode mode,
     M3uaTrafficModeType trafficMode,
@@ -482,6 +574,37 @@ internal sealed class CancelAfterSuccessSender : IM3uaAssociationSender
         Interlocked.Increment(ref _calls);
         _cts.Cancel();
         return ValueTask.CompletedTask;
+    }
+}
+
+internal sealed class GateSuccessSender : IM3uaAssociationSender
+{
+    private readonly TaskCompletionSource<bool> _entered =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<bool> _release =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int _calls;
+
+    internal GateSuccessSender(string associationName)
+    {
+        AssociationName = associationName;
+    }
+
+    public string AssociationName { get; }
+
+    internal Task Entered => _entered.Task;
+
+    internal int Calls => Volatile.Read(ref _calls);
+
+    internal void Release() => _release.TrySetResult(true);
+
+    public async ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref _calls);
+        _entered.TrySetResult(true);
+        await _release.Task.WaitAsync(TimeSpan.FromSeconds(5), ct).ConfigureAwait(false);
     }
 }
 
