@@ -260,12 +260,17 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             }
         }
 
-        bool[] activationResults = await Task.WhenAll(startupTasks)
-            .WaitAsync(ct)
-            .ConfigureAwait(false);
-        if (activationResults.Any(static result => result))
+        HashSet<Task<bool>> pending = startupTasks.ToHashSet();
+        while (pending.Count > 0)
         {
-            return;
+            Task<bool> completed = await Task.WhenAny(pending)
+                .WaitAsync(ct)
+                .ConfigureAwait(false);
+            pending.Remove(completed);
+            if (await completed.ConfigureAwait(false))
+            {
+                return;
+            }
         }
 
         await StopAsync(CancellationToken.None).ConfigureAwait(false);
@@ -451,10 +456,19 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         }
         catch (Exception)
         {
-            Interlocked.Increment(ref context.FaultEvents);
+            bool countTerminalFault = false;
             lock (_sync)
             {
-                context.State = M3uaRuntimeState.Faulted;
+                if (context.State != M3uaRuntimeState.Faulted)
+                {
+                    context.State = M3uaRuntimeState.Faulted;
+                    countTerminalFault = true;
+                }
+            }
+
+            if (countTerminalFault)
+            {
+                Interlocked.Increment(ref context.FaultEvents);
             }
 
             context.Startup?.TrySetResult(false);
