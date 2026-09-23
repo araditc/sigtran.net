@@ -152,6 +152,7 @@ internal sealed class M3uaAssociationPool
         {
             Definition = definition;
             State = definition.InitialState;
+            DrainRequested = definition.InitialState == M3uaAssociationOperationalState.Draining;
         }
 
         internal M3uaAssociationDefinition Definition { get; }
