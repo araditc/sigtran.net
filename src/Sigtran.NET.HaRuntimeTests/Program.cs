@@ -4,6 +4,7 @@ using Sigtran.NET.Layers.M3UA;
 using Sigtran.NET.Layers.MTP3;
 
 await RunAsync("HA runtime rejects duplicate lane names", DuplicateLaneNamesFailClosedAsync);
+await RunAsync("HA runtime rejects mismatched route-pool membership", RoutePoolMembershipMustMatchRuntimeLanesAsync);
 await RunAsync("HA runtime fails when no lane activates", AllLaneStartupFailureFailsClosedAsync);
 await RunAsync("HA runtime isolates startup failure", StartupFailureDoesNotBlockHealthyLaneAsync);
 await RunAsync("HA runtime does not wait for a slow peer lane", SlowStartupDoesNotGateHealthyLaneAsync);
@@ -11,6 +12,7 @@ await RunAsync("HA runtime converges concurrent startup waits", ConcurrentStartu
 await RunAsync("HA runtime keeps startup alive after one waiter cancels", CancelledStartupWaiterDoesNotCancelSupervisorAsync);
 await RunAsync("HA runtime applies bounded aggregate backpressure", BoundedFanInPreservesAssociationIdentityAsync);
 await RunAsync("HA runtime isolates terminal lane fault", TerminalLaneFaultDoesNotStopHealthyLaneAsync);
+await RunAsync("HA runtime feeds live health into route admission", RuntimeHealthFeedsRouteAdmissionAsync);
 await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopWaitersShareShutdownAsync);
 await RunAsync("HA runtime keeps shared shutdown alive after one waiter cancels", CancelledStopWaiterDoesNotCancelSupervisorAsync);
 await RunAsync("HA runtime stops peer lanes after a synchronous stop failure", SynchronousStopFailureDoesNotSkipPeerShutdownAsync);
@@ -24,6 +26,37 @@ static async Task DuplicateLaneNamesFailClosedAsync()
     await ThrowsAsync<ArgumentException>(() =>
     {
         _ = new M3uaHaRuntimeSupervisor([first, second], inboundCapacity: 1);
+        return Task.CompletedTask;
+    }).ConfigureAwait(false);
+}
+
+static async Task RoutePoolMembershipMustMatchRuntimeLanesAsync()
+{
+    FakeRuntimeLane onlyLane = new("a");
+    M3uaAssociationPool pool = new(
+        M3uaNodeRoutingMode.Loadshare,
+        M3uaTrafficModeType.Loadshare,
+        [
+            new M3uaAssociationDefinition(
+                "a",
+                "sg-a",
+                0,
+                M3uaAssociationOperationalState.Active,
+                [100]),
+            new M3uaAssociationDefinition(
+                "b",
+                "sg-b",
+                0,
+                M3uaAssociationOperationalState.Active,
+                [100])
+        ]);
+
+    await ThrowsAsync<ArgumentException>(() =>
+    {
+        _ = new M3uaHaRuntimeSupervisor(
+            [onlyLane],
+            inboundCapacity: 1,
+            routePool: pool);
         return Task.CompletedTask;
     }).ConfigureAwait(false);
 }
@@ -186,6 +219,79 @@ static async Task TerminalLaneFaultDoesNotStopHealthyLaneAsync()
     Equal((byte)9, inbound.Message.RoutingLabel.SignallingLinkSelection, "Healthy-lane payload metadata must be preserved.");
 }
 
+static async Task RuntimeHealthFeedsRouteAdmissionAsync()
+{
+    M3uaAssociationPool pool = new(
+        M3uaNodeRoutingMode.Loadshare,
+        M3uaTrafficModeType.Loadshare,
+        [
+            new M3uaAssociationDefinition(
+                "a",
+                "sg-a",
+                0,
+                M3uaAssociationOperationalState.Active,
+                [100]),
+            new M3uaAssociationDefinition(
+                "b",
+                "sg-b",
+                0,
+                M3uaAssociationOperationalState.Active,
+                [100])
+        ]);
+    FakeRuntimeLane a = new("a");
+    FakeRuntimeLane b = new("b");
+    await using M3uaHaRuntimeSupervisor supervisor = new(
+        [a, b],
+        inboundCapacity: 2,
+        routePool: pool);
+    Mtp3TransferMessage transfer = CreateTransfer(sls: 1, routingContext: 100);
+
+    Equal(0, pool.SelectTargets(transfer).Count,
+        "A bound route pool must fail closed while its runtime lanes are stopped.");
+    Equal(M3uaRuntimeState.Stopped, Route(pool, "a").RuntimeState,
+        "Initial bound health must reflect the stopped runtime lane.");
+    Equal(M3uaAssociationOperationalState.Active, Route(pool, "a").State,
+        "Binding runtime health must not rewrite local node-routing role.");
+
+    await supervisor.StartAsync().ConfigureAwait(false);
+    await WaitUntilAsync(
+        () => Route(pool, "a").RuntimeState == M3uaRuntimeState.Active
+            && Route(pool, "b").RuntimeState == M3uaRuntimeState.Active,
+        "Both synthetic runtime lanes did not become route-eligible.")
+        .ConfigureAwait(false);
+
+    Equal("b", pool.SelectTargets(transfer).Single().Name,
+        "Stable two-member loadshare must preserve deterministic SLS affinity when both runtimes are healthy.");
+
+    b.ObserveFaultWhileActive("synthetic recoverable transport fault");
+    await WaitUntilAsync(
+        () => Route(pool, "b").RuntimeState == M3uaRuntimeState.Reconnecting,
+        "A runtime fault observation must exclude the lane before the runtime publishes its later reconnect state.")
+        .ConfigureAwait(false);
+
+    M3uaAssociationRouteSnapshot excluded = Route(pool, "b");
+    Equal(M3uaAssociationOperationalState.Active, excluded.State,
+        "Recoverable runtime health loss must not silently rewrite the local loadshare role.");
+    Equal(M3uaRuntimeState.Reconnecting, excluded.RuntimeState,
+        "The route snapshot must expose fail-closed live runtime health independently from role.");
+    Equal("a", pool.SelectTargets(transfer).Single().Name,
+        "A known-faulting runtime lane must receive no new traffic while the healthy peer remains eligible.");
+
+    b.TransitionTo(
+        M3uaRuntimeState.Active,
+        M3uaRuntimeEventKind.AspActivated,
+        "synthetic reconnect complete");
+    await WaitUntilAsync(
+        () => Route(pool, "b").RuntimeState == M3uaRuntimeState.Active,
+        "The recovered runtime lane did not return to route eligibility.")
+        .ConfigureAwait(false);
+
+    Equal("b", pool.SelectTargets(transfer).Single().Name,
+        "Runtime recovery must restore the original deterministic SLS affinity without rewriting node policy.");
+    Equal(M3uaAssociationOperationalState.Active, Route(pool, "b").State,
+        "Runtime recovery must leave local node-routing role unchanged.");
+}
+
 static async Task ConcurrentStopWaitersShareShutdownAsync()
 {
     FakeRuntimeLane lane = new("a", stallStop: true);
@@ -313,6 +419,20 @@ static M3uaHaRuntimeLaneSnapshot Lane(
             StringComparison.OrdinalIgnoreCase))
         .ToArray();
     Equal(1, matches.Length, $"Expected exactly one snapshot for association '{associationName}'.");
+    return matches[0];
+}
+
+static M3uaAssociationRouteSnapshot Route(
+    M3uaAssociationPool pool,
+    string associationName)
+{
+    M3uaAssociationRouteSnapshot[] matches = pool.GetSnapshot()
+        .Where(route => string.Equals(
+            route.Name,
+            associationName,
+            StringComparison.OrdinalIgnoreCase))
+        .ToArray();
+    Equal(1, matches.Length, $"Expected exactly one route snapshot for association '{associationName}'.");
     return matches[0];
 }
 
@@ -523,6 +643,26 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
             throw new InvalidOperationException(
                 $"Synthetic lane '{AssociationName}' rejected an inbound transfer.");
         }
+    }
+
+    internal void ObserveFaultWhileActive(string detail)
+    {
+        if (_state != M3uaRuntimeState.Active)
+        {
+            throw new InvalidOperationException(
+                $"Synthetic lane '{AssociationName}' must be Active before observing a recoverable fault.");
+        }
+
+        Raise(M3uaRuntimeEventKind.FaultObserved, detail);
+    }
+
+    internal void TransitionTo(
+        M3uaRuntimeState state,
+        M3uaRuntimeEventKind kind,
+        string detail)
+    {
+        _state = state;
+        Raise(kind, detail);
     }
 
     internal void Fault(string detail)
