@@ -14,7 +14,7 @@ An association name is a routing identity, not proof that every transport sessio
 - a replacement generation cannot be activated until the previous generation has no in-flight work;
 - a proven pre-dispatch `M3uaAssociationSendException` (`DispatchMayHaveOccurred == false`) does not manufacture an association-generation fence; higher-level routing policy may perform its already-governed safe retry/failover decision;
 - ambiguous `M3uaAssociationSendException`, cancellation after inner-sender invocation, and unknown sender exceptions fence the current generation as `AmbiguousOutcome` before the exception is rethrown;
-- cancellation observed before inner-sender invocation is converted to a known-not-dispatched send exception and does not fence the healthy generation;
+- cancellation is rechecked after generation admission and immediately before inner-sender invocation. If already canceled at that boundary it is converted to a known-not-dispatched send exception, the temporary generation lease is released, and the healthy generation stays open;
 - an ambiguity fence has precedence over weaker runtime/admin fence reasons until an explicit replacement generation is activated.
 
 This component does not claim peer acknowledgement, exactly-once delivery, or transaction replay safety. It only defines when a particular local association transport generation may accept new dispatch calls.
@@ -35,6 +35,6 @@ A later composition step must coordinate runtime/session activation with `Activa
 4. ambiguous send failure fences the generation and blocks blind replay;
 5. a weaker runtime fence cannot erase an ambiguity fence;
 6. proven pre-dispatch failure leaves the current generation open for an explicit higher-level retry decision;
-7. pre-invocation cancellation is classified as known-not-dispatched and does not reach the transport sender.
+7. cancellation observed after generation lease admission but before inner-sender invocation remains known-not-dispatched, releases the admitted lease, does not call the transport sender, and does not fence the healthy generation.
 
 These are synthetic in-process concurrency/ownership tests. They do not satisfy operator/vendor, multi-host, Kubernetes, trusted-signing or stable-release gates.
