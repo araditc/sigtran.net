@@ -131,58 +131,82 @@ internal sealed class M3uaAssociationDispatcher
 
         HashSet<string> attempted = new(StringComparer.OrdinalIgnoreCase);
         List<M3uaAssociationDispatchOutcome> outcomes = new();
+        bool acquireFailoverLease = false;
+        int decisionBudget = Math.Max(_associationCount * 2, 1);
 
-        for (int attempt = 0; attempt < _associationCount; attempt++)
+        for (int decision = 0; decision < decisionBudget; decision++)
         {
             ct.ThrowIfCancellationRequested();
-            IReadOnlyList<M3uaAssociationDefinition> targets = _pool.SelectTargets(message);
-            if (targets.Count == 0)
+
+            M3uaAssociationDispatchLease? lease;
+            if (acquireFailoverLease)
             {
-                if (outcomes.Count == 0)
+                lease = _pool.TryAcquireFailoverDispatchLease(message);
+                acquireFailoverLease = false;
+                if (lease is null)
                 {
-                    outcomes.Add(new M3uaAssociationDispatchOutcome(
-                        null,
-                        M3uaDispatchDisposition.NoRoute,
-                        "No eligible active association matched the transfer."));
+                    return outcomes;
+                }
+            }
+            else
+            {
+                IReadOnlyList<M3uaAssociationDefinition> targets = _pool.SelectTargets(message);
+                if (targets.Count == 0)
+                {
+                    if (outcomes.Count == 0)
+                    {
+                        outcomes.Add(new M3uaAssociationDispatchOutcome(
+                            null,
+                            M3uaDispatchDisposition.NoRoute,
+                            "No eligible active association matched the transfer."));
+                    }
+
+                    return outcomes;
                 }
 
-                return outcomes;
+                lease = _pool.TryAcquireDispatchLease(targets[0].Name, message);
+                if (lease is null)
+                {
+                    // Eligibility changed after selection. Re-run routing rather
+                    // than invoking a sender from a stale snapshot.
+                    continue;
+                }
             }
 
-            M3uaAssociationDefinition target = targets[0];
-            if (!attempted.Add(target.Name))
+            M3uaAssociationDispatchOutcome outcome;
+            string associationName;
+            using (lease)
             {
-                outcomes.Add(new M3uaAssociationDispatchOutcome(
-                    target.Name,
-                    M3uaDispatchDisposition.NotDispatched,
-                    "Routing returned an association that was already attempted."));
-                return outcomes;
+                associationName = lease.Definition.Name;
+                if (!attempted.Add(associationName))
+                {
+                    outcomes.Add(new M3uaAssociationDispatchOutcome(
+                        associationName,
+                        M3uaDispatchDisposition.NotDispatched,
+                        "Routing returned an association that was already attempted."));
+                    return outcomes;
+                }
+
+                outcome = await SendOnceAsync(lease.Definition, message, ct)
+                    .ConfigureAwait(false);
             }
 
-            M3uaAssociationDispatchOutcome outcome =
-                await SendOnceAsync(target, message, ct).ConfigureAwait(false);
             outcomes.Add(outcome);
-
             if (outcome.Disposition == M3uaDispatchDisposition.Sent)
             {
                 return outcomes;
             }
 
-            _pool.SetState(
-                target.Name,
-                outcome.Disposition == M3uaDispatchDisposition.Ambiguous
-                    ? M3uaAssociationOperationalState.Fenced
-                    : M3uaAssociationOperationalState.Faulted);
+            bool ambiguous = outcome.Disposition == M3uaDispatchDisposition.Ambiguous;
+            _pool.ApplyDispatchFailureState(associationName, ambiguous);
 
-            if (outcome.Disposition == M3uaDispatchDisposition.Ambiguous)
+            if (ambiguous)
             {
                 return outcomes;
             }
 
-            if (_pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby)
-            {
-                _pool.TryPromoteStandbyFor(message);
-            }
+            acquireFailoverLease =
+                _pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby;
         }
 
         return outcomes;
@@ -219,17 +243,28 @@ internal sealed class M3uaAssociationDispatcher
                 return outcomes;
             }
 
+            using M3uaAssociationDispatchLease? lease =
+                _pool.TryAcquireDispatchLease(target.Name, message);
+            if (lease is null)
+            {
+                outcomes.Add(new M3uaAssociationDispatchOutcome(
+                    target.Name,
+                    M3uaDispatchDisposition.NotDispatched,
+                    "Association became ineligible after broadcast target selection."));
+                continue;
+            }
+
             M3uaAssociationDispatchOutcome outcome =
-                await SendOnceAsync(target, message, ct).ConfigureAwait(false);
+                await SendOnceAsync(lease.Definition, message, ct).ConfigureAwait(false);
             outcomes.Add(outcome);
 
             if (outcome.Disposition == M3uaDispatchDisposition.Ambiguous)
             {
-                _pool.SetState(target.Name, M3uaAssociationOperationalState.Fenced);
+                _pool.ApplyDispatchFailureState(target.Name, ambiguous: true);
             }
             else if (outcome.Disposition == M3uaDispatchDisposition.NotDispatched)
             {
-                _pool.SetState(target.Name, M3uaAssociationOperationalState.Faulted);
+                _pool.ApplyDispatchFailureState(target.Name, ambiguous: false);
             }
 
             if (ct.IsCancellationRequested)
