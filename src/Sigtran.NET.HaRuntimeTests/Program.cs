@@ -13,6 +13,7 @@ await RunAsync("HA runtime applies bounded aggregate backpressure", BoundedFanIn
 await RunAsync("HA runtime isolates terminal lane fault", TerminalLaneFaultDoesNotStopHealthyLaneAsync);
 await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopWaitersShareShutdownAsync);
 await RunAsync("HA runtime keeps shared shutdown alive after one waiter cancels", CancelledStopWaiterDoesNotCancelSupervisorAsync);
+await RunAsync("HA runtime stops peer lanes after a synchronous stop failure", SynchronousStopFailureDoesNotSkipPeerShutdownAsync);
 
 static async Task DuplicateLaneNamesFailClosedAsync()
 {
@@ -242,6 +243,27 @@ static async Task CancelledStopWaiterDoesNotCancelSupervisorAsync()
     await supervisor.DisposeAsync().ConfigureAwait(false);
 }
 
+static async Task SynchronousStopFailureDoesNotSkipPeerShutdownAsync()
+{
+    FakeRuntimeLane failing = new("failing", throwOnStop: true);
+    FakeRuntimeLane healthy = new("healthy");
+    M3uaHaRuntimeSupervisor supervisor = new([failing, healthy], inboundCapacity: 2);
+
+    await supervisor.StartAsync().ConfigureAwait(false);
+    await ThrowsAsync<InvalidOperationException>(() => supervisor.StopAsync().AsTask())
+        .ConfigureAwait(false);
+
+    Equal(1, failing.StopCalls,
+        "The failing lane must receive exactly one shutdown attempt.");
+    Equal(1, healthy.StopCalls,
+        "A synchronous peer shutdown failure must not skip shutdown of another lane.");
+    Equal(M3uaRuntimeState.Stopped, healthy.State,
+        "The healthy peer lane must finish shutdown even when another lane throws synchronously.");
+
+    await ThrowsAsync<InvalidOperationException>(() => supervisor.DisposeAsync().AsTask())
+        .ConfigureAwait(false);
+}
+
 static M3uaHaRuntimeLaneSnapshot Lane(
     M3uaHaRuntimeSupervisorSnapshot snapshot,
     string associationName)
@@ -338,6 +360,7 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
     private readonly bool _stallStart;
     private readonly bool _manualStart;
     private readonly bool _stallStop;
+    private readonly bool _throwOnStop;
     private readonly TaskCompletionSource<bool> _activation =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource<bool> _stopRelease =
@@ -351,13 +374,15 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         bool failStart = false,
         bool stallStart = false,
         bool manualStart = false,
-        bool stallStop = false)
+        bool stallStop = false,
+        bool throwOnStop = false)
     {
         AssociationName = associationName;
         _failStart = failStart;
         _stallStart = stallStart;
         _manualStart = manualStart;
         _stallStop = stallStop;
+        _throwOnStop = throwOnStop;
     }
 
     public string AssociationName { get; }
@@ -406,20 +431,17 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         return message;
     }
 
-    public async ValueTask StopAsync(CancellationToken ct = default)
+    public ValueTask StopAsync(CancellationToken ct = default)
     {
         Interlocked.Increment(ref _stopCalls);
-        _state = M3uaRuntimeState.Stopping;
-        Raise(M3uaRuntimeEventKind.StateChanged, "synthetic stopping");
-
-        if (_stallStop)
+        if (_throwOnStop)
         {
-            await _stopRelease.Task.WaitAsync(ct).ConfigureAwait(false);
+            throw new InvalidOperationException("Synthetic synchronous stop failure.");
         }
 
-        _state = M3uaRuntimeState.Stopped;
-        _inbound.Writer.TryComplete();
-        Raise(M3uaRuntimeEventKind.ShutdownCompleted, "synthetic stopped");
+        _state = M3uaRuntimeState.Stopping;
+        Raise(M3uaRuntimeEventKind.StateChanged, "synthetic stopping");
+        return StopCoreAsync(ct);
     }
 
     public M3uaRuntimeMetrics GetMetrics() => new(
@@ -452,6 +474,18 @@ internal sealed class FakeRuntimeLane : IM3uaAssociationRuntimeLane
         _state = M3uaRuntimeState.Faulted;
         Raise(M3uaRuntimeEventKind.FaultObserved, detail);
         _inbound.Writer.TryComplete(new InvalidOperationException(detail));
+    }
+
+    private async ValueTask StopCoreAsync(CancellationToken ct)
+    {
+        if (_stallStop)
+        {
+            await _stopRelease.Task.WaitAsync(ct).ConfigureAwait(false);
+        }
+
+        _state = M3uaRuntimeState.Stopped;
+        _inbound.Writer.TryComplete();
+        Raise(M3uaRuntimeEventKind.ShutdownCompleted, "synthetic stopped");
     }
 
     private void Raise(M3uaRuntimeEventKind kind, string detail)
