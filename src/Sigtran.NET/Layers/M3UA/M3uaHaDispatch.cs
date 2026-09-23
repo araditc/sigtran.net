@@ -131,7 +131,14 @@ internal sealed class M3uaAssociationDispatcher
 
         HashSet<string> attempted = new(StringComparer.OrdinalIgnoreCase);
         List<M3uaAssociationDispatchOutcome> outcomes = new();
-        bool acquireFailoverLease = false;
+        // Active/standby dispatch must evaluate active policy role and live runtime
+        // health atomically before the first sender invocation. Reusing the same
+        // lease path for initial admission and proven-safe retry lets a healthy
+        // standby take ownership when the policy-active runtime is already known
+        // unhealthy, without manufacturing a transport failure or replaying an
+        // ambiguous transaction.
+        bool acquireFailoverLease =
+            _pool.NodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby;
         int decisionBudget = Math.Max(_associationCount * 2, 1);
 
         for (int decision = 0; decision < decisionBudget; decision++)
@@ -145,6 +152,14 @@ internal sealed class M3uaAssociationDispatcher
                 acquireFailoverLease = false;
                 if (lease is null)
                 {
+                    if (outcomes.Count == 0)
+                    {
+                        outcomes.Add(new M3uaAssociationDispatchOutcome(
+                            null,
+                            M3uaDispatchDisposition.NoRoute,
+                            "No eligible active or standby association matched the transfer."));
+                    }
+
                     return outcomes;
                 }
             }
