@@ -238,15 +238,45 @@ internal sealed class M3uaAssociationPool
                     $"Association '{associationName}' is not in Standby state.");
             }
 
-            foreach (Slot slot in _slots.Values)
+            PromoteStandbyLocked(promoted);
+        }
+    }
+
+    internal bool TryPromoteStandbyFor(Mtp3TransferMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        if (NodeRoutingMode != M3uaNodeRoutingMode.ActiveStandby)
+        {
+            throw new InvalidOperationException("Route-aware standby promotion is only valid for active/standby node routing.");
+        }
+
+        lock (_sync)
+        {
+            // Another concurrent failover may already have promoted a route
+            // that can carry this transfer. Treat that as successful recovery
+            // instead of attempting a stale second promotion.
+            if (_slots.Values.Any(slot =>
+                slot.State == M3uaAssociationOperationalState.Active
+                && slot.Definition.MatchesRoutingContext(message.RoutingContext)))
             {
-                if (slot.State == M3uaAssociationOperationalState.Active)
-                {
-                    slot.State = M3uaAssociationOperationalState.Standby;
-                }
+                return true;
             }
 
-            promoted.State = M3uaAssociationOperationalState.Active;
+            Slot? candidate = _slots.Values
+                .Where(slot =>
+                    slot.State == M3uaAssociationOperationalState.Standby
+                    && slot.Definition.MatchesRoutingContext(message.RoutingContext))
+                .OrderBy(slot => slot.Definition.Priority)
+                .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            if (candidate is null)
+            {
+                return false;
+            }
+
+            PromoteStandbyLocked(candidate);
+            return true;
         }
     }
 
@@ -339,6 +369,19 @@ internal sealed class M3uaAssociationPool
                 membershipCounts[context] = count;
             }
         }
+    }
+
+    private void PromoteStandbyLocked(Slot promoted)
+    {
+        foreach (Slot slot in _slots.Values)
+        {
+            if (slot.State == M3uaAssociationOperationalState.Active)
+            {
+                slot.State = M3uaAssociationOperationalState.Standby;
+            }
+        }
+
+        promoted.State = M3uaAssociationOperationalState.Active;
     }
 
     private Slot GetSlot(string associationName)
