@@ -157,15 +157,18 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
 
         try
         {
-            // Cancellation can race while this call is waiting for the generation
-            // admission lock. Recheck after the lease is acquired and before the
-            // inner sender is invoked so that path remains provably pre-dispatch.
+            // Cancellation can race while this call is waiting for generation
+            // admission. Recheck after the lease is acquired and before the
+            // inner sender is invoked. Mark it explicitly as caller cancellation
+            // so the dispatcher releases route admission without publishing an
+            // association failure.
             if (ct.IsCancellationRequested)
             {
                 throw new M3uaAssociationSendException(
                     $"Association '{AssociationName}' dispatch was cancelled before sender invocation.",
                     dispatchMayHaveOccurred: false,
-                    new OperationCanceledException(ct));
+                    new OperationCanceledException(ct),
+                    callerCancellation: true);
             }
 
             await _inner.SendAsync(message, ct).ConfigureAwait(false);
