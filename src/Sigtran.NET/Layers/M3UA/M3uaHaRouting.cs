@@ -417,6 +417,64 @@ internal sealed class M3uaAssociationPool
         }
     }
 
+    /// <summary>
+    /// Acquires the first Active/Standby dispatch atomically. Automatic standby
+    /// promotion is allowed only when a policy-Active route matches the transfer
+    /// and its bound runtime is specifically ineligible. Missing policy ownership,
+    /// routing-context mismatch, or graceful drain remain explicit NoRoute cases.
+    /// </summary>
+    internal M3uaAssociationDispatchLease? TryAcquireInitialActiveStandbyDispatchLease(
+        Mtp3TransferMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        if (NodeRoutingMode != M3uaNodeRoutingMode.ActiveStandby)
+        {
+            throw new InvalidOperationException(
+                "Initial active/standby dispatch leases are only valid for active/standby node routing.");
+        }
+
+        lock (_sync)
+        {
+            Slot? policyActive = _slots.Values
+                .Where(slot =>
+                    slot.State == M3uaAssociationOperationalState.Active
+                    && !slot.DrainRequested
+                    && slot.Definition.MatchesRoutingContext(message.RoutingContext))
+                .OrderBy(slot => slot.Definition.Priority)
+                .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            if (policyActive is null)
+            {
+                return null;
+            }
+
+            Slot selected = policyActive;
+            if (!IsRuntimeEligible(policyActive))
+            {
+                Slot? healthyStandby = _slots.Values
+                    .Where(slot =>
+                        slot.State == M3uaAssociationOperationalState.Standby
+                        && IsRuntimeEligible(slot)
+                        && !slot.DrainRequested
+                        && slot.Definition.MatchesRoutingContext(message.RoutingContext))
+                    .OrderBy(slot => slot.Definition.Priority)
+                    .ThenBy(slot => slot.Definition.Name, StringComparer.Ordinal)
+                    .FirstOrDefault();
+
+                if (healthyStandby is null)
+                {
+                    return null;
+                }
+
+                PromoteStandbyLocked(healthyStandby);
+                selected = healthyStandby;
+            }
+
+            return AcquireSelectedDispatchLeaseLocked(selected);
+        }
+    }
+
     internal M3uaAssociationDispatchLease? TryAcquireFailoverDispatchLease(
         Mtp3TransferMessage message)
     {
@@ -460,12 +518,7 @@ internal sealed class M3uaAssociationPool
                 PromoteStandbyLocked(selected);
             }
 
-            checked
-            {
-                selected.DispatchLeases++;
-            }
-
-            return new M3uaAssociationDispatchLease(this, selected.Definition);
+            return AcquireSelectedDispatchLeaseLocked(selected);
         }
     }
 
@@ -603,6 +656,21 @@ internal sealed class M3uaAssociationPool
         promoted.State = M3uaAssociationOperationalState.Active;
         promoted.DrainRequested = false;
         promoted.DrainCompletion = null;
+    }
+
+    private M3uaAssociationDispatchLease AcquireSelectedDispatchLeaseLocked(Slot selected)
+    {
+        int dispatchLeases;
+        long selectedTransfers;
+        checked
+        {
+            dispatchLeases = selected.DispatchLeases + 1;
+            selectedTransfers = selected.SelectedTransfers + 1;
+        }
+
+        selected.DispatchLeases = dispatchLeases;
+        selected.SelectedTransfers = selectedTransfers;
+        return new M3uaAssociationDispatchLease(this, selected.Definition);
     }
 
     internal void ReleaseDispatchLease(string associationName)
