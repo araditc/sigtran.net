@@ -61,8 +61,6 @@ internal sealed class M3uaAssociationDefinition
 
         Array.Sort(values);
         _routingContexts = values;
-        // A caller must not mutate membership after pool admission by casting
-        // an IReadOnlyList back to its underlying array.
         RoutingContexts = Array.AsReadOnly(values);
     }
 
@@ -146,8 +144,6 @@ internal sealed class M3uaAssociationDispatchLease : IDisposable
 
 internal sealed class M3uaAssociationPool
 {
-    // Mtp3RoutingLabel currently admits ITU labels with four-bit SLS only.
-    // A stable SLS-affinity membership cannot reach more than 16 targets.
     private const int SlsAffinityTargetLimit = 16;
 
     private sealed class Slot
@@ -206,8 +202,6 @@ internal sealed class M3uaAssociationPool
             }
         }
 
-        // Active/standby is a pool-wide local policy. Initial configuration may
-        // name zero or one active path; all later activation requires promotion.
         if (nodeRoutingMode == M3uaNodeRoutingMode.ActiveStandby
             && definitions.Count(definition =>
                 definition.InitialState == M3uaAssociationOperationalState.Active) > 1)
@@ -247,12 +241,17 @@ internal sealed class M3uaAssociationPool
                     "Use PromoteStandby to activate an association in active/standby node routing.");
             }
 
-            if (slot.State == M3uaAssociationOperationalState.Draining
-                && slot.DispatchLeases > 0
-                && state != M3uaAssociationOperationalState.Draining)
+            bool drainPending = slot.DispatchLeases > 0
+                && slot.DrainCompletion is { Task.IsCompleted: false };
+            if (drainPending)
             {
-                throw new InvalidOperationException(
-                    $"Association '{associationName}' cannot leave Draining while {slot.DispatchLeases} dispatch lease(s) remain in flight.");
+                if (state != slot.State)
+                {
+                    throw new InvalidOperationException(
+                        $"Association '{associationName}' cannot change from {slot.State} to {state} while {slot.DispatchLeases} dispatch lease(s) remain in a graceful drain.");
+                }
+
+                return;
             }
 
             slot.State = state;
@@ -498,8 +497,6 @@ internal sealed class M3uaAssociationPool
 
     private static void ValidateLoadshareMembership(M3uaAssociationDefinition[] associations)
     {
-        // Count configured membership, including inactive paths. Otherwise a
-        // later reconnect/activation could admit an unreachable 17th target.
         int wildcardCount = associations.Count(definition => definition.RoutingContexts.Count == 0);
         if (wildcardCount > SlsAffinityTargetLimit)
         {
