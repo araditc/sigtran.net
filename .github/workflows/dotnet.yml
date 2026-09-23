@@ -33,6 +33,9 @@ jobs:
       - name: Test operator profile framework
         run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
 
+      - name: Test M3UA HA routing
+        run: dotnet run --project src/Sigtran.NET.HaTests/Sigtran.NET.HaTests.csproj --configuration Release
+
       - name: Verify development and release package identity
         shell: bash
         run: |
