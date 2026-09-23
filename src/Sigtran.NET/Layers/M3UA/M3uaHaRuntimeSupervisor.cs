@@ -366,6 +366,17 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                 _running = false;
                 _stopping = true;
                 LaneContext[] contexts = _lanes.Values.ToArray();
+                // Close new admission before yielding or invoking lane teardown.
+                // Existing dispatch leases and local role/fence policy remain
+                // owned by the route pool; this changes only live runtime health.
+                foreach (LaneContext context in contexts)
+                {
+                    if (context.State != M3uaRuntimeState.Faulted)
+                    {
+                        UpdateLaneStateLocked(context, M3uaRuntimeState.Stopping);
+                    }
+                }
+
                 CancellationTokenSource? lifetime = _lifetime;
                 _stopTask = StopCoreAsync(contexts, lifetime);
                 stopTask = _stopTask;
@@ -379,14 +390,12 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
     {
         lock (_sync)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
             _disposed = true;
         }
 
+        // Every disposer joins the stored shutdown task, including callers
+        // arriving while cleanup is pending or after it has failed. A boolean
+        // prevents new startup but must not claim cleanup has already completed.
         await StopAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
@@ -644,6 +653,14 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                     or M3uaRuntimeEventKind.ReconnectScheduled)
             {
                 observedState = M3uaRuntimeState.Reconnecting;
+            }
+
+            // Recovery/activation racing with shutdown cannot reopen admission.
+            // Terminal fault and successful stop still remain distinguishable.
+            if (_stopping && observedState is not (M3uaRuntimeState.Faulted
+                or M3uaRuntimeState.Stopped))
+            {
+                observedState = M3uaRuntimeState.Stopping;
             }
 
             UpdateLaneStateLocked(context, observedState);
