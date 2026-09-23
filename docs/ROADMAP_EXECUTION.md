@@ -5,7 +5,7 @@ This document is the durable execution checkpoint for the owner-approved SDK roa
 ## Canonical baseline
 
 - Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.
-- Current canonical `main` at this checkpoint: `c413b99f9cb8860137dab6a0713553d1b71715b2`; every execution must reconcile the live branch before using this pointer.
+- Current canonical `main` at this checkpoint: `f7fac9a9fce00acdac15ab492bc72e2fbb29e758`; every execution must reconcile the live branch before using this pointer.
 - Latest immutable public prerelease: `Sigtran.NET 1.0.0-rc.2`.
 - Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002` and must not be retagged or overwritten.
 - Current unpublished source-development package identity: `1.0.0-rc.3-dev`.
@@ -61,7 +61,8 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 - 57A baseline/scope-lock work is admitted on `main` and remains a continuously reconciled constraint rather than the active implementation package.
 - 57B SDK profile-framework implementation is admitted, but the separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until authorized operator/vendor acceptance evidence is retained.
 - Active implementation package: GitHub issue `#15` — **Multi-association M3UA HA runtime**.
-- PR `#20` is **VERIFIED-DONE / MERGED** as `main@c413b99f9cb8860137dab6a0713553d1b71715b2`; independent current-head approval was received and post-merge workflow run `35898877621` completed successfully.
-- PR `#21` is the single active writer for the runtime/fan-in slice and is **IMPLEMENTING / DRAFT / CI-PENDING** after explicit reconciliation onto `main@c413b99f9cb8860137dab6a0713553d1b71715b2`. Its diff is limited to the runtime composition, live-health routing integration, deterministic regressions, CI wiring, and supporting documentation; previously merged HA coordinator files are retained unchanged.
+- PR `#20` is **VERIFIED-DONE / MERGED** on the Milestone C path; its graceful-drain behavior is retained in current `main`.
+- PR `#21` is **VERIFIED-DONE / MERGED** as `main@f7fac9a9fce00acdac15ab492bc72e2fbb29e758`; post-merge workflow run `35904128172` / job `107327385720` passed.
+- PR `#23` is the single active writer for the health-driven active/standby failover slice and is **IMPLEMENTING / CI-PENDING** after review remediation. Initial automatic failover is constrained to a routing-context-compatible policy-Active route that is specifically runtime-ineligible; missing ownership, routing-context mismatch and all-standby policy remain `NoRoute`. Proven pre-dispatch failure retains one safe failover path, ambiguous ownership remains non-replayable, and atomic active/standby lease paths retain selection accounting.
 - After Milestone C deterministic integration is admitted, representative multi-host and Kubernetes SCTP qualification remain external-evidence work packages; safe independent SDK work continues without administratively promoting those gates.
 - Stable publication remains blocked until all four required open gates pass and the machine evaluator returns `GO`.
