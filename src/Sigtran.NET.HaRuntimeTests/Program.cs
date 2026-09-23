@@ -12,6 +12,7 @@ await RunAsync("HA runtime keeps startup alive after one waiter cancels", Cancel
 await RunAsync("HA runtime applies bounded aggregate backpressure", BoundedFanInPreservesAssociationIdentityAsync);
 await RunAsync("HA runtime isolates terminal lane fault", TerminalLaneFaultDoesNotStopHealthyLaneAsync);
 await RunAsync("HA runtime converges concurrent shutdown waits", ConcurrentStopWaitersShareShutdownAsync);
+await RunAsync("HA runtime keeps shared shutdown alive after one waiter cancels", CancelledStopWaiterDoesNotCancelSupervisorAsync);
 
 static async Task DuplicateLaneNamesFailClosedAsync()
 {
@@ -205,6 +206,38 @@ static async Task ConcurrentStopWaitersShareShutdownAsync()
     await WaitAllAsync(first, second).ConfigureAwait(false);
     Equal(1, lane.StopCalls, "The shared shutdown path must call lane shutdown exactly once.");
     Equal(M3uaRuntimeState.Stopped, lane.State, "The lane must be stopped before either supervisor shutdown waiter completes.");
+
+    await supervisor.DisposeAsync().ConfigureAwait(false);
+}
+
+static async Task CancelledStopWaiterDoesNotCancelSupervisorAsync()
+{
+    FakeRuntimeLane lane = new("a", stallStop: true);
+    M3uaHaRuntimeSupervisor supervisor = new([lane], inboundCapacity: 1);
+    await supervisor.StartAsync().ConfigureAwait(false);
+
+    Task owner = supervisor.StopAsync().AsTask();
+    await WaitUntilAsync(
+        () => lane.StopCalls == 1,
+        "The shared shutdown did not reach the association lane.")
+        .ConfigureAwait(false);
+
+    using CancellationTokenSource cancelledWaiter = new();
+    Task observer = supervisor.StopAsync(cancelledWaiter.Token).AsTask();
+    cancelledWaiter.Cancel();
+    await ThrowsAsync<OperationCanceledException>(() => observer).ConfigureAwait(false);
+
+    Equal(false, owner.IsCompleted,
+        "Cancelling one shutdown wait must not cancel the shared supervisor shutdown.");
+    Equal(1, lane.StopCalls,
+        "A cancelled shutdown observer must not invoke lane shutdown again.");
+
+    lane.ReleaseStop();
+    await WaitAllAsync(owner).ConfigureAwait(false);
+    Equal(1, lane.StopCalls,
+        "The shared shutdown must still stop the lane exactly once after another waiter cancels.");
+    Equal(M3uaRuntimeState.Stopped, lane.State,
+        "The lane must reach Stopped after the shared shutdown completes.");
 
     await supervisor.DisposeAsync().ConfigureAwait(false);
 }
