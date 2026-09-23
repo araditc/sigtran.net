@@ -30,7 +30,7 @@ A later composition step must coordinate runtime/session activation with `Activa
 
 ## Deterministic coverage
 
-`ReconnectFenceRegression` is part of the existing HA dispatch executable and covers:
+`ReconnectFenceRegression` and `ReconnectAdmissionRaceRegression` are part of the existing HA dispatch executable and cover:
 
 1. closed generations reject before invoking the underlying sender;
 2. explicit runtime/admin fence closes admission while already-admitted work drains;
@@ -38,7 +38,10 @@ A later composition step must coordinate runtime/session activation with `Activa
 4. ambiguous send failure fences the generation and blocks blind replay;
 5. a weaker runtime fence cannot erase an ambiguity fence;
 6. proven pre-dispatch failure leaves the current generation open for an explicit higher-level retry decision;
-7. a real lock-contention regression holds generation admission, starts a send with an uncancelled token, cancels while that send is blocked on admission, then releases admission and proves the inner sender is never invoked, the generation lease reconciles, and no fence is created;
-8. a dispatcher-level regression cancels only after the route lease is already admitted but before the generation-aware sender receives control, then proves the route remains `Active`, route/generation leases reconcile, the transport sender is not invoked, and the transport generation remains open.
+7. a deterministic internal pre-admission gate is positioned exactly after the historical early-cancellation-check location and before generation admission. The send starts with an uncancelled token, reaches that gate, is cancelled while held there, then resumes; the post-admission cancellation check must prevent the underlying sender, reconcile the generation lease, and leave the generation unfenced. This directly distinguishes the historical implementation instead of relying on scheduler/thread-state timing;
+8. a secondary monitor-contention regression exercises the real generation lock under contention and verifies the same no-send/no-fence boundary;
+9. a dispatcher-level regression cancels only after the route lease is already admitted but before the generation-aware sender receives control, then proves the route remains `Active`, route/generation leases reconcile, the transport sender is not invoked, and the transport generation remains open.
+
+The pre-admission callback is an internal deterministic test seam on an internal class; production construction leaves it null and the public SDK surface remains unchanged.
 
 These are synthetic in-process concurrency/ownership tests. They do not satisfy operator/vendor, multi-host, Kubernetes, trusted-signing or stable-release gates.
