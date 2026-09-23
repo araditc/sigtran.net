@@ -164,9 +164,12 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
     private readonly Dictionary<string, LaneContext> _lanes;
     private readonly Channel<M3uaHaInboundTransfer> _inbound;
     private CancellationTokenSource? _lifetime;
+    private Task? _startupTask;
+    private Task? _stopTask;
     private bool _startAttempted;
     private bool _running;
     private bool _stopping;
+    private bool _terminal;
     private bool _disposed;
     private int _activePumps;
     private int _pendingInboundTransfers;
@@ -223,59 +226,57 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
 
     internal async ValueTask StartAsync(CancellationToken ct = default)
     {
-        ThrowIfDisposed();
-
-        Task<bool>[] startupTasks;
+        Task startupTask;
         lock (_sync)
         {
-            if (_running)
-            {
-                return;
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
-            if (_startAttempted)
+            if (_terminal)
             {
                 throw new InvalidOperationException(
-                    "The M3UA HA runtime supervisor cannot be restarted after it has stopped.");
+                    "The M3UA HA runtime supervisor has terminated and cannot be restarted.");
             }
 
-            _startAttempted = true;
-            _running = true;
-            _lifetime = new CancellationTokenSource();
-            _activePumps = _lanes.Count;
-            startupTasks = new Task<bool>[_lanes.Count];
-
-            int index = 0;
-            foreach (LaneContext context in _lanes.Values)
+            if (_running)
             {
-                context.State = M3uaRuntimeState.Starting;
-                context.Startup = new TaskCompletionSource<bool>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
-                context.Lifetime = CancellationTokenSource.CreateLinkedTokenSource(
-                    _lifetime.Token);
-                context.EventHandler = (_, args) => OnRuntimeEvent(context, args);
-                context.Lane.RuntimeEvent += context.EventHandler;
-                context.PumpTask = RunLaneAsync(context, context.Lifetime.Token);
-                startupTasks[index++] = context.Startup.Task;
+                startupTask = _startupTask
+                    ?? throw new InvalidOperationException(
+                        "The M3UA HA runtime supervisor startup state is inconsistent.");
+            }
+            else
+            {
+                if (_startAttempted)
+                {
+                    throw new InvalidOperationException(
+                        "The M3UA HA runtime supervisor cannot be restarted after it has stopped.");
+                }
+
+                _startAttempted = true;
+                _running = true;
+                _lifetime = new CancellationTokenSource();
+                _activePumps = _lanes.Count;
+                Task<bool>[] startupTasks = new Task<bool>[_lanes.Count];
+
+                int index = 0;
+                foreach (LaneContext context in _lanes.Values)
+                {
+                    context.State = M3uaRuntimeState.Starting;
+                    context.Startup = new TaskCompletionSource<bool>(
+                        TaskCreationOptions.RunContinuationsAsynchronously);
+                    context.Lifetime = CancellationTokenSource.CreateLinkedTokenSource(
+                        _lifetime.Token);
+                    context.EventHandler = (_, args) => OnRuntimeEvent(context, args);
+                    context.Lane.RuntimeEvent += context.EventHandler;
+                    context.PumpTask = RunLaneAsync(context, context.Lifetime.Token);
+                    startupTasks[index++] = context.Startup.Task;
+                }
+
+                _startupTask = WaitForFirstActivationAsync(startupTasks);
+                startupTask = _startupTask;
             }
         }
 
-        HashSet<Task<bool>> pending = startupTasks.ToHashSet();
-        while (pending.Count > 0)
-        {
-            Task<bool> completed = await Task.WhenAny(pending)
-                .WaitAsync(ct)
-                .ConfigureAwait(false);
-            pending.Remove(completed);
-            if (await completed.ConfigureAwait(false))
-            {
-                return;
-            }
-        }
-
-        await StopAsync(CancellationToken.None).ConfigureAwait(false);
-        throw new InvalidOperationException(
-            "No M3UA association runtime lane reached its first active state.");
+        await startupTask.WaitAsync(ct).ConfigureAwait(false);
     }
 
     internal async ValueTask<M3uaHaInboundTransfer> ReceiveAsync(
@@ -319,29 +320,77 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
 
     internal async ValueTask StopAsync(CancellationToken ct = default)
     {
-        LaneContext[] contexts;
-        CancellationTokenSource? lifetime;
-
+        Task? stopTask;
         lock (_sync)
         {
-            if (!_running)
+            if (_stopTask is not null)
+            {
+                stopTask = _stopTask;
+            }
+            else if (!_running)
+            {
+                return;
+            }
+            else
+            {
+                _running = false;
+                _stopping = true;
+                LaneContext[] contexts = _lanes.Values.ToArray();
+                CancellationTokenSource? lifetime = _lifetime;
+                _stopTask = StopCoreAsync(contexts, lifetime);
+                stopTask = _stopTask;
+            }
+        }
+
+        await stopTask.WaitAsync(ct).ConfigureAwait(false);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        lock (_sync)
+        {
+            if (_disposed)
             {
                 return;
             }
 
-            _running = false;
-            _stopping = true;
-            contexts = _lanes.Values.ToArray();
-            lifetime = _lifetime;
+            _disposed = true;
         }
 
+        await StopAsync(CancellationToken.None).ConfigureAwait(false);
+    }
+
+    private async Task WaitForFirstActivationAsync(Task<bool>[] startupTasks)
+    {
+        HashSet<Task<bool>> pending = startupTasks.ToHashSet();
+        while (pending.Count > 0)
+        {
+            Task<bool> completed = await Task.WhenAny(pending).ConfigureAwait(false);
+            pending.Remove(completed);
+            if (await completed.ConfigureAwait(false))
+            {
+                return;
+            }
+        }
+
+        await StopAsync(CancellationToken.None).ConfigureAwait(false);
+        throw new InvalidOperationException(
+            "No M3UA association runtime lane reached its first active state.");
+    }
+
+    private async Task StopCoreAsync(
+        LaneContext[] contexts,
+        CancellationTokenSource? lifetime)
+    {
+        // Ensure no lane callbacks execute while StopAsync still owns _sync.
+        await Task.Yield();
         lifetime?.Cancel();
 
         Exception? stopFailure = null;
         try
         {
             Task[] stopTasks = contexts
-                .Select(context => context.Lane.StopAsync(ct).AsTask())
+                .Select(context => context.Lane.StopAsync(CancellationToken.None).AsTask())
                 .ToArray();
             await Task.WhenAll(stopTasks).ConfigureAwait(false);
         }
@@ -360,12 +409,16 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         {
             if (pumpTasks.Length > 0)
             {
-                await Task.WhenAll(pumpTasks).WaitAsync(ct).ConfigureAwait(false);
+                await Task.WhenAll(pumpTasks).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (lifetime?.IsCancellationRequested == true)
         {
             // Expected: receive pumps observe the supervisor lifetime cancellation.
+        }
+        catch (Exception ex)
+        {
+            stopFailure ??= ex;
         }
         finally
         {
@@ -386,6 +439,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             {
                 _lifetime = null;
                 _stopping = false;
+                _terminal = true;
             }
 
             _inbound.Writer.TryComplete(stopFailure);
@@ -394,23 +448,6 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         if (stopFailure is not null)
         {
             throw stopFailure;
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        try
-        {
-            await StopAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-        finally
-        {
-            _disposed = true;
         }
     }
 
@@ -482,6 +519,10 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                 lock (_sync)
                 {
                     stopping = _stopping;
+                    if (!stopping)
+                    {
+                        _terminal = true;
+                    }
                 }
 
                 if (!stopping)
@@ -511,10 +552,5 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         {
             context.Lifetime?.Cancel();
         }
-    }
-
-    private void ThrowIfDisposed()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }
