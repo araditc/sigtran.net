@@ -246,7 +246,7 @@ static async Task RuntimeHealthFeedsRouteAdmissionAsync()
         routePool: pool);
     Mtp3TransferMessage transfer = CreateTransfer(sls: 1, routingContext: 100);
 
-    Equal(M3uaRuntimeState.Stopped, Route(pool, "a").RuntimeState,
+    EqualRuntimeState(M3uaRuntimeState.Stopped, Route(pool, "a").RuntimeState,
         "Initial bound health must reflect the stopped runtime lane.");
     Equal(0, pool.SelectTargets(transfer).Count,
         "A bound route pool must fail closed while its runtime lanes are stopped.");
@@ -272,7 +272,7 @@ static async Task RuntimeHealthFeedsRouteAdmissionAsync()
     M3uaAssociationRouteSnapshot excluded = Route(pool, "b");
     Equal(M3uaAssociationOperationalState.Active, excluded.State,
         "Recoverable runtime health loss must not silently rewrite the local loadshare role.");
-    Equal(M3uaRuntimeState.Reconnecting, excluded.RuntimeState,
+    EqualRuntimeState(M3uaRuntimeState.Reconnecting, excluded.RuntimeState,
         "The route snapshot must expose fail-closed live runtime health independently from role.");
     Equal("a", pool.SelectTargets(transfer).Single().Name,
         "A known-faulting runtime lane must receive no new traffic while the healthy peer remains eligible.");
@@ -494,7 +494,7 @@ static void Equal<T>(T expected, T actual, string message)
     }
 }
 
-static void Equal(
+static void EqualRuntimeState(
     M3uaRuntimeState expected,
     M3uaRuntimeState? actual,
     string message)
