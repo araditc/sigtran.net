@@ -16,6 +16,8 @@ The supervisor may also bind to the existing `M3uaAssociationPool`. Binding requ
 
 This separation is deliberate. Recoverable runtime health loss must not silently turn an Active route into Standby/Faulted policy state or reinterpret negotiated M3UA Traffic Mode Type. `M3uaRuntime` raises `FaultObserved` before its later reconnect transition, so the supervisor treats a recoverable fault observation as immediately reconnecting for route-admission purposes. This closes the interval in which a known-faulting association could otherwise receive new dispatches. Explicit runtime recovery to `Active` restores eligibility without changing node role.
 
+Only lifecycle/recovery events (`StateChanged`, `AspActivated`, `ShutdownCompleted`, `FaultObserved`, and `ReconnectScheduled`) update observed route health. Transfer and heartbeat diagnostics can carry a pre-fault `Active` snapshot; they do not prove recovery and cannot reopen a reconnecting or terminally faulted route. Unknown event kinds also do not change route health. A delayed first-activation completion updates initial health only while the supervisor still observes `Starting`; it must not overwrite a newer fault already observed before that continuation resumes. Successful `StartAsync` means first activation occurred, not that every lane is currently healthy; current admission always uses bound route health.
+
 The supervisor is intentionally one-way for this slice: after it has stopped, the same supervisor instance is not restartable. Association runtime reconnect behavior remains owned by each `M3uaRuntime` according to its configured `SctpReconnectPolicy`.
 
 ## Outbound semantic boundary
@@ -26,7 +28,7 @@ HA outbound delivery remains owned by the reviewed association-pool, dispatcher,
 
 ## Deterministic qualification
 
-`src/Sigtran.NET.HaRuntimeTests` contains fourteen deterministic synthetic-lane scenarios covering:
+`src/Sigtran.NET.HaRuntimeTests` contains seventeen deterministic synthetic-lane scenarios covering:
 
 1. duplicate association identity rejection;
 2. exact runtime-lane/route-pool membership enforcement;
@@ -41,7 +43,10 @@ HA outbound delivery remains owned by the reviewed association-pool, dispatcher,
 11. concurrent shutdown callers sharing one shutdown operation;
 12. cancellation of one shutdown waiter without cancelling shared cleanup;
 13. peer shutdown continuation and diagnostics after a synchronous lane-stop failure;
-14. rejection of a late runtime callback captured before event-handler detach.
+14. rejection of a late runtime callback captured before event-handler detach;
+15. stale transfer/heartbeat/unknown diagnostics cannot clear a recoverable fault, while explicit ASP activation restores eligibility;
+16. stale diagnostics cannot clear terminal fault state or divert traffic from the healthy peer;
+17. first-activation completion cannot clear a fault reported before startup returns.
 
 `src/Sigtran.NET.HaTests` additionally contains synchronous route-policy health regressions that verify reconnect exclusion/recovery and override fallback/recovery without conflating local policy with protocol traffic-mode negotiation.
 
