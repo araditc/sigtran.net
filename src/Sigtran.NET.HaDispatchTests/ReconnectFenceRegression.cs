@@ -12,7 +12,7 @@ internal static class ReconnectFenceRegression
         AdministrativeFenceDrainsAdmittedWorkAsync().GetAwaiter().GetResult();
         AmbiguousFailureFencesGenerationAsync().GetAwaiter().GetResult();
         ProvenPreDispatchFailureKeepsGenerationOpenAsync().GetAwaiter().GetResult();
-        PreInvocationCancellationIsKnownNotDispatchedAsync().GetAwaiter().GetResult();
+        CancellationObservedAfterLeaseIsKnownNotDispatchedAsync().GetAwaiter().GetResult();
     }
 
     private static async Task ClosedGenerationRejectsBeforeSenderInvocationAsync()
@@ -145,24 +145,32 @@ internal static class ReconnectFenceRegression
         Console.WriteLine("PASS Proven pre-dispatch failure does not over-fence transport generation");
     }
 
-    private static async Task PreInvocationCancellationIsKnownNotDispatchedAsync()
+    private static async Task CancellationObservedAfterLeaseIsKnownNotDispatchedAsync()
     {
         ScriptedSender inner = new("a");
         M3uaReconnectFencedAssociationSender sender = new(inner);
-        sender.ActivateNextGeneration();
+        long generation = sender.ActivateNextGeneration();
         using CancellationTokenSource canceled = new();
         canceled.Cancel();
 
         M3uaAssociationSendException failure = await CaptureSendFailureAsync(
             sender.SendAsync(CreateTransfer(), canceled.Token).AsTask()).ConfigureAwait(false);
         Equal(false, failure.DispatchMayHaveOccurred,
-            "Cancellation observed before inner sender invocation must remain a known not-dispatched outcome.");
+            "Cancellation rechecked after generation admission but before inner sender invocation must remain known not-dispatched.");
         Equal(0, inner.Calls,
-            "Pre-invocation cancellation must not reach the transport sender.");
-        Equal(true, sender.GetSnapshot().AcceptingDispatch,
-            "Pre-invocation cancellation must not fence an otherwise healthy generation.");
+            "Cancellation already visible before inner sender invocation must never reach the transport sender.");
 
-        Console.WriteLine("PASS Pre-invocation cancellation preserves known-not-dispatched ownership");
+        M3uaAssociationFenceSnapshot snapshot = sender.GetSnapshot();
+        Equal(generation, snapshot.Generation,
+            "Pre-invocation cancellation must not manufacture a replacement transport generation.");
+        Equal(true, snapshot.AcceptingDispatch,
+            "Pre-invocation cancellation must not fence an otherwise healthy generation.");
+        Equal(0, snapshot.InFlightDispatches,
+            "The generation lease acquired before the cancellation recheck must always be released.");
+        Equal(M3uaAssociationFenceReason.None, snapshot.Reason,
+            "Pre-invocation cancellation must not create an ambiguity or runtime fence.");
+
+        Console.WriteLine("PASS Cancellation after generation admission is rechecked before sender invocation");
     }
 
     private static async Task<M3uaAssociationSendException> CaptureSendFailureAsync(Task task)
