@@ -11,6 +11,7 @@ internal static class RuntimeFanInTests
     {
         Run("HA runtime fan-in rejects duplicate lane names", DuplicateLaneNamesFailClosedAsync);
         Run("HA runtime fan-in isolates startup failure", StartupFailureDoesNotBlockHealthyLaneAsync);
+        Run("HA runtime fan-in does not wait for a slow peer lane", SlowStartupDoesNotGateHealthyLaneAsync);
         Run("HA runtime fan-in applies bounded aggregate backpressure", BoundedFanInPreservesAssociationIdentityAsync);
         Run("HA runtime fan-in isolates terminal lane fault", TerminalLaneFaultDoesNotStopHealthyLaneAsync);
     }
@@ -43,6 +44,24 @@ internal static class RuntimeFanInTests
         M3uaHaInboundTransfer inbound = await supervisor.ReceiveAsync().ConfigureAwait(false);
         Equal("healthy", inbound.AssociationName, "Inbound fan-in must preserve the source association name.");
         Equal((byte)3, inbound.Message.RoutingLabel.SignallingLinkSelection, "Healthy-lane traffic must remain available after another lane fails startup.");
+    }
+
+    private static async Task SlowStartupDoesNotGateHealthyLaneAsync()
+    {
+        FakeRuntimeLane slow = new("slow", stallStart: true);
+        FakeRuntimeLane healthy = new("healthy");
+        await using M3uaHaRuntimeSupervisor supervisor = new([slow, healthy], inboundCapacity: 2);
+        using CancellationTokenSource timeout = new(TimeSpan.FromMilliseconds(500));
+
+        await supervisor.StartAsync(timeout.Token).ConfigureAwait(false);
+
+        M3uaHaRuntimeSupervisorSnapshot started = supervisor.GetSnapshot();
+        Equal(M3uaRuntimeState.Starting, Lane(started, "slow").State, "A slow lane may remain in startup while another association becomes usable.");
+        Equal(M3uaRuntimeState.Active, Lane(started, "healthy").State, "A healthy lane must not wait for an unrelated peer startup attempt.");
+
+        healthy.Emit(CreateTransfer(sls: 4, routingContext: 100));
+        M3uaHaInboundTransfer inbound = await supervisor.ReceiveAsync(timeout.Token).ConfigureAwait(false);
+        Equal("healthy", inbound.AssociationName, "Healthy traffic must flow while another association is still starting.");
     }
 
     private static async Task BoundedFanInPreservesAssociationIdentityAsync()
@@ -199,13 +218,18 @@ internal static class RuntimeFanInTests
         private readonly Channel<Mtp3TransferMessage> _inbound =
             Channel.CreateUnbounded<Mtp3TransferMessage>();
         private readonly bool _failStart;
+        private readonly bool _stallStart;
         private M3uaRuntimeState _state = M3uaRuntimeState.Stopped;
         private long _received;
 
-        internal FakeRuntimeLane(string associationName, bool failStart = false)
+        internal FakeRuntimeLane(
+            string associationName,
+            bool failStart = false,
+            bool stallStart = false)
         {
             AssociationName = associationName;
             _failStart = failStart;
+            _stallStart = stallStart;
         }
 
         public string AssociationName { get; }
@@ -214,20 +238,26 @@ internal static class RuntimeFanInTests
 
         public event EventHandler<M3uaRuntimeEventArgs>? RuntimeEvent;
 
-        public ValueTask StartAsync(CancellationToken ct = default)
+        public async ValueTask StartAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
             if (_failStart)
             {
                 _state = M3uaRuntimeState.Faulted;
                 Raise(M3uaRuntimeEventKind.FaultObserved, "synthetic startup failure");
-                return ValueTask.FromException(
-                    new InvalidOperationException("Synthetic startup failure."));
+                throw new InvalidOperationException("Synthetic startup failure.");
+            }
+
+            if (_stallStart)
+            {
+                _state = M3uaRuntimeState.Starting;
+                Raise(M3uaRuntimeEventKind.StateChanged, "synthetic slow startup");
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);
+                return;
             }
 
             _state = M3uaRuntimeState.Active;
             Raise(M3uaRuntimeEventKind.AspActivated, "synthetic active");
-            return ValueTask.CompletedTask;
         }
 
         public async ValueTask<Mtp3TransferMessage> ReceiveAsync(
