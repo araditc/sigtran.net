@@ -6,6 +6,7 @@ await RunAsync("Same SLS dispatches remain ordered", SameSlsDispatchesRemainOrde
 await RunAsync("Different SLS lanes dispatch concurrently", DifferentSlsLanesDispatchConcurrently);
 await RunAsync("Bounded lane backpressure blocks admission", BoundedLaneBackpressureBlocksAdmission);
 await RunAsync("Admission accounting never trails terminal work", AdmissionAccountingNeverTrailsTerminalWork);
+await RunAsync("Dispose settles blocked admission before returning", DisposeSettlesBlockedAdmissionBeforeReturning);
 await RunAsync("Cancelled queued dispatch never touches sender", CancelledQueuedDispatchNeverTouchesSender);
 await RunAsync("Ambiguous outcome fences association and updates metrics", AmbiguousOutcomeFencesAssociationAndUpdatesMetrics);
 await RunAsync("Dispose drains admitted work and rejects new dispatch", DisposeDrainsAdmittedWorkAndRejectsNewDispatch);
@@ -127,6 +128,45 @@ static void AssertAdmissionAccounting(M3uaHaDispatchCoordinatorSnapshot snapshot
         throw new InvalidOperationException(
             $"Terminal dispatch accounting cannot lead admission. Admitted={snapshot.AdmittedDispatches}; Terminal={terminal}.");
     }
+}
+
+static async Task DisposeSettlesBlockedAdmissionBeforeReturning()
+{
+    OrderedGateSender sender = new("a");
+    M3uaAssociationDispatcher dispatcher = CreateDispatcher(sender);
+    M3uaHaDispatchCoordinator coordinator = new(dispatcher, perSlsQueueCapacity: 1);
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> first =
+        coordinator.DispatchAsync(CreateTransfer(9)).AsTask();
+    await sender.FirstEntered.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> second =
+        coordinator.DispatchAsync(CreateTransfer(9)).AsTask();
+    await WaitUntilAsync(
+        () => coordinator.GetSnapshot().AdmittedDispatches == 2,
+        "Second transfer was not admitted before testing disposal pressure.");
+
+    Task<IReadOnlyList<M3uaAssociationDispatchOutcome>> blocked =
+        coordinator.DispatchAsync(CreateTransfer(9)).AsTask();
+    await WaitUntilAsync(
+        () => coordinator.GetSnapshot().PendingDispatches == 3,
+        "Third transfer did not block on bounded admission before disposal.");
+
+    long admittedBeforeDispose = coordinator.GetSnapshot().AdmittedDispatches;
+    Task dispose = coordinator.DisposeAsync().AsTask();
+    await Task.Delay(100).ConfigureAwait(false);
+    Equal(false, dispose.IsCompleted, "Disposal must not return while active dispatch attempts remain unsettled.");
+
+    sender.ReleaseFirst();
+    await Task.WhenAll(first, second).ConfigureAwait(false);
+    await ThrowsAsync<ObjectDisposedException>(() => blocked).ConfigureAwait(false);
+    await dispose.ConfigureAwait(false);
+
+    M3uaHaDispatchCoordinatorSnapshot snapshot = coordinator.GetSnapshot();
+    Equal(admittedBeforeDispose, snapshot.AdmittedDispatches, "A blocked unadmitted dispatch must not mutate cumulative admission during disposal.");
+    Equal(2L, snapshot.CompletedDispatches, "Only the two admitted transfers should complete.");
+    Equal(0, snapshot.PendingDispatches, "Disposal must return only after the blocked admission attempt has settled.");
+    AssertAdmissionAccounting(snapshot);
 }
 
 static async Task CancelledQueuedDispatchNeverTouchesSender()
