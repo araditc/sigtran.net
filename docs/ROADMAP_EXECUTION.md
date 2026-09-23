@@ -4,9 +4,11 @@ This document is the durable execution checkpoint for the owner-approved SDK roa
 
 ## Canonical baseline
 
-- Activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`.
+- Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.
+- Current canonical `main` at this checkpoint: `2691ca661259391d3fada2c3c5acbd866f5a395b`; every execution must reconcile the live branch before using this pointer.
 - Latest immutable public prerelease: `Sigtran.NET 1.0.0-rc.2`.
-- Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002`.
+- Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002` and must not be retagged or overwritten.
+- Current unpublished source-development package identity: `1.0.0-rc.3-dev`.
 - Stable target: `1.0.0`.
 - Stable decision: `NO-GO` until the source-controlled evaluator returns `GO` with retained evidence.
 - Closed Phase 56 qualification gates: independent M2PA and numeric 20K TPS capacity.
@@ -28,7 +30,7 @@ The 1.0 protocol surface is frozen to:
 
 The following are explicitly post-1.0 work and must not expand the 1.0 candidate: SCCP classes 2/3 and connection-oriented messages, broader MAP mobility/authentication/interrogation operations, SUA, M2UA, and IUA.
 
-Source changes after the published RC.2 commit must not be republished under the `1.0.0-rc.2` identity. Ordinary source builds move to an unpublished development prerelease identity until a later governed release candidate is explicitly admitted.
+Source changes after the published RC.2 commit must not be republished under the `1.0.0-rc.2` identity. Ordinary source builds use the unpublished `1.0.0-rc.3-dev` identity until a later governed release candidate is explicitly admitted.
 
 ## Approved execution milestones
 
@@ -55,7 +57,11 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 
 ## Current checkpoint
 
-- Parent tracker: GitHub issue `#12`.
-- Active work package: GitHub issue `#13` — 57A/57B baseline reconciliation and operator profile foundation.
-- Next dependency after 57B: multi-association M3UA HA runtime.
-- External prerequisites are allowed to block only their dependent qualification step; safe independent SDK development continues.
+- Parent roadmap tracker: GitHub issue `#12`.
+- 57A baseline/scope-lock work is admitted on `main` and remains a continuously reconciled constraint rather than the active implementation package.
+- 57B SDK profile-framework implementation is admitted, but the separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until authorized operator/vendor acceptance evidence is retained.
+- Active implementation package: GitHub issue `#15` — **Multi-association M3UA HA runtime**.
+- PR `#20` is **REVIEW** on exact head `7af0f58b89b04e06e20bf4215aea2c8b49fbf7d8`; merge-ref run `35847570680` passed, all substantive review threads are resolved, and a fresh independent current-head `akhiabanchian` approval remains required before guarded merge.
+- PR `#21` is the single active writer for the next runtime/fan-in slice and remains **IMPLEMENTING / DRAFT / CI-PENDING** until `#20` is governed and merged. Its work covers multi-runtime lifecycle isolation, bounded inbound fan-in, per-association diagnostics, cancellation/shutdown convergence, and deterministic route-health exclusion/recovery tests.
+- After Milestone C deterministic integration is admitted, representative multi-host and Kubernetes SCTP qualification remain external-evidence work packages; safe independent SDK work continues without administratively promoting those gates.
+- Stable publication remains blocked until all four required open gates pass and the machine evaluator returns `GO`.
