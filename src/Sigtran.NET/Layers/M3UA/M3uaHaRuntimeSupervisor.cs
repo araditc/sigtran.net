@@ -525,7 +525,12 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             activated = true;
             lock (_sync)
             {
-                UpdateLaneStateLocked(context, context.Lane.State);
+                // Startup completion is first-activation evidence, not recovery
+                // from a fault already reported before its continuation resumed.
+                if (context.State == M3uaRuntimeState.Starting)
+                {
+                    UpdateLaneStateLocked(context, context.Lane.State);
+                }
             }
 
             context.Startup!.TrySetResult(true);
@@ -616,6 +621,18 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
             if (args.Kind == M3uaRuntimeEventKind.FaultObserved)
             {
                 Interlocked.Increment(ref context.FaultEvents);
+            }
+
+            // Only lifecycle/recovery events may change route health. A late
+            // transfer or heartbeat event can still carry the pre-fault Active
+            // state; that diagnostic snapshot is not reactivation evidence.
+            if (args.Kind is not (M3uaRuntimeEventKind.StateChanged
+                or M3uaRuntimeEventKind.AspActivated
+                or M3uaRuntimeEventKind.ShutdownCompleted
+                or M3uaRuntimeEventKind.FaultObserved
+                or M3uaRuntimeEventKind.ReconnectScheduled))
+            {
+                return;
             }
 
             // M3uaRuntime raises FaultObserved before it transitions to
