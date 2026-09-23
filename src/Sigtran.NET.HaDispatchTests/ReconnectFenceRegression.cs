@@ -169,30 +169,33 @@ internal static class ReconnectFenceRegression
         object sync = syncField.GetValue(sender)
             ?? throw new InvalidOperationException("Reconnect sender admission lock was null.");
 
-        TaskCompletionSource<Thread> workerStarted = new(
+        TaskCompletionSource<bool> sendStarted = new(
             TaskCreationOptions.RunContinuationsAsynchronously);
         Task<M3uaAssociationSendException> sendFailure;
+        long contentionBaseline = Monitor.LockContentionCount;
 
         Monitor.Enter(sync);
         try
         {
             sendFailure = Task.Run(async () =>
             {
-                workerStarted.TrySetResult(Thread.CurrentThread);
+                sendStarted.TrySetResult(true);
                 return await CaptureSendFailureAsync(
                     sender.SendAsync(CreateTransfer(), canceled.Token).AsTask())
                     .ConfigureAwait(false);
             });
 
-            Thread worker = workerStarted.Task
+            sendStarted.Task
                 .WaitAsync(TimeSpan.FromSeconds(2))
                 .GetAwaiter()
                 .GetResult();
             bool blocked = SpinWait.SpinUntil(
-                () => (worker.ThreadState & ThreadState.WaitSleepJoin) != 0,
+                () => Monitor.LockContentionCount > contentionBaseline,
                 TimeSpan.FromSeconds(2));
             Equal(true, blocked,
-                "The send worker must be blocked on generation admission before cancellation is injected.");
+                "The send must contend on the actual generation-admission monitor before cancellation is injected.");
+            Equal(false, sendFailure.IsCompleted,
+                "The send must still be blocked on generation admission when cancellation is injected.");
 
             canceled.Cancel();
         }
