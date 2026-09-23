@@ -39,6 +39,9 @@ jobs:
       - name: Test M3UA HA dispatch semantics
         run: dotnet run --project src/Sigtran.NET.HaDispatchTests/Sigtran.NET.HaDispatchTests.csproj --configuration Release
 
+      - name: Test M3UA HA dispatch coordinator
+        run: dotnet run --project src/Sigtran.NET.HaCoordinatorTests/Sigtran.NET.HaCoordinatorTests.csproj --configuration Release
+
       - name: Verify development and release package identity
         shell: bash
         run: |
