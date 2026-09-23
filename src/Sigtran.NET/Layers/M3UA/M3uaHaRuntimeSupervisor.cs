@@ -451,9 +451,31 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
         }
     }
 
-    private static async Task StopLaneAsync(LaneContext context)
+    private async Task StopLaneAsync(LaneContext context)
     {
-        await context.Lane.StopAsync(CancellationToken.None).ConfigureAwait(false);
+        long faultEventsBefore = Interlocked.Read(ref context.FaultEvents);
+        try
+        {
+            await context.Lane.StopAsync(CancellationToken.None).ConfigureAwait(false);
+            lock (_sync)
+            {
+                context.State = context.Lane.State;
+            }
+        }
+        catch
+        {
+            lock (_sync)
+            {
+                context.State = M3uaRuntimeState.Faulted;
+            }
+
+            if (Interlocked.Read(ref context.FaultEvents) == faultEventsBefore)
+            {
+                Interlocked.Increment(ref context.FaultEvents);
+            }
+
+            throw;
+        }
     }
 
     private async Task RunLaneAsync(LaneContext context, CancellationToken ct)
