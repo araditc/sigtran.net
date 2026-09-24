@@ -92,7 +92,8 @@ if [[ "$FAULT_SCENARIO" == "sctp-partition" ]]; then
   }
 fi
 
-root="$GITHUB_WORKSPACE/artifacts/multihost/$RUN_ID"
+workspace="${GITHUB_WORKSPACE:-$(pwd)}"
+root="$workspace/artifacts/multihost/$RUN_ID"
 raw="$root/raw"
 safe="$root/safe"
 persistent="$RAW_EVIDENCE_ROOT/$RUN_ID"
@@ -213,8 +214,8 @@ case "$FAULT_SCENARIO" in
     ;;
   sctp-partition)
     sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
-    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
     partition_active=true
+    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
     sleep "$FAULT_DURATION_SECONDS"
     remove_partition
     ;;
@@ -321,8 +322,14 @@ PY
 
 # Raw evidence stays on protected lab storage. The public branch receives only
 # sanitized qualification summaries and digest references.
-sha256sum   "$pcap"   "$metrics"   "$report"   "$trace"   "$sdk_host"   "$peer_host"   "$network_path"   "$fault_log"   >"$safe/raw-evidence.sha256"
-find "$safe" -type f ! -name sha256.txt -print0   | sort -z   | xargs -0 sha256sum   >"$safe/sha256.txt"
+(
+  cd "$raw"
+  sha256sum traffic.pcap metrics.json report.md sdk-trace.jsonl sdk-host.txt peer-host.txt network-path.txt fault-events.log
+) >"$safe/raw-evidence.sha256"
+(
+  cd "$safe"
+  find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum >sha256.txt
+)
 
 rm -rf "$persistent_raw" "$persistent_safe"
 mkdir -p "$persistent_raw" "$persistent_safe"
