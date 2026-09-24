@@ -36,6 +36,9 @@ internal static class RuntimeShutdownOrderingRegression
         M3uaRuntimeGenerationBindingSnapshot afterStaleShutdown = binding.GetSnapshot();
         Require(lane.State == M3uaRuntimeState.Starting,
             "The synthetic lane must remain in the replacement Starting lifecycle while the stale event is delivered.");
+        Require(afterStaleShutdown.RuntimeState == M3uaRuntimeState.Starting
+            && afterStaleShutdown.LastDetail == "replacement-runtime-starting",
+            "Ignoring a recorded-Stopped stale shutdown must preserve the binding's replacement-runtime diagnostic snapshot.");
         Require(afterStaleShutdown.ActivationEpochAvailable,
             "A recorded-Stopped stale ShutdownCompleted notification must not revoke the replacement run's epoch permit.");
         Require(!afterStaleShutdown.Fence.AcceptingDispatch
@@ -68,6 +71,9 @@ internal static class RuntimeShutdownOrderingRegression
         M3uaRuntimeGenerationBindingSnapshot afterActiveStaleShutdown = binding.GetSnapshot();
         Require(lane.State == M3uaRuntimeState.Active,
             "The stale recorded event must not overwrite the synthetic lane's live Active state.");
+        Require(afterActiveStaleShutdown.RuntimeState == M3uaRuntimeState.Active
+            && afterActiveStaleShutdown.LastDetail == "replacement-asp-active",
+            "A stale shutdown after activation must preserve the binding's Active diagnostic snapshot.");
         Require(afterActiveStaleShutdown.Fence.Generation == 1
             && afterActiveStaleShutdown.Fence.AcceptingDispatch
             && afterActiveStaleShutdown.Fence.Reason == M3uaAssociationFenceReason.None,
