@@ -138,6 +138,27 @@ ssh_peer() {
     "$@"
 }
 
+persist_protected_evidence() {
+  mkdir -p "$persistent_raw" "$persistent_safe"
+  chmod 700 "$persistent_raw" "$persistent_safe"
+
+  if [[ -d "$raw" ]]; then
+    rm -rf "$persistent_raw"
+    mkdir -p "$persistent_raw"
+    chmod 700 "$persistent_raw"
+    cp -a "$raw/." "$persistent_raw/" 2>/dev/null || true
+  fi
+
+  if [[ -d "$safe" ]] && find "$safe" -type f -print -quit | grep -q .; then
+    rm -rf "$persistent_safe"
+    mkdir -p "$persistent_safe"
+    chmod 700 "$persistent_safe"
+    cp -a "$safe/." "$persistent_safe/" 2>/dev/null || true
+  fi
+
+  chmod -R go-rwx "$persistent" 2>/dev/null || true
+}
+
 remove_partition() {
   local was_active="$partition_active"
   if [[ "$partition_active" == "true" ]]; then
@@ -164,6 +185,11 @@ cleanup() {
     wait "$tcpdump_pid" 2>/dev/null || true
   fi
   ssh_peer "sudo systemctl start '$PEER_SERVICE'" >/dev/null 2>&1 || true
+  if [[ "$exit_code" -ne 0 ]]; then
+    printf '%s exitCode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$exit_code" \
+      >"$raw/qualification-failure.txt" 2>/dev/null || true
+  fi
+  persist_protected_evidence || true
   exit "$exit_code"
 }
 trap cleanup EXIT INT TERM
@@ -349,19 +375,14 @@ PY
 # sanitized qualification summaries and digest references.
 (
   cd "$raw"
-  sha256sum traffic.pcap metrics.json report.md sdk-trace.jsonl sdk-host.txt peer-host.txt network-path.txt fault-events.log
+  find . -type f -print0 | sort -z | xargs -0 sha256sum
 ) >"$safe/raw-evidence.sha256"
 (
   cd "$safe"
   find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum >sha256.txt
 )
 
-rm -rf "$persistent_raw" "$persistent_safe"
-mkdir -p "$persistent_raw" "$persistent_safe"
-chmod 700 "$persistent_raw" "$persistent_safe"
-cp -a "$raw/." "$persistent_raw/"
-cp -a "$safe/." "$persistent_safe/"
-chmod -R go-rwx "$persistent"
+persist_protected_evidence
 
 trap - EXIT INT TERM
 echo "runId=$RUN_ID"
