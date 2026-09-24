@@ -100,7 +100,7 @@ static async Task<PerformanceRunResult> RunAsync(
             heartbeatInterval: TimeSpan.FromSeconds(2),
             heartbeatTimeout: TimeSpan.FromSeconds(2),
             shutdownTimeout: TimeSpan.FromSeconds(5)));
-    ConcurrentQueue<RuntimeEventRecord> runtimeEvents = new();
+    BoundedRuntimeEventBuffer runtimeEvents = new(capacity: 4096);
     m3ua.RuntimeEvent += (_, eventArgs) =>
     {
         if (eventArgs.Kind is M3uaRuntimeEventKind.TransferSent
@@ -114,7 +114,7 @@ static async Task<PerformanceRunResult> RunAsync(
             eventArgs.Kind.ToString(),
             eventArgs.State.ToString(),
             eventArgs.Detail);
-        runtimeEvents.Enqueue(record);
+        runtimeEvents.Add(record);
         trace.Write(
             "m3ua",
             record.Kind,
@@ -296,7 +296,7 @@ static async Task<PerformanceRunResult> RunAsync(
             trafficRestoredUtc - failoverStartedUtc,
             m3uaMetrics.ReconnectAttempts - reconnectsBefore,
             recovery.FailedOperations),
-        runtimeEvents.ToArray(),
+        runtimeEvents.Snapshot(),
         new(
             m3uaMetrics.SentTransfers,
             m3uaMetrics.ReceivedTransfers,
@@ -689,6 +689,8 @@ static async Task WriteArtifactsAsync(
         "- Percentiles use all observations while a stage is within the reservoir "
         + "capacity; larger stages use deterministic bounded reservoir sampling. "
         + "Maximum latency is tracked across every successful operation.");
+    report.AppendLine(
+        "- Runtime-event evidence retains only the latest 4096 non-transfer M3UA events per run.");
     report.AppendLine();
     report.AppendLine("## Resilience");
     report.AppendLine();
@@ -820,6 +822,46 @@ internal sealed record RuntimeEventRecord(
     string Kind,
     string State,
     string? Detail);
+
+internal sealed class BoundedRuntimeEventBuffer
+{
+    private readonly object _sync = new();
+    private readonly Queue<RuntimeEventRecord> _events;
+    private readonly int _capacity;
+
+    internal BoundedRuntimeEventBuffer(int capacity)
+    {
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+
+        _capacity = capacity;
+        _events = new Queue<RuntimeEventRecord>(capacity);
+    }
+
+    internal void Add(RuntimeEventRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        lock (_sync)
+        {
+            if (_events.Count == _capacity)
+            {
+                _events.Dequeue();
+            }
+
+            _events.Enqueue(record);
+        }
+    }
+
+    internal RuntimeEventRecord[] Snapshot()
+    {
+        lock (_sync)
+        {
+            return _events.ToArray();
+        }
+    }
+}
 
 internal sealed record LayerCounterResult(
     long M3uaSent,
