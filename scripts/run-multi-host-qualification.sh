@@ -68,6 +68,8 @@ required_vars=(
   RAW_EVIDENCE_ROOT
   PEER_SSH_HOST
   PEER_SSH_USER
+  PEER_SSH_IDENTITY_FILE
+  PEER_SSH_KNOWN_HOSTS_FILE
   PEER_SERVICE
 )
 for name in "${required_vars[@]}"; do
@@ -127,19 +129,27 @@ partition_active=false
 rollback_unit="sigtran-sctp-rollback-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
 
 ssh_peer() {
-  ssh -o BatchMode=yes "$PEER_SSH_USER@$PEER_SSH_HOST" "$@"
+  ssh \
+    -o BatchMode=yes \
+    -o IdentitiesOnly=yes \
+    -i "$PEER_SSH_IDENTITY_FILE" \
+    -o UserKnownHostsFile="$PEER_SSH_KNOWN_HOSTS_FILE" \
+    "$PEER_SSH_USER@$PEER_SSH_HOST" \
+    "$@"
 }
 
 remove_partition() {
-  if [[ "$partition_active" != "true" ]]; then
-    return
+  local was_active="$partition_active"
+  if [[ "$partition_active" == "true" ]]; then
+    sudo -n iptables -D OUTPUT -p sctp -d "$REMOTE_IP"     --dport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
+    sudo -n iptables -D INPUT -p sctp -s "$REMOTE_IP"     --sport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
+    partition_active=false
   fi
 
-  sudo -n iptables -D OUTPUT -p sctp -d "$REMOTE_IP"     --dport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
-  sudo -n iptables -D INPUT -p sctp -s "$REMOTE_IP"     --sport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
-  partition_active=false
   sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
-  printf '%s scenario=sctp-partition event=removed\n'     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
+  if [[ "$was_active" == "true" ]]; then
+    printf '%s scenario=sctp-partition event=removed\n'     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
+  fi
 }
 
 cleanup() {
@@ -223,12 +233,12 @@ case "$FAULT_SCENARIO" in
     ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
     ;;
   sctp-partition)
+    rollback_delay=$((FAULT_DURATION_SECONDS + 60))
+    sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/sh -c "iptables -D OUTPUT -p sctp -d '$REMOTE_IP' --dport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true; iptables -D INPUT -p sctp -s '$REMOTE_IP' --sport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true"
+
     sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
     partition_active=true
     sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
-
-    rollback_delay=$((FAULT_DURATION_SECONDS + 60))
-    sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/sh -c "iptables -D OUTPUT -p sctp -d '$REMOTE_IP' --dport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true; iptables -D INPUT -p sctp -s '$REMOTE_IP' --sport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true"
 
     sleep "$FAULT_DURATION_SECONDS"
     remove_partition
