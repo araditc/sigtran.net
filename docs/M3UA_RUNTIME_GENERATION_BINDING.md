@@ -26,9 +26,9 @@ Missing or mismatched association identity fails closed and is exposed in bindin
 
 ## Loss, reconnect, and drain
 
-`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping` and `Stopped` close admission as `AdministrativeDrain`. `ShutdownCompleted` closes the current stopped lifecycle only when the event snapshot still reports `Stopped`.
+`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping` and `Stopped` close admission as `AdministrativeDrain`. `ShutdownCompleted` closes the current stopped lifecycle only when both the event snapshot reports `Stopped` **and** the runtime lane is still live-observed as `Stopped` when the binding handles that event.
 
-A completed run can make itself restartable before its final `ShutdownCompleted` callback is observed. If a consumer synchronously starts a replacement run from `StateChanged(Stopped)`, the older final notification can arrive after the replacement has already published `Starting`, `Reconnecting`, `Active`, or even a later `Faulted` state. Such a stale shutdown event is ignored by the binding: it must not revoke a replacement transport-epoch permit, invalidate a pending replacement activation, or re-fence an already-open replacement generation.
+A completed run can make itself restartable before its final `ShutdownCompleted` callback is observed. The old event can even be constructed with a `Stopped` snapshot before a concurrent replacement changes the live lane to `Starting`; handler scheduling may then deliver that recorded-stopped event only after the replacement lifecycle has advanced. The binding therefore re-reads the lane's live state while handling `ShutdownCompleted`. If the live lane is already `Starting`, `Reconnecting`, `Active`, or `Faulted`, the older final notification is stale and is ignored: it must not revoke a replacement transport-epoch permit, invalidate a pending replacement activation, or re-fence an already-open replacement generation.
 
 `Starting` and `Reconnecting` are additionally the only lifecycle states that arm the next transport-epoch permit. `Faulted`, stopping/shutdown states, disposal, diagnostics, and duplicate activation do not arm a generation. This prevents same-session ambiguity from being mistaken for reconnect completion.
 
@@ -63,7 +63,7 @@ The dedicated `Sigtran.NET.HaLifecycleTests` executable runs twelve synthetic sc
 9. if an external owner opens the sender after attachment but before ASP activation, the binding detects the unproven ownership, fences the sender, and keeps route admission closed;
 10. a production runtime publishes `StateChanged(Starting)` before the session factory is allowed to run on both initial startup and restart, preventing synchronous activation from outrunning epoch arming;
 11. mid-session attachment and runtime/sender identity mismatch are rejected;
-12. a stale `ShutdownCompleted` from the preceding run cannot revoke a replacement `Starting` epoch or close an already-active replacement generation.
+12. a stale `ShutdownCompleted` carrying an older recorded `Stopped` snapshot cannot revoke a replacement `Starting` epoch or close an already-active replacement generation when the live lane has already advanced.
 
 The repository workflow includes this executable after the existing HA runtime fan-in harness. The corrective source head requires its own successful Actions run and fresh review; historical PR #25 CI/review is evidence for the admitted parent, not for this correction. Any source-head change invalidates the corrective run/review.
 
