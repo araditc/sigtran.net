@@ -160,6 +160,24 @@ internal sealed class M3uaHaDispatchCoordinator : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Exact route-pool object used by the owned dispatcher. Diagnostics use
+    /// reference identity here so equal association names from another topology
+    /// cannot be projected into this coordinator's counters.
+    /// </summary>
+    internal M3uaAssociationPool RoutePool => _dispatcher.RoutePool;
+
+    /// <summary>
+    /// Verifies that the coordinator's owned dispatcher sends one association
+    /// through the exact supplied sender object. This prevents diagnostics from
+    /// combining counters from one transport-generation boundary with fence state
+    /// from another same-name sender.
+    /// </summary>
+    internal bool OwnsSender(
+        string associationName,
+        IM3uaAssociationSender sender) =>
+        _dispatcher.OwnsSender(associationName, sender);
+
     internal async ValueTask<IReadOnlyList<M3uaAssociationDispatchOutcome>> DispatchAsync(
         Mtp3TransferMessage message,
         CancellationToken ct = default)
