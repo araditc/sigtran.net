@@ -185,6 +185,49 @@ class EvidenceTests(unittest.TestCase):
         self.assertTrue(self.source.exists())
 
 
+class PeerBuildMetadataTests(unittest.TestCase):
+    def run_normalizer(self, value: bytes):
+        return subprocess.run(
+            [sys.executable, str(SCRIPTS / "normalize-peer-build-metadata.py")],
+            input=value, capture_output=True, timeout=5)
+
+    def test_valid_marker_is_minimized_and_canonicalized(self):
+        digest = "sha256:" + "a" * 64
+        value = {
+            "schemaVersion": 1,
+            "implementation": "  synthetic-lksctp-peer  ",
+            "version": "  2.4.1  ",
+            "buildDigest": digest,
+        }
+        run = self.run_normalizer(json.dumps(value).encode())
+        self.assertEqual(run.returncode, 0, run.stderr)
+        normalized = json.loads(run.stdout)
+        self.assertEqual(normalized, {
+            "schemaVersion": 1,
+            "implementation": "synthetic-lksctp-peer",
+            "version": "2.4.1",
+            "buildDigest": digest,
+        })
+
+    def test_missing_identity_and_unknown_fields_fail_closed(self):
+        for value in (
+            {"schemaVersion": 1, "implementation": "peer"},
+            {"schemaVersion": 1, "implementation": "peer", "version": "1",
+             "topology": "private"},
+        ):
+            with self.subTest(value=value):
+                run = self.run_normalizer(json.dumps(value).encode())
+                self.assertNotEqual(run.returncode, 0)
+
+    def test_invalid_digest_and_oversized_marker_fail_closed(self):
+        invalid = {"schemaVersion": 1, "implementation": "peer", "version": "1",
+                   "buildDigest": "sha256:not-a-digest"}
+        self.assertNotEqual(
+            self.run_normalizer(json.dumps(invalid).encode()).returncode, 0)
+        self.assertNotEqual(
+            self.run_normalizer(b"{" + b"x" * (16 * 1024) + b"}").returncode, 0)
+
+
 class SshMaterialTests(unittest.TestCase):
     def test_atomic_modes_and_cleanup_on_success_and_failure(self):
         for exit_code in (0, 7):
