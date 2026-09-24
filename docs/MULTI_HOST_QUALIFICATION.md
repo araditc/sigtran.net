@@ -80,7 +80,8 @@ data address, and the configured SCTP port. The runner:
 
 - records the fault transition;
 - removes rules in the normal cleanup trap and verifies both exact DROP rules are absent before declaring cleanup complete;
-- installs an independent transient systemd rollback timer before waiting and leaves it armed when rule removal cannot be proven;
+- installs an independent transient systemd rollback timer before waiting; when it fires, the rollback service retries deletion and re-checks both exact rules until absence is proven, rather than treating a transient xtables failure as successful cleanup;
+- leaves the independent rollback armed whenever normal-path rule removal cannot be proven;
 - never modifies SSH/GitHub TCP management traffic;
 - requires passwordless privileged execution on the owned lab host.
 
