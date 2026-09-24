@@ -47,7 +47,7 @@ A qualifying run must satisfy all of the following:
 - exact source SHA is retained in the sanitized summary;
 - local/remote point codes, network indicator and peer identity are recorded;
 - SDK and peer kernel/CPU/memory information is retained in protected raw
-  evidence;
+  evidence and is not copied to the public evidence branch;
 - route/path and SCTP host settings are retained in protected raw evidence;
 - the run is executed through the protected `sigtran-performance`
   environment.
@@ -113,7 +113,8 @@ The summary records:
 - exact source SHA;
 - qualification profile;
 - fault scenario and duration;
-- distinct host labels;
+- a distinct-host verification result without publishing host labels or
+  hostnames;
 - start/end UTC;
 - timed-soak duration and successful/failed operation counts;
 - throughput and latency;
