@@ -301,8 +301,12 @@ case "$FAULT_SCENARIO" in
     rollback_delay=$((FAULT_DURATION_SECONDS + 60))
     sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/sh -c "iptables -D OUTPUT -p sctp -d '$REMOTE_IP' --dport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true; iptables -D INPUT -p sctp -s '$REMOTE_IP' --sport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true"
 
-    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
+    # Mark rollback ownership before the first mutating rule insertion. If the
+    # first insertion itself fails or the process is interrupted between rules,
+    # cleanup still verifies/removes any partial partition and keeps the
+    # independent rollback armed until absence is proven.
     partition_active=true
+    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
     sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
 
     sleep "$FAULT_DURATION_SECONDS"
