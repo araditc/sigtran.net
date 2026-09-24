@@ -403,8 +403,11 @@ static async Task<PerformanceStageResult> RunStageAsync(
                 exception is not OperationCanceledException
                 || !ct.IsCancellationRequested)
             {
-                Interlocked.Increment(ref failed);
-                errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                long failureNumber = Interlocked.Increment(ref failed);
+                if (failureNumber <= 10)
+                {
+                    errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                }
             }
         }
     }
@@ -520,8 +523,11 @@ static async Task<PerformanceStageResult> RunTimedStageAsync(
                 exception is not OperationCanceledException
                 || !ct.IsCancellationRequested)
             {
-                Interlocked.Increment(ref failed);
-                errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                long failureNumber = Interlocked.Increment(ref failed);
+                if (failureNumber <= 10)
+                {
+                    errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                }
             }
         }
 
