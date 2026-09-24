@@ -353,8 +353,8 @@ EOF
     # cleanup still verifies/removes any partial partition and keeps the
     # independent rollback armed until absence is proven.
     partition_active=true
-    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
-    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
+    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
+    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
 
     sleep "$FAULT_DURATION_SECONDS"
     remove_partition
