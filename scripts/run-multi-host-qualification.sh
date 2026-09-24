@@ -25,11 +25,15 @@ case "$FAULT_SCENARIO" in
     ;;
 esac
 
-python3 - "$FAULT_DURATION_SECONDS" <<'PY'
-import sys
-value=int(sys.argv[1])
-if value < 1 or value > 60:
+python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
+import ipaddress, sys
+duration=int(sys.argv[1])
+if duration < 1 or duration > 60:
     raise SystemExit("FAULT_DURATION_SECONDS must be between 1 and 60")
+ipaddress.ip_address(sys.argv[2])
+port=int(sys.argv[3])
+if port < 1 or port > 65535:
+    raise SystemExit("REMOTE_SCTP_PORT must be between 1 and 65535")
 PY
 
 if [[ "$PLAN_ONLY" == "true" ]]; then
@@ -51,6 +55,7 @@ fi
 
 required_vars=(
   RUN_ID
+  SOURCE_SHA
   REMOTE_IP
   REMOTE_SCTP_PORT
   OPC
@@ -86,10 +91,12 @@ done
 sudo -n true >/dev/null
 
 if [[ "$FAULT_SCENARIO" == "sctp-partition" ]]; then
-  command -v iptables >/dev/null || {
-    echo "sctp-partition requires iptables on the SDK lab host." >&2
-    exit 2
-  }
+  for cmd in iptables systemd-run systemctl; do
+    command -v "$cmd" >/dev/null || {
+      echo "sctp-partition requires $cmd on the SDK lab host." >&2
+      exit 2
+    }
+  done
 fi
 
 workspace="${GITHUB_WORKSPACE:-$(pwd)}"
@@ -117,6 +124,7 @@ started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 sdk_pid=""
 tcpdump_pid=""
 partition_active=false
+rollback_unit="sigtran-sctp-rollback-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
 
 ssh_peer() {
   ssh -o BatchMode=yes "$PEER_SSH_USER@$PEER_SSH_HOST" "$@"
@@ -130,6 +138,7 @@ remove_partition() {
   sudo -n iptables -D OUTPUT -p sctp -d "$REMOTE_IP"     --dport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
   sudo -n iptables -D INPUT -p sctp -s "$REMOTE_IP"     --sport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
   partition_active=false
+  sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
   printf '%s scenario=sctp-partition event=removed\n'     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
 }
 
@@ -151,6 +160,7 @@ trap cleanup EXIT INT TERM
 
 {
   echo "label=$SDK_HOST_ID"
+  echo "sourceSha=$SOURCE_SHA"
   echo "hostname=$(hostname)"
   echo "kernel=$(uname -r)"
   echo "distribution=$(grep '^PRETTY_NAME=' /etc/os-release | cut -d= -f2-)"
@@ -216,6 +226,10 @@ case "$FAULT_SCENARIO" in
     sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -j DROP
     partition_active=true
     sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -j DROP
+
+    rollback_delay=$((FAULT_DURATION_SECONDS + 60))
+    sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/sh -c "iptables -D OUTPUT -p sctp -d '$REMOTE_IP' --dport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true; iptables -D INPUT -p sctp -s '$REMOTE_IP' --sport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true"
+
     sleep "$FAULT_DURATION_SECONDS"
     remove_partition
     ;;
@@ -234,7 +248,7 @@ sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
 
 completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-python3 - "$metrics" "$safe/summary.json" "$safe/report.md"   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE"   "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" <<'PY'
+python3 - "$metrics" "$safe/summary.json" "$safe/report.md"   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE"   "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" "$PEER_NAME" <<'PY'
 import json, sys
 from pathlib import Path
 
@@ -247,6 +261,8 @@ fault=sys.argv[8]
 fault_duration=int(sys.argv[9])
 started=sys.argv[10]
 completed=sys.argv[11]
+source_sha=sys.argv[12]
+peer_name=sys.argv[13]
 value=json.loads(metrics_path.read_text())
 stages={s["Name"]:s for s in value.get("Stages",[])}
 
@@ -277,12 +293,14 @@ passed=(
 result={
     "schemaVersion":2,
     "runId":value.get("RunId"),
+    "sourceSha":source_sha,
     "qualificationProfile":profile,
     "faultScenario":fault,
     "faultDurationSeconds":fault_duration,
     "topology":"representative multi-host",
     "sdkHostId":sdk_host,
     "peerHostId":peer_host,
+    "peerName":peer_name,
     "startedUtc":started,
     "completedUtc":completed,
     "executionPassed":value.get("ExecutionPassed"),
@@ -304,6 +322,7 @@ result={
 summary_path.write_text(json.dumps(result,indent=2)+"\n")
 report_path.write_text(
     "# Representative Multi-Host Qualification\n\n"
+    f"- Source SHA: {source_sha}\n"
     f"- Profile: {profile}\n"
     f"- Fault scenario: {fault}\n"
     f"- SDK host id: {sdk_host}\n"
