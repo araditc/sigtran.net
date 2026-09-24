@@ -1,6 +1,6 @@
 # M3UA Reconnect and Generation Fencing
 
-Status: **IMPLEMENTING** under Milestone C / issue #15. This is a dependency-stacked slice on the health-driven Active/Standby work in PR #23; it is not Milestone C completion evidence.
+Status: **IMPLEMENTING** under Milestone C / issue #15. Parent health-driven Active/Standby PR #23 is merged; this slice now targets canonical main for exact-head CI and independent review. It is not Milestone C completion evidence.
 
 ## Problem boundary
 
@@ -28,20 +28,26 @@ A caller cancellation that is observed before underlying sender invocation is no
 
 A later composition step must coordinate runtime/session activation with `ActivateNextGeneration()` and route-health admission. It must not automatically clear an `Ambiguous` route fence or reinterpret `M3uaRuntime.SendAsync` queue acceptance as transport/peer acceptance.
 
-## Deterministic coverage
+## Deterministic coverage and execution
 
-`ReconnectFenceRegression` and `ReconnectAdmissionRaceRegression` are part of the existing HA dispatch executable and cover:
+Seven reconnect scenarios from `ReconnectFenceRegression` and `ReconnectAdmissionRaceRegression` are explicitly registered in the existing HA dispatch executable's normal async entry point. Each runs once through the existing PASS/FAIL runner. They cover:
 
 1. closed generations reject before invoking the underlying sender;
-2. explicit runtime/admin fence closes admission while already-admitted work drains;
-3. replacement activation is blocked while prior-generation work remains in flight;
-4. ambiguous send failure fences the generation and blocks blind replay;
-5. a weaker runtime fence cannot erase an ambiguity fence;
-6. proven pre-dispatch failure leaves the current generation open for an explicit higher-level retry decision;
-7. a deterministic internal pre-admission gate is positioned exactly after the historical early-cancellation-check location and before generation admission. The send starts with an uncancelled token, reaches that gate, is cancelled while held there, then resumes; the post-admission cancellation check must prevent the underlying sender, reconcile the generation lease, and leave the generation unfenced. This directly distinguishes the historical implementation instead of relying on scheduler/thread-state timing;
-8. a secondary monitor-contention regression exercises the real generation lock under contention and verifies the same no-send/no-fence boundary;
-9. a dispatcher-level regression cancels only after the route lease is already admitted but before the generation-aware sender receives control, then proves the route remains `Active`, route/generation leases reconcile, the transport sender is not invoked, and the transport generation remains open.
+2. explicit runtime/admin fence closes admission while already-admitted work drains, prevents replacement overlap, and allows explicit generation advancement only after drain;
+3. ambiguous send failure fences the generation, blocks new dispatch, and retains precedence over a weaker runtime fence;
+4. proven pre-dispatch failure leaves the current generation open for an explicit higher-level retry decision;
+5. cancellation injected synchronously at the exact internal pre-admission seam preserves caller-owned known-not-dispatched classification, zero transport calls, unchanged/open generation and reconciled leases;
+6. a dispatcher-level regression cancels only after the route lease is already admitted but before the generation-aware sender receives control, then proves the route remains `Active`, route/generation leases reconcile, selection accounting remains one, and the generation remains open;
+7. a worker starts with an uncancelled token and is held at that same pre-admission seam; the controlling async test injects cancellation while the worker is held, then releases it. This crosses the historical early-check location and requires the post-admission recheck to stop transport invocation.
 
-The pre-admission callback is an internal deterministic test seam on an internal class; production construction leaves it null and the public SDK surface remains unchanged.
+The pre-admission callback is an internal deterministic test seam on an internal class; production construction leaves it null and the public SDK surface remains unchanged. The obsolete reflection/`Monitor.LockContentionCount` test has been replaced by per-sender deterministic injection: a process-wide contention count cannot establish which lock a specific send reached.
 
-These are synthetic in-process concurrency/ownership tests. They do not satisfy operator/vendor, multi-host, Kubernetes, trusted-signing or stable-release gates.
+Reconnect tests do not run blocking async work in a `ModuleInitializer`. Module initialization precedes other module execution; waiting on workers/continuations from inside initialization can prevent those workers from running. See Microsoft's [module initializer reference](https://learn.microsoft.com/dotnet/csharp/language-reference/compiler-messages/module-initializer) and [initialization deadlock explanation](https://devblogs.microsoft.com/dotnet/static-constructor-deadlocks/). Gated tests release and join their workers in `finally`, with bounded waits, so assertion failures cannot leave admitted work awaiting an unreleased test gate.
+
+Run with the existing command; no new test project or runner policy is required:
+
+```text
+dotnet run --project src/Sigtran.NET.HaDispatchTests/Sigtran.NET.HaDispatchTests.csproj --configuration Release
+```
+
+Exact source/base/merge-ref, executed test counts and retained artifacts belong to PR #24 and the durable issue #15 checkpoint, not to an assumed future PASS. These are synthetic in-process concurrency/ownership tests. They do not satisfy operator/vendor, multi-host, Kubernetes, trusted-signing or stable-release gates.
