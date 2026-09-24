@@ -42,8 +42,9 @@ internal readonly struct M3uaRuntimeOutboundSendResult
 /// <summary>
 /// One item admitted to the runtime outbound queue. Public runtime sends are
 /// intentionally untracked so their existing queue-admission completion contract
-/// is unchanged. HA association sends carry a transport generation and a private
-/// completion source so ownership can be resolved at the actual session handoff.
+/// is unchanged. HA association sends carry a stable logical association,
+/// transport generation, and private completion source so ownership is resolved
+/// at the actual active-session handoff rather than at queue admission.
 /// </summary>
 internal sealed class M3uaRuntimeOutboundWorkItem
 {
@@ -51,11 +52,13 @@ internal sealed class M3uaRuntimeOutboundWorkItem
 
     private M3uaRuntimeOutboundWorkItem(
         Mtp3TransferMessage message,
+        string? expectedAssociationName,
         long acceptedGeneration,
         CancellationToken callerCancellation,
         bool tracked)
     {
         Message = message ?? throw new ArgumentNullException(nameof(message));
+        ExpectedAssociationName = expectedAssociationName;
         AcceptedGeneration = acceptedGeneration;
         CallerCancellation = callerCancellation;
         _completion = tracked
@@ -65,6 +68,8 @@ internal sealed class M3uaRuntimeOutboundWorkItem
     }
 
     internal Mtp3TransferMessage Message { get; }
+
+    internal string? ExpectedAssociationName { get; }
 
     internal long AcceptedGeneration { get; }
 
@@ -79,13 +84,26 @@ internal sealed class M3uaRuntimeOutboundWorkItem
 
     internal static M3uaRuntimeOutboundWorkItem CreateUntracked(
         Mtp3TransferMessage message) =>
-        new(message, acceptedGeneration: 0, CancellationToken.None, tracked: false);
+        new(
+            message,
+            expectedAssociationName: null,
+            acceptedGeneration: 0,
+            CancellationToken.None,
+            tracked: false);
 
     internal static M3uaRuntimeOutboundWorkItem CreateTracked(
         Mtp3TransferMessage message,
+        string expectedAssociationName,
         long acceptedGeneration,
         CancellationToken callerCancellation)
     {
+        if (string.IsNullOrWhiteSpace(expectedAssociationName))
+        {
+            throw new ArgumentException(
+                "Tracked outbound work requires an association name.",
+                nameof(expectedAssociationName));
+        }
+
         if (acceptedGeneration <= 0)
         {
             throw new ArgumentOutOfRangeException(
@@ -93,29 +111,45 @@ internal sealed class M3uaRuntimeOutboundWorkItem
                 "Tracked outbound work requires an active transport generation.");
         }
 
-        return new(message, acceptedGeneration, callerCancellation, tracked: true);
+        return new(
+            message,
+            expectedAssociationName.Trim(),
+            acceptedGeneration,
+            callerCancellation,
+            tracked: true);
     }
 
     /// <summary>
     /// Resolves conditions that positively prove the tracked work must not reach
-    /// the current session. A generation mismatch prevents automatic carry-over
-    /// to a replacement session; caller cancellation is honored only before the
-    /// lower-layer send API is invoked.
+    /// the current session. Association/generation mismatch prevents automatic
+    /// carry-over to another live session; caller cancellation is honored only
+    /// before the lower-layer send API is invoked.
     /// </summary>
     internal bool TryRejectBeforeInvocation(
         long sessionGeneration,
-        string associationName)
+        string sessionAssociationName)
     {
         if (!IsTracked)
         {
             return false;
         }
 
+        if (!string.Equals(
+            ExpectedAssociationName,
+            sessionAssociationName,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            TryComplete(new M3uaRuntimeOutboundSendResult(
+                M3uaRuntimeOutboundDisposition.NotDispatched,
+                $"Tracked association '{ExpectedAssociationName}' does not match active runtime association '{sessionAssociationName}'."));
+            return true;
+        }
+
         if (AcceptedGeneration != sessionGeneration)
         {
             TryComplete(new M3uaRuntimeOutboundSendResult(
                 M3uaRuntimeOutboundDisposition.NotDispatched,
-                $"Association '{associationName}' transport generation changed before sender invocation."));
+                $"Association '{sessionAssociationName}' transport generation changed before sender invocation."));
             return true;
         }
 
@@ -123,7 +157,7 @@ internal sealed class M3uaRuntimeOutboundWorkItem
         {
             TryComplete(new M3uaRuntimeOutboundSendResult(
                 M3uaRuntimeOutboundDisposition.NotDispatched,
-                $"Association '{associationName}' dispatch was cancelled before transport invocation.",
+                $"Association '{sessionAssociationName}' dispatch was cancelled before transport invocation.",
                 new OperationCanceledException(CallerCancellation),
                 callerCancellation: true));
             return true;
@@ -158,13 +192,14 @@ internal sealed class M3uaRuntimeOutboundWorkItem
             exception));
     }
 
-    internal void CompleteRuntimeUnavailable(string associationName, string detail)
+    internal void CompleteRuntimeUnavailable(string detail)
     {
         if (!IsTracked)
         {
             return;
         }
 
+        string associationName = ExpectedAssociationName ?? "untracked";
         TryComplete(new M3uaRuntimeOutboundSendResult(
             M3uaRuntimeOutboundDisposition.NotDispatched,
             $"Association '{associationName}' did not invoke the lower-layer sender: {detail}"));
