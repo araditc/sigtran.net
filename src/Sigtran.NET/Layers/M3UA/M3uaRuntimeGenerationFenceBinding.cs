@@ -123,6 +123,19 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
         runtime.RuntimeEvent += _runtimeEventHandler;
     }
 
+    /// <summary>
+    /// Exact composition ownership used by internal topology diagnostics. These
+    /// references are never projected through the public API; they prevent equal
+    /// association names from being mistaken for the same runtime/pool/sender objects.
+    /// </summary>
+    internal string AssociationName => _runtime.AssociationName;
+
+    internal IM3uaAssociationRuntimeLane RuntimeLane => _runtime;
+
+    internal M3uaAssociationPool? RoutePool => _routePool;
+
+    internal M3uaReconnectFencedAssociationSender Sender => _sender;
+
     internal M3uaRuntimeGenerationBindingSnapshot GetSnapshot()
     {
         lock (_sync)
