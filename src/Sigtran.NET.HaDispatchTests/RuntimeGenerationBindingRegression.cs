@@ -375,6 +375,54 @@ internal static class RuntimeGenerationBindingRegression
         }
     }
 
+    internal static async Task StaleShutdownCompletedCannotFenceReentrantRestartAsync()
+    {
+        BindingRuntimeLane lane = new("a");
+        M3uaReconnectFencedAssociationSender sender = new(new BindingSender("a"));
+        await using M3uaRuntimeGenerationFenceBinding binding = new(lane, sender);
+
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Starting, null, "first-start");
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Active, "a", "first-active");
+        lane.Emit(M3uaRuntimeEventKind.AspActivated, M3uaRuntimeState.Active, "a", "first-asp");
+        await binding.WaitForPendingTransitionAsync().ConfigureAwait(false);
+        Require(sender.GetSnapshot().Generation == 1
+            && sender.GetSnapshot().AcceptingDispatch,
+            "The first runtime run must establish generation one.");
+
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Stopping, "a", "first-stop");
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Stopped, null, "first-stopped");
+        Require(!sender.GetSnapshot().AcceptingDispatch,
+            "The stopped first run must close generation-one admission.");
+
+        // Model reentrant StartAsync invoked from StateChanged(Stopped): the new
+        // run publishes Starting before the old run emits ShutdownCompleted.
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Starting, null, "second-start");
+        Require(binding.GetSnapshot().ActivationEpochAvailable,
+            "The replacement run's Starting edge must arm one activation epoch.");
+
+        lane.Emit(
+            M3uaRuntimeEventKind.ShutdownCompleted,
+            M3uaRuntimeState.Starting,
+            null,
+            "stale-first-run-shutdown");
+
+        M3uaRuntimeGenerationBindingSnapshot afterStaleShutdown = binding.GetSnapshot();
+        Require(afterStaleShutdown.ActivationEpochAvailable,
+            "ShutdownCompleted from the preceding run must not clear the replacement run's epoch.");
+        Require(afterStaleShutdown.RuntimeState == M3uaRuntimeState.Starting,
+            "A stale shutdown completion must not project the replacement run as stopped.");
+
+        lane.Emit(M3uaRuntimeEventKind.StateChanged, M3uaRuntimeState.Active, "a", "second-active");
+        lane.Emit(M3uaRuntimeEventKind.AspActivated, M3uaRuntimeState.Active, "a", "second-asp");
+        await binding.WaitForPendingTransitionAsync().ConfigureAwait(false);
+
+        M3uaAssociationFenceSnapshot replacement = sender.GetSnapshot();
+        Require(replacement.Generation == 2
+            && replacement.AcceptingDispatch
+            && replacement.Reason == M3uaAssociationFenceReason.None,
+            "The reentrant replacement run must open generation two after stale shutdown is ignored.");
+    }
+
     internal static Task BindingRejectsMidSessionAttachAndIdentityMismatchAsync()
     {
         BindingRuntimeLane activeLane = new("a", M3uaRuntimeState.Active);

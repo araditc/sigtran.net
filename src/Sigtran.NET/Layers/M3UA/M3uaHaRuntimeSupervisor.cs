@@ -40,6 +40,12 @@ internal sealed class M3uaRuntimeAssociationLane : IM3uaAssociationRuntimeLane
 
     public string AssociationName { get; }
 
+    /// <summary>
+    /// Exact production runtime identity used only for internal HA composition
+    /// validation. Equal association names are not proof of independent runtimes.
+    /// </summary>
+    internal M3uaRuntime Runtime => _runtime;
+
     public M3uaRuntimeState State => _runtime.State;
 
     public event EventHandler<M3uaRuntimeEventArgs>? RuntimeEvent
@@ -191,6 +197,7 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
 
         ArgumentNullException.ThrowIfNull(lanes);
         _lanes = new Dictionary<string, LaneContext>(StringComparer.OrdinalIgnoreCase);
+        List<M3uaRuntime> productionRuntimes = [];
         foreach (IM3uaAssociationRuntimeLane lane in lanes)
         {
             ArgumentNullException.ThrowIfNull(lane);
@@ -199,6 +206,19 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
                 throw new ArgumentException(
                     "Association runtime lane name is required.",
                     nameof(lanes));
+            }
+
+            if (lane is M3uaRuntimeAssociationLane productionLane)
+            {
+                if (productionRuntimes.Any(runtime =>
+                    ReferenceEquals(runtime, productionLane.Runtime)))
+                {
+                    throw new ArgumentException(
+                        "Production M3UA runtime lanes must not share the same underlying runtime instance.",
+                        nameof(lanes));
+                }
+
+                productionRuntimes.Add(productionLane.Runtime);
             }
 
             if (!_lanes.TryAdd(lane.AssociationName, new LaneContext(lane)))
@@ -253,6 +273,24 @@ internal sealed class M3uaHaRuntimeSupervisor : IAsyncDisposable
     }
 
     internal int InboundCapacity { get; }
+
+    /// <summary>
+    /// True when this supervisor independently publishes lane lifecycle state to
+    /// an association pool. Generation-binding composition must reject that mode
+    /// because the binding must be the sole route-health publisher.
+    /// </summary>
+    internal bool PublishesRouteHealth => _routePool is not null;
+
+    /// <summary>
+    /// Verifies object identity, not only association-name equality, for internal
+    /// composition validation. Runtime-lane membership is immutable after construction.
+    /// </summary>
+    internal bool OwnsLane(IM3uaAssociationRuntimeLane lane)
+    {
+        ArgumentNullException.ThrowIfNull(lane);
+        return _lanes.TryGetValue(lane.AssociationName, out LaneContext? context)
+            && ReferenceEquals(context.Lane, lane);
+    }
 
     internal async ValueTask StartAsync(CancellationToken ct = default)
     {

@@ -143,6 +143,31 @@ internal sealed class M3uaAssociationDispatcher
         _associationCount = routes.Length;
     }
 
+    /// <summary>
+    /// Exposes the exact route-pool object owned by this dispatcher to internal
+    /// composition validators. Association-name equality alone is insufficient
+    /// to prove topology ownership.
+    /// </summary>
+    internal M3uaAssociationPool RoutePool => _pool;
+
+    /// <summary>
+    /// Verifies exact sender-object ownership for one association. Equal names or
+    /// equivalent sender configuration do not establish the same transport-
+    /// generation boundary.
+    /// </summary>
+    internal bool OwnsSender(
+        string associationName,
+        IM3uaAssociationSender sender)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(associationName);
+        ArgumentNullException.ThrowIfNull(sender);
+
+        return _senders.TryGetValue(
+                associationName,
+                out IM3uaAssociationSender? owned)
+            && ReferenceEquals(owned, sender);
+    }
+
     internal async ValueTask<IReadOnlyList<M3uaAssociationDispatchOutcome>> DispatchAsync(
         Mtp3TransferMessage message,
         CancellationToken ct = default)
