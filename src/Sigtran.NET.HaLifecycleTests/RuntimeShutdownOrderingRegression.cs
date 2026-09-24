@@ -22,19 +22,22 @@ internal static class RuntimeShutdownOrderingRegression
             && starting.Fence.Reason == M3uaAssociationFenceReason.RuntimeUnavailable,
             "The replacement runtime must remain fail-closed before ASP activation.");
 
-        // Reproduce the ordering that can occur when a consumer starts a new
-        // runtime from the preceding StateChanged(Stopped) callback. The older
-        // RunAsync may publish ShutdownCompleted afterward, but RaiseEvent takes
-        // the *current* runtime state, which is already Starting here.
-        lane.Emit(
+        // Reproduce the harder concurrent ordering: the preceding run has
+        // already constructed ShutdownCompleted with a Stopped snapshot, but
+        // before that event handler runs the replacement has advanced the live
+        // lane to Starting. The binding must revalidate live state rather than
+        // trusting only the older event snapshot.
+        lane.EmitRecorded(
             M3uaRuntimeEventKind.ShutdownCompleted,
-            M3uaRuntimeState.Starting,
+            recordedState: M3uaRuntimeState.Stopped,
             associationName: null,
-            detail: "stale-shutdown-from-previous-run");
+            detail: "recorded-stopped-shutdown-from-previous-run");
 
         M3uaRuntimeGenerationBindingSnapshot afterStaleShutdown = binding.GetSnapshot();
+        Require(lane.State == M3uaRuntimeState.Starting,
+            "The synthetic lane must remain in the replacement Starting lifecycle while the stale event is delivered.");
         Require(afterStaleShutdown.ActivationEpochAvailable,
-            "A stale ShutdownCompleted notification must not revoke the replacement run's epoch permit.");
+            "A recorded-Stopped stale ShutdownCompleted notification must not revoke the replacement run's epoch permit.");
         Require(!afterStaleShutdown.Fence.AcceptingDispatch
             && afterStaleShutdown.Fence.Reason == M3uaAssociationFenceReason.RuntimeUnavailable,
             "Ignoring stale shutdown must not open dispatch before explicit ASP activation.");
@@ -55,18 +58,20 @@ internal static class RuntimeShutdownOrderingRegression
             "The replacement activation must consume its epoch permit exactly once.");
 
         // Cover the tighter race where the replacement session reaches Active
-        // before the older RunAsync publishes its final notification.
-        lane.Emit(
+        // before the old Stopped-snapshot notification reaches the binding.
+        lane.EmitRecorded(
             M3uaRuntimeEventKind.ShutdownCompleted,
-            M3uaRuntimeState.Active,
-            associationName: "a",
-            detail: "stale-shutdown-after-replacement-activation");
+            recordedState: M3uaRuntimeState.Stopped,
+            associationName: null,
+            detail: "recorded-stopped-shutdown-after-replacement-activation");
 
         M3uaRuntimeGenerationBindingSnapshot afterActiveStaleShutdown = binding.GetSnapshot();
+        Require(lane.State == M3uaRuntimeState.Active,
+            "The stale recorded event must not overwrite the synthetic lane's live Active state.");
         Require(afterActiveStaleShutdown.Fence.Generation == 1
             && afterActiveStaleShutdown.Fence.AcceptingDispatch
             && afterActiveStaleShutdown.Fence.Reason == M3uaAssociationFenceReason.None,
-            "A stale shutdown from the preceding run must not close an already-active replacement generation.");
+            "A stale recorded-Stopped shutdown from the preceding run must not close an already-active replacement generation.");
         Require(!afterActiveStaleShutdown.ActivationEpochAvailable,
             "A stale shutdown after replacement activation must not manufacture another epoch permit.");
     }
@@ -118,11 +123,20 @@ internal static class RuntimeShutdownOrderingRegression
             string? detail)
         {
             _state = state;
+            EmitRecorded(kind, state, associationName, detail);
+        }
+
+        internal void EmitRecorded(
+            M3uaRuntimeEventKind kind,
+            M3uaRuntimeState recordedState,
+            string? associationName,
+            string? detail)
+        {
             RuntimeEvent?.Invoke(
                 this,
                 new M3uaRuntimeEventArgs(
                     kind,
-                    state,
+                    recordedState,
                     DateTimeOffset.UtcNow,
                     associationName,
                     detail));
