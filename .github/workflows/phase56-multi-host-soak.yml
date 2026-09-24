@@ -47,7 +47,7 @@ jobs:
     permissions:
       contents: read
     env:
-      RUN_ID: phase56-multihost-${{ github.run_id }}
+      RUN_ID: phase56-multihost-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.run_attempt }}
       SOURCE_SHA: ${{ github.sha }}
       QUALIFICATION_PROFILE: ${{ inputs.qualification_profile }}
       FAULT_SCENARIO: ${{ inputs.fault_scenario }}
@@ -137,7 +137,7 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      RUN_ID: phase56-multihost-${{ github.run_id }}
+      RUN_ID: phase56-multihost-${{ github.run_id }}-${{ github.run_attempt }}
       RAW_EVIDENCE_ROOT: ${{ vars.PERF_RAW_EVIDENCE_ROOT }}
       QUALIFICATION_PROFILE: ${{ inputs.qualification_profile }}
       FAULT_SCENARIO: ${{ inputs.fault_scenario }}
@@ -179,8 +179,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          evidence_dir="docs/evidence/PHASE56_MULTIHOST_$GITHUB_RUN_ID"
-          evidence_branch="evidence/multihost-$GITHUB_RUN_ID"
+          evidence_dir="docs/evidence/PHASE56_MULTIHOST_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          evidence_branch="evidence/multihost-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           safe="$RAW_EVIDENCE_ROOT/$RUN_ID/safe"
 
           git checkout -B "$evidence_branch" origin/main
@@ -190,7 +190,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$evidence_dir"
-          git commit -m "evidence: retain representative multi-host qualification $GITHUB_RUN_ID"
+          git commit -m "evidence: retain representative multi-host qualification ${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}"
           git push origin "$evidence_branch"
 
           echo "branch=$evidence_branch" >> "$GITHUB_OUTPUT"
@@ -216,7 +216,7 @@ jobs:
           sanitized summaries and digest references.
 
           Retained evidence: $EVIDENCE_DIR
-          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID (attempt $GITHUB_RUN_ATTEMPT)
 
           This evidence PR does **not** automatically promote the
           `multi-host-soak` stable gate. Gate promotion requires review of the
@@ -224,4 +224,4 @@ jobs:
           of the required qualification matrix.
           EOF
 
-          gh pr create             --repo "$GITHUB_REPOSITORY"             --base main             --head "$BRANCH"             --title "evidence: retain multi-host $QUALIFICATION_PROFILE/$FAULT_SCENARIO run $GITHUB_RUN_ID"             --body-file "$body"
+          gh pr create             --repo "$GITHUB_REPOSITORY"             --base main             --head "$BRANCH"             --title "evidence: retain multi-host $QUALIFICATION_PROFILE/$FAULT_SCENARIO run ${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}"             --body-file "$body"
