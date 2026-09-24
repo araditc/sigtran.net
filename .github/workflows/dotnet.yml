@@ -53,6 +53,8 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/run-multi-host-qualification.sh
+          bash -n scripts/peer-outage-recovery.sh
+          bash -n scripts/run-with-peer-ssh.sh
           for profile in smoke stress soak release; do
             for fault in peer-restart peer-outage sctp-partition; do
               QUALIFICATION_PROFILE="$profile" \
@@ -61,6 +63,7 @@ jobs:
                 bash scripts/run-multi-host-qualification.sh >/dev/null
             done
           done
+          python3 -u scripts/tests/test_qualification_safety.py
 
       - name: Verify development and release package identity
         shell: bash
