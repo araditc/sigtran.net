@@ -64,8 +64,6 @@ jobs:
       RAW_EVIDENCE_ROOT: ${{ vars.PERF_RAW_EVIDENCE_ROOT }}
       PEER_SSH_HOST: ${{ secrets.PERF_PEER_SSH_HOST }}
       PEER_SSH_USER: ${{ secrets.PERF_PEER_SSH_USER }}
-      PEER_SSH_PRIVATE_KEY: ${{ secrets.PERF_PEER_SSH_PRIVATE_KEY }}
-      PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
       PEER_SERVICE: ${{ vars.PERF_PEER_SERVICE }}
 
     steps:
@@ -82,7 +80,7 @@ jobs:
         run: |
           set -euo pipefail
           test "${{ inputs.confirmation }}" = "run multi host qualification"
-          for value in             "$REMOTE_IP"             "$REMOTE_SCTP_PORT"             "$SDK_HOST_ID"             "$PEER_HOST_ID"             "$RAW_EVIDENCE_ROOT"             "$PEER_SSH_HOST"             "$PEER_SSH_USER"             "$PEER_SSH_PRIVATE_KEY"             "$PEER_SSH_KNOWN_HOSTS"             "$PEER_SERVICE"; do
+          for value in             "$REMOTE_IP"             "$REMOTE_SCTP_PORT"             "$SDK_HOST_ID"             "$PEER_HOST_ID"             "$RAW_EVIDENCE_ROOT"             "$PEER_SSH_HOST"             "$PEER_SSH_USER"             "$PEER_SERVICE"; do
             test -n "$value"
           done
           test "$SDK_HOST_ID" != "$PEER_HOST_ID"
@@ -95,8 +93,13 @@ jobs:
 
       - name: Configure peer SSH
         shell: bash
+        env:
+          PEER_SSH_PRIVATE_KEY: ${{ secrets.PERF_PEER_SSH_PRIVATE_KEY }}
+          PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
+          test -n "$PEER_SSH_PRIVATE_KEY"
+          test -n "$PEER_SSH_KNOWN_HOSTS"
           identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.key"
           known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.known_hosts"
           printf '%s\n' "$PEER_SSH_PRIVATE_KEY" > "$identity"
