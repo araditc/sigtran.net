@@ -91,25 +91,6 @@ jobs:
           bash -n scripts/run-multi-host-qualification.sh
           PLAN_ONLY=true bash scripts/run-multi-host-qualification.sh
 
-      - name: Configure peer SSH
-        shell: bash
-        env:
-          PEER_SSH_PRIVATE_KEY: ${{ secrets.PERF_PEER_SSH_PRIVATE_KEY }}
-          PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
-        run: |
-          set -euo pipefail
-          test -n "$PEER_SSH_PRIVATE_KEY"
-          test -n "$PEER_SSH_KNOWN_HOSTS"
-          identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.key"
-          known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.known_hosts"
-          printf '%s\n' "$PEER_SSH_PRIVATE_KEY" > "$identity"
-          chmod 600 "$identity"
-          printf '%s\n' "$PEER_SSH_KNOWN_HOSTS" > "$known_hosts"
-          chmod 600 "$known_hosts"
-          echo "PEER_SSH_IDENTITY_FILE=$identity" >> "$GITHUB_ENV"
-          echo "PEER_SSH_KNOWN_HOSTS_FILE=$known_hosts" >> "$GITHUB_ENV"
-          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i "$identity" -o UserKnownHostsFile="$known_hosts" "$PEER_SSH_USER@$PEER_SSH_HOST" 'hostname; uname -r'
-
       - name: Build performance lab
         run: >-
           dotnet build
@@ -118,13 +99,33 @@ jobs:
 
       - name: Run representative multi-host qualification
         shell: bash
-        run: bash scripts/run-multi-host-qualification.sh
-
-      - name: Remove temporary peer SSH material
-        if: always()
-        shell: bash
+        env:
+          PEER_SSH_PRIVATE_KEY: ${{ secrets.PERF_PEER_SSH_PRIVATE_KEY }}
+          PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
         run: |
-          rm -f "${PEER_SSH_IDENTITY_FILE:-}" "${PEER_SSH_KNOWN_HOSTS_FILE:-}"
+          set -euo pipefail
+          test -n "$PEER_SSH_PRIVATE_KEY"
+          test -n "$PEER_SSH_KNOWN_HOSTS"
+
+          identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.key"
+          known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.known_hosts"
+          cleanup_ssh_material() {
+            rm -f "$identity" "$known_hosts"
+          }
+          trap cleanup_ssh_material EXIT INT TERM
+
+          printf '%s\n' "$PEER_SSH_PRIVATE_KEY" >"$identity"
+          chmod 600 "$identity"
+          printf '%s\n' "$PEER_SSH_KNOWN_HOSTS" >"$known_hosts"
+          chmod 600 "$known_hosts"
+
+          export PEER_SSH_IDENTITY_FILE="$identity"
+          export PEER_SSH_KNOWN_HOSTS_FILE="$known_hosts"
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i "$identity" \
+            -o UserKnownHostsFile="$known_hosts" \
+            "$PEER_SSH_USER@$PEER_SSH_HOST" 'hostname; uname -r'
+
+          bash scripts/run-multi-host-qualification.sh
 
   retain-evidence:
     needs: qualify
