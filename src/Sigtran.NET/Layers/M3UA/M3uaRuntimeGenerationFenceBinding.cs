@@ -230,6 +230,21 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     return;
 
                 case M3uaRuntimeEventKind.ShutdownCompleted:
+                    // RunAsync publishes its final lifecycle notifications after
+                    // it has made a completed run restartable. A synchronous
+                    // consumer may therefore start the replacement run from the
+                    // preceding StateChanged(Stopped) callback before that older
+                    // run emits ShutdownCompleted. RaiseEvent snapshots the live
+                    // runtime state into args, so only Stopped identifies a
+                    // shutdown completion that still belongs to the current
+                    // stopped lifecycle. Starting/Reconnecting/Active (and a
+                    // later Faulted state) belong to a newer lifecycle and must
+                    // not revoke its epoch permit or re-fence its generation.
+                    if (args.State != M3uaRuntimeState.Stopped)
+                    {
+                        return;
+                    }
+
                     _activationEpochAvailable = false;
                     FenceLocked(
                         M3uaAssociationFenceReason.AdministrativeDrain,
