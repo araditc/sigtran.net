@@ -99,6 +99,15 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                 nameof(sender));
         }
 
+        if (runtime is M3uaRuntimeAssociationLane productionLane
+            && sender.TryGetRuntime(out M3uaRuntime? senderRuntime)
+            && !ReferenceEquals(productionLane.Runtime, senderRuntime))
+        {
+            throw new ArgumentException(
+                $"Association '{runtime.AssociationName}' production runtime lane and live sender must reference the exact same M3uaRuntime instance.",
+                nameof(sender));
+        }
+
         if (runtime.State != M3uaRuntimeState.Stopped)
         {
             throw new InvalidOperationException(
@@ -122,6 +131,19 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
         _runtimeEventHandler = OnRuntimeEvent;
         runtime.RuntimeEvent += _runtimeEventHandler;
     }
+
+    /// <summary>
+    /// Exact composition ownership used by internal topology diagnostics. These
+    /// references are never projected through the public API; they prevent equal
+    /// association names from being mistaken for the same runtime/pool/sender objects.
+    /// </summary>
+    internal string AssociationName => _runtime.AssociationName;
+
+    internal IM3uaAssociationRuntimeLane RuntimeLane => _runtime;
+
+    internal M3uaAssociationPool? RoutePool => _routePool;
+
+    internal M3uaReconnectFencedAssociationSender Sender => _sender;
 
     internal M3uaRuntimeGenerationBindingSnapshot GetSnapshot()
     {
