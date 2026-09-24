@@ -99,6 +99,15 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                 nameof(sender));
         }
 
+        if (runtime is M3uaRuntimeAssociationLane productionLane
+            && sender.TryGetRuntime(out M3uaRuntime? senderRuntime)
+            && !ReferenceEquals(productionLane.Runtime, senderRuntime))
+        {
+            throw new ArgumentException(
+                $"Association '{runtime.AssociationName}' production runtime lane and live sender must reference the exact same M3uaRuntime instance.",
+                nameof(sender));
+        }
+
         if (runtime.State != M3uaRuntimeState.Stopped)
         {
             throw new InvalidOperationException(

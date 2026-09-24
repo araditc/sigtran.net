@@ -14,9 +14,12 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     private readonly object _heartbeatSync = new();
     private readonly IM3uaRuntimeSessionFactory _sessionFactory;
     private readonly M3uaRuntimeOptions _options;
-    private readonly Channel<Mtp3TransferMessage> _outbound;
+    private readonly Channel<M3uaRuntimeOutboundWorkItem> _outbound;
     private readonly Channel<Mtp3TransferMessage> _inbound;
+    private readonly HashSet<M3uaRuntimeOutboundWorkItem> _trackedOutbound = [];
     private CancellationTokenSource? _lifetime;
+    private CancellationTokenSource? _trackedSessionAdmission;
+    private long _trackedSessionAdmissionGeneration;
     private Task? _runTask;
     private TaskCompletionSource<bool>? _firstActivation;
     private TaskCompletionSource<bool>? _pendingHeartbeat;
@@ -25,6 +28,7 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     private M3uaRuntimeState _state = M3uaRuntimeState.Stopped;
     private int _outboundQueueDepth;
     private int _inboundQueueDepth;
+    private long _activeSessionGeneration;
     private long _sentTransfers;
     private long _receivedTransfers;
     private long _heartbeatsSent;
@@ -44,7 +48,7 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     {
         _sessionFactory = sessionFactory ?? throw new ArgumentNullException(nameof(sessionFactory));
         _options = options ?? new M3uaRuntimeOptions();
-        _outbound = Channel.CreateBounded<Mtp3TransferMessage>(
+        _outbound = Channel.CreateBounded<M3uaRuntimeOutboundWorkItem>(
             new BoundedChannelOptions(_options.OutboundQueueCapacity)
             {
                 FullMode = BoundedChannelFullMode.Wait,
@@ -156,13 +160,137 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
         Interlocked.Increment(ref _outboundQueueDepth);
         try
         {
-            await _outbound.Writer.WriteAsync(message, ct).ConfigureAwait(false);
+            await _outbound.Writer.WriteAsync(
+                new M3uaRuntimeOutboundWorkItem(message),
+                ct).ConfigureAwait(false);
         }
         catch
         {
             Interlocked.Decrement(ref _outboundQueueDepth);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Enqueues one HA-owned transfer only while the named association has an
+    /// active transport session and waits until that exact session either
+    /// completes its local transport write or proves an ownership outcome.
+    /// </summary>
+    /// <remarks>
+    /// Once bounded-queue admission succeeds, caller cancellation is not used to
+    /// abandon the ownership wait: the transfer may already be consumed by the
+    /// active send loop. A replacement runtime session never sends a tracked item
+    /// captured for an older session generation.
+    /// </remarks>
+    internal async ValueTask<M3uaRuntimeTrackedSendResult> SendTrackedAsync(
+        string associationName,
+        Mtp3TransferMessage message,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        if (string.IsNullOrWhiteSpace(associationName))
+        {
+            throw new ArgumentException(
+                "Association name is required.",
+                nameof(associationName));
+        }
+
+        ThrowIfDisposed();
+
+        M3uaRuntimeOutboundWorkItem work;
+        CancellationToken sessionAdmissionToken;
+        lock (_sync)
+        {
+            if (_runTask is null || _state != M3uaRuntimeState.Active)
+            {
+                return M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    $"Association '{associationName}' runtime is not Active.");
+            }
+
+            if (!string.Equals(
+                _associationName,
+                associationName,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    $"Active runtime association '{_associationName ?? "<none>"}' does not match HA association '{associationName}'.");
+            }
+
+            if (_activeSessionGeneration <= 0)
+            {
+                return M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    $"Association '{associationName}' has no active runtime transport generation.");
+            }
+
+            TaskCompletionSource<M3uaRuntimeTrackedSendResult> completion = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            work = new M3uaRuntimeOutboundWorkItem(
+                message,
+                _activeSessionGeneration,
+                completion);
+            if (_trackedSessionAdmission is null
+                || _trackedSessionAdmissionGeneration != _activeSessionGeneration)
+            {
+                return M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    $"Association '{associationName}' active runtime session is retiring.");
+            }
+
+            _trackedOutbound.Add(work);
+            sessionAdmissionToken = _trackedSessionAdmission.Token;
+        }
+
+        Interlocked.Increment(ref _outboundQueueDepth);
+        try
+        {
+            using CancellationTokenSource admission = new();
+            using CancellationTokenRegistration callerRegistration = ct.Register(
+                () =>
+                {
+                    if (work.TryRecordAdmissionCancellation(
+                        M3uaRuntimeTrackedAdmissionCancellationOwner.Caller))
+                    {
+                        admission.Cancel();
+                    }
+                });
+            using CancellationTokenRegistration sessionRegistration =
+                sessionAdmissionToken.Register(
+                    () =>
+                    {
+                        if (work.TryRecordAdmissionCancellation(
+                            M3uaRuntimeTrackedAdmissionCancellationOwner.Session))
+                        {
+                            admission.Cancel();
+                        }
+                    });
+
+            await _outbound.Writer.WriteAsync(work, admission.Token)
+                .ConfigureAwait(false);
+            work.MarkAdmissionSucceeded();
+        }
+        catch (OperationCanceledException)
+        {
+            work.MarkAdmissionCanceled();
+            Interlocked.Decrement(ref _outboundQueueDepth);
+            bool callerCancellation = work.CallerOwnsAdmissionCancellation;
+            CompleteTrackedOutbound(
+                work,
+                M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    callerCancellation
+                        ? $"Association '{associationName}' dispatch was cancelled before runtime queue admission."
+                        : $"Association '{associationName}' active runtime session retired before queue admission.",
+                    callerCancellation: callerCancellation));
+        }
+        catch (Exception ex)
+        {
+            work.MarkAdmissionRejected();
+            Interlocked.Decrement(ref _outboundQueueDepth);
+            CompleteTrackedOutbound(
+                work,
+                M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    $"Association '{associationName}' runtime queue rejected dispatch before transport invocation: {ex.Message}"));
+        }
+
+        return await work.Completion!.Task.ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -258,6 +386,7 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
             while (!ct.IsCancellationRequested)
             {
                 M3uaRuntimeSessionLease? lease = null;
+                long sessionGeneration = 0;
                 try
                 {
                     if (activatedOnce || recoveryAttempt > 0)
@@ -271,21 +400,41 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
                     M3uaAspClient client = new(lease.Session);
                     await client.StartAsync(_options.StartupOptions, ct).ConfigureAwait(false);
 
+                    sessionGeneration = ActivateSessionGeneration();
                     recoveryAttempt = 0;
                     activatedOnce = true;
                     Transition(M3uaRuntimeState.Active, "asp-active");
                     _firstActivation?.TrySetResult(true);
                     RaiseEvent(M3uaRuntimeEventKind.AspActivated, "asp-startup-complete");
 
-                    await RunActiveSessionAsync(lease.Session, ct).ConfigureAwait(false);
+                    await RunActiveSessionAsync(
+                        lease.Session,
+                        sessionGeneration,
+                        ct).ConfigureAwait(false);
                     throw new EndOfStreamException("The active M3UA session ended.");
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
+                    if (sessionGeneration > 0)
+                    {
+                        await RetireTrackedSessionAsync(
+                            sessionGeneration,
+                            "M3UA runtime stopped while the active session was retiring.")
+                            .ConfigureAwait(false);
+                    }
+
                     break;
                 }
                 catch (Exception ex)
                 {
+                    if (sessionGeneration > 0)
+                    {
+                        await RetireTrackedSessionAsync(
+                            sessionGeneration,
+                            $"M3UA active session {sessionGeneration} ended before reconnect: {ex.Message}")
+                            .ConfigureAwait(false);
+                    }
+
                     Interlocked.Increment(ref _faults);
                     RaiseEvent(M3uaRuntimeEventKind.FaultObserved, ex.Message);
                     if (lease is not null)
@@ -334,17 +483,45 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
         finally
         {
             bool stopped = false;
+            CancellationTokenSource? completedLifetime;
+            M3uaRuntimeOutboundWorkItem[] pendingTracked;
             lock (_sync)
             {
                 _firstActivation?.TrySetCanceled(ct);
                 _runTask = null;
-                _lifetime?.Dispose();
+                completedLifetime = _lifetime;
                 _lifetime = null;
+                pendingTracked = _trackedOutbound.ToArray();
+                _trackedOutbound.Clear();
                 if (_state != M3uaRuntimeState.Faulted)
                 {
                     stopped = _state != M3uaRuntimeState.Stopped;
                     _state = M3uaRuntimeState.Stopped;
                 }
+            }
+
+            completedLifetime?.Cancel();
+            completedLifetime?.Dispose();
+            foreach (M3uaRuntimeOutboundWorkItem pending in pendingTracked)
+            {
+                M3uaRuntimeTrackedSendResult result;
+                if (pending.TransportInvocationStarted)
+                {
+                    result = M3uaRuntimeTrackedSendResult.Ambiguous(
+                        "M3UA runtime stopped after the tracked transfer claimed transport invocation ownership.");
+                }
+                else
+                {
+                    bool callerCancellation =
+                        pending.CallerOwnsAdmissionCancellation;
+                    result = M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                        callerCancellation
+                            ? "Caller cancelled the tracked transfer before runtime queue admission."
+                            : "M3UA runtime stopped before the tracked transfer reached an active transport write.",
+                        callerCancellation: callerCancellation);
+                }
+
+                pending.Completion?.TrySetResult(result);
             }
 
             if (stopped)
@@ -358,13 +535,18 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
 
     private async Task RunActiveSessionAsync(
         M3uaTransportSession session,
+        long sessionGeneration,
         CancellationToken ct)
     {
         using CancellationTokenSource active = CancellationTokenSource.CreateLinkedTokenSource(ct);
         using SemaphoreSlim sendLock = new(1, 1);
 
         Task receiveTask = ReceiveLoopAsync(session, sendLock, active.Token);
-        Task sendTask = SendLoopAsync(session, sendLock, active.Token);
+        Task sendTask = SendLoopAsync(
+            session,
+            sessionGeneration,
+            sendLock,
+            active.Token);
         Task heartbeatTask = _options.HeartbeatsEnabled
             ? HeartbeatLoopAsync(session, sendLock, active.Token)
             : Task.Delay(Timeout.InfiniteTimeSpan, active.Token);
@@ -395,16 +577,45 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
 
     private async Task SendLoopAsync(
         M3uaTransportSession session,
+        long sessionGeneration,
         SemaphoreSlim sendLock,
         CancellationToken ct)
     {
-        await foreach (Mtp3TransferMessage message in _outbound.Reader.ReadAllAsync(ct)
+        await foreach (M3uaRuntimeOutboundWorkItem work in _outbound.Reader.ReadAllAsync(ct)
             .ConfigureAwait(false))
         {
             Interlocked.Decrement(ref _outboundQueueDepth);
-            await sendLock.WaitAsync(ct).ConfigureAwait(false);
+
+            if (work.RequiredSessionGeneration is long requiredGeneration
+                && requiredGeneration != sessionGeneration)
+            {
+                CompleteTrackedOutbound(
+                    work,
+                    M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                        $"Tracked transfer belongs to runtime session generation {requiredGeneration}; active generation is {sessionGeneration}. Cross-session replay is forbidden."));
+                continue;
+            }
+
+            bool sendLockTaken = false;
+            bool transportInvoked = false;
             try
             {
+                await sendLock.WaitAsync(ct).ConfigureAwait(false);
+                sendLockTaken = true;
+                ct.ThrowIfCancellationRequested();
+
+                if (work.IsTracked && !work.TryClaimTransportInvocation())
+                {
+                    CompleteTrackedOutbound(
+                        work,
+                        M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                            $"Tracked transfer for runtime session generation {sessionGeneration} was retired before transport invocation."));
+                    continue;
+                }
+
+                transportInvoked = true;
+
+                Mtp3TransferMessage message = work.Message;
                 await session.SendPayloadDataAsync(
                     message.UserPayload,
                     message.RoutingLabel.OriginatingPointCode,
@@ -417,14 +628,42 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
                     message.RoutingContext,
                     message.CorrelationId,
                     ct).ConfigureAwait(false);
+
+                Interlocked.Increment(ref _sentTransfers);
+                RaiseEvent(M3uaRuntimeEventKind.TransferSent);
+                CompleteTrackedOutbound(
+                    work,
+                    M3uaRuntimeTrackedSendResult.TransportWriteCompleted());
+            }
+            catch (OperationCanceledException ex)
+            {
+                CompleteTrackedOutbound(
+                    work,
+                    transportInvoked
+                        ? M3uaRuntimeTrackedSendResult.Ambiguous(
+                            $"Active runtime session was cancelled after transport invocation began: {ex.Message}")
+                        : M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                            $"Active runtime session stopped before transport invocation: {ex.Message}"));
+                throw;
+            }
+            catch (Exception ex)
+            {
+                CompleteTrackedOutbound(
+                    work,
+                    transportInvoked
+                        ? M3uaRuntimeTrackedSendResult.Ambiguous(
+                            $"Active runtime transport failed after invocation began: {ex.Message}")
+                        : M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                            $"Active runtime failed before transport invocation: {ex.Message}"));
+                throw;
             }
             finally
             {
-                sendLock.Release();
+                if (sendLockTaken)
+                {
+                    sendLock.Release();
+                }
             }
-
-            Interlocked.Increment(ref _sentTransfers);
-            RaiseEvent(M3uaRuntimeEventKind.TransferSent);
         }
     }
 
@@ -618,6 +857,107 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
                 _pendingHeartbeatData = null;
             }
         }
+    }
+
+    private long ActivateSessionGeneration()
+    {
+        lock (_sync)
+        {
+            if (_trackedSessionAdmission is not null)
+            {
+                throw new InvalidOperationException(
+                    "A prior tracked M3UA session admission boundary is still active.");
+            }
+
+            long generation = checked(++_activeSessionGeneration);
+            _trackedSessionAdmissionGeneration = generation;
+            _trackedSessionAdmission = new CancellationTokenSource();
+            return generation;
+        }
+    }
+
+    private async Task RetireTrackedSessionAsync(
+        long sessionGeneration,
+        string detail)
+    {
+        CancellationTokenSource? admission = null;
+        M3uaRuntimeOutboundWorkItem[] pending;
+        lock (_sync)
+        {
+            if (_trackedSessionAdmissionGeneration == sessionGeneration)
+            {
+                admission = _trackedSessionAdmission;
+                _trackedSessionAdmission = null;
+                _trackedSessionAdmissionGeneration = 0;
+            }
+
+            pending = _trackedOutbound
+                .Where(work => work.RequiredSessionGeneration == sessionGeneration)
+                .ToArray();
+        }
+
+        // First stop new/bounded admission for this session. Cancellation
+        // callbacks record the signal owner but do not decide the final result:
+        // WriteAsync may already have committed the item to the channel.
+        admission?.Cancel();
+
+        // Do not dispose the per-session admission source until every captured
+        // writer has settled. A sender can capture its token under the runtime
+        // lock immediately before retirement and install its registration just
+        // after cancellation; keeping the source alive makes that registration
+        // deterministically observe the canceled session instead of racing
+        // source disposal.
+        try
+        {
+            // Do not classify retirement until every captured admission has
+            // settled. A successful channel write is authoritative even when its
+            // continuation resumes after a racing caller/session cancellation.
+            if (pending.Length != 0)
+            {
+                await Task.WhenAll(
+                    pending.Select(static work => work.WaitForAdmissionSettlementAsync()))
+                    .ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            admission?.Dispose();
+        }
+
+        foreach (M3uaRuntimeOutboundWorkItem work in pending)
+        {
+            if (!work.TryRetireBeforeTransport())
+            {
+                continue;
+            }
+
+            bool callerCancellation = work.CallerOwnsAdmissionCancellation;
+            CompleteTrackedOutbound(
+                work,
+                M3uaRuntimeTrackedSendResult.KnownNotDispatched(
+                    callerCancellation
+                        ? "Caller cancelled the tracked transfer before runtime queue admission."
+                        : detail,
+                    callerCancellation: callerCancellation));
+        }
+    }
+
+    private void CompleteTrackedOutbound(
+        M3uaRuntimeOutboundWorkItem work,
+        M3uaRuntimeTrackedSendResult result)
+    {
+        TaskCompletionSource<M3uaRuntimeTrackedSendResult>? completion = work.Completion;
+        if (completion is null)
+        {
+            return;
+        }
+
+        lock (_sync)
+        {
+            _trackedOutbound.Remove(work);
+        }
+
+        completion.TrySetResult(result);
     }
 
     private void EnsureStarted()
