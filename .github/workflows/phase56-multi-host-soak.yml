@@ -65,6 +65,7 @@ jobs:
       PEER_SSH_HOST: ${{ secrets.PERF_PEER_SSH_HOST }}
       PEER_SSH_USER: ${{ secrets.PERF_PEER_SSH_USER }}
       PEER_SERVICE: ${{ vars.PERF_PEER_SERVICE }}
+      PEER_BUILD_METADATA_FILE: ${{ vars.PERF_PEER_BUILD_METADATA_FILE }}
 
     steps:
       - name: Checkout
@@ -82,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$QUALIFICATION_CONFIRMATION" = "run multi host qualification"
-          for value in "$REMOTE_IP" "$REMOTE_SCTP_PORT" "$SDK_HOST_ID" "$PEER_HOST_ID" "$RAW_EVIDENCE_ROOT" "$PEER_SSH_HOST" "$PEER_SSH_USER" "$PEER_SERVICE"; do
+          for value in "$REMOTE_IP" "$REMOTE_SCTP_PORT" "$SDK_HOST_ID" "$PEER_HOST_ID" "$RAW_EVIDENCE_ROOT" "$PEER_SSH_HOST" "$PEER_SSH_USER" "$PEER_SERVICE" "$PEER_BUILD_METADATA_FILE"; do
             test -n "$value"
           done
           test "$SDK_HOST_ID" != "$PEER_HOST_ID"
