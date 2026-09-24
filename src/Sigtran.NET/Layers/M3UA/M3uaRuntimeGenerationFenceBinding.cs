@@ -222,9 +222,6 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                 return;
             }
 
-            _runtimeState = args.State;
-            _lastDetail = args.Detail;
-
             if (!string.IsNullOrWhiteSpace(args.AssociationName)
                 && !string.Equals(
                     args.AssociationName,
@@ -241,6 +238,21 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                 return;
             }
 
+            // RunAsync snapshots State when it constructs an event and then
+            // invokes observers. A replacement StartAsync may race between those
+            // two operations. A stale ShutdownCompleted must therefore be
+            // rejected before it can overwrite the binding's live diagnostic
+            // snapshot as well as before it can mutate epoch/fence ownership.
+            if (args.Kind == M3uaRuntimeEventKind.ShutdownCompleted
+                && (args.State != M3uaRuntimeState.Stopped
+                    || _runtime.State != M3uaRuntimeState.Stopped))
+            {
+                return;
+            }
+
+            _runtimeState = args.State;
+            _lastDetail = args.Detail;
+
             switch (args.Kind)
             {
                 case M3uaRuntimeEventKind.FaultObserved:
@@ -252,20 +264,6 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     return;
 
                 case M3uaRuntimeEventKind.ShutdownCompleted:
-                    // RunAsync snapshots State when it constructs the event and
-                    // then invokes observers. A replacement StartAsync may race
-                    // between those two operations. Re-read the lane's live
-                    // state while handling the notification: only a recorded
-                    // Stopped event whose runtime is *still* Stopped belongs to
-                    // the current stopped lifecycle. If the live lane already
-                    // advanced, the old final notification must not revoke the
-                    // replacement epoch or re-fence its generation.
-                    if (args.State != M3uaRuntimeState.Stopped
-                        || _runtime.State != M3uaRuntimeState.Stopped)
-                    {
-                        return;
-                    }
-
                     _activationEpochAvailable = false;
                     FenceLocked(
                         M3uaAssociationFenceReason.AdministrativeDrain,
