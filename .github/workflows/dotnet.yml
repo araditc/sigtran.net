@@ -48,6 +48,20 @@ jobs:
       - name: Test M3UA HA runtime generation lifecycle
         run: dotnet run --project src/Sigtran.NET.HaLifecycleTests/Sigtran.NET.HaLifecycleTests.csproj --configuration Release
 
+      - name: Validate multi-host qualification orchestration
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/run-multi-host-qualification.sh
+          for profile in smoke stress soak release; do
+            for fault in peer-restart peer-outage sctp-partition; do
+              QUALIFICATION_PROFILE="$profile" \
+              FAULT_SCENARIO="$fault" \
+              PLAN_ONLY=true \
+                bash scripts/run-multi-host-qualification.sh >/dev/null
+            done
+          done
+
       - name: Verify development and release package identity
         shell: bash
         run: |
