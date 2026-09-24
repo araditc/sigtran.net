@@ -5,7 +5,7 @@ This document is the durable execution checkpoint for the owner-approved SDK roa
 ## Canonical baseline
 
 - Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.
-- Current canonical `main` at this checkpoint: `f7fac9a9fce00acdac15ab492bc72e2fbb29e758`; every execution must reconcile the live branch before using this pointer.
+- Current canonical `main` at this checkpoint: `03810e05c18ea8806f455075cbb148971fa3f56c`; every execution must reconcile the live branch before using this pointer.
 - Latest immutable public prerelease: `Sigtran.NET 1.0.0-rc.2`.
 - Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002` and must not be retagged or overwritten.
 - Current unpublished source-development package identity: `1.0.0-rc.3-dev`.
@@ -60,9 +60,12 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 - Parent roadmap tracker: GitHub issue `#12`.
 - 57A baseline/scope-lock work is admitted on `main` and remains a continuously reconciled constraint rather than the active implementation package.
 - 57B SDK profile-framework implementation is admitted, but the separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until authorized operator/vendor acceptance evidence is retained.
-- Active implementation package: GitHub issue `#15` — **Multi-association M3UA HA runtime**.
+- Active implementation package: GitHub issue `#15` — **Multi-association M3UA HA runtime**, still **IMPLEMENTING**.
 - PR `#20` is **VERIFIED-DONE / MERGED** on the Milestone C path; its graceful-drain behavior is retained in current `main`.
 - PR `#21` is **VERIFIED-DONE / MERGED** as `main@f7fac9a9fce00acdac15ab492bc72e2fbb29e758`; post-merge workflow run `35904128172` / job `107327385720` passed.
-- PR `#23` is the single active writer for the health-driven active/standby failover slice and is **IMPLEMENTING / CI-PENDING** after review remediation. Initial automatic failover is constrained to a routing-context-compatible policy-Active route that is specifically runtime-ineligible; missing ownership, routing-context mismatch and all-standby policy remain `NoRoute`. Proven pre-dispatch failure retains one safe failover path, ambiguous ownership remains non-replayable, and atomic active/standby lease paths retain selection accounting.
+- PR `#23` is **VERIFIED-DONE / MERGED** as `main@03810e05c18ea8806f455075cbb148971fa3f56c`; independent review `5299419544` approved exact head `804cc88d320460048650d3f55b6578a3f763d63b`, and post-merge workflow run `35952426079` / job `107483615088` passed. Initial health-driven failover remains constrained to a compatible policy-Active owner with ineligible runtime health; all-standby/no-owner/RC-mismatch stay `NoRoute`, and ambiguous work is not replayed.
+- PR `#24` is the active generation-fencing integration slice, now targeting canonical `main` after #23 admission. Reconnect regressions execute from the normal async dispatch runner, with deterministic per-sender cancellation gates and bounded cleanup rather than blocking module initializers or global contention-counter inference. Exact-head CI and independent review must be refreshed before its merge; the live evidence pointer is issue #15 comment `5794306739`.
+- PRs `#25` (runtime-generation binding) and `#26` (topology diagnostics) remain dependency-stacked work, not merged completion evidence. Reconcile parent deltas and obtain their own exact-head CI/review in order. Do not create duplicate writers for these slices.
+- Live outbound session composition and live-session drain integration remain unfinished within Milestone C; queue acceptance must not be reported as peer/network acceptance.
 - After Milestone C deterministic integration is admitted, representative multi-host and Kubernetes SCTP qualification remain external-evidence work packages; safe independent SDK work continues without administratively promoting those gates.
 - Stable publication remains blocked until all four required open gates pass and the machine evaluator returns `GO`.
