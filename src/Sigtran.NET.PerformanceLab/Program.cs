@@ -225,15 +225,25 @@ static async Task<PerformanceRunResult> RunAsync(
         ct);
     stages.Add(recovery);
     DateTimeOffset trafficRestoredUtc = DateTimeOffset.UtcNow;
-    stages.Add(await RunStageAsync(
-        "soak",
-        options.SoakOperations,
-        options.SoakConcurrency,
-        map,
-        messages,
-        options,
-        trace,
-        ct));
+    stages.Add(options.SoakDuration > TimeSpan.Zero
+        ? await RunTimedStageAsync(
+            "soak",
+            options.SoakDuration,
+            options.SoakConcurrency,
+            map,
+            messages,
+            options,
+            trace,
+            ct)
+        : await RunStageAsync(
+            "soak",
+            options.SoakOperations,
+            options.SoakConcurrency,
+            map,
+            messages,
+            options,
+            trace,
+            ct));
 
     M3uaRuntimeMetrics m3uaMetrics = m3ua.GetMetrics();
     TcapDialogueManagerMetrics tcapMetrics = tcap.GetMetrics();
@@ -314,9 +324,9 @@ static async Task<PerformanceStageResult> RunStageAsync(
         "starting",
         $"name={name} operations={operationCount} concurrency={concurrency}");
     int cursor = -1;
-    int successful = 0;
-    int failed = 0;
-    long[] latencyTicks = new long[operationCount];
+    long successful = 0;
+    long failed = 0;
+    LatencyReservoir latencies = new(options.LatencySampleCapacity);
     ConcurrentQueue<string> errors = new();
     long allocatedBefore = GC.GetTotalAllocatedBytes(precise: false);
     int gen2Before = GC.CollectionCount(2);
@@ -333,11 +343,7 @@ static async Task<PerformanceStageResult> RunStageAsync(
     ProcessResourceSnapshot resources = sampler.Stop();
     long allocatedAfter = GC.GetTotalAllocatedBytes(precise: false);
     int gen2After = GC.CollectionCount(2);
-    double[] successfulLatencies = latencyTicks
-        .Take(Volatile.Read(ref successful))
-        .Select(ticks => ticks * 1000d / Stopwatch.Frequency)
-        .Order()
-        .ToArray();
+    double[] successfulLatencies = latencies.SnapshotMilliseconds();
     PerformanceStageResult result = new(
         name,
         operationCount,
@@ -345,13 +351,14 @@ static async Task<PerformanceStageResult> RunStageAsync(
         failed,
         concurrency,
         elapsed.Elapsed,
+        null,
         elapsed.Elapsed.TotalSeconds > 0
             ? successful / elapsed.Elapsed.TotalSeconds
             : 0,
         Percentile(successfulLatencies, 0.50),
         Percentile(successfulLatencies, 0.95),
         Percentile(successfulLatencies, 0.99),
-        successfulLatencies.Length == 0 ? 0 : successfulLatencies[^1],
+        latencies.MaximumMilliseconds,
         successful == 0
             ? 0
             : Math.Max(0, allocatedAfter - allocatedBefore) / successful,
@@ -389,8 +396,8 @@ static async Task<PerformanceStageResult> RunStageAsync(
                         $"Outcome={operationResult.Outcome} error={operationResult.ErrorCode} reject={operationResult.RejectProblem}");
                 }
 
-                int latencyIndex = Interlocked.Increment(ref successful) - 1;
-                latencyTicks[latencyIndex] = Stopwatch.GetTimestamp() - started;
+                latencies.Record(Stopwatch.GetTimestamp() - started);
+                Interlocked.Increment(ref successful);
             }
             catch (Exception exception) when (
                 exception is not OperationCanceledException
@@ -403,10 +410,129 @@ static async Task<PerformanceStageResult> RunStageAsync(
     }
 }
 
+static async Task<PerformanceStageResult> RunTimedStageAsync(
+    string name,
+    TimeSpan minimumDuration,
+    int concurrency,
+    MapSmsService map,
+    PerformanceMessages messages,
+    PerformanceLabOptions options,
+    PerformanceTrace trace,
+    CancellationToken ct)
+{
+    if (minimumDuration <= TimeSpan.Zero)
+    {
+        throw new ArgumentOutOfRangeException(
+            nameof(minimumDuration),
+            "Timed stage duration must be positive.");
+    }
+
+    trace.Write(
+        "stage",
+        "starting",
+        $"name={name} minimumDurationSeconds={minimumDuration.TotalSeconds:F0} concurrency={concurrency}");
+
+    long operationIndex = -1;
+    long successful = 0;
+    long failed = 0;
+    LatencyReservoir latencies = new(options.LatencySampleCapacity);
+    ConcurrentQueue<string> errors = new();
+    long allocatedBefore = GC.GetTotalAllocatedBytes(precise: false);
+    int gen2Before = GC.CollectionCount(2);
+    using ProcessResourceSampler sampler = new();
+    using CancellationTokenSource stageLifetime =
+        CancellationTokenSource.CreateLinkedTokenSource(ct);
+    stageLifetime.CancelAfter(minimumDuration);
+
+    Stopwatch elapsed = Stopwatch.StartNew();
+    sampler.Start();
+
+    Task[] workers = Enumerable.Range(0, concurrency)
+        .Select(_ => WorkerAsync())
+        .ToArray();
+    await Task.WhenAll(workers).ConfigureAwait(false);
+
+    elapsed.Stop();
+    ProcessResourceSnapshot resources = sampler.Stop();
+    long allocatedAfter = GC.GetTotalAllocatedBytes(precise: false);
+    int gen2After = GC.CollectionCount(2);
+    double[] successfulLatencies = latencies.SnapshotMilliseconds();
+    long completed = Volatile.Read(ref successful) + Volatile.Read(ref failed);
+
+    PerformanceStageResult result = new(
+        name,
+        completed,
+        Volatile.Read(ref successful),
+        Volatile.Read(ref failed),
+        concurrency,
+        elapsed.Elapsed,
+        minimumDuration.TotalSeconds,
+        elapsed.Elapsed.TotalSeconds > 0
+            ? Volatile.Read(ref successful) / elapsed.Elapsed.TotalSeconds
+            : 0,
+        Percentile(successfulLatencies, 0.50),
+        Percentile(successfulLatencies, 0.95),
+        Percentile(successfulLatencies, 0.99),
+        latencies.MaximumMilliseconds,
+        successful == 0
+            ? 0
+            : Math.Max(0, allocatedAfter - allocatedBefore) / successful,
+        resources.AverageCpuPercent,
+        resources.PeakCpuPercent,
+        resources.PeakWorkingSetMegabytes,
+        Math.Max(0, gen2After - gen2Before),
+        errors.Take(10).ToArray());
+
+    trace.Write("stage", "completed", result.Describe());
+    return result;
+
+    async Task WorkerAsync()
+    {
+        while (!stageLifetime.IsCancellationRequested)
+        {
+            long index = Interlocked.Increment(ref operationIndex);
+            long started = Stopwatch.GetTimestamp();
+            try
+            {
+                MapSmsOperationResult operationResult = await InvokeAsync(
+                        map,
+                        messages,
+                        index,
+                        options.InvokeTimeout,
+                        stageLifetime.Token)
+                    .ConfigureAwait(false);
+                if (!operationResult.IsSuccess)
+                {
+                    throw new InvalidOperationException(
+                        $"Outcome={operationResult.Outcome} error={operationResult.ErrorCode} reject={operationResult.RejectProblem}");
+                }
+
+                latencies.Record(Stopwatch.GetTimestamp() - started);
+                Interlocked.Increment(ref successful);
+            }
+            catch (OperationCanceledException) when (
+                stageLifetime.IsCancellationRequested
+                && !ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception exception) when (
+                exception is not OperationCanceledException
+                || !ct.IsCancellationRequested)
+            {
+                Interlocked.Increment(ref failed);
+                errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+            }
+        }
+
+        ct.ThrowIfCancellationRequested();
+    }
+}
+
 static ValueTask<MapSmsOperationResult> InvokeAsync(
     MapSmsService map,
     PerformanceMessages messages,
-    int index,
+    long index,
     TimeSpan timeout,
     CancellationToken ct)
 {
@@ -627,11 +753,12 @@ internal sealed record PerformanceRunResult(
 
 internal sealed record PerformanceStageResult(
     string Name,
-    int RequestedOperations,
-    int SuccessfulOperations,
-    int FailedOperations,
+    long RequestedOperations,
+    long SuccessfulOperations,
+    long FailedOperations,
     int Concurrency,
     TimeSpan Duration,
+    double? RequestedDurationSeconds,
     double ThroughputPerSecond,
     double P50Milliseconds,
     double P95Milliseconds,
@@ -645,7 +772,12 @@ internal sealed record PerformanceStageResult(
     IReadOnlyList<string> Errors)
 {
     public bool Passed =>
-        SuccessfulOperations == RequestedOperations && FailedOperations == 0;
+        RequestedDurationSeconds is double requestedDuration
+            ? Duration.TotalSeconds >= requestedDuration
+                && SuccessfulOperations > 0
+                && FailedOperations == 0
+            : SuccessfulOperations == RequestedOperations
+                && FailedOperations == 0;
 
     public string Describe()
     {
@@ -682,6 +814,97 @@ internal sealed record LayerCounterResult(
     long TcapOpened,
     long TcapClosed,
     long TcapDroppedDialogueEvents);
+
+internal sealed class LatencyReservoir
+{
+    private readonly long[] _samples;
+    private long _observations;
+    private long _maximumTicks;
+
+    internal LatencyReservoir(int capacity)
+    {
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+
+        _samples = new long[capacity];
+    }
+
+    internal double MaximumMilliseconds =>
+        Volatile.Read(ref _maximumTicks) * 1000d / Stopwatch.Frequency;
+
+    internal void Record(long ticks)
+    {
+        if (ticks < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ticks));
+        }
+
+        UpdateMaximum(ticks);
+        long ordinal = Interlocked.Increment(ref _observations);
+        if (ordinal <= _samples.Length)
+        {
+            Interlocked.Exchange(ref _samples[checked((int)ordinal - 1)], ticks);
+            return;
+        }
+
+        ulong candidate = Mix(unchecked((ulong)ordinal))
+            % unchecked((ulong)ordinal);
+        if (candidate < unchecked((ulong)_samples.Length))
+        {
+            Interlocked.Exchange(
+                ref _samples[checked((int)candidate)],
+                ticks);
+        }
+    }
+
+    internal double[] SnapshotMilliseconds()
+    {
+        int count = checked((int)Math.Min(
+            Volatile.Read(ref _observations),
+            _samples.LongLength));
+        double[] values = new double[count];
+        for (int index = 0; index < count; index++)
+        {
+            values[index] =
+                Volatile.Read(ref _samples[index])
+                * 1000d
+                / Stopwatch.Frequency;
+        }
+
+        Array.Sort(values);
+        return values;
+    }
+
+    private void UpdateMaximum(long ticks)
+    {
+        while (true)
+        {
+            long current = Volatile.Read(ref _maximumTicks);
+            if (ticks <= current)
+            {
+                return;
+            }
+
+            if (Interlocked.CompareExchange(
+                    ref _maximumTicks,
+                    ticks,
+                    current) == current)
+            {
+                return;
+            }
+        }
+    }
+
+    private static ulong Mix(ulong value)
+    {
+        value += 0x9E3779B97F4A7C15UL;
+        value = (value ^ (value >> 30)) * 0xBF58476D1CE4E5B9UL;
+        value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
+        return value ^ (value >> 31);
+    }
+}
 
 internal readonly record struct ProcessResourceSnapshot(
     double AverageCpuPercent,
@@ -823,6 +1046,8 @@ internal sealed record PerformanceLabOptions(
     int PeakOperations,
     int RecoveryOperations,
     int SoakOperations,
+    TimeSpan SoakDuration,
+    int LatencySampleCapacity,
     int WarmupConcurrency,
     int SustainedConcurrency,
     int PeakConcurrency,
@@ -887,6 +1112,13 @@ internal sealed record PerformanceLabOptions(
             GetInt(values, "peak-operations", 5000),
             GetInt(values, "recovery-operations", 500),
             GetInt(values, "soak-operations", 5000),
+            TimeSpan.FromSeconds(Math.Max(
+                0,
+                GetDouble(values, "soak-duration-seconds", 0))),
+            Math.Clamp(
+                GetInt(values, "latency-sample-capacity", 200000),
+                1024,
+                1000000),
             GetInt(values, "warmup-concurrency", 16),
             GetInt(values, "sustained-concurrency", 64),
             GetInt(values, "peak-concurrency", 128),
@@ -918,7 +1150,10 @@ internal sealed record PerformanceLabOptions(
             + $"sustained={SustainedOperations}/{SustainedConcurrency} "
             + $"peak={PeakOperations}/{PeakConcurrency} "
             + $"recovery={RecoveryOperations}/{RecoveryConcurrency} "
-            + $"soak={SoakOperations}/{SoakConcurrency}";
+            + (SoakDuration > TimeSpan.Zero
+                ? $"soakDurationSeconds={SoakDuration.TotalSeconds:F0}/{SoakConcurrency} "
+                : $"soak={SoakOperations}/{SoakConcurrency} ")
+            + $"latencySamples={LatencySampleCapacity}";
     }
 
     private static string Get(
