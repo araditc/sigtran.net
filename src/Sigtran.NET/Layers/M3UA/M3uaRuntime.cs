@@ -94,6 +94,7 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     {
         ThrowIfDisposed();
         Task activationTask;
+        TaskCompletionSource<bool>? startEventPublished = null;
         bool starting = false;
 
         lock (_sync)
@@ -115,16 +116,34 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
                 activationTask = _firstActivation.Task;
                 _state = M3uaRuntimeState.Starting;
                 starting = true;
-                _runTask = RunAsync(_lifetime.Token);
+
+                // Publish the Starting lifecycle edge before any session factory
+                // or ASP startup code can synchronously advance the runtime to
+                // Active. _runTask is still assigned under the lock so concurrent
+                // StartAsync callers join this exact startup attempt.
+                startEventPublished = new(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                _runTask = RunAfterStartEventAsync(
+                    startEventPublished.Task,
+                    _lifetime.Token);
             }
         }
 
         if (starting)
         {
             RaiseEvent(M3uaRuntimeEventKind.StateChanged, "runtime-start");
+            startEventPublished!.TrySetResult(true);
         }
 
         await activationTask.WaitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task RunAfterStartEventAsync(
+        Task startEventPublished,
+        CancellationToken ct)
+    {
+        await startEventPublished.ConfigureAwait(false);
+        await RunAsync(ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
