@@ -84,13 +84,28 @@ if [[ "$SDK_HOST_ID" == "$PEER_HOST_ID" ]]; then
   exit 2
 fi
 
-for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout; do
+for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip; do
   command -v "$cmd" >/dev/null || {
     echo "Required command is missing: $cmd" >&2
     exit 2
   }
 done
 sudo -n true >/dev/null
+
+python3 - "$REMOTE_IP" <<'PY'
+import ipaddress, sys
+address = ipaddress.ip_address(sys.argv[1])
+if address.version != 4:
+    raise SystemExit("Representative multi-host qualification currently requires an IPv4 data endpoint.")
+if address.is_loopback or address.is_unspecified or address.is_multicast or address.is_link_local:
+    raise SystemExit("REMOTE_IP must be a non-local representative IPv4 data endpoint.")
+PY
+
+remote_route="$(ip route get "$REMOTE_IP" 2>/dev/null | head -n 1)"
+if [[ -z "$remote_route" || "$remote_route" == local\ * || "$remote_route" == *" dev lo "* ]]; then
+  echo "REMOTE_IP resolves to a local/loopback data path; representative multi-host qualification is not allowed." >&2
+  exit 2
+fi
 
 if [[ "$FAULT_SCENARIO" == "sctp-partition" ]]; then
   for cmd in iptables systemd-run systemctl; do
@@ -244,6 +259,8 @@ trap cleanup EXIT INT TERM
   echo "dotnet=$(dotnet --version)"
 } >"$sdk_host"
 
+ssh_peer "sudo systemctl start '$PEER_SERVICE'"
+ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
 ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl status '$PEER_SERVICE' --no-pager"   >"$peer_host"
 
 {
@@ -253,7 +270,7 @@ ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl statu
   echo "remotePointCode=$DPC"
   echo "networkIndicator=$NETWORK_INDICATOR"
   echo "peerName=$PEER_NAME"
-  ip route get "$REMOTE_IP" || true
+  printf '%s\n' "$remote_route"
   sysctl net.sctp 2>/dev/null || true
 } >"$network_path"
 
@@ -263,9 +280,6 @@ if [[ "$sdk_hostname" == "$peer_hostname" ]]; then
   echo "Runtime hostnames are identical; same-host qualification is not allowed." >&2
   exit 2
 fi
-
-ssh_peer "sudo systemctl start '$PEER_SERVICE'"
-ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
 
 sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U   -w "$pcap" "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT"   >"$raw/tcpdump.log" 2>&1 &
 tcpdump_pid=$!
