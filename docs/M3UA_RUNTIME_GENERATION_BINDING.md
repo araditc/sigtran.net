@@ -1,6 +1,6 @@
 # M3UA Runtime To Transport-Generation Binding
 
-Status: **IMPLEMENTING / MAIN-TARGETED REVIEW** under Milestone C / issue #15. The reconnect-generation primitive from PR #24 is VERIFIED-DONE on canonical `main`; this slice now targets that protected branch directly and does not declare Milestone C complete.
+Status: **VERIFIED-DONE on `main` via PR #25, with a post-merge stale-shutdown ordering correction under governed review** under Milestone C / issue #15. The reconnect-generation primitive from PR #24 and runtime-generation binding from PR #25 are admitted on canonical `main`; this correction does not declare Milestone C complete.
 
 ## Purpose
 
@@ -26,11 +26,13 @@ Missing or mismatched association identity fails closed and is exposed in bindin
 
 ## Loss, reconnect, and drain
 
-`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping`, `Stopped`, and `ShutdownCompleted` close admission as `AdministrativeDrain`.
+`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping` and `Stopped` close admission as `AdministrativeDrain`. `ShutdownCompleted` closes the current stopped lifecycle only when the event snapshot still reports `Stopped`.
+
+A completed run can make itself restartable before its final `ShutdownCompleted` callback is observed. If a consumer synchronously starts a replacement run from `StateChanged(Stopped)`, the older final notification can arrive after the replacement has already published `Starting`, `Reconnecting`, `Active`, or even a later `Faulted` state. Such a stale shutdown event is ignored by the binding: it must not revoke a replacement transport-epoch permit, invalidate a pending replacement activation, or re-fence an already-open replacement generation.
 
 `Starting` and `Reconnecting` are additionally the only lifecycle states that arm the next transport-epoch permit. `Faulted`, stopping/shutdown states, disposal, diagnostics, and duplicate activation do not arm a generation. This prevents same-session ambiguity from being mistaken for reconnect completion.
 
-A later valid ASP activation may request a replacement generation, but it cannot activate until every dispatch already admitted to the previous transport generation has released its generation lease. The binding uses a monotonically increasing transition version so a later fault, shutdown, or disposal invalidates an older pending activation. This prevents a reconnect completion racing with teardown from reopening dispatch.
+A later valid ASP activation may request a replacement generation, but it cannot activate until every dispatch already admitted to the previous transport generation has released its generation lease. The binding uses a monotonically increasing transition version so a later fault, current-run shutdown, or disposal invalidates an older pending activation. This prevents a reconnect completion racing with teardown from reopening dispatch.
 
 Disposal unsubscribes runtime events, publishes stopping health when applicable, closes new admission, clears any unused transport-epoch permit, and waits for both pending activation work and the current generation drain. Events arriving after detach cannot reopen the sender.
 
@@ -48,7 +50,7 @@ Runtime health, local route role, negotiated Traffic Mode Type, and transport-ge
 
 ## Deterministic qualification
 
-The dedicated `Sigtran.NET.HaLifecycleTests` executable runs eleven synthetic scenarios:
+The dedicated `Sigtran.NET.HaLifecycleTests` executable runs twelve synthetic scenarios after this correction:
 
 1. first matching ASP activation opens exactly one generation, while `StateChanged(Active)` and diagnostics cannot do so;
 2. an ambiguous live generation cannot be reopened by duplicate `AspActivated`; an explicit reconnect transport epoch is required before generation rollover;
@@ -60,8 +62,9 @@ The dedicated `Sigtran.NET.HaLifecycleTests` executable runs eleven synthetic sc
 8. attachment rejects a sender whose dispatch generation was already opened by another owner without mutating or claiming that generation;
 9. if an external owner opens the sender after attachment but before ASP activation, the binding detects the unproven ownership, fences the sender, and keeps route admission closed;
 10. a production runtime publishes `StateChanged(Starting)` before the session factory is allowed to run on both initial startup and restart, preventing synchronous activation from outrunning epoch arming;
-11. mid-session attachment and runtime/sender identity mismatch are rejected.
+11. mid-session attachment and runtime/sender identity mismatch are rejected;
+12. a stale `ShutdownCompleted` from the preceding run cannot revoke a replacement `Starting` epoch or close an already-active replacement generation.
 
-The repository workflow includes this executable after the existing HA runtime fan-in harness. PR #25 now targets canonical `main`, so these scenarios must be treated as **CI-PENDING until a successful Actions run is retained for the exact current source head**. Historical stacked review or parent CI is not current-head execution evidence, and any subsequent source change invalidates the prior run/review.
+The repository workflow includes this executable after the existing HA runtime fan-in harness. The corrective source head requires its own successful Actions run and fresh review; historical PR #25 CI/review is evidence for the admitted parent, not for this correction. Any source-head change invalidates the corrective run/review.
 
 These synthetic tests are not operator/vendor acceptance, separate-host qualification, Kubernetes SCTP evidence, or stable-signing evidence. They do not change any stable-release manifest gate.
