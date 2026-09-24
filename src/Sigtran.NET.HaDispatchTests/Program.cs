@@ -17,6 +17,13 @@ await RunAsync("Cancellation before selection sends nothing", CancellationBefore
 await RunAsync("Fenced ownership cannot be downgraded by pre-dispatch failure", FencedOwnershipCannotBeDowngraded);
 await RunAsync("Concurrent cross-context failover keeps retry targets bound", ConcurrentCrossContextFailoverKeepsRetryTargetsBound);
 await RunAsync("Broadcast revalidates each leg before sender invocation", BroadcastRevalidatesEachLegBeforeSenderInvocation);
+await RunAsync("Reconnect fence rejects dispatch before explicit generation activation", ReconnectFenceRegression.ClosedGenerationRejectsBeforeSenderInvocationAsync);
+await RunAsync("Reconnect fence drains old generation before replacement", ReconnectFenceRegression.AdministrativeFenceDrainsAdmittedWorkAsync);
+await RunAsync("Ambiguous send fences generation without blind replay", ReconnectFenceRegression.AmbiguousFailureFencesGenerationAsync);
+await RunAsync("Proven pre-dispatch failure does not over-fence transport generation", ReconnectFenceRegression.ProvenPreDispatchFailureKeepsGenerationOpenAsync);
+await RunAsync("Cancellation at generation admission is known not-dispatched", ReconnectFenceRegression.CancellationAtGenerationAdmissionIsKnownNotDispatchedAsync);
+await RunAsync("Caller cancellation after route admission does not fault the healthy association", ReconnectFenceRegression.CallerCancellationAfterRouteAdmissionDoesNotFaultRouteAsync);
+await RunAsync("Deterministic reconnect admission cancellation race stops before transport invocation", ReconnectAdmissionRaceRegression.CancellationAfterHistoricalEarlyCheckStopsBeforeTransportAsync);
 
 static Task DispatcherRejectsMissingAssociationSenders()
 {

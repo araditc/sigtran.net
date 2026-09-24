@@ -15,11 +15,13 @@ internal readonly struct M3uaAssociationDispatchOutcome
     internal M3uaAssociationDispatchOutcome(
         string? associationName,
         M3uaDispatchDisposition disposition,
-        string? detail = null)
+        string? detail = null,
+        bool callerCancellation = false)
     {
         AssociationName = associationName;
         Disposition = disposition;
         Detail = detail;
+        CallerCancellation = callerCancellation;
     }
 
     internal string? AssociationName { get; }
@@ -27,6 +29,13 @@ internal readonly struct M3uaAssociationDispatchOutcome
     internal M3uaDispatchDisposition Disposition { get; }
 
     internal string? Detail { get; }
+
+    /// <summary>
+    /// True only when dispatch was positively prevented by the caller token before
+    /// the underlying association sender was invoked. This is not association
+    /// failure evidence and must not mutate route health.
+    /// </summary>
+    internal bool CallerCancellation { get; }
 }
 
 internal sealed class M3uaAssociationSendException : Exception
@@ -34,13 +43,29 @@ internal sealed class M3uaAssociationSendException : Exception
     internal M3uaAssociationSendException(
         string message,
         bool dispatchMayHaveOccurred,
-        Exception? innerException = null)
+        Exception? innerException = null,
+        bool callerCancellation = false)
         : base(message, innerException)
     {
+        if (dispatchMayHaveOccurred && callerCancellation)
+        {
+            throw new ArgumentException(
+                "Caller cancellation cannot be marked as possibly dispatched.",
+                nameof(callerCancellation));
+        }
+
         DispatchMayHaveOccurred = dispatchMayHaveOccurred;
+        CallerCancellation = callerCancellation;
     }
 
     internal bool DispatchMayHaveOccurred { get; }
+
+    /// <summary>
+    /// Distinguishes a caller cancellation that was observed before sender
+    /// invocation from an ordinary association pre-dispatch failure. The former
+    /// must release admission without publishing route failure.
+    /// </summary>
+    internal bool CallerCancellation { get; }
 }
 
 internal interface IM3uaAssociationSender
@@ -212,10 +237,13 @@ internal sealed class M3uaAssociationDispatcher
                 outcome = await SendOnceAsync(lease.Definition, message, ct)
                     .ConfigureAwait(false);
 
-                if (outcome.Disposition != M3uaDispatchDisposition.Sent)
+                if (outcome.Disposition != M3uaDispatchDisposition.Sent
+                    && !outcome.CallerCancellation)
                 {
-                    // Publish route ineligibility before releasing the dispatch
-                    // lease so a contender cannot reacquire a failed Active path.
+                    // Publish association failure only when the sender actually
+                    // supplied association-failure evidence. A caller token that
+                    // prevented sender invocation releases the route lease without
+                    // faulting or fencing an otherwise healthy association.
                     bool ambiguousFailure =
                         outcome.Disposition == M3uaDispatchDisposition.Ambiguous;
                     _pool.ApplyDispatchFailureState(associationName, ambiguousFailure);
@@ -225,6 +253,14 @@ internal sealed class M3uaAssociationDispatcher
             outcomes.Add(outcome);
             if (outcome.Disposition == M3uaDispatchDisposition.Sent)
             {
+                return outcomes;
+            }
+
+            if (outcome.CallerCancellation)
+            {
+                // Preserve ordinary cancellation semantics for non-broadcast
+                // dispatch after the route lease has been released safely.
+                ct.ThrowIfCancellationRequested();
                 return outcomes;
             }
 
@@ -266,7 +302,8 @@ internal sealed class M3uaAssociationDispatcher
                     outcomes.Add(new M3uaAssociationDispatchOutcome(
                         targets[pending].Name,
                         M3uaDispatchDisposition.NotDispatched,
-                        "Dispatch was cancelled before this broadcast leg was invoked."));
+                        "Dispatch was cancelled before this broadcast leg was invoked.",
+                        callerCancellation: true));
                 }
 
                 return outcomes;
@@ -291,7 +328,8 @@ internal sealed class M3uaAssociationDispatcher
             {
                 _pool.ApplyDispatchFailureState(target.Name, ambiguous: true);
             }
-            else if (outcome.Disposition == M3uaDispatchDisposition.NotDispatched)
+            else if (outcome.Disposition == M3uaDispatchDisposition.NotDispatched
+                && !outcome.CallerCancellation)
             {
                 _pool.ApplyDispatchFailureState(target.Name, ambiguous: false);
             }
@@ -303,7 +341,8 @@ internal sealed class M3uaAssociationDispatcher
                     outcomes.Add(new M3uaAssociationDispatchOutcome(
                         targets[pending].Name,
                         M3uaDispatchDisposition.NotDispatched,
-                        "Dispatch was cancelled before this broadcast leg was invoked."));
+                        "Dispatch was cancelled before this broadcast leg was invoked.",
+                        callerCancellation: true));
                 }
 
                 return outcomes;
@@ -331,7 +370,8 @@ internal sealed class M3uaAssociationDispatcher
             return new M3uaAssociationDispatchOutcome(
                 target.Name,
                 M3uaDispatchDisposition.NotDispatched,
-                ex.Message);
+                ex.Message,
+                callerCancellation: ex.CallerCancellation);
         }
         catch (M3uaAssociationSendException ex)
         {
