@@ -114,6 +114,10 @@ if [[ "$FAULT_SCENARIO" == "sctp-partition" ]]; then
       exit 2
     }
   done
+  sudo -n iptables -m comment -h >/dev/null 2>&1 || {
+    echo "sctp-partition requires the iptables comment match extension." >&2
+    exit 2
+  }
 fi
 
 workspace="${GITHUB_WORKSPACE:-$(pwd)}"
@@ -142,6 +146,8 @@ sdk_pid=""
 tcpdump_pid=""
 partition_active=false
 rollback_unit="sigtran-sctp-rollback-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
+partition_rule_tag="sigtran-multihost-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
+partition_rule_tag="${partition_rule_tag:0:200}"
 
 ssh_peer() {
   ssh \
@@ -201,8 +207,8 @@ remove_partition() {
     return 0
   fi
 
-  local output_rule=(-p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP)
-  local input_rule=(-p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP)
+  local output_rule=(-p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP)
+  local input_rule=(-p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP)
 
   sudo -n iptables -D OUTPUT "${output_rule[@]}" >/dev/null 2>&1 || true
   sudo -n iptables -D INPUT "${input_rule[@]}" >/dev/null 2>&1 || true
@@ -324,13 +330,13 @@ case "$FAULT_SCENARIO" in
     iptables_path="$(command -v iptables)"
     rollback_command="$(cat <<EOF
 while true; do
-  "$iptables_path" -D OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || true
-  "$iptables_path" -D INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || true
+  "$iptables_path" -D OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || true
+  "$iptables_path" -D INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || true
 
   output_rc=0
-  "$iptables_path" -C OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || output_rc=\$?
+  "$iptables_path" -C OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || output_rc=\$?
   input_rc=0
-  "$iptables_path" -C INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || input_rc=\$?
+  "$iptables_path" -C INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || input_rc=\$?
 
   if [ "\$output_rc" -eq 1 ] && [ "\$input_rc" -eq 1 ]; then
     exit 0
