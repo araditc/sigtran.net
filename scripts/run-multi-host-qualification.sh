@@ -249,6 +249,10 @@ ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl statu
 {
   echo "remoteIp=$REMOTE_IP"
   echo "remotePort=$REMOTE_SCTP_PORT"
+  echo "localPointCode=$OPC"
+  echo "remotePointCode=$DPC"
+  echo "networkIndicator=$NETWORK_INDICATOR"
+  echo "peerName=$PEER_NAME"
   ip route get "$REMOTE_IP" || true
   sysctl net.sctp 2>/dev/null || true
 } >"$network_path"
@@ -269,7 +273,11 @@ sleep 1
 sudo -n kill -0 "$tcpdump_pid"
 
 timeout_seconds=$((SOAK_SECONDS + 1800))
-timeout "$((timeout_seconds + 300))s" dotnet run   --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj   -c Release --no-build --   --run-id "$RUN_ID"   --artifact-root "$raw"   --remote-ip "$REMOTE_IP"   --remote-port "$REMOTE_SCTP_PORT"   --local-point-code "$OPC"   --remote-point-code "$DPC"   --network-indicator "$NETWORK_INDICATOR"   --peer-name "$PEER_NAME"   --warmup-operations 5000   --sustained-operations 100000   --peak-operations 100000   --recovery-operations 10000   --soak-duration-seconds "$SOAK_SECONDS"   --latency-sample-capacity 200000   --warmup-concurrency 32   --sustained-concurrency 192   --peak-concurrency 384   --recovery-concurrency 64   --soak-concurrency 192   --timeout-seconds "$timeout_seconds"   --failover-timeout-seconds 45   --metrics "$metrics"   --report "$report"   --trace "$trace"   --failover-ready "$failover_ready"   --failover-complete "$failover_complete"   >"$raw/sdk.log" 2>&1 &
+# FailoverTimeout covers both waiting for the external fault-release marker and
+# the subsequent M3UA recovery wait. It must therefore exceed every admitted
+# fault hold duration, with bounded recovery/management margin.
+failover_timeout_seconds=$((FAULT_DURATION_SECONDS + 45))
+timeout "$((timeout_seconds + 300))s" dotnet run   --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj   -c Release --no-build --   --run-id "$RUN_ID"   --artifact-root "$raw"   --remote-ip "$REMOTE_IP"   --remote-port "$REMOTE_SCTP_PORT"   --local-point-code "$OPC"   --remote-point-code "$DPC"   --network-indicator "$NETWORK_INDICATOR"   --peer-name "$PEER_NAME"   --warmup-operations 5000   --sustained-operations 100000   --peak-operations 100000   --recovery-operations 10000   --soak-duration-seconds "$SOAK_SECONDS"   --latency-sample-capacity 200000   --warmup-concurrency 32   --sustained-concurrency 192   --peak-concurrency 384   --recovery-concurrency 64   --soak-concurrency 192   --timeout-seconds "$timeout_seconds"   --failover-timeout-seconds "$failover_timeout_seconds"   --metrics "$metrics"   --report "$report"   --trace "$trace"   --failover-ready "$failover_ready"   --failover-complete "$failover_complete"   >"$raw/sdk.log" 2>&1 &
 sdk_pid=$!
 
 for _ in $(seq 1 7200); do
