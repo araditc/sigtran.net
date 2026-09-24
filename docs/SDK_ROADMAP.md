@@ -130,7 +130,7 @@ The qualification track covers:
 - duplicate, ambiguous, lost, and orphaned transaction/dialogue observations;
 - CPU, memory, allocation, latency, throughput, and failover timing.
 
-The planned evidence ladder is short smoke, one-hour stress, multi-hour soak, and a release-grade long-duration run. Exact duration and topology are recorded with the evidence rather than inferred from the roadmap. The gate closes only with digest-covered retained artifacts from an authorized representative environment.
+The executable evidence ladder is a 15-minute smoke, one-hour stress, six-hour soak, and 24-hour release-grade run. The PerformanceLab uses a time-based, bounded-memory soak path for the long tiers; total operation count is measured rather than preallocated. Exact source SHA, topology, fault scenario and duration are retained with every run. The gate closes only with digest-covered retained artifacts from an authorized representative environment and review of the required fault matrix. See `MULTI_HOST_QUALIFICATION.md`.
 
 ## Representative Kubernetes SCTP Qualification
 
