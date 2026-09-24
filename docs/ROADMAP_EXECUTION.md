@@ -5,7 +5,7 @@ This document is the durable execution checkpoint for the owner-approved SDK roa
 ## Canonical baseline
 
 - Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.
-- Current canonical `main` at this checkpoint: `bd3565c3bb3e0bb1195a817789c9aa0eebefad20`; every execution must reconcile the live branch before using this pointer.
+- Current canonical `main` at this checkpoint: `ee9fda83930db82419174301d76306deafb155c4`; every execution must reconcile the live branch before using this pointer.
 - Latest immutable public prerelease: `Sigtran.NET 1.0.0-rc.2`.
 - Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002` and must not be retagged or overwritten.
 - Current unpublished source-development package identity: `1.0.0-rc.3-dev`.
@@ -59,9 +59,9 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 
 - Parent roadmap tracker: GitHub issue `#12`.
 - 57A baseline/scope-lock and 57B SDK profile-framework implementation are admitted on `main`. The separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until genuine authorized operator/vendor acceptance evidence is retained.
-- **Milestone C — Multi-association M3UA HA runtime is VERIFIED-DONE for deterministic repository implementation** on canonical `main@bd3565c3bb3e0bb1195a817789c9aa0eebefad20`.
-- The governed Milestone C chain includes PRs `#20`, `#21`, `#23`, `#24`, `#25`, `#26`, and `#27`. It now retains health-aware routing, SLS-aware bounded dispatch, drain/fencing, reconnect generation ownership, runtime/session binding, topology diagnostics, exact production-runtime identity, and live outbound transport-ownership semantics.
-- The post-merge workflow for PR `#27`, run `35990058236`, passed on exact canonical main `bd3565c3...`. The late stale-`ShutdownCompleted` restart finding from PR `#25` was admitted through PR `#26` and its main validation.
+- **Milestone C — Multi-association M3UA HA runtime is VERIFIED-DONE for deterministic repository implementation** on canonical `main@ee9fda83930db82419174301d76306deafb155c4`.
+- The governed Milestone C chain includes PRs `#20`, `#21`, `#23`, `#24`, `#25`, `#26`, `#27`, and corrective PR `#29`. It now retains health-aware routing, SLS-aware bounded dispatch, drain/fencing, reconnect generation ownership, runtime/session binding, topology diagnostics, exact production-runtime identity, live outbound transport-ownership semantics, and stale-shutdown/association-mismatch lifecycle diagnostics that preserve the current transport generation.
+- PR `#27` established live outbound transport-ownership semantics. Corrective PR `#29` was subsequently merged as canonical `main@ee9fda83930db82419174301d76306deafb155c4` after current-head independent approval; it closes the stale recorded-`Stopped` shutdown ordering and association-mismatch diagnostic regressions without changing peer/network acceptance semantics.
 - Active implementation package: **Milestone D — Representative Multi-Host Qualification**, tracked by reopened issue `#6` and writer branch `multi-host-qualification-orchestration`.
 - Milestone D reuses the existing Phase 53/56 full-stack PerformanceLab and protected `sigtran-performance` environment. It does not infer multi-host qualification from single-host or same-machine lanes.
 - The first Milestone D package adds bounded-memory timed soak support, fixed profiles (15-minute smoke, 1-hour stress, 6-hour soak, 24-hour release), protected distinct-host orchestration, scoped fault injection, and source-bound digest evidence. See `docs/MULTI_HOST_QUALIFICATION.md`.
