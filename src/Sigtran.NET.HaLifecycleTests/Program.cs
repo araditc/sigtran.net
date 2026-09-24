@@ -8,6 +8,7 @@ await RunAsync("Runtime binding disposal closes admission and drains", RuntimeGe
 await RunAsync("Runtime binding rejects an already-open sender", RuntimeGenerationBindingRegression.BindingRejectsAlreadyOpenSenderAsync);
 await RunAsync("Runtime binding fences external sender activation", RuntimeGenerationBindingRegression.ExternalSenderActivationBeforeAspFailsClosedAsync);
 await RunAsync("Runtime publishes Starting before synchronous session open and restart", RuntimeGenerationBindingRegression.RuntimeStartingEventPrecedesSessionOpenAcrossRestartAsync);
+await RunAsync("Runtime binding ignores stale shutdown after reentrant restart", RuntimeGenerationBindingRegression.StaleShutdownCompletedCannotFenceReentrantRestartAsync);
 await RunAsync("Runtime binding rejects mid-session attach and sender mismatch", RuntimeGenerationBindingRegression.BindingRejectsMidSessionAttachAndIdentityMismatchAsync);
 await RunAsync("HA topology snapshot reconciles runtime generation and dispatch state", TopologyDiagnosticsRegression.SnapshotReconcilesRuntimeGenerationAndDispatchAsync);
 await RunAsync("HA topology diagnostics reject association membership drift", TopologyDiagnosticsRegression.MembershipMismatchFailsClosedAsync);
