@@ -27,119 +27,158 @@ supported. The default reservoir is 200,000 observations and is hard-bounded to
 bounded to the latest 4,096 records; full trace output remains protected raw
 evidence rather than an unbounded in-memory collection.
 
-The self-hosted workflow separates qualification from evidence publication. Each execution attempt is owned by the pair `github.run_id + github.run_attempt`: protected storage, transient rollback unit/rule tag, sanitized evidence branch/directory, and temporary SSH material are attempt-unique so a GitHub rerun cannot disarm or overwrite a previous attempt. The peer SSH private key and known-hosts material are created only after the performance build, inside the qualification step, and removed by a step-local shell trap.
-This matters for a release-grade run because GitHub documents a maximum
-24-hour lifetime for `GITHUB_TOKEN`, while a self-hosted job may execute
-longer. The qualification job writes raw and sanitized results to protected
-lab storage; a second job receives a fresh token and publishes only the
-sanitized evidence.
+The self-hosted workflow separates qualification from evidence publication.
+Each execution attempt is owned by `github.run_id + github.run_attempt`:
+protected storage, rollback units/rule tags and sanitized evidence destinations
+are attempt-unique. Reruns do not overwrite a prior attempt or disarm its rollback.
+The SSH wrapper additionally uses a random private directory under runner temp,
+created atomically by `mktemp -d`, and sets `umask 077` **before** writing any
+material. The directory is 0700 and key/known-hosts files are 0600 from creation,
+not after a chmod window. Creation occurs after the build; original secret-value
+environment variables are removed before invoking qualification, and the wrapper's
+EXIT trap removes only its own directory. A SIGKILL or host failure cannot run
+shell traps: any residue remains private and requires controlled runner cleanup.
+No key or raw host inventory is printed to the Actions log.
 
-Primary GitHub references:
+This matters for a release-grade run because GitHub documents a maximum
+24-hour lifetime for `GITHUB_TOKEN`, while a self-hosted job may execute longer.
+The qualification job writes to protected lab storage; a second job receives a
+fresh token and publishes only sanitized evidence.
+
+Primary references:
 
 - <https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idtimeout-minutes>
 - <https://docs.github.com/en/actions/reference/limits>
+- <https://www.gnu.org/s/coreutils/manual/html_node/mktemp-invocation.html>
+- <https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html>
 
 ## Required topology
 
 A qualifying run must satisfy all of the following:
 
 - SDK workload and peer execute on distinct physical hosts or VMs;
-- runtime hostnames are different and configured host labels are different;
+- runtime hostnames and configured host labels are different;
 - native Linux SCTP is used on the measured data path;
-- the current qualification runner accepts only a non-loopback, non-local IPv4 data endpoint and rejects any `REMOTE_IP` whose route resolves locally or through `lo`; this keeps the current `iptables` partition implementation explicit rather than implying unqualified IPv6 behavior;
+- the current runner accepts only a non-loopback, non-local IPv4 data endpoint
+  and rejects a `REMOTE_IP` route resolving locally or through `lo`; IPv6
+  partition behavior is not qualified by this implementation;
 - exact source SHA is retained in the sanitized summary;
 - local/remote point codes, network indicator and peer identity are recorded;
-- SDK and peer kernel/CPU/memory information is retained in protected raw
-  evidence and is not copied to the public evidence branch;
-- route/path and SCTP host settings are retained in protected raw evidence;
-- the run is executed through the protected `sigtran-performance`
-  environment.
+- SDK/peer kernel, CPU, memory and route/SCTP settings are retained in protected
+  raw evidence, not copied to the public branch;
+- execution uses the protected `sigtran-performance` environment;
+- `PEER_SERVICE` is a validated service-unit name ending in `.service`;
+- `PERF_RAW_EVIDENCE_ROOT` is an absolute, runner-owned private directory (0700).
 
-Loopback, a data endpoint routed locally on the SDK host, same-host containers and network namespaces do not close the
-`multi-host-soak` gate. Configured host labels alone are insufficient: the runner also verifies runtime hostnames and the actual data-route locality.
+Loopback, a locally routed endpoint, same-host containers and network namespaces
+do not close `multi-host-soak`. Labels alone are insufficient: runtime hostnames
+and data-route locality are also checked. All real fault controls require the
+existing authorized lab; code or mocked tests do not grant network authority.
 
 ## Fault scenarios in the first executable matrix
-
-The reusable runner currently supports:
 
 ### `peer-restart`
 
 Restarts the authorized peer service through the protected management path.
-This validates process/association restart and reconnect ownership. It is not
-described as host loss.
+This validates process/association restart, not host loss.
 
 ### `peer-outage`
 
-Stops the peer service for a bounded interval and then starts it. Recovery must
-produce a real reconnect and recovery traffic must have zero lost operations.
+The peer-side `peer-outage-recovery.sh` first arms an attempt-specific transient
+systemd timer **on the peer**, then stops only the validated service. Failure to
+arm aborts before the stop. Both actions are delivered in one SSH invocation.
+
+Normal recovery starts the service and verifies it is active before disarming
+that owned rollback. A failed start/verification leaves rollback armed. If the
+SDK dies or SSH is lost, the peer timer remains independent: after the configured
+hold plus a 60-second recovery margin, its service retries start/verification
+until active. A lost SSH acknowledgement does not authorize local cleanup to
+cancel a timer it did not acknowledge. The peer requires already-authorized
+privileged `systemd-run`/`systemctl` execution; this change provisions no access.
+
+The fault hold is controlled, but the margin/repair loop is not a guarantee that
+a broken peer OS/service can recover within a fixed deadline. A failure of the
+peer host itself remains the separate host-loss matrix row. Recovery evidence
+must contain a real reconnect with zero lost recovery operations.
 
 ### `sctp-partition`
 
-Installs temporary SDK-host firewall rules scoped to SCTP, the configured peer
-data address, and the configured SCTP port. The runner:
+Temporary SDK-host firewall rules are scoped to SCTP, peer data address and port.
+The runner:
 
-- records the fault transition;
-- tags each inserted DROP rule with a run-specific iptables comment so cleanup/rollback can remove only the rules owned by that qualification run;
-- removes those tagged rules in the normal cleanup trap and verifies both exact owned rules are absent before declaring cleanup complete;
-- installs an independent transient systemd rollback timer before waiting; when it fires, the rollback service retries deletion and re-checks both exact rules until absence is proven, rather than treating a transient xtables failure as successful cleanup;
-- leaves the independent rollback armed whenever normal-path rule removal cannot be proven;
-- never modifies SSH/GitHub TCP management traffic;
-- requires passwordless privileged execution on the owned lab host.
+- tags each DROP rule with the unique run-attempt ownership marker;
+- arms an independent SDK-side systemd rollback before any firewall mutation;
+- removes only owned rules and verifies both absences before disarming rollback;
+- leaves rollback armed on failed or unverifiable normal cleanup;
+- retries and verifies independent rollback deletion after transient xtables
+  errors, rather than converting a failed deletion into success;
+- does not modify SSH/GitHub TCP management traffic.
 
-A run is invalid if cleanup cannot be proven.
+A run is invalid if cleanup cannot be proven. Signal exits retain nonzero status;
+cleanup failure or persistence failure cannot be reported as qualification PASS.
 
-## Not yet represented as completed fault scenarios
+## Missing representative matrix rows
 
-The approved roadmap also requires host loss, delay/loss impairment and route
-withdrawal/recovery. These are **not** renamed versions of service restart or
-the scoped SCTP partition.
-
-They require a representative lab with an out-of-band management plane and
-reviewed control hooks so the fault cannot strand the runner or management
-connection. Until those controls exist and execute, the evidence matrix remains
-incomplete and `multi-host-soak` stays open.
+Host loss, delay/loss impairment and route withdrawal/recovery are not renamed
+service restart or SCTP partition tests. They need representative out-of-band
+management and reviewed controls that cannot strand the management connection.
+Until those controls execute and evidence is retained, the matrix is incomplete
+and `multi-host-soak` remains open.
 
 ## Evidence model
 
-Raw evidence remains outside the public repository under
-`PERF_RAW_EVIDENCE_ROOT/<run-id>/raw` with restrictive permissions. It
-includes packet capture, SDK metrics/report/trace, host details, network path,
-fault events and peer status.
+Raw PCAP/SDK trace/host inventory is created in a **random mode-0700 scratch
+directory under runner temp**, not in `GITHUB_WORKSPACE`. The script sets umask
+077 before directory/file creation. Even on failure the working copy is private.
+Tcpdump is stopped and its ownership normalized before persistence.
 
-The public evidence branch contains only:
+`persist-qualification-evidence.py` copies stopped-run `raw/` and `safe/` trees to
+a private staging directory under `PERF_RAW_EVIDENCE_ROOT`, restricts all copied
+modes, compares every file's SHA-256 and the complete tree (including empty dirs),
+and verifies the original did not change during copying. Symlinks/special files,
+nonprivate roots, overlapping paths and existing attempt destinations are rejected.
+Only a verified copy is renamed to the final attempt path; the final tree is
+checked before scratch removal. Copy/verification failure returns failure and
+retains private scratch for recovery, rather than suppressing errors or deleting
+the sole copy. Interrupted staging/temporary directories require controlled lab
+cleanup, never blind public artifact upload.
+
+Persistent raw evidence is under `PERF_RAW_EVIDENCE_ROOT/<run-id>/raw`. The private
+`protected-evidence.sha256.json` at the attempt root covers raw and sanitized files;
+it is **not** copied to the public branch. The public branch still contains only:
 
 - `summary.json`;
 - `report.md`;
-- `raw-evidence.sha256` (digest references, not raw payloads);
-- `sha256.txt` covering the sanitized files.
+- `raw-evidence.sha256` (digest references, not payloads);
+- `sha256.txt` covering sanitized files.
 
-The summary records:
+Summaries record source SHA, profile/fault/duration, distinct-host result without
+host labels/names, times, throughput/latency, operation counts, recovery outcomes
+and pass/fail. An evidence PR is opened only after successful execution. Merging
+it never automatically sets the stable manifest to passed.
 
-- exact source SHA;
-- qualification profile;
-- fault scenario and duration;
-- a distinct-host verification result without publishing host labels or
-  hostnames;
-- start/end UTC;
-- timed-soak duration and successful/failed operation counts;
-- throughput and latency;
-- reconnect/failover result;
-- lost recovery operations;
-- pass/fail.
+## Offline safety regression coverage
 
-The workflow opens an evidence PR after successful execution. Merging an
-evidence PR **does not** set `eng/release/stable-release.json` to passed.
-Promotion requires review that the retained run corresponds to the required
-matrix and representative topology.
+Normal PR CI executes all 12 profile/fault plans, shell syntax checks and
+`python3 scripts/tests/test_qualification_safety.py` without external traffic.
+The 13 isolated tests cover peer arm-before-stop ordering, failed arming,
+independent retry after the initiating process exits, verify-before-disarm,
+failed recovery preserving rollback, invalid service rejection, full copy/digest
+verification, corrupted/failed copies preserving scratch, immutable attempt
+retention, symlink/private-root/overlap rejection, and SSH permissions/cleanup
+under a deliberately permissive inherited umask.
+
+Systemd commands are stubs and file contents are synthetic. This is executable
+safety-unit evidence, **not** a live remote rollback or multi-host qualification.
+Real peer-side timer behavior, permissions and cleanup must still be validated
+in the protected representative lab before a qualification gate is closed.
 
 ## Acceptance boundary
 
-One successful 15-minute smoke or one peer restart does not close the stable
-gate. Gate closure requires digest-covered representative evidence for the
-approved qualification matrix, including the long-duration tier required for
-release readiness. Any source behavior change after the qualified SHA requires
-freshness review before the old run can be used for release promotion.
+One successful 15-minute smoke or peer restart does not close the stable gate.
+Gate closure needs digest-covered representative evidence for the approved
+matrix and required long-duration tier. Behavioral source changes require
+freshness review before older runs can be used for release promotion.
 
-The multi-host gate is independent from the already-closed numeric
-`capacity-target` gate and from the still-open `operator-profile`,
-`kubernetes-sctp`, and `trusted-signing` gates.
+The gate is independent of the already-closed numeric `capacity-target` and the
+still-open `operator-profile`, `kubernetes-sctp`, and `trusted-signing` gates.
