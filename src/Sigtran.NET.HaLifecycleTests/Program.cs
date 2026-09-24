@@ -3,6 +3,7 @@ await RunAsync("Ambiguous generation requires an explicit replacement transport 
 await RunAsync("Runtime reconnect waits for prior generation drain", RuntimeGenerationBindingRegression.ReconnectActivationWaitsForPriorGenerationDrainAsync);
 await RunAsync("Route admission waits for transport-generation readiness", RuntimeGenerationBindingRegression.RouteAdmissionWaitsForGenerationReadinessAsync);
 await RunAsync("Runtime binding rejects unexpected association identity", RuntimeGenerationBindingRegression.UnexpectedAssociationCannotOpenGenerationAsync);
+await RunAsync("Rejected association keeps live runtime snapshot diagnostics", AssociationMismatchSnapshotRegression.RejectedAssociationKeepsLiveRuntimeStateAsync);
 await RunAsync("Runtime binding rejects missing association identity", RuntimeGenerationBindingRegression.MissingAssociationIdentityCannotOpenGenerationAsync);
 await RunAsync("Runtime binding disposal closes admission and drains", RuntimeGenerationBindingRegression.DisposalClosesAdmissionAndWaitsForInFlightGenerationAsync);
 await RunAsync("Runtime binding rejects an already-open sender", RuntimeGenerationBindingRegression.BindingRejectsAlreadyOpenSenderAsync);
