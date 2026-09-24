@@ -23,9 +23,11 @@ The protected workflow exposes four named duration profiles:
 reservoir sampling for percentile calculation and tracks maximum latency across
 all successful operations. Count-based historical Phase 53/56 runs remain
 supported. The default reservoir is 200,000 observations and is hard-bounded to
-1,000,000.
+1,000,000. Run-wide non-transfer M3UA runtime-event retention is independently
+bounded to the latest 4,096 records; full trace output remains protected raw
+evidence rather than an unbounded in-memory collection.
 
-The self-hosted workflow separates qualification from evidence publication.
+The self-hosted workflow separates qualification from evidence publication. The peer SSH private key and known-hosts material are created only after the performance build, inside the qualification step, and removed by a step-local shell trap.
 This matters for a release-grade run because GitHub documents a maximum
 24-hour lifetime for `GITHUB_TOKEN`, while a self-hosted job may execute
 longer. The qualification job writes raw and sanitized results to protected
@@ -76,8 +78,8 @@ Installs temporary SDK-host firewall rules scoped to SCTP, the configured peer
 data address, and the configured SCTP port. The runner:
 
 - records the fault transition;
-- removes rules in the normal cleanup trap;
-- installs an independent transient systemd rollback timer before waiting;
+- removes rules in the normal cleanup trap and verifies both exact DROP rules are absent before declaring cleanup complete;
+- installs an independent transient systemd rollback timer before waiting and leaves it armed when rule removal cannot be proven;
 - never modifies SSH/GitHub TCP management traffic;
 - requires passwordless privileged execution on the owned lab host.
 
