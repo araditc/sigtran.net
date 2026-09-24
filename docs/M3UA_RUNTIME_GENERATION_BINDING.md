@@ -18,6 +18,8 @@ Activation also requires a transport-epoch permit. Attaching the binding while t
 
 `M3uaRuntime.StartAsync` publishes its `Starting` event before session-factory or ASP-startup execution is released. This ordering is enforced even when the session factory and handshake complete synchronously, and it applies to a later restart after a stopped/faulted run as well as the initial start. Consequently a generation binding always receives the restart epoch edge before a matching `AspActivated` can consume that permit.
 
+A reentrant restart may begin from the preceding run's `StateChanged(Stopped)` observer before that old run emits its trailing `ShutdownCompleted`. The binding therefore treats `ShutdownCompleted` as authoritative only when the event still observes runtime state `Stopped`. A stale completion carrying `Starting` or `Active` belongs to the preceding run and cannot clear the newly armed epoch or fence the replacement session.
+
 A duplicate or delayed `AspActivated` from the already-current session is therefore always a no-op after its permit has been consumed. This remains true even if the generation sender subsequently fenced that live session as `AmbiguousOutcome`: ambiguity cannot be cleared by another activation event from the same transport. Only an intervening starting/reconnecting transport epoch may arm one replacement activation. `FaultObserved` or `ReconnectScheduled` closes admission, but neither by itself is sufficient to prove a new transport epoch.
 
 If a route pool is bound, route runtime health becomes `Active` only **after** the sender generation has opened. During replacement generation drain, the route remains non-eligible even if the underlying runtime has already reported its new `Active` state. This prevents a dispatcher from selecting a route whose transport-generation sender is still fenced.
@@ -48,7 +50,7 @@ Runtime health, local route role, negotiated Traffic Mode Type, and transport-ge
 
 ## Deterministic qualification
 
-The dedicated `Sigtran.NET.HaLifecycleTests` executable runs eleven synthetic scenarios:
+The dedicated `Sigtran.NET.HaLifecycleTests` executable runs twelve synthetic scenarios:
 
 1. first matching ASP activation opens exactly one generation, while `StateChanged(Active)` and diagnostics cannot do so;
 2. an ambiguous live generation cannot be reopened by duplicate `AspActivated`; an explicit reconnect transport epoch is required before generation rollover;
@@ -60,7 +62,8 @@ The dedicated `Sigtran.NET.HaLifecycleTests` executable runs eleven synthetic sc
 8. attachment rejects a sender whose dispatch generation was already opened by another owner without mutating or claiming that generation;
 9. if an external owner opens the sender after attachment but before ASP activation, the binding detects the unproven ownership, fences the sender, and keeps route admission closed;
 10. a production runtime publishes `StateChanged(Starting)` before the session factory is allowed to run on both initial startup and restart, preventing synchronous activation from outrunning epoch arming;
-11. mid-session attachment and runtime/sender identity mismatch are rejected.
+11. a stale `ShutdownCompleted` from the preceding run cannot clear the activation epoch armed by a reentrant restart, and the replacement run opens generation two normally;
+12. mid-session attachment and runtime/sender identity mismatch are rejected.
 
 The repository workflow includes this executable after the existing HA runtime fan-in harness. PR #25 now targets canonical `main`, so these scenarios must be treated as **CI-PENDING until a successful Actions run is retained for the exact current source head**. Historical stacked review or parent CI is not current-head execution evidence, and any subsequent source change invalidates the prior run/review.
 
