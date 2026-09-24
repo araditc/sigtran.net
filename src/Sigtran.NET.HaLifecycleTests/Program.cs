@@ -9,6 +9,7 @@ await RunAsync("Runtime binding rejects an already-open sender", RuntimeGenerati
 await RunAsync("Runtime binding fences external sender activation", RuntimeGenerationBindingRegression.ExternalSenderActivationBeforeAspFailsClosedAsync);
 await RunAsync("Runtime publishes Starting before synchronous session open and restart", RuntimeGenerationBindingRegression.RuntimeStartingEventPrecedesSessionOpenAcrossRestartAsync);
 await RunAsync("Runtime binding rejects mid-session attach and sender mismatch", RuntimeGenerationBindingRegression.BindingRejectsMidSessionAttachAndIdentityMismatchAsync);
+await RunAsync("Stale shutdown cannot revoke a replacement runtime epoch", RuntimeShutdownOrderingRegression.StaleShutdownCannotRevokeReplacementEpochAsync);
 
 static async Task RunAsync(string name, Func<Task> test)
 {
