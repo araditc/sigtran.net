@@ -68,6 +68,11 @@ A qualifying run must satisfy all of the following:
   raw evidence, not copied to the public branch;
 - execution uses the protected `sigtran-performance` environment;
 - `PEER_SERVICE` is a validated service-unit name ending in `.service`;
+- `PERF_PEER_BUILD_METADATA_FILE` points to an authorized peer-local JSON
+  marker. After the peer service is active, the runner reads it over the same
+  protected SSH path and requires `schemaVersion: 1`, non-empty
+  `implementation` and `version`, plus an optional `buildDigest` in
+  `sha256:<64-hex>` form;
 - `PERF_RAW_EVIDENCE_ROOT` is an absolute, runner-owned private directory (0700).
 
 Loopback, a locally routed endpoint, same-host containers and network namespaces
@@ -143,6 +148,11 @@ retains private scratch for recovery, rather than suppressing errors or deleting
 the sole copy. Interrupted staging/temporary directories require controlled lab
 cleanup, never blind public artifact upload.
 
+The validated marker is retained only as protected `raw/peer-build.json`.
+Unknown marker fields are rejected rather than copied, so qualification records
+the exact peer implementation/version without publishing peer configuration or
+turning repository simulation into vendor/operator acceptance.
+
 Persistent raw evidence is under `PERF_RAW_EVIDENCE_ROOT/<run-id>/raw`. The private
 `protected-evidence.sha256.json` at the attempt root covers raw and sanitized files;
 it is **not** copied to the public branch. The public branch still contains only:
@@ -161,7 +171,8 @@ it never automatically sets the stable manifest to passed.
 
 Normal PR CI executes all 12 profile/fault plans, shell syntax checks and
 `python3 scripts/tests/test_qualification_safety.py` without external traffic.
-The 13 isolated tests cover peer arm-before-stop ordering, failed arming,
+The 16 isolated tests cover peer build-marker validation plus peer
+arm-before-stop ordering, failed arming,
 independent retry after the initiating process exits, verify-before-disarm,
 failed recovery preserving rollback, invalid service rejection, full copy/digest
 verification, corrupted/failed copies preserving scratch, immutable attempt
