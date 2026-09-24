@@ -156,6 +156,10 @@ jobs:
             cd "$safe"
             sha256sum -c sha256.txt
           )
+          (
+            cd "$RAW_EVIDENCE_ROOT/$RUN_ID/raw"
+            sha256sum -c "$safe/raw-evidence.sha256"
+          )
 
       - name: Retain sanitized evidence branch
         id: evidence
