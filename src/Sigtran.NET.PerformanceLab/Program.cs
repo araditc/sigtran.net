@@ -442,9 +442,9 @@ static async Task<PerformanceStageResult> RunTimedStageAsync(
     using ProcessResourceSampler sampler = new();
     using CancellationTokenSource stageLifetime =
         CancellationTokenSource.CreateLinkedTokenSource(ct);
-    stageLifetime.CancelAfter(minimumDuration);
 
     Stopwatch elapsed = Stopwatch.StartNew();
+    stageLifetime.CancelAfter(minimumDuration);
     sampler.Start();
 
     Task[] workers = Enumerable.Range(0, concurrency)
@@ -672,6 +672,17 @@ static async Task WriteArtifactsAsync(
     report.AppendLine($"- Peak CPU: `{options.MaximumCpuPercent:F1}%`");
     report.AppendLine($"- Peak working set: `{options.MaximumWorkingSetMegabytes} MB`");
     report.AppendLine($"- Allocation: `{options.MaximumAllocatedBytesPerOperation} B/op`");
+    if (options.SoakDuration > TimeSpan.Zero)
+    {
+        report.AppendLine(
+            $"- Minimum soak duration: `{options.SoakDuration.TotalSeconds:F0} s`");
+    }
+    report.AppendLine(
+        $"- Latency reservoir capacity: `{options.LatencySampleCapacity}` observations per stage");
+    report.AppendLine(
+        "- Percentiles use all observations while a stage is within the reservoir "
+        + "capacity; larger stages use deterministic bounded reservoir sampling. "
+        + "Maximum latency is tracked across every successful operation.");
     report.AppendLine();
     report.AppendLine("## Resilience");
     report.AppendLine();
@@ -796,7 +807,7 @@ internal sealed record ResilienceResult(
     TimeSpan AssociationRecovery,
     TimeSpan TrafficRestoration,
     long ReconnectAttempts,
-    int LostOperations);
+    long LostOperations);
 
 internal sealed record RuntimeEventRecord(
     DateTimeOffset TimestampUtc,
