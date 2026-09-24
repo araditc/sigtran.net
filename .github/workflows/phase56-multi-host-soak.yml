@@ -47,7 +47,7 @@ jobs:
     permissions:
       contents: read
     env:
-      RUN_ID: phase56-multihost-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.run_attempt }}
+      RUN_ID: phase56-multihost-${{ github.run_id }}-${{ github.run_attempt }}
       SOURCE_SHA: ${{ github.sha }}
       QUALIFICATION_PROFILE: ${{ inputs.qualification_profile }}
       FAULT_SCENARIO: ${{ inputs.fault_scenario }}
@@ -107,8 +107,8 @@ jobs:
           test -n "$PEER_SSH_PRIVATE_KEY"
           test -n "$PEER_SSH_KNOWN_HOSTS"
 
-          identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.key"
-          known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}.known_hosts"
+          identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.key"
+          known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.known_hosts"
           cleanup_ssh_material() {
             rm -f "$identity" "$known_hosts"
           }
