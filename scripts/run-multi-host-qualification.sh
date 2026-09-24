@@ -159,14 +159,50 @@ persist_protected_evidence() {
   chmod -R go-rwx "$persistent" 2>/dev/null || true
 }
 
-remove_partition() {
-  local was_active="$partition_active"
-  if [[ "$partition_active" == "true" ]]; then
-    sudo -n iptables -D OUTPUT -p sctp -d "$REMOTE_IP"     --dport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
-    sudo -n iptables -D INPUT -p sctp -s "$REMOTE_IP"     --sport "$REMOTE_SCTP_PORT" -j DROP 2>/dev/null || true
-    partition_active=false
+verify_partition_rule_absent() {
+  local chain="$1"
+  shift
+  local rc
+  if sudo -n iptables -C "$chain" "$@" >/dev/null 2>&1; then
+    # A successful check means the DROP rule still exists.
+    return 1
+  else
+    rc=$?
   fi
 
+  # iptables returns 1 when the rule is absent. Other errors (for example an
+  # xtables lock failure) are not proof of cleanup and must keep rollback armed.
+  if [[ "$rc" -eq 1 ]]; then
+    return 0
+  fi
+
+  return "$rc"
+}
+
+remove_partition() {
+  local was_active="$partition_active"
+  if [[ "$partition_active" != "true" ]]; then
+    sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  local output_rule=(-p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP)
+  local input_rule=(-p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP)
+
+  sudo -n iptables -D OUTPUT "${output_rule[@]}" >/dev/null 2>&1 || true
+  sudo -n iptables -D INPUT "${input_rule[@]}" >/dev/null 2>&1 || true
+
+  local output_absent=true
+  local input_absent=true
+  verify_partition_rule_absent OUTPUT "${output_rule[@]}" || output_absent=false
+  verify_partition_rule_absent INPUT "${input_rule[@]}" || input_absent=false
+
+  if [[ "$output_absent" != "true" || "$input_absent" != "true" ]]; then
+    echo "SCTP partition rollback could not verify both DROP rules absent; independent rollback remains armed." >&2
+    return 1
+  fi
+
+  partition_active=false
   sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
   if [[ "$was_active" == "true" ]]; then
     printf '%s scenario=sctp-partition event=removed\n'     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
@@ -184,6 +220,9 @@ cleanup() {
     sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
     wait "$tcpdump_pid" 2>/dev/null || true
   fi
+  # tcpdump may create restrictive root-owned files. Normalize capture ownership
+  # before failure evidence is copied to protected storage.
+  sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
   ssh_peer "sudo systemctl start '$PEER_SERVICE'" >/dev/null 2>&1 || true
   if [[ "$exit_code" -ne 0 ]]; then
     printf '%s exitCode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$exit_code" \
