@@ -45,6 +45,9 @@ jobs:
       - name: Test M3UA HA runtime fan-in
         run: dotnet run --project src/Sigtran.NET.HaRuntimeTests/Sigtran.NET.HaRuntimeTests.csproj --configuration Release
 
+      - name: Test M3UA HA runtime generation lifecycle
+        run: dotnet run --project src/Sigtran.NET.HaLifecycleTests/Sigtran.NET.HaLifecycleTests.csproj --configuration Release
+
       - name: Verify development and release package identity
         shell: bash
         run: |
