@@ -51,6 +51,7 @@ required_vars=(
   RUN_ID SOURCE_SHA REMOTE_IP REMOTE_SCTP_PORT OPC DPC NETWORK_INDICATOR
   PEER_NAME SDK_HOST_ID PEER_HOST_ID CAPTURE_INTERFACE RAW_EVIDENCE_ROOT
   PEER_SSH_HOST PEER_SSH_USER PEER_SSH_IDENTITY_FILE PEER_SSH_KNOWN_HOSTS_FILE PEER_SERVICE
+  PEER_BUILD_METADATA_FILE
 )
 for name in "${required_vars[@]}"; do
   if [[ -z "${!name:-}" ]]; then
@@ -61,6 +62,8 @@ done
 
 [[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,120}$ ]] || { echo "Invalid attempt RUN_ID" >&2; exit 2; }
 [[ "$PEER_SERVICE" =~ ^[A-Za-z0-9][A-Za-z0-9_.@:-]*\.service$ ]] || { echo "PEER_SERVICE must be a service unit name" >&2; exit 2; }
+[[ "$PEER_BUILD_METADATA_FILE" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "PEER_BUILD_METADATA_FILE must be an absolute safe path" >&2; exit 2; }
+case "/${PEER_BUILD_METADATA_FILE#/}/" in *"/../"*|*"/./"*|*"//"*) echo "PEER_BUILD_METADATA_FILE contains an unsafe path segment" >&2; exit 2 ;; esac
 if [[ "$SDK_HOST_ID" == "$PEER_HOST_ID" ]]; then
   echo "SDK_HOST_ID and PEER_HOST_ID must identify distinct hosts." >&2
   exit 2
@@ -121,6 +124,7 @@ fault_log="$raw/fault-events.log"
 sdk_host="$raw/sdk-host.txt"
 peer_host="$raw/peer-host.txt"
 network_path="$raw/network-path.txt"
+peer_build="$raw/peer-build.json"
 started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 sdk_pid=""
 tcpdump_pid=""
@@ -227,6 +231,8 @@ trap 'exit 143' TERM
 } >"$sdk_host"
 ssh_peer "sudo -n systemctl start '$PEER_SERVICE'"
 ssh_peer "sudo -n systemctl is-active '$PEER_SERVICE'"
+ssh_peer "sudo -n cat -- '$PEER_BUILD_METADATA_FILE'" | \
+  python3 "$script_dir/normalize-peer-build-metadata.py" >"$peer_build"
 ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo -n systemctl status '$PEER_SERVICE' --no-pager" >"$peer_host"
 {
   echo "remoteIp=$REMOTE_IP"
