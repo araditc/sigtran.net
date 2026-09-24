@@ -248,7 +248,7 @@ sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
 
 completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-python3 - "$metrics" "$safe/summary.json" "$safe/report.md"   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE"   "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" "$PEER_NAME" <<'PY'
+python3 - "$metrics" "$safe/summary.json" "$safe/report.md"   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE"   "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" <<'PY'
 import json, sys
 from pathlib import Path
 
@@ -262,7 +262,6 @@ fault_duration=int(sys.argv[9])
 started=sys.argv[10]
 completed=sys.argv[11]
 source_sha=sys.argv[12]
-peer_name=sys.argv[13]
 value=json.loads(metrics_path.read_text())
 stages={s["Name"]:s for s in value.get("Stages",[])}
 
@@ -298,9 +297,7 @@ result={
     "faultScenario":fault,
     "faultDurationSeconds":fault_duration,
     "topology":"representative multi-host",
-    "sdkHostId":sdk_host,
-    "peerHostId":peer_host,
-    "peerName":peer_name,
+    "distinctHostsVerified":sdk_host != peer_host,
     "startedUtc":started,
     "completedUtc":completed,
     "executionPassed":value.get("ExecutionPassed"),
@@ -325,8 +322,7 @@ report_path.write_text(
     f"- Source SHA: {source_sha}\n"
     f"- Profile: {profile}\n"
     f"- Fault scenario: {fault}\n"
-    f"- SDK host id: {sdk_host}\n"
-    f"- Peer host id: {peer_host}\n"
+    f"- Distinct hosts verified: {sdk_host != peer_host}\n"
     f"- Soak duration seconds: {soak_seconds:.1f}\n"
     f"- Successful soak operations: {result['soakSuccessfulOperations']}\n"
     f"- Soak throughput TPS: {result['soakThroughputPerSecond']}\n"
