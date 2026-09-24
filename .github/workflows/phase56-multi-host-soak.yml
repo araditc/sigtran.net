@@ -77,18 +77,22 @@ jobs:
 
       - name: Validate protected lab configuration
         shell: bash
+        env:
+          QUALIFICATION_CONFIRMATION: ${{ inputs.confirmation }}
         run: |
           set -euo pipefail
-          test "${{ inputs.confirmation }}" = "run multi host qualification"
-          for value in             "$REMOTE_IP"             "$REMOTE_SCTP_PORT"             "$SDK_HOST_ID"             "$PEER_HOST_ID"             "$RAW_EVIDENCE_ROOT"             "$PEER_SSH_HOST"             "$PEER_SSH_USER"             "$PEER_SERVICE"; do
+          test "$QUALIFICATION_CONFIRMATION" = "run multi host qualification"
+          for value in "$REMOTE_IP" "$REMOTE_SCTP_PORT" "$SDK_HOST_ID" "$PEER_HOST_ID" "$RAW_EVIDENCE_ROOT" "$PEER_SSH_HOST" "$PEER_SSH_USER" "$PEER_SERVICE"; do
             test -n "$value"
           done
           test "$SDK_HOST_ID" != "$PEER_HOST_ID"
-          for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip; do
+          for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip mktemp; do
             command -v "$cmd" >/dev/null
           done
           sudo -n true >/dev/null
           bash -n scripts/run-multi-host-qualification.sh
+          bash -n scripts/peer-outage-recovery.sh
+          bash -n scripts/run-with-peer-ssh.sh
           PLAN_ONLY=true bash scripts/run-multi-host-qualification.sh
 
       - name: Build performance lab
@@ -104,28 +108,10 @@ jobs:
           PEER_SSH_KNOWN_HOSTS: ${{ secrets.PERF_PEER_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
-          test -n "$PEER_SSH_PRIVATE_KEY"
-          test -n "$PEER_SSH_KNOWN_HOSTS"
-
-          identity="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.key"
-          known_hosts="$RUNNER_TEMP/sigtran-peer-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.known_hosts"
-          cleanup_ssh_material() {
-            rm -f "$identity" "$known_hosts"
-          }
-          trap cleanup_ssh_material EXIT INT TERM
-
-          printf '%s\n' "$PEER_SSH_PRIVATE_KEY" >"$identity"
-          chmod 600 "$identity"
-          printf '%s\n' "$PEER_SSH_KNOWN_HOSTS" >"$known_hosts"
-          chmod 600 "$known_hosts"
-
-          export PEER_SSH_IDENTITY_FILE="$identity"
-          export PEER_SSH_KNOWN_HOSTS_FILE="$known_hosts"
-          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i "$identity" \
-            -o UserKnownHostsFile="$known_hosts" \
-            "$PEER_SSH_USER@$PEER_SSH_HOST" 'hostname; uname -r'
-
-          bash scripts/run-multi-host-qualification.sh
+          # The wrapper creates a mode-0700 random directory and mode-0600
+          # files with umask 077 before any write. EXIT cleans only its directory.
+          # Inventory remains in protected raw evidence, not the Actions log.
+          bash scripts/run-with-peer-ssh.sh bash scripts/run-multi-host-qualification.sh
 
   retain-evidence:
     needs: qualify
@@ -219,9 +205,11 @@ jobs:
           Workflow run: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID (attempt $GITHUB_RUN_ATTEMPT)
 
           This evidence PR does **not** automatically promote the
-          `multi-host-soak` stable gate. Gate promotion requires review of the
+          multi-host-soak stable gate. Gate promotion requires review of the
           measured topology, duration, fault scenario, digests, and completion
           of the required qualification matrix.
           EOF
 
-          gh pr create             --repo "$GITHUB_REPOSITORY"             --base main             --head "$BRANCH"             --title "evidence: retain multi-host $QUALIFICATION_PROFILE/$FAULT_SCENARIO run ${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}"             --body-file "$body"
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
+            --title "evidence: retain multi-host $QUALIFICATION_PROFILE/$FAULT_SCENARIO run ${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}" \
+            --body-file "$body"
