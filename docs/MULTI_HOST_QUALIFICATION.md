@@ -27,7 +27,7 @@ supported. The default reservoir is 200,000 observations and is hard-bounded to
 bounded to the latest 4,096 records; full trace output remains protected raw
 evidence rather than an unbounded in-memory collection.
 
-The self-hosted workflow separates qualification from evidence publication. The peer SSH private key and known-hosts material are created only after the performance build, inside the qualification step, and removed by a step-local shell trap.
+The self-hosted workflow separates qualification from evidence publication. Each execution attempt is owned by the pair `github.run_id + github.run_attempt`: protected storage, transient rollback unit/rule tag, sanitized evidence branch/directory, and temporary SSH material are attempt-unique so a GitHub rerun cannot disarm or overwrite a previous attempt. The peer SSH private key and known-hosts material are created only after the performance build, inside the qualification step, and removed by a step-local shell trap.
 This matters for a release-grade run because GitHub documents a maximum
 24-hour lifetime for `GITHUB_TOKEN`, while a self-hosted job may execute
 longer. The qualification job writes raw and sanitized results to protected
