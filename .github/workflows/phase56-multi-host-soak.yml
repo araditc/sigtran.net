@@ -84,7 +84,7 @@ jobs:
             test -n "$value"
           done
           test "$SDK_HOST_ID" != "$PEER_HOST_ID"
-          for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout; do
+          for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip; do
             command -v "$cmd" >/dev/null
           done
           sudo -n true >/dev/null
