@@ -321,7 +321,26 @@ case "$FAULT_SCENARIO" in
     ;;
   sctp-partition)
     rollback_delay=$((FAULT_DURATION_SECONDS + 60))
-    sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/sh -c "iptables -D OUTPUT -p sctp -d '$REMOTE_IP' --dport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true; iptables -D INPUT -p sctp -s '$REMOTE_IP' --sport '$REMOTE_SCTP_PORT' -j DROP 2>/dev/null || true"
+    iptables_path="$(command -v iptables)"
+    rollback_command="$(cat <<EOF
+while true; do
+  "$iptables_path" -D OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || true
+  "$iptables_path" -D INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || true
+
+  output_rc=0
+  "$iptables_path" -C OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || output_rc=\$?
+  input_rc=0
+  "$iptables_path" -C INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -j DROP >/dev/null 2>&1 || input_rc=\$?
+
+  if [ "\$output_rc" -eq 1 ] && [ "\$input_rc" -eq 1 ]; then
+    exit 0
+  fi
+
+  sleep 1
+done
+EOF
+)"
+    sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/bash -c "$rollback_command"
 
     # Mark rollback ownership before the first mutating rule insertion. If the
     # first insertion itself fails or the process is interrupted between rules,
