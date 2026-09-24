@@ -48,6 +48,7 @@ jobs:
       contents: read
     env:
       RUN_ID: phase56-multihost-${{ github.run_id }}
+      SOURCE_SHA: ${{ github.sha }}
       QUALIFICATION_PROFILE: ${{ inputs.qualification_profile }}
       FAULT_SCENARIO: ${{ inputs.fault_scenario }}
       FAULT_DURATION_SECONDS: ${{ inputs.fault_duration_seconds }}
