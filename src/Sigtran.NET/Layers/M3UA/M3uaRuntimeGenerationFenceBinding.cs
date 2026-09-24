@@ -222,15 +222,17 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                 return;
             }
 
-            _runtimeState = args.State;
-            _lastDetail = args.Detail;
-
             if (!string.IsNullOrWhiteSpace(args.AssociationName)
                 && !string.Equals(
                     args.AssociationName,
                     _runtime.AssociationName,
                     StringComparison.OrdinalIgnoreCase))
             {
+                // The event is rejected for ownership, but the runtime lane has
+                // still advanced independently. Keep the diagnostic snapshot on
+                // the lane's live state while fencing the untrusted event so
+                // topology diagnostics cannot report a stale lifecycle state.
+                _runtimeState = _runtime.State;
                 string detail =
                     $"Runtime reported unexpected association '{args.AssociationName}' for lane '{_runtime.AssociationName}'.";
                 _bindingError = detail;
@@ -240,6 +242,21 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     detail);
                 return;
             }
+
+            // RunAsync snapshots State when it constructs an event and then
+            // invokes observers. A replacement StartAsync may race between those
+            // two operations. A stale ShutdownCompleted must therefore be
+            // rejected before it can overwrite the binding's live diagnostic
+            // snapshot as well as before it can mutate epoch/fence ownership.
+            if (args.Kind == M3uaRuntimeEventKind.ShutdownCompleted
+                && (args.State != M3uaRuntimeState.Stopped
+                    || _runtime.State != M3uaRuntimeState.Stopped))
+            {
+                return;
+            }
+
+            _runtimeState = args.State;
+            _lastDetail = args.Detail;
 
             switch (args.Kind)
             {
@@ -252,17 +269,6 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     return;
 
                 case M3uaRuntimeEventKind.ShutdownCompleted:
-                    if (args.State != M3uaRuntimeState.Stopped)
-                    {
-                        // A runtime can be restarted reentrantly from its
-                        // StateChanged(Stopped) notification. The preceding run
-                        // then emits ShutdownCompleted after the new run has
-                        // already published Starting/Active. Such a stale
-                        // completion must not clear the newly armed transport
-                        // epoch or fence the replacement run.
-                        return;
-                    }
-
                     _activationEpochAvailable = false;
                     FenceLocked(
                         M3uaAssociationFenceReason.AdministrativeDrain,

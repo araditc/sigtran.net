@@ -3,12 +3,14 @@ await RunAsync("Ambiguous generation requires an explicit replacement transport 
 await RunAsync("Runtime reconnect waits for prior generation drain", RuntimeGenerationBindingRegression.ReconnectActivationWaitsForPriorGenerationDrainAsync);
 await RunAsync("Route admission waits for transport-generation readiness", RuntimeGenerationBindingRegression.RouteAdmissionWaitsForGenerationReadinessAsync);
 await RunAsync("Runtime binding rejects unexpected association identity", RuntimeGenerationBindingRegression.UnexpectedAssociationCannotOpenGenerationAsync);
+await RunAsync("Rejected association keeps live runtime snapshot diagnostics", AssociationMismatchSnapshotRegression.RejectedAssociationKeepsLiveRuntimeStateAsync);
 await RunAsync("Runtime binding rejects missing association identity", RuntimeGenerationBindingRegression.MissingAssociationIdentityCannotOpenGenerationAsync);
 await RunAsync("Runtime binding disposal closes admission and drains", RuntimeGenerationBindingRegression.DisposalClosesAdmissionAndWaitsForInFlightGenerationAsync);
 await RunAsync("Runtime binding rejects an already-open sender", RuntimeGenerationBindingRegression.BindingRejectsAlreadyOpenSenderAsync);
 await RunAsync("Runtime binding fences external sender activation", RuntimeGenerationBindingRegression.ExternalSenderActivationBeforeAspFailsClosedAsync);
 await RunAsync("Runtime publishes Starting before synchronous session open and restart", RuntimeGenerationBindingRegression.RuntimeStartingEventPrecedesSessionOpenAcrossRestartAsync);
 await RunAsync("Runtime binding ignores stale shutdown after reentrant restart", RuntimeGenerationBindingRegression.StaleShutdownCompletedCannotFenceReentrantRestartAsync);
+await RunAsync("Stale recorded shutdown cannot revoke a replacement runtime epoch", RuntimeShutdownOrderingRegression.StaleShutdownCannotRevokeReplacementEpochAsync);
 await RunAsync("Runtime binding rejects mid-session attach and sender mismatch", RuntimeGenerationBindingRegression.BindingRejectsMidSessionAttachAndIdentityMismatchAsync);
 await RunAsync("HA topology snapshot reconciles runtime generation and dispatch state", TopologyDiagnosticsRegression.SnapshotReconcilesRuntimeGenerationAndDispatchAsync);
 await RunAsync("HA topology diagnostics reject association membership drift", TopologyDiagnosticsRegression.MembershipMismatchFailsClosedAsync);

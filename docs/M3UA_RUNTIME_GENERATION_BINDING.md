@@ -1,6 +1,6 @@
 # M3UA Runtime To Transport-Generation Binding
 
-Status: **IMPLEMENTING / MAIN-TARGETED REVIEW** under Milestone C / issue #15. The reconnect-generation primitive from PR #24 is VERIFIED-DONE on canonical `main`; this slice now targets that protected branch directly and does not declare Milestone C complete.
+Status: **VERIFIED-DONE on `main` via PR #25, with later topology/live-runtime integration admitted through PR #27 and a stale-shutdown ordering correction under governed review in PR #29** under Milestone C / issue #15. This correction does not declare Milestone C complete.
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Activation also requires a transport-epoch permit. Attaching the binding while t
 
 `M3uaRuntime.StartAsync` publishes its `Starting` event before session-factory or ASP-startup execution is released. This ordering is enforced even when the session factory and handshake complete synchronously, and it applies to a later restart after a stopped/faulted run as well as the initial start. Consequently a generation binding always receives the restart epoch edge before a matching `AspActivated` can consume that permit.
 
-A reentrant restart may begin from the preceding run's `StateChanged(Stopped)` observer before that old run emits its trailing `ShutdownCompleted`. The binding therefore treats `ShutdownCompleted` as authoritative only when the event still observes runtime state `Stopped`. A stale completion carrying `Starting` or `Active` belongs to the preceding run and cannot clear the newly armed epoch or fence the replacement session.
+A reentrant restart may begin from the preceding run's `StateChanged(Stopped)` observer before that old run emits its trailing `ShutdownCompleted`. The admitted implementation already ignores a stale final event whose recorded state has advanced to `Starting` or `Active`. PR #29 closes the tighter concurrent ordering where the preceding run constructs `ShutdownCompleted` with a `Stopped` snapshot, then a replacement advances the live lane before the handler observes that already-constructed event. The binding therefore requires both the recorded event state and the live lane state to remain `Stopped` before treating final shutdown as authoritative.
 
 A duplicate or delayed `AspActivated` from the already-current session is therefore always a no-op after its permit has been consumed. This remains true even if the generation sender subsequently fenced that live session as `AmbiguousOutcome`: ambiguity cannot be cleared by another activation event from the same transport. Only an intervening starting/reconnecting transport epoch may arm one replacement activation. `FaultObserved` or `ReconnectScheduled` closes admission, but neither by itself is sufficient to prove a new transport epoch.
 
@@ -28,11 +28,13 @@ Missing or mismatched association identity fails closed and is exposed in bindin
 
 ## Loss, reconnect, and drain
 
-`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping`, `Stopped`, and `ShutdownCompleted` close admission as `AdministrativeDrain`.
+`FaultObserved` and `ReconnectScheduled` close new generation admission synchronously with `RuntimeUnavailable` and publish non-eligible route health when the route pool is owned by the binding. `Starting`, `Reconnecting`, and `Faulted` lifecycle states also remain unavailable. `Stopping` and `Stopped` close admission as `AdministrativeDrain`. `ShutdownCompleted` closes the current stopped lifecycle only when both the event snapshot reports `Stopped` **and** the runtime lane is still live-observed as `Stopped` when the binding handles that event.
+
+A completed run can make itself restartable before its final `ShutdownCompleted` callback is observed. The old event can even be constructed with a `Stopped` snapshot before a concurrent replacement changes the live lane to `Starting`; handler scheduling may then deliver that recorded-stopped event only after the replacement lifecycle has advanced. The binding therefore re-reads the lane's live state while handling `ShutdownCompleted`. If the live lane is already `Starting`, `Reconnecting`, `Active`, or `Faulted`, the older final notification is stale and is ignored: it must not revoke a replacement transport-epoch permit, invalidate a pending replacement activation, or re-fence an already-open replacement generation.
 
 `Starting` and `Reconnecting` are additionally the only lifecycle states that arm the next transport-epoch permit. `Faulted`, stopping/shutdown states, disposal, diagnostics, and duplicate activation do not arm a generation. This prevents same-session ambiguity from being mistaken for reconnect completion.
 
-A later valid ASP activation may request a replacement generation, but it cannot activate until every dispatch already admitted to the previous transport generation has released its generation lease. The binding uses a monotonically increasing transition version so a later fault, shutdown, or disposal invalidates an older pending activation. This prevents a reconnect completion racing with teardown from reopening dispatch.
+A later valid ASP activation may request a replacement generation, but it cannot activate until every dispatch already admitted to the previous transport generation has released its generation lease. The binding uses a monotonically increasing transition version so a later fault, current-run shutdown, or disposal invalidates an older pending activation. This prevents a reconnect completion racing with teardown from reopening dispatch.
 
 Disposal unsubscribes runtime events, publishes stopping health when applicable, closes new admission, clears any unused transport-epoch permit, and waits for both pending activation work and the current generation drain. Events arriving after detach cannot reopen the sender.
 
@@ -50,7 +52,7 @@ Runtime health, local route role, negotiated Traffic Mode Type, and transport-ge
 
 ## Deterministic qualification
 
-The dedicated `Sigtran.NET.HaLifecycleTests` executable runs twelve synthetic scenarios:
+The dedicated `Sigtran.NET.HaLifecycleTests` executable runs thirteen runtime-generation binding scenarios after this correction:
 
 1. first matching ASP activation opens exactly one generation, while `StateChanged(Active)` and diagnostics cannot do so;
 2. an ambiguous live generation cannot be reopened by duplicate `AspActivated`; an explicit reconnect transport epoch is required before generation rollover;
@@ -62,9 +64,10 @@ The dedicated `Sigtran.NET.HaLifecycleTests` executable runs twelve synthetic sc
 8. attachment rejects a sender whose dispatch generation was already opened by another owner without mutating or claiming that generation;
 9. if an external owner opens the sender after attachment but before ASP activation, the binding detects the unproven ownership, fences the sender, and keeps route admission closed;
 10. a production runtime publishes `StateChanged(Starting)` before the session factory is allowed to run on both initial startup and restart, preventing synchronous activation from outrunning epoch arming;
-11. a stale `ShutdownCompleted` from the preceding run cannot clear the activation epoch armed by a reentrant restart, and the replacement run opens generation two normally;
-12. mid-session attachment and runtime/sender identity mismatch are rejected.
+11. a stale `ShutdownCompleted` from the preceding run cannot clear the activation epoch armed by a reentrant restart, and the replacement run opens normally;
+12. a stale `ShutdownCompleted` carrying an older recorded `Stopped` snapshot cannot revoke a replacement `Starting` epoch or close an already-active replacement generation when the live lane has already advanced;
+13. mid-session attachment and runtime/sender identity mismatch are rejected.
 
-The repository workflow includes this executable after the existing HA runtime fan-in harness. PR #25 now targets canonical `main`, so these scenarios must be treated as **CI-PENDING until a successful Actions run is retained for the exact current source head**. Historical stacked review or parent CI is not current-head execution evidence, and any subsequent source change invalidates the prior run/review.
+The repository workflow includes this executable after the existing HA runtime fan-in harness. PR #29 requires a successful Actions run and fresh review on its exact reconciled source head; historical parent CI/review remains evidence only for the admitted parent commits. Any subsequent source-head change invalidates that exact-head validation.
 
 These synthetic tests are not operator/vendor acceptance, separate-host qualification, Kubernetes SCTP evidence, or stable-signing evidence. They do not change any stable-release manifest gate.
