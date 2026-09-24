@@ -243,6 +243,17 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     return;
 
                 case M3uaRuntimeEventKind.ShutdownCompleted:
+                    if (args.State != M3uaRuntimeState.Stopped)
+                    {
+                        // A runtime can be restarted reentrantly from its
+                        // StateChanged(Stopped) notification. The preceding run
+                        // then emits ShutdownCompleted after the new run has
+                        // already published Starting/Active. Such a stale
+                        // completion must not clear the newly armed transport
+                        // epoch or fence the replacement run.
+                        return;
+                    }
+
                     _activationEpochAvailable = false;
                     FenceLocked(
                         M3uaAssociationFenceReason.AdministrativeDrain,
