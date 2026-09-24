@@ -71,6 +71,23 @@ internal sealed class M3uaReconnectFencedAssociationSender : IM3uaAssociationSen
 
     public string AssociationName => _inner.AssociationName;
 
+    /// <summary>
+    /// Returns the exact runtime behind the production live sender, when this
+    /// generation fence wraps one. Synthetic/test senders intentionally return
+    /// false so deterministic non-runtime lanes remain supported.
+    /// </summary>
+    internal bool TryGetRuntime(out M3uaRuntime? runtime)
+    {
+        if (_inner is M3uaRuntimeAssociationSender runtimeSender)
+        {
+            runtime = runtimeSender.Runtime;
+            return true;
+        }
+
+        runtime = null;
+        return false;
+    }
+
     internal long ActivateNextGeneration()
     {
         lock (_sync)

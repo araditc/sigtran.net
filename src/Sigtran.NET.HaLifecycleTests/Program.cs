@@ -19,6 +19,18 @@ await RunAsync("HA topology diagnostics reject dual runtime route-health publish
 await RunAsync("HA runtime rejects two production lanes aliasing one runtime", TopologyDiagnosticsRegression.DuplicateProductionRuntimeAliasFailsClosedAsync);
 await RunAsync("HA runtime accepts distinct production runtime identities", TopologyDiagnosticsRegression.DistinctProductionRuntimesAreAcceptedAsync);
 
+await RunAsync("Live runtime HA sender waits for local transport-write completion", LiveRuntimeOutboundRegression.TrackedSendWaitsForTransportWriteAsync);
+await RunAsync("Live runtime HA sender rejects association mismatch before transport", LiveRuntimeOutboundRegression.AssociationMismatchFailsBeforeTransportAsync);
+await RunAsync("Live runtime transport failure after invocation is ambiguous", LiveRuntimeOutboundRegression.TransportFailureAfterInvocationIsAmbiguousAsync);
+await RunAsync("Live runtime reconnect never replays prior-generation tracked work", LiveRuntimeOutboundRegression.ReconnectDoesNotReplayTrackedWorkFromPriorSessionAsync);
+await RunAsync("Live runtime retires queued and blocked work before replacement opens", LiveRuntimeOutboundRegression.RetiringSessionCompletesQueuedAndBlockedBeforeReplacementAsync);
+await RunAsync("Live runtime retirement owns blocked admission before later caller cancellation", LiveRuntimeOutboundRegression.RuntimeRetirementWinsBlockedAdmissionCancellationAsync);
+await RunAsync("Live runtime preserves caller-owned blocked admission cancellation", LiveRuntimeOutboundRegression.CallerCancellationWinsBlockedAdmissionAsync);
+await RunAsync("Live runtime binding rejects same-name foreign runtime", LiveRuntimeOutboundRegression.ProductionBindingRejectsForeignLiveRuntimeAsync);
+await RunAsync("Live runtime binding accepts exact same runtime", LiveRuntimeOutboundRegression.ProductionBindingAcceptsSameLiveRuntimeAsync);
+await RunAsync("Live runtime admission success supersedes racing caller signal", LiveRuntimeOutboundRegression.SuccessfulAdmissionSupersedesRacingCancellationSignalAsync);
+await RunAsync("Live runtime keeps post-claim cancellation transport-owned", LiveRuntimeOutboundRegression.CallerCancellationAfterTransportClaimRemainsTransportOwnedAsync);
+
 static async Task RunAsync(string name, Func<Task> test)
 {
     try
