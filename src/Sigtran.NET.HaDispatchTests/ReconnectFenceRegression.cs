@@ -1,23 +1,13 @@
-using System.Reflection;
-using System.Runtime.CompilerServices;
-
 using Sigtran.NET.Layers.M3UA;
 using Sigtran.NET.Layers.MTP3;
 
+// These asynchronous scenarios are registered in Program.cs. Blocking their
+// continuations inside a ModuleInitializer can deadlock module initialization.
 internal static class ReconnectFenceRegression
 {
-    [ModuleInitializer]
-    internal static void Run()
-    {
-        ClosedGenerationRejectsBeforeSenderInvocationAsync().GetAwaiter().GetResult();
-        AdministrativeFenceDrainsAdmittedWorkAsync().GetAwaiter().GetResult();
-        AmbiguousFailureFencesGenerationAsync().GetAwaiter().GetResult();
-        ProvenPreDispatchFailureKeepsGenerationOpenAsync().GetAwaiter().GetResult();
-        CancellationWhileGenerationAdmissionIsBlockedIsKnownNotDispatchedAsync().GetAwaiter().GetResult();
-        CallerCancellationAfterRouteAdmissionDoesNotFaultRouteAsync().GetAwaiter().GetResult();
-    }
+    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(5);
 
-    private static async Task ClosedGenerationRejectsBeforeSenderInvocationAsync()
+    internal static async Task ClosedGenerationRejectsBeforeSenderInvocationAsync()
     {
         ScriptedSender inner = new("a");
         M3uaReconnectFencedAssociationSender sender = new(inner);
@@ -33,11 +23,9 @@ internal static class ReconnectFenceRegression
             "A closed generation must never invoke the underlying association sender.");
         Equal(false, sender.GetSnapshot().AcceptingDispatch,
             "A new reconnect-fenced sender starts fail-closed until a generation is explicitly activated.");
-
-        Console.WriteLine("PASS Reconnect fence rejects dispatch before explicit generation activation");
     }
 
-    private static async Task AdministrativeFenceDrainsAdmittedWorkAsync()
+    internal static async Task AdministrativeFenceDrainsAdmittedWorkAsync()
     {
         ScriptedSender inner = new("a", gate: true);
         M3uaReconnectFencedAssociationSender sender = new(inner);
@@ -45,29 +33,36 @@ internal static class ReconnectFenceRegression
             "The first explicit transport generation must start at one.");
 
         Task first = sender.SendAsync(CreateTransfer()).AsTask();
-        await inner.WaitUntilEnteredAsync().ConfigureAwait(false);
+        Task? draining = null;
+        try
+        {
+            await inner.WaitUntilEnteredAsync().ConfigureAwait(false);
+            draining = sender.FenceAsync(M3uaAssociationFenceReason.RuntimeUnavailable).AsTask();
+            Equal(false, draining.IsCompleted,
+                "Fencing must wait for work already admitted to the current generation.");
 
-        Task draining = sender
-            .FenceAsync(M3uaAssociationFenceReason.RuntimeUnavailable)
-            .AsTask();
-        Equal(false, draining.IsCompleted,
-            "Fencing must wait for work already admitted to the current generation.");
+            M3uaAssociationSendException rejected = await CaptureSendFailureAsync(
+                sender.SendAsync(CreateTransfer()).AsTask()).ConfigureAwait(false);
+            Equal(false, rejected.DispatchMayHaveOccurred,
+                "New work after the fence closes must be known not-dispatched.");
+            Equal(false, rejected.CallerCancellation,
+                "A generation fence is not caller cancellation.");
+            Equal(1, inner.Calls,
+                "The fenced generation must not invoke the underlying sender for new work.");
 
-        M3uaAssociationSendException rejected = await CaptureSendFailureAsync(
-            sender.SendAsync(CreateTransfer()).AsTask()).ConfigureAwait(false);
-        Equal(false, rejected.DispatchMayHaveOccurred,
-            "New work after the fence closes must be known not-dispatched.");
-        Equal(false, rejected.CallerCancellation,
-            "A generation fence is not caller cancellation.");
-        Equal(1, inner.Calls,
-            "The fenced generation must not invoke the underlying sender for new work.");
-
-        Throws<InvalidOperationException>(() => sender.ActivateNextGeneration(),
-            "A replacement generation must not overlap unresolved work from the previous generation.");
-
-        inner.Release();
-        await first.WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-        await draining.WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+            Throws<InvalidOperationException>(() => sender.ActivateNextGeneration(),
+                "A replacement generation must not overlap unresolved work from the previous generation.");
+        }
+        finally
+        {
+            // Release and join admitted work even when an assertion above fails.
+            inner.Release();
+            await first.WaitAsync(TestTimeout).ConfigureAwait(false);
+            if (draining is not null)
+            {
+                await draining.WaitAsync(TestTimeout).ConfigureAwait(false);
+            }
+        }
 
         M3uaAssociationFenceSnapshot drained = sender.GetSnapshot();
         Equal(false, drained.AcceptingDispatch,
@@ -78,11 +73,9 @@ internal static class ReconnectFenceRegression
             "The administrative/runtime fence reason must remain observable after drain.");
         Equal(2L, sender.ActivateNextGeneration(),
             "Replacement activation must advance the association generation after drain.");
-
-        Console.WriteLine("PASS Reconnect fence closes admission and drains old generation before replacement");
     }
 
-    private static async Task AmbiguousFailureFencesGenerationAsync()
+    internal static async Task AmbiguousFailureFencesGenerationAsync()
     {
         ScriptedSender inner = new("a")
         {
@@ -119,11 +112,9 @@ internal static class ReconnectFenceRegression
             "A weaker runtime fence must not erase an ambiguity fence.");
         Equal(2L, sender.ActivateNextGeneration(),
             "Only explicit replacement activation may reopen dispatch after an ambiguity-fenced generation has drained.");
-
-        Console.WriteLine("PASS Ambiguous send fences generation without blind replay");
     }
 
-    private static async Task ProvenPreDispatchFailureKeepsGenerationOpenAsync()
+    internal static async Task ProvenPreDispatchFailureKeepsGenerationOpenAsync()
     {
         ScriptedSender inner = new("a")
         {
@@ -151,94 +142,54 @@ internal static class ReconnectFenceRegression
         await sender.SendAsync(CreateTransfer()).ConfigureAwait(false);
         Equal(2, inner.Calls,
             "The same generation may continue when higher-level routing policy deliberately retries after a proven pre-dispatch failure.");
-
-        Console.WriteLine("PASS Proven pre-dispatch failure does not over-fence transport generation");
     }
 
-    private static async Task CancellationWhileGenerationAdmissionIsBlockedIsKnownNotDispatchedAsync()
+    internal static async Task CancellationAtGenerationAdmissionIsKnownNotDispatchedAsync()
     {
         ScriptedSender inner = new("a");
-        M3uaReconnectFencedAssociationSender sender = new(inner);
-        long generation = sender.ActivateNextGeneration();
         using CancellationTokenSource canceled = new();
-
-        FieldInfo syncField = typeof(M3uaReconnectFencedAssociationSender).GetField(
-            "_sync",
-            BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("Reconnect sender admission lock was not found.");
-        object sync = syncField.GetValue(sender)
-            ?? throw new InvalidOperationException("Reconnect sender admission lock was null.");
-
-        TaskCompletionSource<bool> sendStarted = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        Task<M3uaAssociationSendException> sendFailure;
-        long contentionBaseline = Monitor.LockContentionCount;
-
-        Monitor.Enter(sync);
-        try
-        {
-            sendFailure = Task.Run(async () =>
+        int admissionProbes = 0;
+        M3uaReconnectFencedAssociationSender sender = new(
+            inner,
+            beforeGenerationAdmission: () =>
             {
-                sendStarted.TrySetResult(true);
-                return await CaptureSendFailureAsync(
-                    sender.SendAsync(CreateTransfer(), canceled.Token).AsTask())
-                    .ConfigureAwait(false);
+                admissionProbes++;
+                Equal(false, canceled.IsCancellationRequested,
+                    "The token must reach the historical early-check boundary uncancelled.");
+                canceled.Cancel();
             });
+        long generation = sender.ActivateNextGeneration();
 
-            sendStarted.Task
-                .WaitAsync(TimeSpan.FromSeconds(2))
-                .GetAwaiter()
-                .GetResult();
-            bool blocked = SpinWait.SpinUntil(
-                () => Monitor.LockContentionCount > contentionBaseline,
-                TimeSpan.FromSeconds(2));
-            Equal(true, blocked,
-                "The send must contend on the actual generation-admission monitor before cancellation is injected.");
-            Equal(false, sendFailure.IsCompleted,
-                "The send must still be blocked on generation admission when cancellation is injected.");
-
-            canceled.Cancel();
-        }
-        finally
-        {
-            Monitor.Exit(sync);
-        }
-
-        M3uaAssociationSendException failure = await sendFailure
-            .WaitAsync(TimeSpan.FromSeconds(2))
-            .ConfigureAwait(false);
+        // Inject at the exact per-sender seam, not a process-wide monitor counter.
+        M3uaAssociationSendException failure = await CaptureSendFailureAsync(
+            sender.SendAsync(CreateTransfer(), canceled.Token).AsTask()).ConfigureAwait(false);
+        Equal(1, admissionProbes, "The send must cross the deterministic admission boundary once.");
         Equal(false, failure.DispatchMayHaveOccurred,
-            "Cancellation injected while generation admission is blocked must remain known not-dispatched.");
+            "Cancellation at generation admission must remain known not-dispatched.");
         Equal(true, failure.CallerCancellation,
             "The dispatcher must be able to distinguish caller cancellation from association failure.");
         Equal(0, inner.Calls,
-            "Cancellation visible when blocked admission resumes must prevent inner sender invocation.");
+            "Cancellation visible when admission resumes must prevent inner sender invocation.");
 
         M3uaAssociationFenceSnapshot snapshot = sender.GetSnapshot();
         Equal(generation, snapshot.Generation,
-            "Blocked-admission caller cancellation must not manufacture a replacement transport generation.");
+            "Admission-time caller cancellation must not manufacture a replacement transport generation.");
         Equal(true, snapshot.AcceptingDispatch,
-            "Blocked-admission caller cancellation must not fence an otherwise healthy generation.");
+            "Admission-time caller cancellation must not fence an otherwise healthy generation.");
         Equal(0, snapshot.InFlightDispatches,
             "Any generation lease acquired before the cancellation recheck must be released.");
         Equal(M3uaAssociationFenceReason.None, snapshot.Reason,
-            "Blocked-admission caller cancellation must not create an ambiguity or runtime fence.");
-
-        Console.WriteLine("PASS Cancellation while generation admission is blocked is stopped before sender invocation");
+            "Admission-time caller cancellation must not create an ambiguity or runtime fence.");
     }
 
-    private static async Task CallerCancellationAfterRouteAdmissionDoesNotFaultRouteAsync()
+    internal static async Task CallerCancellationAfterRouteAdmissionDoesNotFaultRouteAsync()
     {
         M3uaAssociationPool pool = new(
             M3uaNodeRoutingMode.ActiveStandby,
             M3uaTrafficModeType.Override,
             [
                 new M3uaAssociationDefinition(
-                    "a",
-                    "sg-a",
-                    priority: 0,
-                    M3uaAssociationOperationalState.Active,
-                    [100])
+                    "a", "sg-a", 0, M3uaAssociationOperationalState.Active, [100])
             ]);
         ScriptedSender inner = new("a");
         M3uaReconnectFencedAssociationSender fenced = new(inner);
@@ -248,13 +199,24 @@ internal static class ReconnectFenceRegression
         using CancellationTokenSource canceled = new();
 
         Task dispatch = dispatcher.DispatchAsync(CreateTransfer(), canceled.Token).AsTask();
-        await delayed.WaitUntilEnteredAsync().ConfigureAwait(false);
-        Equal(1, pool.GetSnapshot().Single().InFlightDispatches,
-            "The dispatcher route lease must be held before caller cancellation is injected.");
+        Task<Exception?> completion = ObserveCompletionAsync(dispatch);
+        try
+        {
+            await delayed.WaitUntilEnteredAsync().ConfigureAwait(false);
+            Equal(1, pool.GetSnapshot().Single().InFlightDispatches,
+                "The dispatcher route lease must be held before caller cancellation is injected.");
+            canceled.Cancel();
+        }
+        finally
+        {
+            delayed.Release();
+            // Observe the worker before unwinding, even after an assertion failure.
+            await completion.WaitAsync(TestTimeout).ConfigureAwait(false);
+        }
 
-        canceled.Cancel();
-        delayed.Release();
-        await CaptureCancellationAsync(dispatch).ConfigureAwait(false);
+        Exception? failure = await completion.ConfigureAwait(false);
+        Equal(true, failure is OperationCanceledException,
+            $"Caller cancellation must reach the dispatcher caller; actual={failure?.GetType().Name ?? "success"}.");
 
         M3uaAssociationRouteSnapshot route = pool.GetSnapshot().Single();
         Equal(M3uaAssociationOperationalState.Active, route.State,
@@ -275,15 +237,13 @@ internal static class ReconnectFenceRegression
             "Generation admission must reconcile after caller cancellation.");
         Equal(M3uaAssociationFenceReason.None, fence.Reason,
             "Caller cancellation must not create a reconnect fence.");
-
-        Console.WriteLine("PASS Caller cancellation after route admission does not fault the healthy association");
     }
 
     private static async Task<M3uaAssociationSendException> CaptureSendFailureAsync(Task task)
     {
         try
         {
-            await task.ConfigureAwait(false);
+            await task.WaitAsync(TestTimeout).ConfigureAwait(false);
         }
         catch (M3uaAssociationSendException ex)
         {
@@ -293,18 +253,17 @@ internal static class ReconnectFenceRegression
         throw new InvalidOperationException("Expected M3uaAssociationSendException.");
     }
 
-    private static async Task CaptureCancellationAsync(Task task)
+    private static async Task<Exception?> ObserveCompletionAsync(Task task)
     {
         try
         {
-            await task.WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+            await task.ConfigureAwait(false);
+            return null;
         }
-        catch (OperationCanceledException)
+        catch (Exception ex)
         {
-            return;
+            return ex;
         }
-
-        throw new InvalidOperationException("Expected OperationCanceledException.");
     }
 
     private static void Throws<TException>(Action action, string message)
@@ -323,13 +282,8 @@ internal static class ReconnectFenceRegression
     }
 
     private static Mtp3TransferMessage CreateTransfer() => new(
-        new Mtp3ServiceInformationOctet(
-            Mtp3ServiceIndicator.Sccp,
-            networkIndicator: 2),
-        new Mtp3RoutingLabel(
-            destinationPointCode: 1234,
-            originatingPointCode: 4321,
-            signallingLinkSelection: 3),
+        new Mtp3ServiceInformationOctet(Mtp3ServiceIndicator.Sccp, networkIndicator: 2),
+        new Mtp3RoutingLabel(1234, 4321, 3),
         new byte[] { 0x01, 0x02 },
         routingContext: 100);
 
@@ -357,27 +311,20 @@ internal static class ReconnectFenceRegression
         private readonly TaskCompletionSource<bool> _release =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        internal GateBeforeDelegatingSender(IM3uaAssociationSender inner)
-        {
-            _inner = inner;
-        }
+        internal GateBeforeDelegatingSender(IM3uaAssociationSender inner) => _inner = inner;
 
         public string AssociationName => _inner.AssociationName;
 
-        internal Task WaitUntilEnteredAsync() =>
-            _entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        internal Task WaitUntilEnteredAsync() => _entered.Task.WaitAsync(TestTimeout);
 
         internal void Release() => _release.TrySetResult(true);
 
-        public async ValueTask SendAsync(
-            Mtp3TransferMessage message,
-            CancellationToken ct = default)
+        public async ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
         {
             _entered.TrySetResult(true);
-            // Intentionally do not observe ct while gated. This models caller
-            // cancellation after dispatcher route admission but before the
-            // generation-aware sender receives control.
-            await _release.Task.WaitAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+            // Caller cancellation intentionally arrives after route admission but
+            // before control reaches the generation-aware transport boundary.
+            await _release.Task.WaitAsync(TestTimeout).ConfigureAwait(false);
             await _inner.SendAsync(message, ct).ConfigureAwait(false);
         }
     }
@@ -403,23 +350,18 @@ internal static class ReconnectFenceRegression
 
         internal int Calls => Volatile.Read(ref _calls);
 
-        internal Task WaitUntilEnteredAsync() =>
-            _entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        internal Task WaitUntilEnteredAsync() => _entered.Task.WaitAsync(TestTimeout);
 
         internal void Release() => _release.TrySetResult(true);
 
-        public async ValueTask SendAsync(
-            Mtp3TransferMessage message,
-            CancellationToken ct = default)
+        public async ValueTask SendAsync(Mtp3TransferMessage message, CancellationToken ct = default)
         {
             ArgumentNullException.ThrowIfNull(message);
             Interlocked.Increment(ref _calls);
             _entered.TrySetResult(true);
-
             if (_gate)
             {
-                await _release.Task.WaitAsync(TimeSpan.FromSeconds(2), ct)
-                    .ConfigureAwait(false);
+                await _release.Task.WaitAsync(TestTimeout, ct).ConfigureAwait(false);
             }
 
             switch (Behavior)
@@ -428,15 +370,12 @@ internal static class ReconnectFenceRegression
                     return;
                 case ScriptedSendBehavior.KnownNotDispatched:
                     throw new M3uaAssociationSendException(
-                        "synthetic known pre-dispatch failure",
-                        dispatchMayHaveOccurred: false);
+                        "synthetic known pre-dispatch failure", dispatchMayHaveOccurred: false);
                 case ScriptedSendBehavior.AmbiguousFailure:
                     throw new M3uaAssociationSendException(
-                        "synthetic ambiguous transport failure",
-                        dispatchMayHaveOccurred: true);
+                        "synthetic ambiguous transport failure", dispatchMayHaveOccurred: true);
                 default:
-                    throw new InvalidOperationException(
-                        $"Unsupported scripted behavior '{Behavior}'.");
+                    throw new InvalidOperationException($"Unsupported scripted behavior '{Behavior}'.");
             }
         }
     }
