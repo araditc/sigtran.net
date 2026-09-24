@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 PROFILE="${QUALIFICATION_PROFILE:-smoke}"
 FAULT_SCENARIO="${FAULT_SCENARIO:-peer-restart}"
@@ -11,18 +12,11 @@ case "$PROFILE" in
   stress)  SOAK_SECONDS=3600 ;;
   soak)    SOAK_SECONDS=21600 ;;
   release) SOAK_SECONDS=86400 ;;
-  *)
-    echo "Unsupported qualification profile: $PROFILE" >&2
-    exit 2
-    ;;
+  *) echo "Unsupported qualification profile: $PROFILE" >&2; exit 2 ;;
 esac
-
 case "$FAULT_SCENARIO" in
   peer-restart|peer-outage|sctp-partition) ;;
-  *)
-    echo "Unsupported fault scenario: $FAULT_SCENARIO" >&2
-    exit 2
-    ;;
+  *) echo "Unsupported fault scenario: $FAULT_SCENARIO" >&2; exit 2 ;;
 esac
 
 python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
@@ -54,23 +48,9 @@ PY
 fi
 
 required_vars=(
-  RUN_ID
-  SOURCE_SHA
-  REMOTE_IP
-  REMOTE_SCTP_PORT
-  OPC
-  DPC
-  NETWORK_INDICATOR
-  PEER_NAME
-  SDK_HOST_ID
-  PEER_HOST_ID
-  CAPTURE_INTERFACE
-  RAW_EVIDENCE_ROOT
-  PEER_SSH_HOST
-  PEER_SSH_USER
-  PEER_SSH_IDENTITY_FILE
-  PEER_SSH_KNOWN_HOSTS_FILE
-  PEER_SERVICE
+  RUN_ID SOURCE_SHA REMOTE_IP REMOTE_SCTP_PORT OPC DPC NETWORK_INDICATOR
+  PEER_NAME SDK_HOST_ID PEER_HOST_ID CAPTURE_INTERFACE RAW_EVIDENCE_ROOT
+  PEER_SSH_HOST PEER_SSH_USER PEER_SSH_IDENTITY_FILE PEER_SSH_KNOWN_HOSTS_FILE PEER_SERVICE
 )
 for name in "${required_vars[@]}"; do
   if [[ -z "${!name:-}" ]]; then
@@ -79,26 +59,35 @@ for name in "${required_vars[@]}"; do
   fi
 done
 
+[[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,120}$ ]] || { echo "Invalid attempt RUN_ID" >&2; exit 2; }
+[[ "$PEER_SERVICE" =~ ^[A-Za-z0-9][A-Za-z0-9_.@:-]*\.service$ ]] || { echo "PEER_SERVICE must be a service unit name" >&2; exit 2; }
 if [[ "$SDK_HOST_ID" == "$PEER_HOST_ID" ]]; then
   echo "SDK_HOST_ID and PEER_HOST_ID must identify distinct hosts." >&2
   exit 2
 fi
-
-for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip; do
-  command -v "$cmd" >/dev/null || {
-    echo "Required command is missing: $cmd" >&2
-    exit 2
-  }
+for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip mktemp; do
+  command -v "$cmd" >/dev/null || { echo "Required command is missing: $cmd" >&2; exit 2; }
 done
 sudo -n true >/dev/null
 
-python3 - "$REMOTE_IP" <<'PY'
-import ipaddress, sys
+python3 - "$REMOTE_IP" "$RAW_EVIDENCE_ROOT" "$RUN_ID" <<'PY'
+import ipaddress, os, stat, sys
+from pathlib import Path
 address = ipaddress.ip_address(sys.argv[1])
 if address.version != 4:
     raise SystemExit("Representative multi-host qualification currently requires an IPv4 data endpoint.")
 if address.is_loopback or address.is_unspecified or address.is_multicast or address.is_link_local:
     raise SystemExit("REMOTE_IP must be a non-local representative IPv4 data endpoint.")
+root = Path(sys.argv[2])
+if not root.is_absolute():
+    raise SystemExit("RAW_EVIDENCE_ROOT must be an absolute protected path")
+root.mkdir(mode=0o700, parents=True, exist_ok=True)
+info = root.lstat()
+if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o077:
+    raise SystemExit("RAW_EVIDENCE_ROOT must be an owned private directory (0700)")
+target = root / sys.argv[3]
+if target.exists() or target.is_symlink():
+    raise SystemExit("Attempt evidence already exists; use a distinct run attempt")
 PY
 
 remote_route="$(ip route get "$REMOTE_IP" 2>/dev/null | head -n 1)"
@@ -106,30 +95,22 @@ if [[ -z "$remote_route" || "$remote_route" == local\ * || "$remote_route" == *"
   echo "REMOTE_IP resolves to a local/loopback data path; representative multi-host qualification is not allowed." >&2
   exit 2
 fi
-
 if [[ "$FAULT_SCENARIO" == "sctp-partition" ]]; then
   for cmd in iptables systemd-run systemctl; do
-    command -v "$cmd" >/dev/null || {
-      echo "sctp-partition requires $cmd on the SDK lab host." >&2
-      exit 2
-    }
+    command -v "$cmd" >/dev/null || { echo "sctp-partition requires $cmd on the SDK lab host." >&2; exit 2; }
   done
-  sudo -n iptables -m comment -h >/dev/null 2>&1 || {
-    echo "sctp-partition requires the iptables comment match extension." >&2
-    exit 2
-  }
+  sudo -n iptables -m comment -h >/dev/null 2>&1 || { echo "sctp-partition requires the iptables comment match extension." >&2; exit 2; }
 fi
 
-workspace="${GITHUB_WORKSPACE:-$(pwd)}"
-root="$workspace/artifacts/multihost/$RUN_ID"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# Raw evidence never starts in the persistent/multi-user repository workspace.
+# mktemp creates a private directory atomically; all descendants inherit umask 077.
+root="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/sigtran-multihost.XXXXXXXXXX")"
 raw="$root/raw"
 safe="$root/safe"
 persistent="$RAW_EVIDENCE_ROOT/$RUN_ID"
-persistent_raw="$persistent/raw"
 persistent_safe="$persistent/safe"
-mkdir -p "$raw" "$safe" "$persistent"
-chmod 700 "$persistent"
-
+mkdir -m 700 "$raw" "$safe"
 metrics="$raw/metrics.json"
 report="$raw/report.md"
 trace="$raw/sdk-trace.jsonl"
@@ -141,43 +122,33 @@ sdk_host="$raw/sdk-host.txt"
 peer_host="$raw/peer-host.txt"
 network_path="$raw/network-path.txt"
 started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
 sdk_pid=""
 tcpdump_pid=""
 partition_active=false
-rollback_unit="sigtran-sctp-rollback-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
-partition_rule_tag="sigtran-multihost-${RUN_ID//[^a-zA-Z0-9_.-]/-}"
-partition_rule_tag="${partition_rule_tag:0:200}"
+peer_rollback_armed=false
+rollback_unit="sigtran-sctp-rollback-$RUN_ID"
+peer_rollback_unit="sigtran-peer-rollback-$RUN_ID"
+partition_rule_tag="sigtran-multihost-$RUN_ID"
 
 ssh_peer() {
-  ssh \
-    -o BatchMode=yes \
-    -o IdentitiesOnly=yes \
+  ssh -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=10 \
+    -o ServerAliveInterval=5 -o ServerAliveCountMax=2 \
     -i "$PEER_SSH_IDENTITY_FILE" \
     -o UserKnownHostsFile="$PEER_SSH_KNOWN_HOSTS_FILE" \
-    "$PEER_SSH_USER@$PEER_SSH_HOST" \
-    "$@"
+    "$PEER_SSH_USER@$PEER_SSH_HOST" "$@"
 }
 
 persist_protected_evidence() {
-  mkdir -p "$persistent_raw" "$persistent_safe"
-  chmod 700 "$persistent_raw" "$persistent_safe"
+  [[ -d "$root" ]] || return 0
+  python3 "$script_dir/persist-qualification-evidence.py" "$root" "$persistent"
+}
 
-  if [[ -d "$raw" ]]; then
-    rm -rf "$persistent_raw"
-    mkdir -p "$persistent_raw"
-    chmod 700 "$persistent_raw"
-    cp -a "$raw/." "$persistent_raw/" 2>/dev/null || true
-  fi
-
-  if [[ -d "$safe" ]] && find "$safe" -type f -print -quit | grep -q .; then
-    rm -rf "$persistent_safe"
-    mkdir -p "$persistent_safe"
-    chmod 700 "$persistent_safe"
-    cp -a "$safe/." "$persistent_safe/" 2>/dev/null || true
-  fi
-
-  chmod -R go-rwx "$persistent" 2>/dev/null || true
+recover_peer() {
+  # Only an acknowledged, owned outage rollback may be disarmed here. A lost
+  # SSH acknowledgement leaves the peer-side timer alive for independent recovery.
+  ssh_peer "sudo -n /bin/bash -s -- recover '$peer_rollback_unit' '$PEER_SERVICE'" \
+    <"$script_dir/peer-outage-recovery.sh" || return 1
+  peer_rollback_armed=false
 }
 
 verify_partition_rule_absent() {
@@ -185,54 +156,37 @@ verify_partition_rule_absent() {
   shift
   local rc
   if sudo -n iptables -C "$chain" "$@" >/dev/null 2>&1; then
-    # A successful check means the DROP rule still exists.
     return 1
   else
     rc=$?
   fi
-
-  # iptables returns 1 when the rule is absent. Other errors (for example an
-  # xtables lock failure) are not proof of cleanup and must keep rollback armed.
-  if [[ "$rc" -eq 1 ]]; then
-    return 0
-  fi
-
+  # 1 means absent. Lock/other errors are not evidence of cleanup.
+  [[ "$rc" -eq 1 ]] && return 0
   return "$rc"
 }
 
 remove_partition() {
-  local was_active="$partition_active"
-  if [[ "$partition_active" != "true" ]]; then
-    sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
-    return 0
-  fi
-
+  [[ "$partition_active" == "true" ]] || return 0
   local output_rule=(-p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP)
   local input_rule=(-p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP)
-
   sudo -n iptables -D OUTPUT "${output_rule[@]}" >/dev/null 2>&1 || true
   sudo -n iptables -D INPUT "${input_rule[@]}" >/dev/null 2>&1 || true
-
-  local output_absent=true
-  local input_absent=true
+  local output_absent=true input_absent=true
   verify_partition_rule_absent OUTPUT "${output_rule[@]}" || output_absent=false
   verify_partition_rule_absent INPUT "${input_rule[@]}" || input_absent=false
-
   if [[ "$output_absent" != "true" || "$input_absent" != "true" ]]; then
     echo "SCTP partition rollback could not verify both DROP rules absent; independent rollback remains armed." >&2
     return 1
   fi
-
   partition_active=false
   sudo -n systemctl stop "$rollback_unit.timer" "$rollback_unit.service" >/dev/null 2>&1 || true
-  if [[ "$was_active" == "true" ]]; then
-    printf '%s scenario=sctp-partition event=removed\n'     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
-  fi
+  printf '%s scenario=sctp-partition event=removed\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$fault_log"
 }
 
 cleanup() {
   local exit_code=$?
-  remove_partition || true
+  trap - EXIT INT TERM
+  remove_partition || exit_code=1
   if [[ -n "$sdk_pid" ]] && kill -0 "$sdk_pid" 2>/dev/null; then
     kill -TERM "$sdk_pid" 2>/dev/null || true
     wait "$sdk_pid" 2>/dev/null || true
@@ -241,18 +195,25 @@ cleanup() {
     sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
     wait "$tcpdump_pid" 2>/dev/null || true
   fi
-  # tcpdump may create restrictive root-owned files. Normalize capture ownership
-  # before failure evidence is copied to protected storage.
   sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
-  ssh_peer "sudo systemctl start '$PEER_SERVICE'" >/dev/null 2>&1 || true
-  if [[ "$exit_code" -ne 0 ]]; then
-    printf '%s exitCode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$exit_code" \
-      >"$raw/qualification-failure.txt" 2>/dev/null || true
+  if [[ "$peer_rollback_armed" == "true" ]]; then
+    recover_peer >/dev/null 2>&1 || exit_code=1
+  else
+    # Do not cancel a timer whose acknowledgement was lost (or a prior attempt).
+    ssh_peer "sudo -n systemctl start '$PEER_SERVICE'" >/dev/null 2>&1 || true
   fi
-  persist_protected_evidence || true
+  if [[ "$exit_code" -ne 0 && -d "$raw" ]]; then
+    printf '%s exitCode=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$exit_code" >"$raw/qualification-failure.txt"
+  fi
+  if ! persist_protected_evidence; then
+    echo "Private scratch retained for failed persistence at: $root" >&2
+    exit_code=1
+  fi
   exit "$exit_code"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 {
   echo "label=$SDK_HOST_ID"
@@ -264,11 +225,9 @@ trap cleanup EXIT INT TERM
   echo "memory=$(free -h | sed -n '2p')"
   echo "dotnet=$(dotnet --version)"
 } >"$sdk_host"
-
-ssh_peer "sudo systemctl start '$PEER_SERVICE'"
-ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
-ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl status '$PEER_SERVICE' --no-pager"   >"$peer_host"
-
+ssh_peer "sudo -n systemctl start '$PEER_SERVICE'"
+ssh_peer "sudo -n systemctl is-active '$PEER_SERVICE'"
+ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo -n systemctl status '$PEER_SERVICE' --no-pager" >"$peer_host"
 {
   echo "remoteIp=$REMOTE_IP"
   echo "remotePort=$REMOTE_SCTP_PORT"
@@ -279,7 +238,6 @@ ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo systemctl statu
   printf '%s\n' "$remote_route"
   sysctl net.sctp 2>/dev/null || true
 } >"$network_path"
-
 sdk_hostname="$(hostname)"
 peer_hostname="$(ssh_peer hostname | tr -d '\r')"
 if [[ "$sdk_hostname" == "$peer_hostname" ]]; then
@@ -287,43 +245,48 @@ if [[ "$sdk_hostname" == "$peer_hostname" ]]; then
   exit 2
 fi
 
-sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U   -w "$pcap" "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT"   >"$raw/tcpdump.log" 2>&1 &
+sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U -w "$pcap" \
+  "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" >"$raw/tcpdump.log" 2>&1 &
 tcpdump_pid=$!
 sleep 1
 sudo -n kill -0 "$tcpdump_pid"
-
 timeout_seconds=$((SOAK_SECONDS + 1800))
-# FailoverTimeout covers both waiting for the external fault-release marker and
-# the subsequent M3UA recovery wait. It must therefore exceed every admitted
-# fault hold duration, with bounded recovery/management margin.
 failover_timeout_seconds=$((FAULT_DURATION_SECONDS + 45))
-timeout "$((timeout_seconds + 300))s" dotnet run   --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj   -c Release --no-build --   --run-id "$RUN_ID"   --artifact-root "$raw"   --remote-ip "$REMOTE_IP"   --remote-port "$REMOTE_SCTP_PORT"   --local-point-code "$OPC"   --remote-point-code "$DPC"   --network-indicator "$NETWORK_INDICATOR"   --peer-name "$PEER_NAME"   --warmup-operations 5000   --sustained-operations 100000   --peak-operations 100000   --recovery-operations 10000   --soak-duration-seconds "$SOAK_SECONDS"   --latency-sample-capacity 200000   --warmup-concurrency 32   --sustained-concurrency 192   --peak-concurrency 384   --recovery-concurrency 64   --soak-concurrency 192   --timeout-seconds "$timeout_seconds"   --failover-timeout-seconds "$failover_timeout_seconds"   --metrics "$metrics"   --report "$report"   --trace "$trace"   --failover-ready "$failover_ready"   --failover-complete "$failover_complete"   >"$raw/sdk.log" 2>&1 &
+timeout "$((timeout_seconds + 300))s" dotnet run \
+  --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj \
+  -c Release --no-build -- --run-id "$RUN_ID" --artifact-root "$raw" \
+  --remote-ip "$REMOTE_IP" --remote-port "$REMOTE_SCTP_PORT" \
+  --local-point-code "$OPC" --remote-point-code "$DPC" --network-indicator "$NETWORK_INDICATOR" \
+  --peer-name "$PEER_NAME" --warmup-operations 5000 --sustained-operations 100000 \
+  --peak-operations 100000 --recovery-operations 10000 --soak-duration-seconds "$SOAK_SECONDS" \
+  --latency-sample-capacity 200000 --warmup-concurrency 32 --sustained-concurrency 192 \
+  --peak-concurrency 384 --recovery-concurrency 64 --soak-concurrency 192 \
+  --timeout-seconds "$timeout_seconds" --failover-timeout-seconds "$failover_timeout_seconds" \
+  --metrics "$metrics" --report "$report" --trace "$trace" \
+  --failover-ready "$failover_ready" --failover-complete "$failover_complete" >"$raw/sdk.log" 2>&1 &
 sdk_pid=$!
-
 for _ in $(seq 1 7200); do
-  if [[ -s "$failover_ready" ]]; then
-    break
-  fi
-  if ! kill -0 "$sdk_pid" 2>/dev/null; then
-    break
-  fi
+  [[ -s "$failover_ready" ]] && break
+  kill -0 "$sdk_pid" 2>/dev/null || break
   sleep 0.25
 done
 test -s "$failover_ready"
-
 fault_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-printf '%s scenario=%s event=starting durationSeconds=%s\n'   "$fault_started_utc" "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" >>"$fault_log"
-
+printf '%s scenario=%s event=starting durationSeconds=%s\n' \
+  "$fault_started_utc" "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" >>"$fault_log"
 case "$FAULT_SCENARIO" in
   peer-restart)
-    ssh_peer "sudo systemctl restart '$PEER_SERVICE'"
-    ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
+    ssh_peer "sudo -n systemctl restart '$PEER_SERVICE'"
+    ssh_peer "sudo -n systemctl is-active '$PEER_SERVICE'"
     ;;
   peer-outage)
-    ssh_peer "sudo systemctl stop '$PEER_SERVICE'"
+    rollback_delay=$((FAULT_DURATION_SECONDS + 60))
+    # Arm AND stop on the peer in one command. If arming fails, no stop occurs.
+    ssh_peer "sudo -n /bin/bash -s -- outage '$peer_rollback_unit' '$PEER_SERVICE' '$rollback_delay'" \
+      <"$script_dir/peer-outage-recovery.sh"
+    peer_rollback_armed=true
     sleep "$FAULT_DURATION_SECONDS"
-    ssh_peer "sudo systemctl start '$PEER_SERVICE'"
-    ssh_peer "sudo systemctl is-active '$PEER_SERVICE'"
+    recover_peer
     ;;
   sctp-partition)
     rollback_delay=$((FAULT_DURATION_SECONDS + 60))
@@ -332,52 +295,40 @@ case "$FAULT_SCENARIO" in
 while true; do
   "$iptables_path" -D OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || true
   "$iptables_path" -D INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || true
-
   output_rc=0
   "$iptables_path" -C OUTPUT -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || output_rc=\$?
   input_rc=0
   "$iptables_path" -C INPUT -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP >/dev/null 2>&1 || input_rc=\$?
-
   if [ "\$output_rc" -eq 1 ] && [ "\$input_rc" -eq 1 ]; then
     exit 0
   fi
-
   sleep 1
 done
 EOF
 )"
     sudo -n systemd-run --quiet --unit "$rollback_unit" --on-active="${rollback_delay}s" /bin/bash -c "$rollback_command"
-
-    # Mark rollback ownership before the first mutating rule insertion. If the
-    # first insertion itself fails or the process is interrupted between rules,
-    # cleanup still verifies/removes any partial partition and keeps the
-    # independent rollback armed until absence is proven.
     partition_active=true
-    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP"       --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
-    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP"       --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
-
+    sudo -n iptables -I OUTPUT 1 -p sctp -d "$REMOTE_IP" --dport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
+    sudo -n iptables -I INPUT 1 -p sctp -s "$REMOTE_IP" --sport "$REMOTE_SCTP_PORT" -m comment --comment "$partition_rule_tag" -j DROP
     sleep "$FAULT_DURATION_SECONDS"
     remove_partition
     ;;
 esac
-
-printf '%s scenario=%s event=released\n'   "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FAULT_SCENARIO" >>"$fault_log"
+printf '%s scenario=%s event=released\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FAULT_SCENARIO" >>"$fault_log"
 touch "$failover_complete"
-
 wait "$sdk_pid"
 sdk_pid=""
-
 sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
 wait "$tcpdump_pid" 2>/dev/null || true
 tcpdump_pid=""
 sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
-
 completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-python3 - "$metrics" "$safe/summary.json" "$safe/report.md"   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE"   "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" <<'PY'
+python3 - "$metrics" "$safe/summary.json" "$safe/report.md" \
+  "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE" \
+  "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" <<'PY'
 import json, sys
 from pathlib import Path
-
 metrics_path, summary_path, report_path = map(Path, sys.argv[1:4])
 minimum_soak=float(sys.argv[4])
 sdk_host=sys.argv[5]
@@ -461,8 +412,7 @@ if not passed:
     raise SystemExit("multi-host qualification failed")
 PY
 
-# Raw evidence stays on protected lab storage. The public branch receives only
-# sanitized qualification summaries and digest references.
+# Raw evidence and the copy-verification manifest never enter the public branch.
 (
   cd "$raw"
   find . -type f -print0 | sort -z | xargs -0 sha256sum
@@ -471,9 +421,7 @@ PY
   cd "$safe"
   find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum >sha256.txt
 )
-
 persist_protected_evidence
-
 trap - EXIT INT TERM
 echo "runId=$RUN_ID"
 echo "profile=$PROFILE"
