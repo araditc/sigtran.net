@@ -228,6 +228,11 @@ internal sealed class M3uaRuntimeGenerationFenceBinding : IAsyncDisposable
                     _runtime.AssociationName,
                     StringComparison.OrdinalIgnoreCase))
             {
+                // The event is rejected for ownership, but the runtime lane has
+                // still advanced independently. Keep the diagnostic snapshot on
+                // the lane's live state while fencing the untrusted event so
+                // topology diagnostics cannot report a stale lifecycle state.
+                _runtimeState = _runtime.State;
                 string detail =
                     $"Runtime reported unexpected association '{args.AssociationName}' for lane '{_runtime.AssociationName}'.";
                 _bindingError = detail;
