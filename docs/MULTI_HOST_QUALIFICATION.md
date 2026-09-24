@@ -79,7 +79,8 @@ Installs temporary SDK-host firewall rules scoped to SCTP, the configured peer
 data address, and the configured SCTP port. The runner:
 
 - records the fault transition;
-- removes rules in the normal cleanup trap and verifies both exact DROP rules are absent before declaring cleanup complete;
+- tags each inserted DROP rule with a run-specific iptables comment so cleanup/rollback can remove only the rules owned by that qualification run;
+- removes those tagged rules in the normal cleanup trap and verifies both exact owned rules are absent before declaring cleanup complete;
 - installs an independent transient systemd rollback timer before waiting; when it fires, the rollback service retries deletion and re-checks both exact rules until absence is proven, rather than treating a transient xtables failure as successful cleanup;
 - leaves the independent rollback armed whenever normal-path rule removal cannot be proven;
 - never modifies SSH/GitHub TCP management traffic;
