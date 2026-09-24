@@ -46,6 +46,7 @@ A qualifying run must satisfy all of the following:
 - SDK workload and peer execute on distinct physical hosts or VMs;
 - runtime hostnames are different and configured host labels are different;
 - native Linux SCTP is used on the measured data path;
+- the current qualification runner accepts only a non-loopback, non-local IPv4 data endpoint and rejects any `REMOTE_IP` whose route resolves locally or through `lo`; this keeps the current `iptables` partition implementation explicit rather than implying unqualified IPv6 behavior;
 - exact source SHA is retained in the sanitized summary;
 - local/remote point codes, network indicator and peer identity are recorded;
 - SDK and peer kernel/CPU/memory information is retained in protected raw
@@ -54,8 +55,8 @@ A qualifying run must satisfy all of the following:
 - the run is executed through the protected `sigtran-performance`
   environment.
 
-Loopback, same-host containers and network namespaces do not close the
-`multi-host-soak` gate.
+Loopback, a data endpoint routed locally on the SDK host, same-host containers and network namespaces do not close the
+`multi-host-soak` gate. Configured host labels alone are insufficient: the runner also verifies runtime hostnames and the actual data-route locality.
 
 ## Fault scenarios in the first executable matrix
 
