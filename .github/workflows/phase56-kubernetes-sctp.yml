@@ -175,6 +175,10 @@ jobs:
           test -n "$pod"
           kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o json > "$raw/pod-initial.json"
           kubectl -n "$K8S_NAMESPACE" logs "$pod" > "$raw/pod-initial.log"
+          kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c \
+            'printf "%s\\n" "$SIGTRAN_IMAGE_REVISION"' > "$raw/image-source-revision.txt"
+          observed_revision="$(tr -d '\\r\\n' < "$raw/image-source-revision.txt")"
+          test "$observed_revision" = "$SOURCE_SHA"
           kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c 'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs.txt"
           awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' "$raw/sctp-assocs.txt"
 
@@ -326,17 +330,34 @@ jobs:
             validator_status=$?
           fi
 
-          (
+          raw_checksum_status=0
+          if (
             cd "$raw"
             find . -type f -print0 | sort -z | xargs -0 -r sha256sum
-          ) > "$safe/raw-evidence.sha256"
-          (
+          ) > "$safe/raw-evidence.sha256"; then
+            raw_checksum_status=0
+          else
+            raw_checksum_status=$?
+          fi
+
+          safe_checksum_status=0
+          if (
             cd "$safe"
             find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 -r sha256sum
-          ) > "$safe/sha256.txt"
+          ) > "$safe/sha256.txt"; then
+            safe_checksum_status=0
+          else
+            safe_checksum_status=$?
+          fi
+
+          checksums_ok=false
+          if [[ "$raw_checksum_status" -eq 0 && "$safe_checksum_status" -eq 0 ]]; then
+            checksums_ok=true
+          fi
 
           gate_eligible=false
-          if [[ "$validator_status" -eq 0 && "$workflow_steps_ok" == "true" ]]; then
+          if [[ "$validator_status" -eq 0 && "$workflow_steps_ok" == "true" \
+            && "$checksums_ok" == "true" ]]; then
             gate_eligible="$(python3 - "$safe/summary.json" <<'PY'
           import json, sys
           value=json.load(open(sys.argv[1]))
@@ -357,20 +378,25 @@ jobs:
           {
             echo "### Kubernetes SCTP qualification"
             echo
-            echo "- Source: `$SOURCE_SHA`"
-            echo "- Network profile: `$K8S_NETWORK_PROFILE`"
-            echo "- Capture stages complete: `$workflow_steps_ok`"
+            printf -- '- Source: `%s`\\n' "$SOURCE_SHA"
+            printf -- '- Network profile: `%s`\\n' "$K8S_NETWORK_PROFILE"
+            printf -- '- Capture stages complete: `%s`\\n' "$workflow_steps_ok"
             if [[ "$validator_status" -eq 0 ]]; then
               echo "- Core evidence validation: PASS"
             else
               echo "- Core evidence validation: FAIL"
+            fi
+            if [[ "$checksums_ok" == "true" ]]; then
+              echo "- Evidence checksum generation: PASS"
+            else
+              echo "- Evidence checksum generation: FAIL"
             fi
             if [[ "$persist_status" -eq 0 ]]; then
               echo "- Protected evidence persistence: PASS"
             else
               echo "- Protected evidence persistence: FAIL; private scratch retained"
             fi
-            echo "- Stable gate eligible: `$gate_eligible`"
+            printf -- '- Stable gate eligible: `%s`\\n' "$gate_eligible"
             if [[ "$gate_eligible" != "true" ]]; then
               echo "- Remaining matrix evidence is intentionally OPEN; no public evidence PR will be created."
             fi
@@ -378,6 +404,9 @@ jobs:
 
           if [[ "$persist_status" -ne 0 ]]; then
             exit "$persist_status"
+          fi
+          if [[ "$checksums_ok" != "true" ]]; then
+            exit 1
           fi
           if [[ "$workflow_steps_ok" != "true" ]]; then
             exit 1
