@@ -745,8 +745,8 @@ jobs:
 
           kubectl annotate node "$node" \
             phase56.sigtran.net/drain-owner="$RUN_ID"
-          owner="$(kubectl get node "$node" \
-            -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}')"
+          owner="$(kubectl get node "$node" -o json | python3 -c \
+            'import json,sys; value=json.load(sys.stdin); print(((value.get("metadata",{}).get("annotations") or {}).get("phase56.sigtran.net/drain-owner","")))')"
           test "$owner" = "$RUN_ID"
 
           log_pid=""
@@ -754,13 +754,14 @@ jobs:
             if [[ -n "$log_pid" ]]; then
               kill "$log_pid" 2>/dev/null || true
             fi
-            current_owner="$(kubectl get node "$node" \
-              -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}' \
+            current_owner="$(kubectl get node "$node" -o json 2>/dev/null | python3 -c \
+              'import json,sys; value=json.load(sys.stdin); print(((value.get("metadata",{}).get("annotations") or {}).get("phase56.sigtran.net/drain-owner","")))' \
               2>/dev/null || true)"
             if [[ "$current_owner" == "$RUN_ID" ]]; then
-              kubectl uncordon "$node" >/dev/null 2>&1 || true
-              kubectl annotate node "$node" phase56.sigtran.net/drain-owner- \
-                >/dev/null 2>&1 || true
+              if kubectl uncordon "$node" >/dev/null 2>&1; then
+                kubectl annotate node "$node" phase56.sigtran.net/drain-owner- \
+                  >/dev/null 2>&1 || true
+              fi
             fi
           }
           trap restore_owned_node EXIT
@@ -878,8 +879,8 @@ jobs:
 
           owned_node="$(head -n 1 "$raw/drain-owned-node.txt")"
           test -n "$owned_node"
-          owner="$(kubectl get node "$owned_node" \
-            -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}')"
+          owner="$(kubectl get node "$owned_node" -o json | python3 -c \
+            'import json,sys; value=json.load(sys.stdin); print(((value.get("metadata",{}).get("annotations") or {}).get("phase56.sigtran.net/drain-owner","")))')"
           if [[ "$owner" == "$RUN_ID" ]]; then
             kubectl uncordon "$owned_node"
             kubectl annotate node "$owned_node" phase56.sigtran.net/drain-owner-
