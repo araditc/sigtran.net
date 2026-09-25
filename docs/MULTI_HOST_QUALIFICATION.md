@@ -27,6 +27,14 @@ supported. The default reservoir is 200,000 observations and is hard-bounded to
 bounded to the latest 4,096 records; full trace output remains protected raw
 evidence rather than an unbounded in-memory collection.
 
+Ordinary PerformanceLab execution keeps the historical reconnect default of 30
+attempts. Representative qualification explicitly passes a bounded
+`--reconnect-max-attempts` value to both native SCTP and M3UA runtime policies.
+The runner derives that value from the selected fault duration and failover
+window using the actual 100/200/400/800 ms then 1-second-capped backoff model,
+requires at least a five-second delay-budget margin beyond the failover timeout,
+and rejects any derived budget above 180 attempts.
+
 The self-hosted workflow separates qualification from evidence publication.
 Each execution attempt is owned by `github.run_id + github.run_attempt`:
 protected storage, rollback units/rule tags and sanitized evidence destinations
@@ -102,8 +110,10 @@ cancel a timer it did not acknowledge. The peer requires already-authorized
 privileged `systemd-run`/`systemctl` execution; this change provisions no access.
 
 The fault hold is controlled, but the margin/repair loop is not a guarantee that
-a broken peer OS/service can recover within a fixed deadline. A failure of the
-peer host itself remains the separate host-loss matrix row. Recovery evidence
+a broken peer OS/service can recover within a fixed deadline. The SDK reconnect
+budget is sized before execution so its bounded retry-delay horizon extends past
+the complete failover window for every admitted 1-60 second outage. A failure of
+the peer host itself remains the separate host-loss matrix row. Recovery evidence
 must contain a real reconnect with zero lost recovery operations.
 
 ### `sctp-partition`
@@ -162,16 +172,18 @@ it is **not** copied to the public branch. The public branch still contains only
 - `raw-evidence.sha256` (digest references, not payloads);
 - `sha256.txt` covering sanitized files.
 
-Summaries record source SHA, profile/fault/duration, distinct-host result without
-host labels/names, times, throughput/latency, operation counts, recovery outcomes
-and pass/fail. An evidence PR is opened only after successful execution. Merging
-it never automatically sets the stable manifest to passed.
+Summaries record source SHA, profile/fault/duration, failover timeout, reconnect
+attempt budget, distinct-host result without host labels/names, times,
+throughput/latency, operation counts, recovery outcomes and pass/fail. An evidence
+PR is opened only after successful execution. Merging it never automatically sets
+the stable manifest to passed.
 
 ## Offline safety regression coverage
 
 Normal PR CI executes all 12 profile/fault plans, shell syntax checks and
 `python3 scripts/tests/test_qualification_safety.py` without external traffic.
-The 16 isolated tests cover peer build-marker validation plus peer
+The 18 isolated tests cover peer build-marker validation, decimal fault-duration
+normalization and maximum-outage reconnect-budget coverage plus peer
 arm-before-stop ordering, failed arming,
 independent retry after the initiating process exits, verify-before-disarm,
 failed recovery preserving rollback, invalid service rejection, full copy/digest
