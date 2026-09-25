@@ -16,8 +16,13 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.Metrics
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.ReportPath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.TracePath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverReadyPath))!);
+Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverCompletePath))!);
+Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.RecoveryCompletePath))!);
+Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.CaptureStoppedPath))!);
 File.Delete(options.FailoverReadyPath);
 File.Delete(options.FailoverCompletePath);
+File.Delete(options.RecoveryCompletePath);
+File.Delete(options.CaptureStoppedPath);
 
 using CancellationTokenSource timeout = new(options.Timeout);
 using PerformanceTrace trace = new(options.TracePath, options.RunId);
@@ -225,6 +230,27 @@ static async Task<PerformanceRunResult> RunAsync(
         ct);
     stages.Add(recovery);
     DateTimeOffset trafficRestoredUtc = DateTimeOffset.UtcNow;
+
+    // Keep the long soak outside the bounded failover capture window. The
+    // qualification runner must stop tcpdump and acknowledge that stop before
+    // this process is allowed to enter the soak stage.
+    await File.WriteAllTextAsync(
+        options.RecoveryCompletePath,
+        trafficRestoredUtc.ToString("O", CultureInfo.InvariantCulture),
+        ct);
+    trace.Write(
+        "resilience",
+        "recovery-stage-completed",
+        options.RecoveryCompletePath);
+    await WaitForFileAsync(
+        options.CaptureStoppedPath,
+        options.FailoverTimeout,
+        ct);
+    trace.Write(
+        "resilience",
+        "capture-stopped-acknowledged",
+        options.CaptureStoppedPath);
+
     stages.Add(options.SoakDuration > TimeSpan.Zero
         ? await RunTimedStageAsync(
             "soak",
@@ -578,7 +604,7 @@ static async Task WaitForFileAsync(
         if (elapsed.Elapsed >= waitTimeout)
         {
             throw new TimeoutException(
-                $"Timed out waiting for failover marker '{path}'.");
+                $"Timed out waiting for marker '{path}'.");
         }
 
         await Task.Delay(50, ct).ConfigureAwait(false);
@@ -1131,6 +1157,8 @@ internal sealed record PerformanceLabOptions(
     string TracePath,
     string FailoverReadyPath,
     string FailoverCompletePath,
+    string RecoveryCompletePath,
+    string CaptureStoppedPath,
     string RunId)
 {
     public static PerformanceLabOptions Parse(string[] args)
@@ -1203,6 +1231,8 @@ internal sealed record PerformanceLabOptions(
             Get(values, "trace", Path.Combine(artifactRoot, "sdk-trace.jsonl")),
             Get(values, "failover-ready", Path.Combine(artifactRoot, "failover-ready")),
             Get(values, "failover-complete", Path.Combine(artifactRoot, "failover-complete")),
+            Get(values, "recovery-complete", Path.Combine(artifactRoot, "recovery-complete")),
+            Get(values, "capture-stopped", Path.Combine(artifactRoot, "capture-stopped")),
             runId);
     }
 
