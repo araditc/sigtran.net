@@ -150,6 +150,18 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
         self.assertIn('get networkpolicy "$K8S_POLICY_NAME"', block)
         self.assertIn('test "$raise_cleanup_error" = "false"', block)
 
+    def test_network_policy_trap_stays_armed_through_step_exit(self):
+        start = self.workflow.index(
+            "- name: Qualify CNI SCTP NetworkPolicy enforcement and recovery"
+        )
+        cleanup = self.workflow.index(
+            "- name: Remove qualification CNI SCTP NetworkPolicy",
+            start,
+        )
+        block = self.workflow[start:cleanup]
+        self.assertIn("trap cleanup_policy EXIT", block)
+        self.assertNotIn("trap - EXIT", block)
+
     def test_stage1_outcomes_are_fail_closed_in_finalizer(self):
         finalize = self.workflow.index("- name: Finalize and persist evidence")
         block = self.workflow[finalize:]
