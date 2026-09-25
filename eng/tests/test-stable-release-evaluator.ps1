@@ -5,6 +5,21 @@ $evaluator = Join-Path $root "eng/evaluate-stable-release.ps1"
 $fixtureRootRelative = "artifacts/stable-evaluator-tests"
 $fixtureRoot = Join-Path $root $fixtureRootRelative
 
+$requiredGateIds = @(
+    "native-linux-sctp",
+    "external-m3ua",
+    "full-stack-traffic",
+    "independent-m2pa",
+    "operator-profile",
+    "capacity-target",
+    "multi-host-soak",
+    "operations-runtime",
+    "kubernetes-sctp",
+    "trusted-signing",
+    "public-api-baseline",
+    "protected-publication"
+)
+
 Remove-Item -LiteralPath $fixtureRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $fixtureRoot | Out-Null
 
@@ -16,6 +31,34 @@ function Assert-True {
     if (-not $Condition) {
         throw $Message
     }
+}
+
+function New-FixtureGates {
+    param(
+        [string]$TargetId = "",
+        [object[]]$TargetEvidence = @("README.md"),
+        [bool]$TargetPassed = $true,
+        [bool]$TargetRequired = $true
+    )
+
+    $gates = @()
+    foreach ($id in $requiredGateIds) {
+        $gate = [ordered]@{
+            id = $id
+            title = "Fixture $id"
+            required = $true
+            passed = $true
+            evidence = @("README.md")
+            note = "Fixture gate requires retained evidence."
+        }
+        if ($id -eq $TargetId) {
+            $gate.required = $TargetRequired
+            $gate.passed = $TargetPassed
+            $gate.evidence = $TargetEvidence
+        }
+        $gates += $gate
+    }
+    return $gates
 }
 
 function Write-FixtureManifest {
@@ -48,94 +91,104 @@ function Invoke-Fixture {
 
     $jsonRelative = "$fixtureRootRelative/$Name.decision.json"
     $markdownRelative = "$fixtureRootRelative/$Name.decision.md"
-    & $evaluator         -ManifestPath $ManifestPath         -ExpectedVersion "1.0.0"         -JsonOutputPath $jsonRelative         -MarkdownOutputPath $markdownRelative |
-        Out-Null
+    $arguments = @{
+        ManifestPath = $ManifestPath
+        ExpectedVersion = "1.0.0"
+        JsonOutputPath = $jsonRelative
+        MarkdownOutputPath = $markdownRelative
+    }
+    & $evaluator @arguments | Out-Null
     return Get-Content -LiteralPath (Join-Path $root $jsonRelative) -Raw |
         ConvertFrom-Json
 }
 
-try {
-    $validGate = [ordered]@{
-        id = "fixture-gate"
-        title = "Fixture gate"
-        required = $true
-        passed = $true
-        evidence = @("README.md")
-        note = "Fixture gate requires retained evidence."
-    }
+function Assert-FixtureRejected {
+    param(
+        [string]$Name,
+        [string]$ManifestPath,
+        [string]$MessagePattern
+    )
 
-    $validManifest = Write-FixtureManifest -Name "valid" -Gates @($validGate)
-    $validReport = Invoke-Fixture -Name "valid" -ManifestPath $validManifest
-    Assert-True ($validReport.decision -eq "GO") "Valid retained evidence must produce GO."
-    Assert-True ($validReport.gates[0].evidenceDeclared -eq $true) "Valid gate must declare evidence."
-    Assert-True ($validReport.gates[0].evidenceComplete -eq $true) "Valid gate evidence must be complete."
-    Assert-True ($validReport.gates[0].evidence[0].pathPolicyValid -eq $true) "Valid evidence path must stay inside the repository."
-
-    $emptyEvidenceGate = [ordered]@{
-        id = "empty-evidence"
-        title = "Empty evidence"
-        required = $true
-        passed = $true
-        evidence = @()
-        note = "Administrative PASS without evidence must fail closed."
-    }
-    $emptyManifest = Write-FixtureManifest -Name "empty" -Gates @($emptyEvidenceGate)
-    $emptyReport = Invoke-Fixture -Name "empty" -ManifestPath $emptyManifest
-    Assert-True ($emptyReport.decision -eq "NO-GO") "Declared PASS with no evidence must be NO-GO."
-    Assert-True ($emptyReport.gates[0].declaredPassed -eq $true) "Fixture must retain declared PASS."
-    Assert-True ($emptyReport.gates[0].evidenceDeclared -eq $false) "Empty evidence must be explicit in report."
-    Assert-True ($emptyReport.gates[0].passed -eq $false) "Empty evidence must prevent gate PASS."
-    Assert-True ($emptyReport.blockers.Count -eq 1) "Empty evidence fixture must have one blocker."
-
-    $escapingGate = [ordered]@{
-        id = "escaping-evidence"
-        title = "Escaping evidence"
-        required = $true
-        passed = $true
-        evidence = @("../README.md")
-        note = "Evidence outside the repository must fail closed."
-    }
-    $escapingManifest = Write-FixtureManifest -Name "escape" -Gates @($escapingGate)
-    $escapingReport = Invoke-Fixture -Name "escape" -ManifestPath $escapingManifest
-    Assert-True ($escapingReport.decision -eq "NO-GO") "Repository-escaping evidence must be NO-GO."
-    Assert-True ($escapingReport.gates[0].evidence[0].pathPolicyValid -eq $false) "Escaping evidence path must be rejected."
-    Assert-True ($escapingReport.gates[0].evidence[0].present -eq $false) "Rejected evidence must never be treated as present."
-
-    $baselineEscapeManifest = Write-FixtureManifest         -Name "baseline-escape"         -Gates @($validGate)         -Baseline "../README.md"
-    $baselineEscapeReport = Invoke-Fixture         -Name "baseline-escape"         -ManifestPath $baselineEscapeManifest
-    Assert-True ($baselineEscapeReport.decision -eq "NO-GO") "Repository-escaping API baseline must be NO-GO."
-    Assert-True ($baselineEscapeReport.publicApiBaseline.pathPolicyValid -eq $false) "API baseline path policy must be reported."
-
-    $duplicateGateA = [ordered]@{
-        id = "duplicate"
-        title = "Duplicate A"
-        required = $false
-        passed = $false
-        evidence = @()
-        note = "First duplicate."
-    }
-    $duplicateGateB = [ordered]@{
-        id = "duplicate"
-        title = "Duplicate B"
-        required = $false
-        passed = $false
-        evidence = @()
-        note = "Second duplicate."
-    }
-    $duplicateManifest = Write-FixtureManifest         -Name "duplicate"         -Gates @($duplicateGateA, $duplicateGateB)
-    $duplicateRejected = $false
+    $rejected = $false
     try {
-        Invoke-Fixture -Name "duplicate" -ManifestPath $duplicateManifest | Out-Null
+        Invoke-Fixture -Name $Name -ManifestPath $ManifestPath | Out-Null
     }
     catch {
-        if ($_.Exception.Message -match "duplicated") {
-            $duplicateRejected = $true
+        if ($_.Exception.Message -match $MessagePattern) {
+            $rejected = $true
         }
         else {
             throw
         }
     }
-    Assert-True $duplicateRejected "Duplicate gate IDs must be rejected."
+    Assert-True $rejected "Fixture '$Name' must be rejected with '$MessagePattern'."
+}
+
+try {
+    $validManifest = Write-FixtureManifest -Name "valid" -Gates (New-FixtureGates)
+    $validReport = Invoke-Fixture -Name "valid" -ManifestPath $validManifest
+    Assert-True ($validReport.decision -eq "GO") "Valid retained evidence must produce GO."
+    Assert-True ($validReport.blockers.Count -eq 0) "Valid fixture must have zero blockers."
+    Assert-True ($validReport.gates.Count -eq $requiredGateIds.Count) "Every required gate must be represented."
+    Assert-True ($validReport.gates[0].evidenceDeclared -eq $true) "Valid gate must declare evidence."
+    Assert-True ($validReport.gates[0].evidenceComplete -eq $true) "Valid gate evidence must be complete."
+    Assert-True ($validReport.gates[0].evidence[0].pathPolicyValid -eq $true) "Valid evidence path must stay inside the repository."
+
+    $emptyManifest = Write-FixtureManifest -Name "empty" -Gates (
+        New-FixtureGates -TargetId "operator-profile" -TargetEvidence @()
+    )
+    $emptyReport = Invoke-Fixture -Name "empty" -ManifestPath $emptyManifest
+    $emptyGate = $emptyReport.gates | Where-Object { $_.id -eq "operator-profile" }
+    Assert-True ($emptyReport.decision -eq "NO-GO") "Declared PASS with no evidence must be NO-GO."
+    Assert-True ($emptyGate.declaredPassed -eq $true) "Fixture must retain declared PASS."
+    Assert-True ($emptyGate.evidenceDeclared -eq $false) "Empty evidence must be explicit in report."
+    Assert-True ($emptyGate.passed -eq $false) "Empty evidence must prevent gate PASS."
+    Assert-True ($emptyReport.blockers.Count -eq 1) "Empty evidence fixture must have one blocker."
+
+    $escapingManifest = Write-FixtureManifest -Name "escape" -Gates (
+        New-FixtureGates -TargetId "kubernetes-sctp" -TargetEvidence @("../README.md")
+    )
+    $escapingReport = Invoke-Fixture -Name "escape" -ManifestPath $escapingManifest
+    $escapingGate = $escapingReport.gates | Where-Object { $_.id -eq "kubernetes-sctp" }
+    Assert-True ($escapingReport.decision -eq "NO-GO") "Repository-escaping evidence must be NO-GO."
+    Assert-True ($escapingGate.evidence[0].pathPolicyValid -eq $false) "Escaping evidence path must be rejected."
+    Assert-True ($escapingGate.evidence[0].present -eq $false) "Rejected evidence must never be treated as present."
+    Assert-True ($escapingReport.blockers.Count -eq 1) "Escaping evidence fixture must have one blocker."
+
+    $baselineEscapeManifest = Write-FixtureManifest -Name "baseline-escape" -Gates (New-FixtureGates) -Baseline "../README.md"
+    $baselineEscapeReport = Invoke-Fixture -Name "baseline-escape" -ManifestPath $baselineEscapeManifest
+    Assert-True ($baselineEscapeReport.decision -eq "NO-GO") "Repository-escaping API baseline must be NO-GO."
+    Assert-True ($baselineEscapeReport.publicApiBaseline.pathPolicyValid -eq $false) "API baseline path policy must be reported."
+    Assert-True ($baselineEscapeReport.blockers.Count -eq 1) "Escaping baseline fixture must have one blocker."
+
+    $missingAdditionsManifest = Write-FixtureManifest -Name "missing-additions" -Gates (New-FixtureGates) -AcceptedAdditions ""
+    $missingAdditionsReport = Invoke-Fixture -Name "missing-additions" -ManifestPath $missingAdditionsManifest
+    Assert-True ($missingAdditionsReport.decision -eq "NO-GO") "Stable accepted-additions path must be required."
+    Assert-True ($missingAdditionsReport.publicApiBaseline.acceptedAdditionsPathPolicyValid -eq $false) "Missing accepted-additions path must be reported invalid."
+    Assert-True ($missingAdditionsReport.blockers.Count -eq 1) "Missing accepted-additions fixture must have one blocker."
+
+    $missingGateSet = @(
+        New-FixtureGates | Where-Object { $_.id -ne "trusted-signing" }
+    )
+    $missingGateManifest = Write-FixtureManifest -Name "missing-required-gate" -Gates $missingGateSet
+    Assert-FixtureRejected -Name "missing-required-gate" -ManifestPath $missingGateManifest -MessagePattern "Required stable release gate 'trusted-signing' is missing"
+
+    $optionalGateManifest = Write-FixtureManifest -Name "optional-required-gate" -Gates (
+        New-FixtureGates -TargetId "multi-host-soak" -TargetRequired $false
+    )
+    Assert-FixtureRejected -Name "optional-required-gate" -ManifestPath $optionalGateManifest -MessagePattern "cannot be optional"
+
+    $duplicateGates = @(New-FixtureGates)
+    $duplicateGates += [ordered]@{
+        id = "trusted-signing"
+        title = "Duplicate trusted signing"
+        required = $true
+        passed = $false
+        evidence = @()
+        note = "Duplicate gate must be rejected."
+    }
+    $duplicateManifest = Write-FixtureManifest -Name "duplicate" -Gates $duplicateGates
+    Assert-FixtureRejected -Name "duplicate" -ManifestPath $duplicateManifest -MessagePattern "duplicated"
 
     Write-Host "PASS stable release evaluator fail-closed evidence policy"
 }
