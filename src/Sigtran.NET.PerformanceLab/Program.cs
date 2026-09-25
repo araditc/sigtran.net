@@ -17,12 +17,15 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.ReportP
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.TracePath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverReadyPath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverCompletePath))!);
-Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.RecoveryCompletePath))!);
-Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.CaptureStoppedPath))!);
 File.Delete(options.FailoverReadyPath);
 File.Delete(options.FailoverCompletePath);
-File.Delete(options.RecoveryCompletePath);
-File.Delete(options.CaptureStoppedPath);
+if (options.CaptureStopHandshakeEnabled)
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.RecoveryCompletePath))!);
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.CaptureStoppedPath))!);
+    File.Delete(options.RecoveryCompletePath);
+    File.Delete(options.CaptureStoppedPath);
+}
 
 using CancellationTokenSource timeout = new(options.Timeout);
 using PerformanceTrace trace = new(options.TracePath, options.RunId);
@@ -231,25 +234,28 @@ static async Task<PerformanceRunResult> RunAsync(
     stages.Add(recovery);
     DateTimeOffset trafficRestoredUtc = DateTimeOffset.UtcNow;
 
-    // Keep the long soak outside the bounded failover capture window. The
-    // qualification runner must stop tcpdump and acknowledge that stop before
-    // this process is allowed to enter the soak stage.
-    await File.WriteAllTextAsync(
-        options.RecoveryCompletePath,
-        trafficRestoredUtc.ToString("O", CultureInfo.InvariantCulture),
-        ct);
-    trace.Write(
-        "resilience",
-        "recovery-stage-completed",
-        options.RecoveryCompletePath);
-    await WaitForFileAsync(
-        options.CaptureStoppedPath,
-        options.FailoverTimeout,
-        ct);
-    trace.Write(
-        "resilience",
-        "capture-stopped-acknowledged",
-        options.CaptureStoppedPath);
+    // Representative multi-host qualification opts into a two-marker handshake
+    // that closes the bounded failover capture before the long soak. Historical
+    // runners that do not supply both markers retain their existing behavior.
+    if (options.CaptureStopHandshakeEnabled)
+    {
+        await File.WriteAllTextAsync(
+            options.RecoveryCompletePath,
+            trafficRestoredUtc.ToString("O", CultureInfo.InvariantCulture),
+            ct);
+        trace.Write(
+            "resilience",
+            "recovery-stage-completed",
+            options.RecoveryCompletePath);
+        await WaitForFileAsync(
+            options.CaptureStoppedPath,
+            options.FailoverTimeout,
+            ct);
+        trace.Write(
+            "resilience",
+            "capture-stopped-acknowledged",
+            options.CaptureStoppedPath);
+    }
 
     stages.Add(options.SoakDuration > TimeSpan.Zero
         ? await RunTimedStageAsync(
@@ -1157,6 +1163,7 @@ internal sealed record PerformanceLabOptions(
     string TracePath,
     string FailoverReadyPath,
     string FailoverCompletePath,
+    bool CaptureStopHandshakeEnabled,
     string RecoveryCompletePath,
     string CaptureStoppedPath,
     string RunId)
@@ -1186,6 +1193,16 @@ internal sealed record PerformanceLabOptions(
             "run-id",
             $"performance-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}");
         string artifactRoot = Get(values, "artifact-root", $"artifacts/{runId}");
+        bool recoveryCompleteConfigured = values.ContainsKey("recovery-complete");
+        bool captureStoppedConfigured = values.ContainsKey("capture-stopped");
+        if (recoveryCompleteConfigured != captureStoppedConfigured)
+        {
+            throw new ArgumentException(
+                "--recovery-complete and --capture-stopped must be provided together.");
+        }
+
+        bool captureStopHandshakeEnabled =
+            recoveryCompleteConfigured && captureStoppedConfigured;
         return new(
             Get(values, "remote-ip", "127.0.0.1"),
             GetInt(values, "remote-port", 2906),
@@ -1231,6 +1248,7 @@ internal sealed record PerformanceLabOptions(
             Get(values, "trace", Path.Combine(artifactRoot, "sdk-trace.jsonl")),
             Get(values, "failover-ready", Path.Combine(artifactRoot, "failover-ready")),
             Get(values, "failover-complete", Path.Combine(artifactRoot, "failover-complete")),
+            captureStopHandshakeEnabled,
             Get(values, "recovery-complete", Path.Combine(artifactRoot, "recovery-complete")),
             Get(values, "capture-stopped", Path.Combine(artifactRoot, "capture-stopped")),
             runId);
