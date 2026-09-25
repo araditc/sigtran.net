@@ -28,8 +28,9 @@ on:
         options:
           - core
           - cni-policy
+          - disruption
       matrix_confirmation:
-        description: For cni-policy type "run kubernetes cni-policy <namespace>"
+        description: Additional confirmation required by non-core matrix profiles
         required: false
         type: string
       confirmation:
@@ -60,6 +61,8 @@ jobs:
       K8S_NETWORK_PROFILE: ${{ inputs.network_profile }}
       K8S_MATRIX_PROFILE: ${{ inputs.matrix_profile }}
       K8S_POLICY_NAME: sigtran-sctp-${{ github.run_id }}-${{ github.run_attempt }}
+      K8S_PDB_NAME: sigtran-pdb-${{ github.run_id }}-${{ github.run_attempt }}
+      K8S_DRAIN_NODE_LABEL: ${{ vars.K8S_DRAIN_NODE_LABEL || 'sigtran.net/qualification-drain=true' }}
       REMOTE_IP: ${{ secrets.K8S_REMOTE_IP }}
       REMOTE_PORT: ${{ secrets.K8S_REMOTE_PORT }}
       LOCAL_POINT_CODE: ${{ vars.K8S_LOCAL_POINT_CODE || '1' }}
@@ -117,6 +120,17 @@ jobs:
               --mode allow \
               --output "$policy_check"
             rm -f -- "$policy_check"
+            trap - EXIT
+          elif [[ "$K8S_MATRIX_PROFILE" == "disruption" ]]; then
+            test "$MATRIX_CONFIRMATION" = "run kubernetes disruption $K8S_NAMESPACE"
+            [[ "$K8S_DRAIN_NODE_LABEL" =~ ^[A-Za-z0-9./_-]+=[A-Za-z0-9._-]+$ ]]
+            pdb_check="$(mktemp "${RUNNER_TEMP:-/tmp}/sigtran-pdb.XXXXXXXXXX.json")"
+            trap 'rm -f -- "$pdb_check"' EXIT
+            python3 scripts/render-kubernetes-pdb.py \
+              --namespace "$K8S_NAMESPACE" \
+              --name "$K8S_PDB_NAME" \
+              --output "$pdb_check"
+            rm -f -- "$pdb_check"
             trap - EXIT
           fi
 
@@ -437,6 +451,193 @@ jobs:
           printf '%s\n' "$remaining" > "$raw/network-policy-cleanup-result.txt"
           test -z "$remaining"
 
+      - name: Qualify graceful pod termination
+        id: graceful
+        if: inputs.matrix_profile == 'disruption'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+          uid="$(kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o jsonpath='{.metadata.uid}')"
+          grace="$(kubectl -n "$K8S_NAMESPACE" get pod "$pod" \
+            -o jsonpath='{.spec.terminationGracePeriodSeconds}')"
+          test -n "$uid"
+          test "$grace" = "30"
+
+          kubectl -n "$K8S_NAMESPACE" logs -f "$pod" \
+            > "$raw/graceful-termination.log" 2>&1 &
+          log_pid=$!
+          cleanup_log() {
+            kill "$log_pid" 2>/dev/null || true
+          }
+          trap cleanup_log EXIT
+
+          started="$(date +%s)"
+          kubectl -n "$K8S_NAMESPACE" delete pod "$pod" --grace-period=30 --wait=true
+          completed="$(date +%s)"
+          duration=$((completed - started))
+          wait "$log_pid" 2>/dev/null || true
+          trap - EXIT
+
+          shutdown_event=false
+          if grep -q '"EventName":"m3ua.shutdown.completed"' \
+            "$raw/graceful-termination.log"; then
+            shutdown_event=true
+          fi
+
+          replacement=""
+          for _ in $(seq 1 180); do
+            kubectl -n "$K8S_NAMESPACE" get pods \
+              -l app.kubernetes.io/name=sigtran-node -o json \
+              > "$raw/graceful-replacement-pods.json"
+            replacement="$(python3 - "$raw/graceful-replacement-pods.json" "$uid" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          old_uid = sys.argv[2]
+          for item in value.get("items", []):
+              metadata = item.get("metadata", {})
+              if metadata.get("uid") == old_uid:
+                  continue
+              conditions = {
+                  condition.get("type"): condition.get("status")
+                  for condition in item.get("status", {}).get("conditions", [])
+              }
+              if conditions.get("Ready") == "True":
+                  print(metadata.get("name", ""))
+                  break
+          PY
+            )"
+            if [[ -n "$replacement" ]]; then
+              break
+            fi
+            sleep 1
+          done
+          test -n "$replacement"
+
+          association_recovered=false
+          for _ in $(seq 1 60); do
+            if kubectl -n "$K8S_NAMESPACE" exec "$replacement" -- sh -c \
+              'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs-after-graceful.txt" \
+              && awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' \
+                "$raw/sctp-assocs-after-graceful.txt"; then
+              association_recovered=true
+              break
+            fi
+            sleep 2
+          done
+
+          python3 - "$raw/graceful-termination.json" "$SOURCE_SHA" \
+            "$grace" "$duration" "$shutdown_event" "$association_recovered" <<'PY'
+          import json, sys
+          path, source, grace, duration, shutdown_event, association_recovered = sys.argv[1:]
+          grace = int(grace)
+          duration = int(duration)
+          passed = (
+              grace == 30
+              and duration <= 35
+              and shutdown_event == "true"
+              and association_recovered == "true"
+          )
+          json.dump({
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "terminationGracePeriodSeconds": grace,
+              "observedTerminationSeconds": duration,
+              "withinGraceBudget": duration <= 35,
+              "shutdownEventObserved": shutdown_event == "true",
+              "replacementReady": True,
+              "sctpAssociationRecovered": association_recovered == "true",
+              "passed": passed,
+          }, open(path, "w"), indent=2)
+          if not passed:
+              raise SystemExit("graceful termination qualification failed")
+          PY
+
+      - name: Verify run-scoped PodDisruptionBudget
+        id: pdb
+        if: inputs.matrix_profile == 'disruption'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          pdb_manifest="$raw/pdb-manifest.json"
+          python3 scripts/render-kubernetes-pdb.py \
+            --namespace "$K8S_NAMESPACE" \
+            --name "$K8S_PDB_NAME" \
+            --output "$pdb_manifest"
+          kubectl apply -f "$pdb_manifest"
+
+          ready=false
+          for _ in $(seq 1 90); do
+            kubectl -n "$K8S_NAMESPACE" get poddisruptionbudget "$K8S_PDB_NAME" \
+              -o json > "$raw/pdb-observed.json"
+            if python3 - "$raw/pdb-observed.json" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          metadata = value.get("metadata", {})
+          spec = value.get("spec", {})
+          status = value.get("status", {})
+          generation = metadata.get("generation")
+          observed_generation = status.get("observedGeneration")
+          ok = (
+              spec.get("maxUnavailable") == 1
+              and spec.get("unhealthyPodEvictionPolicy") == "AlwaysAllow"
+              and generation is not None
+              and observed_generation == generation
+              and status.get("expectedPods", 0) >= 1
+              and status.get("currentHealthy", 0) >= 1
+              and status.get("disruptionsAllowed", 0) >= 1
+          )
+          raise SystemExit(0 if ok else 1)
+          PY
+            then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = "true"
+
+          python3 - "$raw/pdb-observed.json" "$raw/pdb.json" "$SOURCE_SHA" <<'PY'
+          import json, sys
+          observed_path, out_path, source = sys.argv[1:]
+          observed = json.load(open(observed_path))
+          metadata = observed.get("metadata", {})
+          spec = observed.get("spec", {})
+          status = observed.get("status", {})
+          generation = metadata.get("generation")
+          observed_generation = status.get("observedGeneration")
+          disruptions_allowed = status.get("disruptionsAllowed", 0)
+          passed = (
+              spec.get("maxUnavailable") == 1
+              and spec.get("unhealthyPodEvictionPolicy") == "AlwaysAllow"
+              and observed_generation == generation
+              and status.get("currentHealthy", 0) >= 1
+              and status.get("expectedPods", 0) >= 1
+              and disruptions_allowed >= 1
+          )
+          json.dump({
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "maxUnavailable": spec.get("maxUnavailable"),
+              "unhealthyPodEvictionPolicy": spec.get("unhealthyPodEvictionPolicy"),
+              "generation": generation,
+              "observedGeneration": observed_generation,
+              "observedGenerationMatches": observed_generation == generation,
+              "currentHealthy": status.get("currentHealthy", 0),
+              "expectedPods": status.get("expectedPods", 0),
+              "disruptionsAllowed": disruptions_allowed,
+              "singleReplicaAvailabilityClaim": False,
+              "passed": passed,
+          }, open(out_path, "w"), indent=2)
+          if not passed:
+              raise SystemExit("run-scoped PodDisruptionBudget evidence failed")
+          PY
+
       - name: Verify pod restart and rollout rollback
         id: rollout
         shell: bash
@@ -484,6 +685,237 @@ jobs:
           }, open(path,"w"), indent=2)
           PY
 
+      - name: Qualify node drain and rescheduling
+        id: node_drain
+        if: inputs.matrix_profile == 'disruption'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+          pod_uid="$(kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o jsonpath='{.metadata.uid}')"
+          node="$(kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o jsonpath='{.spec.nodeName}')"
+          test -n "$pod_uid"
+          test -n "$node"
+          printf '%s\n' "$node" > "$raw/drain-owned-node.txt"
+
+          kubectl get node "$node" -l "$K8S_DRAIN_NODE_LABEL" -o name \
+            | grep -qx "node/$node"
+          kubectl get node "$node" -o json > "$raw/drain-node-before.json"
+          kubectl get nodes -o json > "$raw/drain-nodes-before.json"
+
+          python3 - "$raw/drain-node-before.json" "$raw/drain-nodes-before.json" "$node" <<'PY'
+          import json, sys
+          current = json.load(open(sys.argv[1]))
+          nodes = json.load(open(sys.argv[2]))
+          current_name = sys.argv[3]
+          metadata = current.get("metadata", {})
+          labels = metadata.get("labels", {})
+          annotations = metadata.get("annotations", {}) or {}
+          if current.get("spec", {}).get("unschedulable") is True:
+              raise SystemExit("qualification node must be schedulable before owned drain")
+          if annotations.get("phase56.sigtran.net/drain-owner"):
+              raise SystemExit("qualification node already has a drain owner")
+          if (
+              "node-role.kubernetes.io/control-plane" in labels
+              or "node-role.kubernetes.io/master" in labels
+          ):
+              raise SystemExit("qualification drain node must not be a control-plane node")
+
+          candidates = []
+          for candidate in nodes.get("items", []):
+              name = candidate.get("metadata", {}).get("name")
+              if name == current_name or candidate.get("spec", {}).get("unschedulable") is True:
+                  continue
+              ready = any(
+                  condition.get("type") == "Ready" and condition.get("status") == "True"
+                  for condition in candidate.get("status", {}).get("conditions", [])
+              )
+              linux = (
+                  candidate.get("status", {}).get("nodeInfo", {}).get("operatingSystem")
+                  == "linux"
+              )
+              if ready and linux:
+                  candidates.append(name)
+          if not candidates:
+              raise SystemExit("node-drain qualification requires another schedulable Ready Linux node")
+          PY
+
+          kubectl annotate node "$node" \
+            phase56.sigtran.net/drain-owner="$RUN_ID"
+          owner="$(kubectl get node "$node" \
+            -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}')"
+          test "$owner" = "$RUN_ID"
+
+          log_pid=""
+          restore_owned_node() {
+            if [[ -n "$log_pid" ]]; then
+              kill "$log_pid" 2>/dev/null || true
+            fi
+            current_owner="$(kubectl get node "$node" \
+              -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}' \
+              2>/dev/null || true)"
+            if [[ "$current_owner" == "$RUN_ID" ]]; then
+              kubectl uncordon "$node" >/dev/null 2>&1 || true
+              kubectl annotate node "$node" phase56.sigtran.net/drain-owner- \
+                >/dev/null 2>&1 || true
+            fi
+          }
+          trap restore_owned_node EXIT
+
+          kubectl -n "$K8S_NAMESPACE" logs -f "$pod" \
+            > "$raw/node-drain-termination.log" 2>&1 &
+          log_pid=$!
+
+          kubectl drain "$node" \
+            --ignore-daemonsets \
+            --pod-selector='app.kubernetes.io/name=sigtran-node' \
+            --grace-period=30 \
+            --timeout=10m
+
+          wait "$log_pid" 2>/dev/null || true
+          log_pid=""
+
+          drain_shutdown_event=false
+          if grep -q '"EventName":"m3ua.shutdown.completed"' \
+            "$raw/node-drain-termination.log"; then
+            drain_shutdown_event=true
+          fi
+
+          replacement=""
+          replacement_node=""
+          for _ in $(seq 1 180); do
+            kubectl -n "$K8S_NAMESPACE" get pods \
+              -l app.kubernetes.io/name=sigtran-node -o json \
+              > "$raw/node-drain-replacement-pods.json"
+            readarray -t replacement_info < <(python3 - \
+              "$raw/node-drain-replacement-pods.json" "$pod_uid" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          old_uid = sys.argv[2]
+          for item in value.get("items", []):
+              metadata = item.get("metadata", {})
+              if metadata.get("uid") == old_uid:
+                  continue
+              conditions = {
+                  condition.get("type"): condition.get("status")
+                  for condition in item.get("status", {}).get("conditions", [])
+              }
+              if conditions.get("Ready") == "True":
+                  print(metadata.get("name", ""))
+                  print(item.get("spec", {}).get("nodeName", ""))
+                  break
+          PY
+            )
+            if [[ "${#replacement_info[@]}" -ge 2 ]]; then
+              replacement="${replacement_info[0]}"
+              replacement_node="${replacement_info[1]}"
+            fi
+            if [[ -n "$replacement" && -n "$replacement_node" ]]; then
+              break
+            fi
+            sleep 1
+          done
+          test -n "$replacement"
+          test -n "$replacement_node"
+          test "$replacement_node" != "$node"
+
+          association_recovered=false
+          for _ in $(seq 1 60); do
+            if kubectl -n "$K8S_NAMESPACE" exec "$replacement" -- sh -c \
+              'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs-after-node-drain.txt" \
+              && awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' \
+                "$raw/sctp-assocs-after-node-drain.txt"; then
+              association_recovered=true
+              break
+            fi
+            sleep 2
+          done
+          test "$association_recovered" = "true"
+
+          kubectl -n "$K8S_NAMESPACE" get pod "$replacement" -o json \
+            > "$raw/drain-replacement-pod.json"
+
+          python3 - "$raw/node-drain.json" "$SOURCE_SHA" \
+            "$drain_shutdown_event" "$association_recovered" "$node" "$replacement_node" <<'PY'
+          import json, sys
+          path, source, shutdown_event, association_recovered, original_node, replacement_node = sys.argv[1:]
+          passed = (
+              shutdown_event == "true"
+              and association_recovered == "true"
+              and original_node != replacement_node
+          )
+          json.dump({
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "evictionPath": "kubectl-drain",
+              "pdbBypassRequested": False,
+              "forcedDrainRequested": False,
+              "shutdownEventObserved": shutdown_event == "true",
+              "rescheduledToDifferentNode": original_node != replacement_node,
+              "sctpAssociationRecovered": association_recovered == "true",
+              "passed": passed,
+          }, open(path, "w"), indent=2)
+          if not passed:
+              raise SystemExit("node drain/rescheduling evidence failed")
+          PY
+
+      - name: Restore drained node
+        id: node_restore
+        if: always() && inputs.matrix_profile == 'disruption' && steps.identity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          if [[ ! -s "$raw/drain-owned-node.txt" ]]; then
+            printf '%s\n' "no-owned-node" > "$raw/node-restore-result.txt"
+            exit 0
+          fi
+
+          owned_node="$(head -n 1 "$raw/drain-owned-node.txt")"
+          test -n "$owned_node"
+          owner="$(kubectl get node "$owned_node" \
+            -o go-template='{{ index .metadata.annotations "phase56.sigtran.net/drain-owner" }}')"
+          if [[ "$owner" == "$RUN_ID" ]]; then
+            kubectl uncordon "$owned_node"
+            kubectl annotate node "$owned_node" phase56.sigtran.net/drain-owner-
+          elif [[ -n "$owner" ]]; then
+            echo "drain ownership changed before restore" >&2
+            exit 1
+          fi
+
+          kubectl get node "$owned_node" -o json > "$raw/drain-node-restored.json"
+          python3 - "$raw/drain-node-restored.json" "$RUN_ID" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          run_id = sys.argv[2]
+          unschedulable = value.get("spec", {}).get("unschedulable") is True
+          annotations = value.get("metadata", {}).get("annotations", {}) or {}
+          owner = annotations.get("phase56.sigtran.net/drain-owner", "")
+          if unschedulable or owner == run_id:
+              raise SystemExit("owned drain node was not safely restored")
+          PY
+          unschedulable="false"
+          printf '%s\n' "$unschedulable" > "$raw/node-restore-result.txt"
+          test "$unschedulable" = "false"
+
+      - name: Remove qualification PodDisruptionBudget
+        id: pdb_cleanup
+        if: always() && inputs.matrix_profile == 'disruption' && steps.identity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          kubectl -n "$K8S_NAMESPACE" delete poddisruptionbudget "$K8S_PDB_NAME" \
+            --ignore-not-found=true
+          remaining="$(kubectl -n "$K8S_NAMESPACE" get poddisruptionbudget "$K8S_PDB_NAME" \
+            --ignore-not-found=true -o name)"
+          printf '%s\n' "$remaining" > "$raw/pdb-cleanup-result.txt"
+          test -z "$remaining"
+
       - name: Capture final readiness and SCTP state
         id: final_capture
         shell: bash
@@ -524,7 +956,12 @@ jobs:
           SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
           NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
           POLICY_CLEANUP_OUTCOME: ${{ steps.policy_cleanup.outcome }}
+          GRACEFUL_OUTCOME: ${{ steps.graceful.outcome }}
+          PDB_OUTCOME: ${{ steps.pdb.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
+          NODE_DRAIN_OUTCOME: ${{ steps.node_drain.outcome }}
+          NODE_RESTORE_OUTCOME: ${{ steps.node_restore.outcome }}
+          PDB_CLEANUP_OUTCOME: ${{ steps.pdb_cleanup.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
           set -uo pipefail
@@ -534,9 +971,15 @@ jobs:
           python3 - "$raw/qualification-steps.json" \
             "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
             "$INITIAL_OUTCOME" "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
-            "$POLICY_CLEANUP_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$POLICY_CLEANUP_OUTCOME" "$GRACEFUL_OUTCOME" "$PDB_OUTCOME" \
+            "$ROLLOUT_OUTCOME" "$NODE_DRAIN_OUTCOME" "$NODE_RESTORE_OUTCOME" \
+            "$PDB_CLEANUP_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, service_exposure, network_policy, policy_cleanup, rollout, final_capture = sys.argv[1:]
+          (
+              path, source, cluster, deploy, initial, service_exposure,
+              network_policy, policy_cleanup, graceful, pdb, rollout,
+              node_drain, node_restore, pdb_cleanup, final_capture
+          ) = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
@@ -547,7 +990,12 @@ jobs:
                   "serviceExposure": service_exposure,
                   "networkPolicy": network_policy,
                   "policyCleanup": policy_cleanup,
+                  "gracefulTermination": graceful,
+                  "podDisruptionBudget": pdb,
                   "rollout": rollout,
+                  "nodeDrain": node_drain,
+                  "nodeRestore": node_restore,
+                  "pdbCleanup": pdb_cleanup,
                   "finalCapture": final_capture,
               },
           }
@@ -568,6 +1016,14 @@ jobs:
             for outcome in \
               "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
               "$POLICY_CLEANUP_OUTCOME"; do
+              if [[ "$outcome" != "success" ]]; then
+                matrix_steps_ok=false
+              fi
+            done
+          elif [[ "$K8S_MATRIX_PROFILE" == "disruption" ]]; then
+            for outcome in \
+              "$GRACEFUL_OUTCOME" "$PDB_OUTCOME" "$NODE_DRAIN_OUTCOME" \
+              "$NODE_RESTORE_OUTCOME" "$PDB_CLEANUP_OUTCOME"; do
               if [[ "$outcome" != "success" ]]; then
                 matrix_steps_ok=false
               fi
