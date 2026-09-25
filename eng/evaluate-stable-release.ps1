@@ -89,6 +89,21 @@ if (-not [string]::IsNullOrWhiteSpace($ExpectedVersion) -and
     throw "Stable release manifest version '$($manifest.version)' does not match requested version '$ExpectedVersion'."
 }
 
+$requiredStableGateIds = @(
+    "native-linux-sctp",
+    "external-m3ua",
+    "full-stack-traffic",
+    "independent-m2pa",
+    "operator-profile",
+    "capacity-target",
+    "multi-host-soak",
+    "operations-runtime",
+    "kubernetes-sctp",
+    "trusted-signing",
+    "public-api-baseline",
+    "protected-publication"
+)
+
 $baselinePath = [string]$manifest.publicApiBaseline
 $baselineFullPath = Resolve-RepositoryRelativePath -RelativePath $baselinePath
 $baselinePathValid = $null -ne $baselineFullPath
@@ -111,23 +126,11 @@ $acceptedAdditionsFullPath = if (
 else {
     $null
 }
-$acceptedAdditionsPathValid = if (
-    [string]::IsNullOrWhiteSpace($acceptedAdditionsPath)
-) {
-    $true
-}
-else {
-    $null -ne $acceptedAdditionsFullPath
-}
-$acceptedAdditionsPresent = if (
-    [string]::IsNullOrWhiteSpace($acceptedAdditionsPath)
-) {
-    $true
-}
-else {
-    $acceptedAdditionsPathValid -and
-        (Test-RegularRepositoryFile -FullPath $acceptedAdditionsFullPath)
-}
+$acceptedAdditionsPathValid = (
+    -not [string]::IsNullOrWhiteSpace($acceptedAdditionsPath)
+) -and ($null -ne $acceptedAdditionsFullPath)
+$acceptedAdditionsPresent = $acceptedAdditionsPathValid -and
+    (Test-RegularRepositoryFile -FullPath $acceptedAdditionsFullPath)
 
 $gateResults = @()
 $blockers = @()
@@ -217,6 +220,18 @@ foreach ($gate in $manifest.gates) {
     }
 }
 
+foreach ($requiredGateId in $requiredStableGateIds) {
+    $requiredGateMatches = @(
+        $gateResults | Where-Object { $_.id -eq $requiredGateId }
+    )
+    if ($requiredGateMatches.Count -ne 1) {
+        throw "Required stable release gate '$requiredGateId' is missing."
+    }
+    if (-not [bool]$requiredGateMatches[0].required) {
+        throw "Required stable release gate '$requiredGateId' cannot be optional."
+    }
+}
+
 if (-not $baselinePathValid) {
     $blockers += "public-api-baseline: $baselinePath is outside the repository or invalid."
 }
@@ -224,7 +239,10 @@ elseif (-not $baselinePresent) {
     $blockers += "public-api-baseline: $baselinePath is missing, linked, or not a regular file."
 }
 
-if (-not $acceptedAdditionsPathValid) {
+if ([string]::IsNullOrWhiteSpace($acceptedAdditionsPath)) {
+    $blockers += "public-api-baseline: accepted-additions path is required."
+}
+elseif (-not $acceptedAdditionsPathValid) {
     $blockers += "public-api-baseline: $acceptedAdditionsPath is outside the repository or invalid."
 }
 elseif (-not $acceptedAdditionsPresent) {
