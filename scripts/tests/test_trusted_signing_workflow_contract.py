@@ -42,6 +42,8 @@ class TrustedSigningPreflightContractTests(unittest.TestCase):
         self.assertIn('base64 -d > "$pfx"', block)
         self.assertIn('chmod 600 "$pfx"', block)
         self.assertIn("stat -c '%a' \"$pfx\"", block)
+        self.assertIn("-passin env:SIGNING_CERTIFICATE_PASSWORD", block)
+        self.assertNotIn('pass:$SIGNING_CERTIFICATE_PASSWORD', block)
         self.assertNotIn("artifacts/signing/stable-signing.pfx", block)
 
     def test_preflight_cleanup_runs_even_after_failure(self):
@@ -78,6 +80,15 @@ class TrustedSigningPreflightContractTests(unittest.TestCase):
         )
         self.assertIn('chmod 600 "$signing_certificate_path"', sign)
         self.assertIn("stat -c '%a' \"$signing_certificate_path\"", sign)
+        self.assertNotIn('pass:$SIGNING_CERTIFICATE_PASSWORD', self.release)
+
+        trust = between(
+            self.release,
+            "- name: Trust Dry-Run Signing Certificate",
+            "- name: Verify Signature And Timestamp",
+        )
+        self.assertIn("-passin env:SIGNING_CERTIFICATE_PASSWORD", trust)
+        self.assertNotIn('-passin pass:"$SIGNING_CERTIFICATE_PASSWORD"', trust)
 
         cleanup = between(
             self.release,
@@ -86,6 +97,12 @@ class TrustedSigningPreflightContractTests(unittest.TestCase):
         )
         self.assertIn("if: always()", cleanup)
         self.assertIn('"$RUNNER_TEMP/sigtran-release-signing.pfx"', cleanup)
+
+    def test_certificate_verifier_keeps_password_out_of_argv(self):
+        verifier = (ROOT / "eng" / "verify-signing-certificate.sh").read_text()
+        self.assertIn("-passin env:SIGNING_CERTIFICATE_PASSWORD", verifier)
+        self.assertNotIn('pass:${PASSWORD}', verifier)
+        self.assertNotIn('pass:$SIGNING_CERTIFICATE_PASSWORD', verifier)
 
     def test_dry_run_trust_consumes_key_before_cleanup(self):
         sign_index = self.release.index("- name: Sign Package")
