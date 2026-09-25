@@ -257,6 +257,9 @@ class QualificationRunnerContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runner = (SCRIPTS / "run-multi-host-qualification.sh").read_text()
+        cls.performance_lab = (
+            ROOT / "src" / "Sigtran.NET.PerformanceLab" / "Program.cs"
+        ).read_text()
 
     def test_capture_starts_only_after_failover_ready_and_is_hard_bounded(self):
         ready = self.runner.index('test -s "$failover_ready"')
@@ -266,6 +269,39 @@ class QualificationRunnerContractTests(unittest.TestCase):
         self.assertIn('capture_file_count=4', self.runner)
         self.assertIn('-C "$capture_limit_mb" -W "$capture_file_count"', self.runner)
         self.assertNotIn('traffic.pcap', self.runner)
+
+    def test_capture_stops_after_recovery_and_before_soak_is_released(self):
+        fault_release = self.runner.index('touch "$failover_complete"')
+        recovery_wait = self.runner.index('[[ -s "$recovery_complete" ]]', fault_release)
+        stop = self.runner.index("stop_capture", recovery_wait)
+        acknowledge = self.runner.index('touch "$capture_stopped"', stop)
+        sdk_wait = self.runner.index('wait "$sdk_pid"', acknowledge)
+        self.assertLess(fault_release, recovery_wait)
+        self.assertLess(recovery_wait, stop)
+        self.assertLess(stop, acknowledge)
+        self.assertLess(acknowledge, sdk_wait)
+        self.assertIn(
+            'recovery_marker_timeout_seconds=$((failover_timeout_seconds + 300))',
+            self.runner,
+        )
+
+        recovery_stage = self.performance_lab.index("stages.Add(recovery);")
+        recovery_marker = self.performance_lab.index(
+            "options.RecoveryCompletePath", recovery_stage
+        )
+        capture_ack = self.performance_lab.index(
+            "options.CaptureStoppedPath", recovery_marker
+        )
+        soak = self.performance_lab.index(
+            "stages.Add(options.SoakDuration", capture_ack
+        )
+        self.assertLess(recovery_stage, recovery_marker)
+        self.assertLess(recovery_marker, capture_ack)
+        self.assertLess(capture_ack, soak)
+        self.assertIn(
+            '"capture-stopped-acknowledged"',
+            self.performance_lab[recovery_marker:soak],
+        )
 
     def test_peer_label_and_authenticated_address_inventory_are_protected(self):
         self.assertIn('peer_addresses="$raw/peer-addresses.txt"', self.runner)
