@@ -260,6 +260,7 @@ class QualificationRunnerContractTests(unittest.TestCase):
         cls.performance_lab = (
             SCRIPTS.parent / "src" / "Sigtran.NET.PerformanceLab" / "Program.cs"
         ).read_text()
+        cls.legacy_runner = (SCRIPTS / "run-full-stack-performance-lab.sh").read_text()
 
     def test_capture_starts_only_after_failover_ready_and_is_hard_bounded(self):
         ready = self.runner.index('test -s "$failover_ready"')
@@ -286,8 +287,11 @@ class QualificationRunnerContractTests(unittest.TestCase):
         )
 
         recovery_stage = self.performance_lab.index("stages.Add(recovery);")
+        handshake_guard = self.performance_lab.index(
+            "if (options.CaptureStopHandshakeEnabled)", recovery_stage
+        )
         recovery_marker = self.performance_lab.index(
-            "options.RecoveryCompletePath", recovery_stage
+            "options.RecoveryCompletePath", handshake_guard
         )
         capture_ack = self.performance_lab.index(
             "options.CaptureStoppedPath", recovery_marker
@@ -295,13 +299,42 @@ class QualificationRunnerContractTests(unittest.TestCase):
         soak = self.performance_lab.index(
             "stages.Add(options.SoakDuration", capture_ack
         )
-        self.assertLess(recovery_stage, recovery_marker)
+        self.assertLess(recovery_stage, handshake_guard)
+        self.assertLess(handshake_guard, recovery_marker)
         self.assertLess(recovery_marker, capture_ack)
         self.assertLess(capture_ack, soak)
         self.assertIn(
             '"capture-stopped-acknowledged"',
             self.performance_lab[recovery_marker:soak],
         )
+
+    def test_capture_handshake_is_explicit_paired_opt_in(self):
+        self.assertIn(
+            'values.ContainsKey("recovery-complete")',
+            self.performance_lab,
+        )
+        self.assertIn(
+            'values.ContainsKey("capture-stopped")',
+            self.performance_lab,
+        )
+        self.assertIn(
+            'recoveryCompleteConfigured != captureStoppedConfigured',
+            self.performance_lab,
+        )
+        self.assertIn(
+            '"--recovery-complete and --capture-stopped must be provided together."',
+            self.performance_lab,
+        )
+        self.assertIn(
+            '--recovery-complete "$recovery_complete"',
+            self.runner,
+        )
+        self.assertIn(
+            '--capture-stopped "$capture_stopped"',
+            self.runner,
+        )
+        self.assertNotIn("--recovery-complete", self.legacy_runner)
+        self.assertNotIn("--capture-stopped", self.legacy_runner)
 
     def test_peer_label_and_authenticated_address_inventory_are_protected(self):
         self.assertIn('peer_addresses="$raw/peer-addresses.txt"', self.runner)
