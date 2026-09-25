@@ -93,8 +93,11 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         self.assertIn('kill -0 "$log_pid"', block)
 
     def test_pdb_is_run_scoped_observed_and_cleanup_verified(self):
+        rollout = self.workflow.index("- name: Verify pod restart and rollout rollback")
         start = self.workflow.index("- name: Verify run-scoped PodDisruptionBudget")
         node_drain = self.workflow.index("- name: Qualify node drain and rescheduling", start)
+        self.assertLess(rollout, start)
+        self.assertLess(start, node_drain)
         block = self.workflow[start:node_drain]
         self.assertIn("render-kubernetes-pdb.py", block)
         self.assertIn('"observedGenerationMatches": observed_generation == generation', block)
