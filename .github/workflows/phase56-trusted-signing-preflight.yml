@@ -60,9 +60,9 @@ jobs:
           chmod 600 "$pfx"
           test "$(stat -c '%a' "$pfx")" = "600"
 
-          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -clcerts -nokeys             -out "$cert"
+          openssl pkcs12             -in "$pfx"             -passin env:SIGNING_CERTIFICATE_PASSWORD             -clcerts -nokeys             -out "$cert"
 
-          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -cacerts -nokeys             -out "$chain"
+          openssl pkcs12             -in "$pfx"             -passin env:SIGNING_CERTIFICATE_PASSWORD             -cacerts -nokeys             -out "$chain"
 
           subject="$(openssl x509 -in "$cert" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')"
           issuer="$(openssl x509 -in "$cert" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')"
