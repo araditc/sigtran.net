@@ -116,6 +116,8 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         self.assertNotIn("--force", block)
         self.assertIn('kubectl annotate node "$node"', block)
         self.assertIn('phase56.sigtran.net/drain-owner="$RUN_ID"', block)
+        self.assertNotIn("go-template=", block)
+        self.assertIn('if kubectl uncordon "$node"', block)
         self.assertIn("node-role.kubernetes.io/control-plane", block)
         self.assertIn("node-role.kubernetes.io/master", block)
         self.assertIn("another schedulable Ready Linux node", block)
@@ -126,6 +128,7 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         restore_block = self.workflow[end:restore_end]
         self.assertIn("if: always()", restore_block)
         self.assertIn("drain-owner", restore_block)
+        self.assertNotIn("go-template=", restore_block)
         self.assertIn('kubectl uncordon "$owned_node"', restore_block)
         self.assertIn('test "$unschedulable" = "false"', restore_block)
 
