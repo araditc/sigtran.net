@@ -20,6 +20,18 @@ on:
         options:
           - cni
           - hostNetwork
+      matrix_profile:
+        description: Qualification matrix depth
+        required: true
+        default: core
+        type: choice
+        options:
+          - core
+          - representative
+      disruption_confirmation:
+        description: Representative only - type "run kubernetes disruptive <namespace>"
+        required: false
+        type: string
       confirmation:
         description: Type "run kubernetes sctp <namespace>"
         required: true
@@ -46,6 +58,8 @@ jobs:
       K8S_NAMESPACE: ${{ inputs.namespace }}
       K8S_IMAGE: ${{ inputs.image }}
       K8S_NETWORK_PROFILE: ${{ inputs.network_profile }}
+      K8S_MATRIX_PROFILE: ${{ inputs.matrix_profile }}
+      K8S_DRAIN_NODE_LABEL: ${{ vars.K8S_DRAIN_NODE_LABEL || 'sigtran.net/qualification-drain=true' }}
       REMOTE_IP: ${{ secrets.K8S_REMOTE_IP }}
       REMOTE_PORT: ${{ secrets.K8S_REMOTE_PORT }}
       LOCAL_POINT_CODE: ${{ vars.K8S_LOCAL_POINT_CODE || '1' }}
@@ -65,6 +79,7 @@ jobs:
         shell: bash
         env:
           QUALIFICATION_CONFIRMATION: ${{ inputs.confirmation }}
+          DISRUPTION_CONFIRMATION: ${{ inputs.disruption_confirmation }}
         run: |
           set -euo pipefail
           test "$QUALIFICATION_CONFIRMATION" = "run kubernetes sctp $K8S_NAMESPACE"
@@ -88,6 +103,19 @@ jobs:
           if port < 1 or port > 65535:
               raise SystemExit("K8S_REMOTE_PORT must be between 1 and 65535")
           PY
+          if [[ "$K8S_MATRIX_PROFILE" == "representative" ]]; then
+            test "$K8S_NETWORK_PROFILE" = "cni"
+            test "$DISRUPTION_CONFIRMATION" = "run kubernetes disruptive $K8S_NAMESPACE"
+            [[ "$K8S_DRAIN_NODE_LABEL" =~ ^[A-Za-z0-9./_-]+=[A-Za-z0-9._-]+$ ]]
+            policy_check="$RUNNER_TEMP/sigtran-network-policy-validation.json"
+            python3 scripts/render-kubernetes-network-policy.py \
+              --namespace "$K8S_NAMESPACE" \
+              --remote-ip "$REMOTE_IP" \
+              --remote-port "$REMOTE_PORT" \
+              --mode allow \
+              --output "$policy_check"
+            rm -f "$policy_check"
+          fi
 
       - name: Configure private kubectl credentials
         shell: bash
@@ -194,6 +222,260 @@ jobs:
           wait "$pf_pid" 2>/dev/null || true
           trap - EXIT
 
+      - name: Verify management service exposure
+        id: service_exposure
+        if: inputs.matrix_profile == 'representative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          kubectl -n "$K8S_NAMESPACE" get service sigtran-node-management -o json > "$raw/service.json"
+          kubectl -n "$K8S_NAMESPACE" get endpointslice \
+            -l kubernetes.io/service-name=sigtran-node-management \
+            -o json > "$raw/service-endpoints.json"
+
+          kubectl -n "$K8S_NAMESPACE" port-forward service/sigtran-node-management 18082:8080 \
+            > "$raw/service-port-forward.log" 2>&1 &
+          pf_pid=$!
+          trap 'kill "$pf_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18082/health/ready \
+              > "$raw/service-ready.json"; then
+              break
+            fi
+            sleep 1
+          done
+          test -s "$raw/service-ready.json"
+          kill "$pf_pid" 2>/dev/null || true
+          wait "$pf_pid" 2>/dev/null || true
+          trap - EXIT
+
+          python3 - "$raw/service.json" "$raw/service-endpoints.json" \
+            "$raw/service-ready.json" "$raw/service-exposure.json" "$SOURCE_SHA" <<'PY'
+          import json, sys
+          service_path,endpoints_path,ready_path,out_path,source=sys.argv[1:]
+          service=json.load(open(service_path))
+          endpoints=json.load(open(endpoints_path))
+          ready=json.load(open(ready_path))
+          selector=service.get("spec",{}).get("selector",{})
+          ports=service.get("spec",{}).get("ports",[])
+          endpoint_count=sum(
+              len(item.get("endpoints",[]))
+              for item in endpoints.get("items",[])
+          )
+          passed=(
+              selector.get("app.kubernetes.io/name") == "sigtran-node"
+              and any(p.get("port")==8080 for p in ports)
+              and endpoint_count > 0
+              and str(ready.get("status","")).lower() == "healthy"
+          )
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "managementServiceType":service.get("spec",{}).get("type","ClusterIP"),
+              "readyEndpointCount":endpoint_count,
+              "passed":passed,
+          }, open(out_path,"w"), indent=2)
+          if not passed:
+              raise SystemExit("management service exposure evidence failed")
+          PY
+
+      - name: Qualify CNI SCTP NetworkPolicy enforcement and recovery
+        id: network_policy
+        if: inputs.matrix_profile == 'representative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          allow="$raw/network-policy-allow.json"
+          deny="$raw/network-policy-deny.json"
+          python3 scripts/render-kubernetes-network-policy.py \
+            --namespace "$K8S_NAMESPACE" --remote-ip "$REMOTE_IP" \
+            --remote-port "$REMOTE_PORT" --mode allow --output "$allow"
+          python3 scripts/render-kubernetes-network-policy.py \
+            --namespace "$K8S_NAMESPACE" --remote-ip "$REMOTE_IP" \
+            --remote-port "$REMOTE_PORT" --mode deny --output "$deny"
+
+          kubectl apply -f "$allow"
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+            -o json > "$raw/network-policy-observed.json"
+
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+          kubectl -n "$K8S_NAMESPACE" port-forward "pod/$pod" 18083:8080 \
+            > "$raw/network-policy-port-forward.log" 2>&1 &
+          pf_pid=$!
+          cleanup_policy() {
+            kubectl apply -f "$allow" >/dev/null 2>&1 || true
+            kill "$pf_pid" 2>/dev/null || true
+          }
+          trap cleanup_policy EXIT
+
+          curl --fail --silent http://127.0.0.1:18083/health/ready \
+            > "$raw/network-policy-ready-before.json"
+          kubectl apply -f "$deny"
+
+          denied=false
+          for _ in $(seq 1 120); do
+            code="$(curl --silent --output "$raw/network-policy-ready-denied.json" \
+              --write-out '%{http_code}' http://127.0.0.1:18083/health/ready || true)"
+            if [[ "$code" == "503" ]]; then
+              denied=true
+              break
+            fi
+            sleep 1
+          done
+
+          kubectl apply -f "$allow"
+          recovered=false
+          for _ in $(seq 1 180); do
+            if curl --fail --silent http://127.0.0.1:18083/health/ready \
+              > "$raw/network-policy-ready-recovered.json"; then
+              recovered=true
+              break
+            fi
+            sleep 1
+          done
+
+          kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c \
+            'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs-after-network-policy.txt"
+          association=false
+          if awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' \
+            "$raw/sctp-assocs-after-network-policy.txt"; then
+            association=true
+          fi
+
+          kill "$pf_pid" 2>/dev/null || true
+          wait "$pf_pid" 2>/dev/null || true
+          trap - EXIT
+
+          python3 - "$raw/network-policy.json" "$SOURCE_SHA" \
+            "$denied" "$recovered" "$association" <<'PY'
+          import json, sys
+          path,source,denied,recovered,association=sys.argv[1:]
+          passed=denied=="true" and recovered=="true" and association=="true"
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "denyObserved":denied=="true",
+              "recoveryObserved":recovered=="true",
+              "sctpAssociationRecovered":association=="true",
+              "passed":passed,
+          }, open(path,"w"), indent=2)
+          if not passed:
+              raise SystemExit("SCTP NetworkPolicy enforcement/recovery evidence failed")
+          PY
+
+      - name: Qualify graceful pod termination
+        id: graceful
+        if: inputs.matrix_profile == 'representative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+          kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o json \
+            > "$raw/graceful-pod-before.json"
+          kubectl -n "$K8S_NAMESPACE" logs -f "$pod" \
+            > "$raw/graceful-termination.log" 2>&1 &
+          log_pid=$!
+
+          started="$(date +%s)"
+          kubectl -n "$K8S_NAMESPACE" delete pod "$pod" \
+            --grace-period=30 --wait=true
+          completed="$(date +%s)"
+          duration=$((completed - started))
+          wait "$log_pid" 2>/dev/null || true
+
+          shutdown=false
+          if grep -q '"EventName":"m3ua.shutdown.completed"' \
+            "$raw/graceful-termination.log"; then
+            shutdown=true
+          fi
+
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          kubectl -n "$K8S_NAMESPACE" wait --for=condition=Ready pod \
+            -l app.kubernetes.io/name=sigtran-node --timeout=10m
+          replacement="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          replacement_ready=false
+          if [[ -n "$replacement" && "$replacement" != "$pod" ]]; then
+            replacement_ready=true
+          fi
+
+          python3 - "$raw/graceful-termination.json" "$SOURCE_SHA" \
+            "$duration" "$shutdown" "$replacement_ready" <<'PY'
+          import json, sys
+          path,source,duration,shutdown,replacement=sys.argv[1:]
+          duration=int(duration)
+          passed=duration <= 35 and shutdown=="true" and replacement=="true"
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "terminationGracePeriodSeconds":30,
+              "observedTerminationSeconds":duration,
+              "shutdownEventObserved":shutdown=="true",
+              "replacementReady":replacement=="true",
+              "passed":passed,
+          }, open(path,"w"), indent=2)
+          if not passed:
+              raise SystemExit("graceful termination evidence failed")
+          PY
+
+      - name: Verify PodDisruptionBudget
+        id: pdb
+        if: inputs.matrix_profile == 'representative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          kubectl -n "$K8S_NAMESPACE" apply \
+            -f deploy/kubernetes/pod-disruption-budget.yaml
+
+          ready=false
+          for _ in $(seq 1 60); do
+            kubectl -n "$K8S_NAMESPACE" get pdb sigtran-node -o json > "$raw/pdb-observed.json"
+            if python3 - "$raw/pdb-observed.json" <<'PY'
+          import json, sys
+          value=json.load(open(sys.argv[1]))
+          spec=value.get("spec",{})
+          status=value.get("status",{})
+          ok=(
+              spec.get("maxUnavailable") == 1
+              and status.get("currentHealthy",0) >= 1
+              and status.get("expectedPods",0) >= 1
+              and status.get("disruptionsAllowed",0) >= 1
+          )
+          raise SystemExit(0 if ok else 1)
+          PY
+            then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          python3 - "$raw/pdb-observed.json" "$raw/pdb.json" "$SOURCE_SHA" "$ready" <<'PY'
+          import json, sys
+          observed_path,out_path,source,ready=sys.argv[1:]
+          observed=json.load(open(observed_path))
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "maxUnavailable":observed.get("spec",{}).get("maxUnavailable"),
+              "disruptionsAllowed":observed.get("status",{}).get("disruptionsAllowed"),
+              "passed":ready=="true",
+          }, open(out_path,"w"), indent=2)
+          if ready != "true":
+              raise SystemExit("PodDisruptionBudget never became eligible for the qualification pod")
+          PY
+
       - name: Verify pod restart and rollout rollback
         id: rollout
         shell: bash
@@ -241,6 +523,93 @@ jobs:
           }, open(path,"w"), indent=2)
           PY
 
+      - name: Qualify node drain and rescheduling
+        id: node_drain
+        if: inputs.matrix_profile == 'representative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          test -n "$pod"
+          node="$(kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o jsonpath='{.spec.nodeName}')"
+          test -n "$node"
+          kubectl get node "$node" -l "$K8S_DRAIN_NODE_LABEL" -o name | grep -q .
+
+          kubectl get node "$node" -o json > "$raw/drain-node-before.json"
+          kubectl get nodes -o json > "$raw/drain-nodes.json"
+          python3 - "$raw/drain-node-before.json" "$raw/drain-nodes.json" "$node" <<'PY'
+          import json, sys
+          current=json.load(open(sys.argv[1]))
+          nodes=json.load(open(sys.argv[2]))
+          current_name=sys.argv[3]
+          labels=current.get("metadata",{}).get("labels",{})
+          if "node-role.kubernetes.io/control-plane" in labels or "node-role.kubernetes.io/master" in labels:
+              raise SystemExit("qualification drain node must not be a control-plane node")
+          candidates=[]
+          for node in nodes.get("items",[]):
+              name=node.get("metadata",{}).get("name")
+              if name == current_name or node.get("spec",{}).get("unschedulable") is True:
+                  continue
+              ready=any(
+                  condition.get("type")=="Ready" and condition.get("status")=="True"
+                  for condition in node.get("status",{}).get("conditions",[])
+              )
+              linux=node.get("status",{}).get("nodeInfo",{}).get("operatingSystem")=="linux"
+              if ready and linux:
+                  candidates.append(name)
+          if not candidates:
+              raise SystemExit("node-drain qualification requires another schedulable Ready Linux node")
+          PY
+
+          restore_node() {
+            kubectl uncordon "$node" >/dev/null 2>&1 || true
+          }
+          trap restore_node EXIT
+          kubectl drain "$node" \
+            --ignore-daemonsets \
+            --delete-emptydir-data \
+            --pod-selector='app.kubernetes.io/name=sigtran-node' \
+            --grace-period=30 \
+            --timeout=10m
+
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          kubectl -n "$K8S_NAMESPACE" wait --for=condition=Ready pod \
+            -l app.kubernetes.io/name=sigtran-node --timeout=10m
+          replacement="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          replacement_node="$(kubectl -n "$K8S_NAMESPACE" get pod "$replacement" \
+            -o jsonpath='{.spec.nodeName}')"
+          test -n "$replacement_node"
+          test "$replacement_node" != "$node"
+
+          kubectl uncordon "$node"
+          trap - EXIT
+          kubectl get node "$node" -o json > "$raw/drain-node-after.json"
+          kubectl -n "$K8S_NAMESPACE" get pod "$replacement" -o json \
+            > "$raw/drain-replacement-pod.json"
+
+          python3 - "$raw/node-drain.json" "$SOURCE_SHA" "$node" "$replacement_node" \
+            "$raw/drain-node-after.json" <<'PY'
+          import json, sys
+          path,source,original,replacement,node_after_path=sys.argv[1:]
+          node_after=json.load(open(node_after_path))
+          uncordoned=node_after.get("spec",{}).get("unschedulable") is not True
+          passed=original != replacement and uncordoned
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "rescheduledToDifferentNode":original != replacement,
+              "originalNodeRestoredSchedulable":uncordoned,
+              "passed":passed,
+          }, open(path,"w"), indent=2)
+          if not passed:
+              raise SystemExit("node drain/rescheduling evidence failed")
+          PY
+
       - name: Capture final readiness and SCTP state
         id: final_capture
         shell: bash
@@ -278,7 +647,12 @@ jobs:
           CLUSTER_OUTCOME: ${{ steps.cluster.outcome }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           INITIAL_OUTCOME: ${{ steps.initial.outcome }}
+          SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
+          NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
+          GRACEFUL_OUTCOME: ${{ steps.graceful.outcome }}
+          PDB_OUTCOME: ${{ steps.pdb.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
+          NODE_DRAIN_OUTCOME: ${{ steps.node_drain.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
           set -uo pipefail
@@ -286,18 +660,30 @@ jobs:
           safe="$EVIDENCE_SCRATCH/safe"
 
           python3 - "$raw/qualification-steps.json" \
-            "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
-            "$INITIAL_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$SOURCE_SHA" "$K8S_MATRIX_PROFILE" \
+            "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" "$INITIAL_OUTCOME" \
+            "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
+            "$GRACEFUL_OUTCOME" "$PDB_OUTCOME" "$ROLLOUT_OUTCOME" \
+            "$NODE_DRAIN_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, rollout, final_capture = sys.argv[1:]
+          (
+              path, source, profile, cluster, deploy, initial, service_exposure,
+              network_policy, graceful, pdb, rollout, node_drain, final_capture
+          ) = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
+              "matrixProfile": profile,
               "steps": {
                   "cluster": cluster,
                   "deploy": deploy,
                   "initial": initial,
+                  "serviceExposure": service_exposure,
+                  "networkPolicy": network_policy,
+                  "gracefulTermination": graceful,
+                  "podDisruptionBudget": pdb,
                   "rollout": rollout,
+                  "nodeDrain": node_drain,
                   "finalCapture": final_capture,
               },
           }
@@ -312,6 +698,15 @@ jobs:
               workflow_steps_ok=false
             fi
           done
+          if [[ "$K8S_MATRIX_PROFILE" == "representative" ]]; then
+            for outcome in \
+              "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
+              "$GRACEFUL_OUTCOME" "$PDB_OUTCOME" "$NODE_DRAIN_OUTCOME"; do
+              if [[ "$outcome" != "success" ]]; then
+                workflow_steps_ok=false
+              fi
+            done
+          fi
 
           validator_status=0
           if python3 scripts/validate-kubernetes-sctp-evidence.py \
@@ -359,6 +754,7 @@ jobs:
             echo
             echo "- Source: `$SOURCE_SHA`"
             echo "- Network profile: `$K8S_NETWORK_PROFILE`"
+            echo "- Matrix profile: `$K8S_MATRIX_PROFILE`"
             echo "- Capture stages complete: `$workflow_steps_ok`"
             if [[ "$validator_status" -eq 0 ]]; then
               echo "- Core evidence validation: PASS"
