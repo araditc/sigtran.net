@@ -16,8 +16,16 @@ Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.Metrics
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.ReportPath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.TracePath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverReadyPath))!);
+Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.FailoverCompletePath))!);
 File.Delete(options.FailoverReadyPath);
 File.Delete(options.FailoverCompletePath);
+if (options.CaptureStopHandshakeEnabled)
+{
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.RecoveryCompletePath))!);
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.CaptureStoppedPath))!);
+    File.Delete(options.RecoveryCompletePath);
+    File.Delete(options.CaptureStoppedPath);
+}
 
 using CancellationTokenSource timeout = new(options.Timeout);
 using PerformanceTrace trace = new(options.TracePath, options.RunId);
@@ -52,7 +60,7 @@ static async Task<PerformanceRunResult> RunAsync(
             reconnectTimeout: TimeSpan.FromSeconds(2),
             shutdownTimeout: TimeSpan.FromSeconds(5)),
         new SctpReconnectPolicy(
-            maxAttempts: 30,
+            maxAttempts: options.ReconnectMaxAttempts,
             initialDelay: TimeSpan.FromMilliseconds(100),
             maxDelay: TimeSpan.FromSeconds(1)),
         requireKernelMetadata: true);
@@ -92,7 +100,7 @@ static async Task<PerformanceRunResult> RunAsync(
                 aspUpInfoString: "Sigtran.NET performance lab"u8.ToArray(),
                 aspActiveInfoString: "map-sms-load"u8.ToArray()),
             new SctpReconnectPolicy(
-                maxAttempts: 30,
+                maxAttempts: options.ReconnectMaxAttempts,
                 initialDelay: TimeSpan.FromMilliseconds(100),
                 maxDelay: TimeSpan.FromSeconds(1)),
             outboundQueueCapacity: options.QueueCapacity,
@@ -100,7 +108,7 @@ static async Task<PerformanceRunResult> RunAsync(
             heartbeatInterval: TimeSpan.FromSeconds(2),
             heartbeatTimeout: TimeSpan.FromSeconds(2),
             shutdownTimeout: TimeSpan.FromSeconds(5)));
-    ConcurrentQueue<RuntimeEventRecord> runtimeEvents = new();
+    BoundedRuntimeEventBuffer runtimeEvents = new(capacity: 4096);
     m3ua.RuntimeEvent += (_, eventArgs) =>
     {
         if (eventArgs.Kind is M3uaRuntimeEventKind.TransferSent
@@ -114,7 +122,7 @@ static async Task<PerformanceRunResult> RunAsync(
             eventArgs.Kind.ToString(),
             eventArgs.State.ToString(),
             eventArgs.Detail);
-        runtimeEvents.Enqueue(record);
+        runtimeEvents.Add(record);
         trace.Write(
             "m3ua",
             record.Kind,
@@ -225,15 +233,49 @@ static async Task<PerformanceRunResult> RunAsync(
         ct);
     stages.Add(recovery);
     DateTimeOffset trafficRestoredUtc = DateTimeOffset.UtcNow;
-    stages.Add(await RunStageAsync(
-        "soak",
-        options.SoakOperations,
-        options.SoakConcurrency,
-        map,
-        messages,
-        options,
-        trace,
-        ct));
+
+    // Representative multi-host qualification opts into a two-marker handshake
+    // that closes the bounded failover capture before the long soak. Historical
+    // runners that do not supply both markers retain their existing behavior.
+    if (options.CaptureStopHandshakeEnabled)
+    {
+        await File.WriteAllTextAsync(
+            options.RecoveryCompletePath,
+            trafficRestoredUtc.ToString("O", CultureInfo.InvariantCulture),
+            ct);
+        trace.Write(
+            "resilience",
+            "recovery-stage-completed",
+            options.RecoveryCompletePath);
+        await WaitForFileAsync(
+            options.CaptureStoppedPath,
+            options.FailoverTimeout,
+            ct);
+        trace.Write(
+            "resilience",
+            "capture-stopped-acknowledged",
+            options.CaptureStoppedPath);
+    }
+
+    stages.Add(options.SoakDuration > TimeSpan.Zero
+        ? await RunTimedStageAsync(
+            "soak",
+            options.SoakDuration,
+            options.SoakConcurrency,
+            map,
+            messages,
+            options,
+            trace,
+            ct)
+        : await RunStageAsync(
+            "soak",
+            options.SoakOperations,
+            options.SoakConcurrency,
+            map,
+            messages,
+            options,
+            trace,
+            ct));
 
     M3uaRuntimeMetrics m3uaMetrics = m3ua.GetMetrics();
     TcapDialogueManagerMetrics tcapMetrics = tcap.GetMetrics();
@@ -286,7 +328,7 @@ static async Task<PerformanceRunResult> RunAsync(
             trafficRestoredUtc - failoverStartedUtc,
             m3uaMetrics.ReconnectAttempts - reconnectsBefore,
             recovery.FailedOperations),
-        runtimeEvents.ToArray(),
+        runtimeEvents.Snapshot(),
         new(
             m3uaMetrics.SentTransfers,
             m3uaMetrics.ReceivedTransfers,
@@ -314,9 +356,9 @@ static async Task<PerformanceStageResult> RunStageAsync(
         "starting",
         $"name={name} operations={operationCount} concurrency={concurrency}");
     int cursor = -1;
-    int successful = 0;
-    int failed = 0;
-    long[] latencyTicks = new long[operationCount];
+    long successful = 0;
+    long failed = 0;
+    LatencyReservoir latencies = new(options.LatencySampleCapacity);
     ConcurrentQueue<string> errors = new();
     long allocatedBefore = GC.GetTotalAllocatedBytes(precise: false);
     int gen2Before = GC.CollectionCount(2);
@@ -333,11 +375,7 @@ static async Task<PerformanceStageResult> RunStageAsync(
     ProcessResourceSnapshot resources = sampler.Stop();
     long allocatedAfter = GC.GetTotalAllocatedBytes(precise: false);
     int gen2After = GC.CollectionCount(2);
-    double[] successfulLatencies = latencyTicks
-        .Take(Volatile.Read(ref successful))
-        .Select(ticks => ticks * 1000d / Stopwatch.Frequency)
-        .Order()
-        .ToArray();
+    double[] successfulLatencies = latencies.SnapshotMilliseconds();
     PerformanceStageResult result = new(
         name,
         operationCount,
@@ -345,13 +383,14 @@ static async Task<PerformanceStageResult> RunStageAsync(
         failed,
         concurrency,
         elapsed.Elapsed,
+        null,
         elapsed.Elapsed.TotalSeconds > 0
             ? successful / elapsed.Elapsed.TotalSeconds
             : 0,
         Percentile(successfulLatencies, 0.50),
         Percentile(successfulLatencies, 0.95),
         Percentile(successfulLatencies, 0.99),
-        successfulLatencies.Length == 0 ? 0 : successfulLatencies[^1],
+        latencies.MaximumMilliseconds,
         successful == 0
             ? 0
             : Math.Max(0, allocatedAfter - allocatedBefore) / successful,
@@ -389,24 +428,149 @@ static async Task<PerformanceStageResult> RunStageAsync(
                         $"Outcome={operationResult.Outcome} error={operationResult.ErrorCode} reject={operationResult.RejectProblem}");
                 }
 
-                int latencyIndex = Interlocked.Increment(ref successful) - 1;
-                latencyTicks[latencyIndex] = Stopwatch.GetTimestamp() - started;
+                latencies.Record(Stopwatch.GetTimestamp() - started);
+                Interlocked.Increment(ref successful);
             }
             catch (Exception exception) when (
                 exception is not OperationCanceledException
                 || !ct.IsCancellationRequested)
             {
-                Interlocked.Increment(ref failed);
-                errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                long failureNumber = Interlocked.Increment(ref failed);
+                if (failureNumber <= 10)
+                {
+                    errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                }
             }
         }
+    }
+}
+
+static async Task<PerformanceStageResult> RunTimedStageAsync(
+    string name,
+    TimeSpan minimumDuration,
+    int concurrency,
+    MapSmsService map,
+    PerformanceMessages messages,
+    PerformanceLabOptions options,
+    PerformanceTrace trace,
+    CancellationToken ct)
+{
+    if (minimumDuration <= TimeSpan.Zero)
+    {
+        throw new ArgumentOutOfRangeException(
+            nameof(minimumDuration),
+            "Timed stage duration must be positive.");
+    }
+
+    trace.Write(
+        "stage",
+        "starting",
+        $"name={name} minimumDurationSeconds={minimumDuration.TotalSeconds:F0} concurrency={concurrency}");
+
+    long operationIndex = -1;
+    long successful = 0;
+    long failed = 0;
+    LatencyReservoir latencies = new(options.LatencySampleCapacity);
+    ConcurrentQueue<string> errors = new();
+    long allocatedBefore = GC.GetTotalAllocatedBytes(precise: false);
+    int gen2Before = GC.CollectionCount(2);
+    using ProcessResourceSampler sampler = new();
+    using CancellationTokenSource stageLifetime =
+        CancellationTokenSource.CreateLinkedTokenSource(ct);
+
+    Stopwatch elapsed = Stopwatch.StartNew();
+    stageLifetime.CancelAfter(minimumDuration);
+    sampler.Start();
+
+    Task[] workers = Enumerable.Range(0, concurrency)
+        .Select(_ => WorkerAsync())
+        .ToArray();
+    await Task.WhenAll(workers).ConfigureAwait(false);
+
+    elapsed.Stop();
+    ProcessResourceSnapshot resources = sampler.Stop();
+    long allocatedAfter = GC.GetTotalAllocatedBytes(precise: false);
+    int gen2After = GC.CollectionCount(2);
+    double[] successfulLatencies = latencies.SnapshotMilliseconds();
+    long completed = Volatile.Read(ref successful) + Volatile.Read(ref failed);
+
+    PerformanceStageResult result = new(
+        name,
+        completed,
+        Volatile.Read(ref successful),
+        Volatile.Read(ref failed),
+        concurrency,
+        elapsed.Elapsed,
+        minimumDuration.TotalSeconds,
+        elapsed.Elapsed.TotalSeconds > 0
+            ? Volatile.Read(ref successful) / elapsed.Elapsed.TotalSeconds
+            : 0,
+        Percentile(successfulLatencies, 0.50),
+        Percentile(successfulLatencies, 0.95),
+        Percentile(successfulLatencies, 0.99),
+        latencies.MaximumMilliseconds,
+        successful == 0
+            ? 0
+            : Math.Max(0, allocatedAfter - allocatedBefore) / successful,
+        resources.AverageCpuPercent,
+        resources.PeakCpuPercent,
+        resources.PeakWorkingSetMegabytes,
+        Math.Max(0, gen2After - gen2Before),
+        errors.Take(10).ToArray());
+
+    trace.Write("stage", "completed", result.Describe());
+    return result;
+
+    async Task WorkerAsync()
+    {
+        while (!stageLifetime.IsCancellationRequested)
+        {
+            long index = Interlocked.Increment(ref operationIndex);
+            long started = Stopwatch.GetTimestamp();
+            try
+            {
+                MapSmsOperationResult operationResult = await InvokeAsync(
+                        map,
+                        messages,
+                        index,
+                        options.InvokeTimeout,
+                        stageLifetime.Token)
+                    .ConfigureAwait(false);
+                if (!operationResult.IsSuccess)
+                {
+                    throw new InvalidOperationException(
+                        $"Outcome={operationResult.Outcome} error={operationResult.ErrorCode} reject={operationResult.RejectProblem}");
+                }
+
+                latencies.Record(Stopwatch.GetTimestamp() - started);
+                Interlocked.Increment(ref successful);
+            }
+            catch (OperationCanceledException) when (
+                stageLifetime.IsCancellationRequested
+                && !ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception exception) when (
+                exception is not OperationCanceledException
+                || !ct.IsCancellationRequested)
+            {
+                long failureNumber = Interlocked.Increment(ref failed);
+                if (failureNumber <= 10)
+                {
+                    errors.Enqueue($"{exception.GetType().Name}: {exception.Message}");
+                }
+            }
+        }
+
+        ct.ThrowIfCancellationRequested();
     }
 }
 
 static ValueTask<MapSmsOperationResult> InvokeAsync(
     MapSmsService map,
     PerformanceMessages messages,
-    int index,
+    long index,
     TimeSpan timeout,
     CancellationToken ct)
 {
@@ -446,7 +610,7 @@ static async Task WaitForFileAsync(
         if (elapsed.Elapsed >= waitTimeout)
         {
             throw new TimeoutException(
-                $"Timed out waiting for failover marker '{path}'.");
+                $"Timed out waiting for marker '{path}'.");
         }
 
         await Task.Delay(50, ct).ConfigureAwait(false);
@@ -498,6 +662,7 @@ static async Task WriteArtifactsAsync(
             options.RunId,
             ExecutionPassed = false,
             CapacityQualified = false,
+            options.ReconnectMaxAttempts,
             Error = error
         }
         : result;
@@ -546,6 +711,20 @@ static async Task WriteArtifactsAsync(
     report.AppendLine($"- Peak CPU: `{options.MaximumCpuPercent:F1}%`");
     report.AppendLine($"- Peak working set: `{options.MaximumWorkingSetMegabytes} MB`");
     report.AppendLine($"- Allocation: `{options.MaximumAllocatedBytesPerOperation} B/op`");
+    report.AppendLine($"- Reconnect max attempts: `{options.ReconnectMaxAttempts}`");
+    if (options.SoakDuration > TimeSpan.Zero)
+    {
+        report.AppendLine(
+            $"- Minimum soak duration: `{options.SoakDuration.TotalSeconds:F0} s`");
+    }
+    report.AppendLine(
+        $"- Latency reservoir capacity: `{options.LatencySampleCapacity}` observations per stage");
+    report.AppendLine(
+        "- Percentiles use all observations while a stage is within the reservoir "
+        + "capacity; larger stages use deterministic bounded reservoir sampling. "
+        + "Maximum latency is tracked across every successful operation.");
+    report.AppendLine(
+        "- Runtime-event evidence retains only the latest 4096 non-transfer M3UA events per run.");
     report.AppendLine();
     report.AppendLine("## Resilience");
     report.AppendLine();
@@ -627,11 +806,12 @@ internal sealed record PerformanceRunResult(
 
 internal sealed record PerformanceStageResult(
     string Name,
-    int RequestedOperations,
-    int SuccessfulOperations,
-    int FailedOperations,
+    long RequestedOperations,
+    long SuccessfulOperations,
+    long FailedOperations,
     int Concurrency,
     TimeSpan Duration,
+    double? RequestedDurationSeconds,
     double ThroughputPerSecond,
     double P50Milliseconds,
     double P95Milliseconds,
@@ -645,7 +825,12 @@ internal sealed record PerformanceStageResult(
     IReadOnlyList<string> Errors)
 {
     public bool Passed =>
-        SuccessfulOperations == RequestedOperations && FailedOperations == 0;
+        RequestedDurationSeconds is double requestedDuration
+            ? Duration.TotalSeconds >= requestedDuration
+                && SuccessfulOperations > 0
+                && FailedOperations == 0
+            : SuccessfulOperations == RequestedOperations
+                && FailedOperations == 0;
 
     public string Describe()
     {
@@ -664,13 +849,53 @@ internal sealed record ResilienceResult(
     TimeSpan AssociationRecovery,
     TimeSpan TrafficRestoration,
     long ReconnectAttempts,
-    int LostOperations);
+    long LostOperations);
 
 internal sealed record RuntimeEventRecord(
     DateTimeOffset TimestampUtc,
     string Kind,
     string State,
     string? Detail);
+
+internal sealed class BoundedRuntimeEventBuffer
+{
+    private readonly object _sync = new();
+    private readonly Queue<RuntimeEventRecord> _events;
+    private readonly int _capacity;
+
+    internal BoundedRuntimeEventBuffer(int capacity)
+    {
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+
+        _capacity = capacity;
+        _events = new Queue<RuntimeEventRecord>(capacity);
+    }
+
+    internal void Add(RuntimeEventRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        lock (_sync)
+        {
+            if (_events.Count == _capacity)
+            {
+                _events.Dequeue();
+            }
+
+            _events.Enqueue(record);
+        }
+    }
+
+    internal RuntimeEventRecord[] Snapshot()
+    {
+        lock (_sync)
+        {
+            return _events.ToArray();
+        }
+    }
+}
 
 internal sealed record LayerCounterResult(
     long M3uaSent,
@@ -682,6 +907,97 @@ internal sealed record LayerCounterResult(
     long TcapOpened,
     long TcapClosed,
     long TcapDroppedDialogueEvents);
+
+internal sealed class LatencyReservoir
+{
+    private readonly long[] _samples;
+    private long _observations;
+    private long _maximumTicks;
+
+    internal LatencyReservoir(int capacity)
+    {
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+
+        _samples = new long[capacity];
+    }
+
+    internal double MaximumMilliseconds =>
+        Volatile.Read(ref _maximumTicks) * 1000d / Stopwatch.Frequency;
+
+    internal void Record(long ticks)
+    {
+        if (ticks < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ticks));
+        }
+
+        UpdateMaximum(ticks);
+        long ordinal = Interlocked.Increment(ref _observations);
+        if (ordinal <= _samples.Length)
+        {
+            Interlocked.Exchange(ref _samples[checked((int)ordinal - 1)], ticks);
+            return;
+        }
+
+        ulong candidate = Mix(unchecked((ulong)ordinal))
+            % unchecked((ulong)ordinal);
+        if (candidate < unchecked((ulong)_samples.Length))
+        {
+            Interlocked.Exchange(
+                ref _samples[checked((int)candidate)],
+                ticks);
+        }
+    }
+
+    internal double[] SnapshotMilliseconds()
+    {
+        int count = checked((int)Math.Min(
+            Volatile.Read(ref _observations),
+            _samples.LongLength));
+        double[] values = new double[count];
+        for (int index = 0; index < count; index++)
+        {
+            values[index] =
+                Volatile.Read(ref _samples[index])
+                * 1000d
+                / Stopwatch.Frequency;
+        }
+
+        Array.Sort(values);
+        return values;
+    }
+
+    private void UpdateMaximum(long ticks)
+    {
+        while (true)
+        {
+            long current = Volatile.Read(ref _maximumTicks);
+            if (ticks <= current)
+            {
+                return;
+            }
+
+            if (Interlocked.CompareExchange(
+                    ref _maximumTicks,
+                    ticks,
+                    current) == current)
+            {
+                return;
+            }
+        }
+    }
+
+    private static ulong Mix(ulong value)
+    {
+        value += 0x9E3779B97F4A7C15UL;
+        value = (value ^ (value >> 30)) * 0xBF58476D1CE4E5B9UL;
+        value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
+        return value ^ (value >> 31);
+    }
+}
 
 internal readonly record struct ProcessResourceSnapshot(
     double AverageCpuPercent,
@@ -823,12 +1139,15 @@ internal sealed record PerformanceLabOptions(
     int PeakOperations,
     int RecoveryOperations,
     int SoakOperations,
+    TimeSpan SoakDuration,
+    int LatencySampleCapacity,
     int WarmupConcurrency,
     int SustainedConcurrency,
     int PeakConcurrency,
     int RecoveryConcurrency,
     int SoakConcurrency,
     int QueueCapacity,
+    int ReconnectMaxAttempts,
     double MinimumSustainedTps,
     double MinimumPeakTps,
     double MaximumP95Milliseconds,
@@ -844,6 +1163,9 @@ internal sealed record PerformanceLabOptions(
     string TracePath,
     string FailoverReadyPath,
     string FailoverCompletePath,
+    bool CaptureStopHandshakeEnabled,
+    string RecoveryCompletePath,
+    string CaptureStoppedPath,
     string RunId)
 {
     public static PerformanceLabOptions Parse(string[] args)
@@ -871,6 +1193,16 @@ internal sealed record PerformanceLabOptions(
             "run-id",
             $"performance-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}");
         string artifactRoot = Get(values, "artifact-root", $"artifacts/{runId}");
+        bool recoveryCompleteConfigured = values.ContainsKey("recovery-complete");
+        bool captureStoppedConfigured = values.ContainsKey("capture-stopped");
+        if (recoveryCompleteConfigured != captureStoppedConfigured)
+        {
+            throw new ArgumentException(
+                "--recovery-complete and --capture-stopped must be provided together.");
+        }
+
+        bool captureStopHandshakeEnabled =
+            recoveryCompleteConfigured && captureStoppedConfigured;
         return new(
             Get(values, "remote-ip", "127.0.0.1"),
             GetInt(values, "remote-port", 2906),
@@ -887,12 +1219,20 @@ internal sealed record PerformanceLabOptions(
             GetInt(values, "peak-operations", 5000),
             GetInt(values, "recovery-operations", 500),
             GetInt(values, "soak-operations", 5000),
+            TimeSpan.FromSeconds(Math.Max(
+                0,
+                GetDouble(values, "soak-duration-seconds", 0))),
+            Math.Clamp(
+                GetInt(values, "latency-sample-capacity", 200000),
+                1024,
+                1000000),
             GetInt(values, "warmup-concurrency", 16),
             GetInt(values, "sustained-concurrency", 64),
             GetInt(values, "peak-concurrency", 128),
             GetInt(values, "recovery-concurrency", 32),
             GetInt(values, "soak-concurrency", 64),
             GetInt(values, "queue-capacity", 16384),
+            GetIntInRange(values, "reconnect-max-attempts", 30, 1, 180),
             GetDouble(values, "minimum-sustained-tps", 10000),
             GetDouble(values, "minimum-peak-tps", 20000),
             GetDouble(values, "maximum-p95-ms", 20),
@@ -908,6 +1248,9 @@ internal sealed record PerformanceLabOptions(
             Get(values, "trace", Path.Combine(artifactRoot, "sdk-trace.jsonl")),
             Get(values, "failover-ready", Path.Combine(artifactRoot, "failover-ready")),
             Get(values, "failover-complete", Path.Combine(artifactRoot, "failover-complete")),
+            captureStopHandshakeEnabled,
+            Get(values, "recovery-complete", Path.Combine(artifactRoot, "recovery-complete")),
+            Get(values, "capture-stopped", Path.Combine(artifactRoot, "capture-stopped")),
             runId);
     }
 
@@ -918,7 +1261,11 @@ internal sealed record PerformanceLabOptions(
             + $"sustained={SustainedOperations}/{SustainedConcurrency} "
             + $"peak={PeakOperations}/{PeakConcurrency} "
             + $"recovery={RecoveryOperations}/{RecoveryConcurrency} "
-            + $"soak={SoakOperations}/{SoakConcurrency}";
+            + (SoakDuration > TimeSpan.Zero
+                ? $"soakDurationSeconds={SoakDuration.TotalSeconds:F0}/{SoakConcurrency} "
+                : $"soak={SoakOperations}/{SoakConcurrency} ")
+            + $"latencySamples={LatencySampleCapacity} "
+            + $"reconnectMaxAttempts={ReconnectMaxAttempts}";
     }
 
     private static string Get(
@@ -940,6 +1287,25 @@ internal sealed record PerformanceLabOptions(
         return int.Parse(
             Get(values, key, fallback.ToString(CultureInfo.InvariantCulture)),
             CultureInfo.InvariantCulture);
+    }
+
+    private static int GetIntInRange(
+        IReadOnlyDictionary<string, string> values,
+        string key,
+        int fallback,
+        int minimum,
+        int maximum)
+    {
+        int value = GetInt(values, key, fallback);
+        if (value < minimum || value > maximum)
+        {
+            throw new ArgumentOutOfRangeException(
+                key,
+                value,
+                $"{key} must be between {minimum} and {maximum}.");
+        }
+
+        return value;
     }
 
     private static long GetLong(

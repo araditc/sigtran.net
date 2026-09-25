@@ -45,10 +45,13 @@ same-host network namespaces do not satisfy this gate.
 
 The retained topology must identify:
 
-- host/VM identity;
+- host/VM identity, including both configured SDK and peer labels in protected
+  evidence;
 - vCPU and memory limits;
 - OS and kernel;
 - NIC/network path;
+- authenticated proof that the management peer owns the configured SCTP data
+  endpoint;
 - SCTP settings;
 - peer implementation and version;
 - test start/end UTC;
@@ -58,6 +61,31 @@ The multi-host gate requires sustained traffic, failover/recovery, zero lost
 recovery operations, and a long-duration soak. The separate 20K TPS gate may
 be closed by controlled native-SCTP qualification, but this gate remains open
 until representative multi-host evidence exists.
+
+The executable qualification ladder is:
+
+- `smoke`: minimum 15-minute timed soak;
+- `stress`: minimum 1-hour timed soak;
+- `soak`: minimum 6-hour timed soak;
+- `release`: minimum 24-hour timed soak.
+
+Every retained run must bind the evidence to the exact tested source SHA and
+record the profile, injected fault, fault duration, distinct host labels, start
+and end UTC, reconnect/recovery outcome, successful/failed soak operations,
+throughput, latency, and lost recovery operations.
+
+The protected runner currently supports explicit peer restart, bounded peer
+outage, and an SCTP/data-path-scoped partition with fail-safe rollback. These
+do not substitute for host loss, network delay/loss impairment, or route
+withdrawal/recovery. Those scenarios require reviewed out-of-band controls and
+remain incomplete until actually executed.
+
+Raw PCAP, SDK logs/traces, host/address inventory and network-path details stay
+on protected lab storage. Long-duration traffic must not create unbounded packet
+capture: the current runner captures only the failover/recovery window and uses a
+bounded rotating PCAP ring. Only sanitized summary/report files and digest
+references are eligible for the public evidence branch. See
+`docs/MULTI_HOST_QUALIFICATION.md` for the executable contract.
 
 ## Kubernetes SCTP/CNI
 
