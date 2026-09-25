@@ -176,8 +176,8 @@ jobs:
           kubectl -n "$K8S_NAMESPACE" get pod "$pod" -o json > "$raw/pod-initial.json"
           kubectl -n "$K8S_NAMESPACE" logs "$pod" > "$raw/pod-initial.log"
           kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c \
-            'printf "%s\\n" "$SIGTRAN_IMAGE_REVISION"' > "$raw/image-source-revision.txt"
-          observed_revision="$(tr -d '\\r\\n' < "$raw/image-source-revision.txt")"
+            'printf "%s\n" "$SIGTRAN_IMAGE_REVISION"' > "$raw/image-source-revision.txt"
+          IFS= read -r observed_revision < "$raw/image-source-revision.txt"
           test "$observed_revision" = "$SOURCE_SHA"
           kubectl -n "$K8S_NAMESPACE" exec "$pod" -- sh -c 'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs.txt"
           awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' "$raw/sctp-assocs.txt"
