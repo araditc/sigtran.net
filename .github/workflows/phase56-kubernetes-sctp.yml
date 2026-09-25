@@ -475,6 +475,8 @@ jobs:
             kill "$log_pid" 2>/dev/null || true
           }
           trap cleanup_log EXIT
+          sleep 1
+          kill -0 "$log_pid"
 
           started="$(date +%s)"
           kubectl -n "$K8S_NAMESPACE" delete pod "$pod" --grace-period=30 --wait=true
@@ -769,6 +771,8 @@ jobs:
           kubectl -n "$K8S_NAMESPACE" logs -f "$pod" \
             > "$raw/node-drain-termination.log" 2>&1 &
           log_pid=$!
+          sleep 1
+          kill -0 "$log_pid"
 
           kubectl drain "$node" \
             --ignore-daemonsets \
