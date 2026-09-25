@@ -36,6 +36,7 @@ CORE_FILES = {
 }
 
 MATRIX_FILES = {
+    "serviceExposure": "service-exposure.json",
     "networkPolicy": "network-policy.json",
     "gracefulTermination": "graceful-termination.json",
     "rolloutRollback": "rollout-rollback.json",
@@ -327,8 +328,9 @@ def main() -> int:
         f"- Gate-eligible result: `{'PASS' if gate_eligible else 'NO'}`",
         "",
         "A core PASS is not stable-gate evidence by itself. Gate eligibility also",
-        "requires retained source-bound evidence for NetworkPolicy behavior, graceful",
-        "termination, rollout/rollback, and node drain/rescheduling.",
+        "requires retained source-bound evidence for management service exposure,",
+        "NetworkPolicy behavior, graceful termination, rollout/rollback, and node",
+        "drain/rescheduling.",
         "",
     ])
     (safe / "report.md").write_text("\n".join(report_lines), encoding="utf-8")
