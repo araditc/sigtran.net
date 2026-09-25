@@ -104,6 +104,24 @@ def cni_identity(value: dict[str, Any]) -> tuple[str, list[str]]:
     return name, images
 
 
+def sanitize_image_location(image: str) -> str:
+    """Remove registry/repository path while retaining the public artifact identity."""
+    return image.rsplit("/", 1)[-1].strip()
+
+
+def pseudonymize_nodes(*nodes: str) -> tuple[str, ...]:
+    aliases: dict[str, str] = {}
+    result: list[str] = []
+    for node in nodes:
+        if not node:
+            result.append("")
+            continue
+        if node not in aliases:
+            aliases[node] = f"node-{len(aliases) + 1}"
+        result.append(aliases[node])
+    return tuple(result)
+
+
 def linux_node_facts(value: dict[str, Any]) -> tuple[list[str], list[str], int]:
     items = value.get("items", [])
     if not isinstance(items, list):
@@ -206,6 +224,12 @@ def main() -> int:
 
     initial_uid, initial_node, initial_image, initial_image_id = pod_identity(pod_initial)
     final_uid, final_node, final_image, final_image_id = pod_identity(pod_final)
+    public_initial_node, public_final_node = pseudonymize_nodes(initial_node, final_node)
+    public_cni_images = sorted({
+        sanitized
+        for image in cni_images
+        if (sanitized := sanitize_image_location(image))
+    })
 
     image_digest_visible_initial = f"sha256:{expected_image_digest}" in initial_image_id
     image_digest_visible_final = f"sha256:{expected_image_digest}" in final_image_id
@@ -255,9 +279,9 @@ def main() -> int:
         "kernelVersions": kernels,
         "osImages": os_images,
         "cniDaemonSet": cni_name,
-        "cniImages": cni_images,
-        "initialPodNode": initial_node,
-        "finalPodNode": final_node,
+        "cniImages": public_cni_images,
+        "initialPodNode": public_initial_node,
+        "finalPodNode": public_final_node,
         "initialSctpAssociationCount": initial_associations,
         "finalSctpAssociationCount": final_associations,
         "imageRevision": image_revision,
@@ -280,7 +304,7 @@ def main() -> int:
         f"- Image: `{args.image}`",
         f"- Kubernetes server: `{server_version or 'missing'}`",
         f"- CNI DaemonSet: `{cni_name or 'missing'}`",
-        f"- CNI images: `{', '.join(cni_images) or 'missing'}`",
+        f"- CNI images: `{', '.join(public_cni_images) or 'missing'}`",
         f"- Linux worker nodes observed: `{linux_nodes}`",
         f"- Initial/final SCTP associations: `{initial_associations}/{final_associations}`",
         f"- Image source revision: `{image_revision or 'missing'}`",
