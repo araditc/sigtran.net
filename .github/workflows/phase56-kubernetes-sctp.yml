@@ -69,16 +69,16 @@ jobs:
           set -euo pipefail
           test "$QUALIFICATION_CONFIRMATION" = "run kubernetes sctp $K8S_NAMESPACE"
           [[ "$K8S_NAMESPACE" =~ ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$ ]]
-          [[ "$K8S_IMAGE" =~ @sha256:[0-9a-f]{64}$ ]]
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test -n "$REMOTE_IP"
           test -n "$REMOTE_PORT"
           test -n "$RAW_EVIDENCE_ROOT"
           test -n "$K8S_CNI_DAEMONSET"
           test -n "$K8S_CNI_NAMESPACE"
-          for cmd in kubectl curl sha256sum python3 base64 mktemp sed; do
+          for cmd in kubectl curl sha256sum python3 base64 mktemp; do
             command -v "$cmd" >/dev/null
           done
+          python3 scripts/render-kubernetes-deployment.py --image "$K8S_IMAGE"
           python3 - "$REMOTE_IP" "$REMOTE_PORT" <<'PY'
           import ipaddress, sys
           address=ipaddress.ip_address(sys.argv[1])
@@ -146,7 +146,10 @@ jobs:
           kubectl -n "$K8S_NAMESPACE" create configmap sigtran-node             --from-literal=ASPNETCORE_URLS=http://+:8080             --from-literal=SIGTRAN_REMOTE_IP="$REMOTE_IP"             --from-literal=SIGTRAN_REMOTE_PORT="$REMOTE_PORT"             --from-literal=SIGTRAN_ASP_IDENTIFIER="$ASP_IDENTIFIER"             --from-literal=SIGTRAN_LOCAL_POINT_CODE="$LOCAL_POINT_CODE"             --from-literal=SIGTRAN_REMOTE_POINT_CODE="$REMOTE_POINT_CODE"             --from-literal=SIGTRAN_ROUTING_CONTEXT="$ROUTING_CONTEXT"             --from-literal=SIGTRAN_NETWORK_INDICATOR="$NETWORK_INDICATOR"             --from-literal=SIGTRAN_SERVICE_INDICATOR=3             --from-literal=SIGTRAN_QUEUE_CAPACITY=4096             --dry-run=client -o yaml | kubectl apply -f -
 
           rendered="$EVIDENCE_SCRATCH/deployment.yaml"
-          sed 's|ghcr.io/araditc/sigtran-net-operations-host:VERSION|'"$K8S_IMAGE"'|g'             deploy/kubernetes/deployment.yaml > "$rendered"
+          python3 scripts/render-kubernetes-deployment.py \
+            --template deploy/kubernetes/deployment.yaml \
+            --output "$rendered" \
+            --image "$K8S_IMAGE"
           kubectl -n "$K8S_NAMESPACE" apply -f "$rendered"
 
           if [[ "$K8S_NETWORK_PROFILE" == "hostNetwork" ]]; then
@@ -270,7 +273,10 @@ jobs:
           raw="$EVIDENCE_SCRATCH/raw"
           safe="$EVIDENCE_SCRATCH/safe"
 
+          set +e
           python3 scripts/validate-kubernetes-sctp-evidence.py             --raw-root "$raw"             --safe-root "$safe"             --source-sha "$SOURCE_SHA"             --run-id "$RUN_ID"             --network-profile "$K8S_NETWORK_PROFILE"             --image "$K8S_IMAGE"
+          validator_status=$?
+          set -e
 
           (
             cd "$raw"
@@ -281,12 +287,15 @@ jobs:
             find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum
           ) > "$safe/sha256.txt"
 
-          gate_eligible="$(python3 - "$safe/summary.json" <<'PY'
+          gate_eligible=false
+          if [[ "$validator_status" -eq 0 ]]; then
+            gate_eligible="$(python3 - "$safe/summary.json" <<'PY'
           import json, sys
           value=json.load(open(sys.argv[1]))
           print("true" if value.get("gateEligible") is True else "false")
           PY
-          )"
+            )"
+          fi
           echo "gate_eligible=$gate_eligible" >> "$GITHUB_OUTPUT"
 
           python3 scripts/persist-qualification-evidence.py             "$EVIDENCE_SCRATCH" "$RAW_EVIDENCE_ROOT/$RUN_ID"
@@ -296,12 +305,18 @@ jobs:
             echo
             echo "- Source: `$SOURCE_SHA`"
             echo "- Network profile: `$K8S_NETWORK_PROFILE`"
-            echo "- Core evidence validation: PASS"
+            if [[ "$validator_status" -eq 0 ]]; then
+              echo "- Core evidence validation: PASS"
+            else
+              echo "- Core evidence validation: FAIL (protected evidence retained)"
+            fi
             echo "- Stable gate eligible: `$gate_eligible`"
             if [[ "$gate_eligible" != "true" ]]; then
               echo "- Remaining matrix evidence is intentionally OPEN; no public evidence PR will be created."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$validator_status"
 
       - name: Cleanup private kubectl material
         if: always()
