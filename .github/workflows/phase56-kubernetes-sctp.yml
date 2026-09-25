@@ -402,8 +402,6 @@ jobs:
 
           kubectl -n "$K8S_NAMESPACE" get pod "$replacement_pod" -o json \
             > "$raw/network-policy-pod-recovered.json"
-          trap - EXIT
-
           python3 - "$raw/network-policy.json" "$SOURCE_SHA" \
             "$association_blocked" "$association_recovered" <<'PY'
           import json, sys
@@ -434,13 +432,10 @@ jobs:
           raw="$EVIDENCE_SCRATCH/raw"
           kubectl -n "$K8S_NAMESPACE" delete networkpolicy "$K8S_POLICY_NAME" \
             --ignore-not-found=true
-          if kubectl -n "$K8S_NAMESPACE" get networkpolicy "$K8S_POLICY_NAME" \
-            -o json > "$raw/network-policy-cleanup-unexpected.json" 2>/dev/null; then
-            raise_cleanup_error=true
-          else
-            raise_cleanup_error=false
-          fi
-          test "$raise_cleanup_error" = "false"
+          remaining="$(kubectl -n "$K8S_NAMESPACE" get networkpolicy "$K8S_POLICY_NAME" \
+            --ignore-not-found=true -o name)"
+          printf '%s\n' "$remaining" > "$raw/network-policy-cleanup-result.txt"
+          test -z "$remaining"
 
       - name: Verify pod restart and rollout rollback
         id: rollout
