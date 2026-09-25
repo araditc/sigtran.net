@@ -229,6 +229,54 @@ class PeerBuildMetadataTests(unittest.TestCase):
 
 
 
+class PeerEndpointVerificationTests(unittest.TestCase):
+    def run_verifier(self, target: str, inventory: str):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "peer-addresses.txt"
+            path.write_text(inventory)
+            return subprocess.run(
+                [sys.executable, str(SCRIPTS / "verify-peer-endpoint.py"), target, str(path)],
+                capture_output=True, text=True, timeout=5)
+
+    def test_authenticated_peer_must_own_remote_ip(self):
+        inventory = (
+            "2: eth0    inet 192.0.2.44/24 brd 192.0.2.255 scope global eth0\n"
+            "3: eth1    inet 198.51.100.7/24 brd 198.51.100.255 scope global eth1\n"
+        )
+        run = self.run_verifier("198.51.100.7", inventory)
+        self.assertEqual(run.returncode, 0, run.stderr)
+
+    def test_mismatched_peer_endpoint_fails_closed(self):
+        inventory = "2: eth0    inet 192.0.2.44/24 brd 192.0.2.255 scope global eth0\n"
+        run = self.run_verifier("198.51.100.7", inventory)
+        self.assertNotEqual(run.returncode, 0)
+        self.assertIn("does not own REMOTE_IP", run.stderr)
+
+
+class QualificationRunnerContractTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.runner = (SCRIPTS / "run-multi-host-qualification.sh").read_text()
+
+    def test_capture_starts_only_after_failover_ready_and_is_hard_bounded(self):
+        ready = self.runner.index('test -s "$failover_ready"')
+        invocation = self.runner.index("start_capture\nfault_started_utc", ready)
+        self.assertGreater(invocation, ready)
+        self.assertIn('capture_limit_mb=64', self.runner)
+        self.assertIn('capture_file_count=4', self.runner)
+        self.assertIn('-C "$capture_limit_mb" -W "$capture_file_count"', self.runner)
+        self.assertNotIn('traffic.pcap', self.runner)
+
+    def test_peer_label_and_authenticated_address_inventory_are_protected(self):
+        self.assertIn('peer_addresses="$raw/peer-addresses.txt"', self.runner)
+        self.assertIn(
+            'python3 "$script_dir/verify-peer-endpoint.py" "$REMOTE_IP" "$peer_addresses"',
+            self.runner)
+        peer_block_start = self.runner.index('echo "label=$PEER_HOST_ID"')
+        peer_block_end = self.runner.index('} >"$peer_host"', peer_block_start)
+        self.assertLess(peer_block_start, peer_block_end)
+
+
 class QualificationPlanTests(unittest.TestCase):
     def run_plan(self, duration: str):
         env = dict(
