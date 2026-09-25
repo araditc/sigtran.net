@@ -19,7 +19,7 @@ case "$FAULT_SCENARIO" in
   *) echo "Unsupported fault scenario: $FAULT_SCENARIO" >&2; exit 2 ;;
 esac
 
-FAULT_DURATION_SECONDS="$(python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
+validated_settings="$(python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
 import ipaddress, sys
 duration=int(sys.argv[1])
 if duration < 1 or duration > 60:
@@ -28,12 +28,27 @@ ipaddress.ip_address(sys.argv[2])
 port=int(sys.argv[3])
 if port < 1 or port > 65535:
     raise SystemExit("REMOTE_SCTP_PORT must be between 1 and 65535")
-print(duration)
+
+failover_timeout=duration + 45
+retry_target=failover_timeout + 5
+attempts=0
+delay=0.1
+delay_budget=0.0
+while delay_budget < retry_target:
+    attempts += 1
+    if attempts > 180:
+        raise SystemExit("Reconnect retry budget exceeds bounded maximum")
+    delay_budget += delay
+    delay=min(delay * 2, 1.0)
+attempts=max(30, attempts)
+print(duration, failover_timeout, attempts)
 PY
 )"
+read -r FAULT_DURATION_SECONDS failover_timeout_seconds reconnect_max_attempts <<<"$validated_settings"
 
 if [[ "$PLAN_ONLY" == "true" ]]; then
-  python3 - "$PROFILE" "$FAULT_SCENARIO" "$SOAK_SECONDS" "$FAULT_DURATION_SECONDS" <<'PY'
+  python3 - "$PROFILE" "$FAULT_SCENARIO" "$SOAK_SECONDS" "$FAULT_DURATION_SECONDS" \
+    "$failover_timeout_seconds" "$reconnect_max_attempts" <<'PY'
 import json, sys
 print(json.dumps({
     "schemaVersion": 1,
@@ -41,6 +56,8 @@ print(json.dumps({
     "faultScenario": sys.argv[2],
     "soakDurationSeconds": int(sys.argv[3]),
     "faultDurationSeconds": int(sys.argv[4]),
+    "failoverTimeoutSeconds": int(sys.argv[5]),
+    "reconnectMaxAttempts": int(sys.argv[6]),
     "requiresDistinctHosts": True,
     "rawEvidenceStorage": "protected",
     "stableGatePromotion": False,
@@ -259,7 +276,6 @@ tcpdump_pid=$!
 sleep 1
 sudo -n kill -0 "$tcpdump_pid"
 timeout_seconds=$((SOAK_SECONDS + 1800))
-failover_timeout_seconds=$((FAULT_DURATION_SECONDS + 45))
 timeout "$((timeout_seconds + 300))s" dotnet run \
   --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj \
   -c Release --no-build -- --run-id "$RUN_ID" --artifact-root "$raw" \
@@ -270,6 +286,7 @@ timeout "$((timeout_seconds + 300))s" dotnet run \
   --latency-sample-capacity 200000 --warmup-concurrency 32 --sustained-concurrency 192 \
   --peak-concurrency 384 --recovery-concurrency 64 --soak-concurrency 192 \
   --timeout-seconds "$timeout_seconds" --failover-timeout-seconds "$failover_timeout_seconds" \
+  --reconnect-max-attempts "$reconnect_max_attempts" \
   --metrics "$metrics" --report "$report" --trace "$trace" \
   --failover-ready "$failover_ready" --failover-complete "$failover_complete" >"$raw/sdk.log" 2>&1 &
 sdk_pid=$!
@@ -334,7 +351,8 @@ completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 python3 - "$metrics" "$safe/summary.json" "$safe/report.md" \
   "$SOAK_SECONDS" "$SDK_HOST_ID" "$PEER_HOST_ID" "$PROFILE" \
-  "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$started_utc" "$completed_utc" "$SOURCE_SHA" <<'PY'
+  "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" "$failover_timeout_seconds" "$reconnect_max_attempts" \
+  "$started_utc" "$completed_utc" "$SOURCE_SHA" <<'PY'
 import json, sys
 from pathlib import Path
 metrics_path, summary_path, report_path = map(Path, sys.argv[1:4])
@@ -344,9 +362,11 @@ peer_host=sys.argv[6]
 profile=sys.argv[7]
 fault=sys.argv[8]
 fault_duration=int(sys.argv[9])
-started=sys.argv[10]
-completed=sys.argv[11]
-source_sha=sys.argv[12]
+failover_timeout=int(sys.argv[10])
+reconnect_max_attempts=int(sys.argv[11])
+started=sys.argv[12]
+completed=sys.argv[13]
+source_sha=sys.argv[14]
 value=json.loads(metrics_path.read_text())
 stages={s["Name"]:s for s in value.get("Stages",[])}
 
@@ -381,6 +401,8 @@ result={
     "qualificationProfile":profile,
     "faultScenario":fault,
     "faultDurationSeconds":fault_duration,
+    "failoverTimeoutSeconds":failover_timeout,
+    "reconnectMaxAttempts":reconnect_max_attempts,
     "topology":"representative multi-host",
     "distinctHostsVerified":sdk_host != peer_host,
     "startedUtc":started,
@@ -407,6 +429,9 @@ report_path.write_text(
     f"- Source SHA: {source_sha}\n"
     f"- Profile: {profile}\n"
     f"- Fault scenario: {fault}\n"
+    f"- Fault duration seconds: {fault_duration}\n"
+    f"- Failover timeout seconds: {failover_timeout}\n"
+    f"- Reconnect max attempts: {reconnect_max_attempts}\n"
     f"- Distinct hosts verified: {sdk_host != peer_host}\n"
     f"- Soak duration seconds: {soak_seconds:.1f}\n"
     f"- Successful soak operations: {result['soakSuccessfulOperations']}\n"
