@@ -19,7 +19,7 @@ case "$FAULT_SCENARIO" in
   *) echo "Unsupported fault scenario: $FAULT_SCENARIO" >&2; exit 2 ;;
 esac
 
-python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
+FAULT_DURATION_SECONDS="$(python3 - "$FAULT_DURATION_SECONDS" "${REMOTE_IP:-127.0.0.1}" "${REMOTE_SCTP_PORT:-2906}" <<'PY'
 import ipaddress, sys
 duration=int(sys.argv[1])
 if duration < 1 or duration > 60:
@@ -28,7 +28,9 @@ ipaddress.ip_address(sys.argv[2])
 port=int(sys.argv[3])
 if port < 1 or port > 65535:
     raise SystemExit("REMOTE_SCTP_PORT must be between 1 and 65535")
+print(duration)
 PY
+)"
 
 if [[ "$PLAN_ONLY" == "true" ]]; then
   python3 - "$PROFILE" "$FAULT_SCENARIO" "$SOAK_SECONDS" "$FAULT_DURATION_SECONDS" <<'PY'
