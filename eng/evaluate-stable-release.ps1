@@ -57,6 +57,30 @@ function Test-RegularRepositoryFile {
     return $true
 }
 
+function Test-GateEvidencePathPolicy {
+    param(
+        [string]$GateId,
+        [string]$EvidencePath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($EvidencePath)) {
+        return $false
+    }
+
+    $normalized = $EvidencePath.Replace("\\", "/")
+    if ($GateId -eq "public-api-baseline") {
+        return $normalized.StartsWith(
+            "eng/api/",
+            [StringComparison]::Ordinal
+        )
+    }
+
+    return $normalized.StartsWith(
+        "docs/evidence/",
+        [StringComparison]::Ordinal
+    )
+}
+
 $manifestFullPath = Resolve-RepositoryRelativePath -RelativePath $ManifestPath
 if ($null -eq $manifestFullPath -or
     -not (Test-RegularRepositoryFile -FullPath $manifestFullPath)) {
@@ -154,7 +178,9 @@ foreach ($gate in $manifest.gates) {
     foreach ($evidenceValue in $evidencePaths) {
         $evidencePath = [string]$evidenceValue
         $evidenceFullPath = Resolve-RepositoryRelativePath -RelativePath $evidencePath
-        $pathPolicyValid = $null -ne $evidenceFullPath
+        $repositoryPathValid = $null -ne $evidenceFullPath
+        $gatePathValid = Test-GateEvidencePathPolicy -GateId $gateId -EvidencePath $evidencePath
+        $pathPolicyValid = $repositoryPathValid -and $gatePathValid
         $present = $pathPolicyValid -and
             (Test-RegularRepositoryFile -FullPath $evidenceFullPath)
         $sha256 = if ($present) {
