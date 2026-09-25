@@ -179,7 +179,21 @@ foreach ($gate in $manifest.gates) {
         $evidencePath = [string]$evidenceValue
         $evidenceFullPath = Resolve-RepositoryRelativePath -RelativePath $evidencePath
         $repositoryPathValid = $null -ne $evidenceFullPath
-        $gatePathValid = Test-GateEvidencePathPolicy -GateId $gateId -EvidencePath $evidencePath
+        $canonicalEvidencePath = if ($repositoryPathValid) {
+            [IO.Path]::GetRelativePath(
+                $rootPath,
+                $evidenceFullPath
+            ).Replace(
+                [IO.Path]::DirectorySeparatorChar,
+                [char]'/'
+            )
+        }
+        else {
+            ""
+        }
+        $gatePathValid = $repositoryPathValid -and (
+            Test-GateEvidencePathPolicy -GateId $gateId -EvidencePath $canonicalEvidencePath
+        )
         $pathPolicyValid = $repositoryPathValid -and $gatePathValid
         $present = $pathPolicyValid -and
             (Test-RegularRepositoryFile -FullPath $evidenceFullPath)
@@ -194,6 +208,7 @@ foreach ($gate in $manifest.gates) {
 
         $evidenceResults += [ordered]@{
             path = $evidencePath
+            canonicalPath = $canonicalEvidencePath
             pathPolicyValid = $pathPolicyValid
             present = $present
             sha256 = $sha256
