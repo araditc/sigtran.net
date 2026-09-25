@@ -245,7 +245,7 @@ jobs:
           signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
           signing_certificate_crt="$RUNNER_TEMP/sigtran-release-signing.crt"
           test -f "$signing_certificate_path"
-          openssl pkcs12 -in "$signing_certificate_path" -passin pass:"$SIGNING_CERTIFICATE_PASSWORD" -clcerts -nokeys -out "$signing_certificate_crt"
+          openssl pkcs12 -in "$signing_certificate_path" -passin env:SIGNING_CERTIFICATE_PASSWORD -clcerts -nokeys -out "$signing_certificate_crt"
           sudo cp "$signing_certificate_crt" /usr/local/share/ca-certificates/sigtran-release-signing.crt
           sudo update-ca-certificates
           for codesign_bundle in /usr/share/dotnet/sdk/*/trustedroots/codesignctl.pem; do
