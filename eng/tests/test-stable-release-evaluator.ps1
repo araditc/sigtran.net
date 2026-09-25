@@ -33,14 +33,25 @@ function Assert-True {
     }
 }
 
+function Get-FixtureEvidencePath {
+    param([string]$GateId)
+
+    if ($GateId -eq "public-api-baseline") {
+        return "eng/api/Sigtran.NET.1.0.public-api.txt"
+    }
+
+    return "docs/evidence/PHASE55_GITHUB_PROTECTION_20260724T102354Z.json"
+}
+
 function New-FixtureGates {
     param(
         [string]$TargetId = "",
-        [object[]]$TargetEvidence = @("README.md"),
+        [object[]]$TargetEvidence = $null,
         [bool]$TargetPassed = $true,
         [bool]$TargetRequired = $true
     )
 
+    $targetEvidenceWasSupplied = $PSBoundParameters.ContainsKey("TargetEvidence")
     $gates = @()
     foreach ($id in $requiredGateIds) {
         $gate = [ordered]@{
@@ -48,13 +59,15 @@ function New-FixtureGates {
             title = "Fixture $id"
             required = $true
             passed = $true
-            evidence = @("README.md")
+            evidence = @(Get-FixtureEvidencePath -GateId $id)
             note = "Fixture gate requires retained evidence."
         }
         if ($id -eq $TargetId) {
             $gate.required = $TargetRequired
             $gate.passed = $TargetPassed
-            $gate.evidence = $TargetEvidence
+            if ($targetEvidenceWasSupplied) {
+                $gate.evidence = $TargetEvidence
+            }
         }
         $gates += $gate
     }
@@ -154,6 +167,15 @@ try {
     Assert-True ($escapingGate.evidence[0].pathPolicyValid -eq $false) "Escaping evidence path must be rejected."
     Assert-True ($escapingGate.evidence[0].present -eq $false) "Rejected evidence must never be treated as present."
     Assert-True ($escapingReport.blockers.Count -eq 1) "Escaping evidence fixture must have one blocker."
+
+    $wrongScopeManifest = Write-FixtureManifest -Name "wrong-scope" -Gates (
+        New-FixtureGates -TargetId "operator-profile" -TargetEvidence @("README.md")
+    )
+    $wrongScopeReport = Invoke-Fixture -Name "wrong-scope" -ManifestPath $wrongScopeManifest
+    $wrongScopeGate = $wrongScopeReport.gates | Where-Object { $_.id -eq "operator-profile" }
+    Assert-True ($wrongScopeReport.decision -eq "NO-GO") "Evidence outside governed roots must be NO-GO."
+    Assert-True ($wrongScopeGate.evidence[0].pathPolicyValid -eq $false) "Wrong-scope evidence path must be rejected."
+    Assert-True ($wrongScopeReport.blockers.Count -eq 1) "Wrong-scope evidence fixture must have one blocker."
 
     $baselineEscapeManifest = Write-FixtureManifest -Name "baseline-escape" -Gates (New-FixtureGates) -Baseline "../README.md"
     $baselineEscapeReport = Invoke-Fixture -Name "baseline-escape" -ManifestPath $baselineEscapeManifest
