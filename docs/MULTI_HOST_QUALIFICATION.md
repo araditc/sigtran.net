@@ -153,12 +153,17 @@ directory under runner temp**, not in `GITHUB_WORKSPACE`. The script sets umask
 077 before directory/file creation. Even on failure the working copy is private.
 Full packet capture is intentionally excluded from the long sustained/soak
 interval: tcpdump starts only after the SDK publishes `failover-ready`, then
-covers the injected fault, reconnect and bounded recovery stage. After recovery
-operations finish, PerformanceLab writes an attempt-local `recovery-complete`
-marker and **does not enter the timed soak** until the runner has stopped
-tcpdump, normalized the rotated capture ownership, and acknowledged that stop
-through `capture-stopped`. The runner bounds its recovery-marker wait and fails
-closed if the SDK exits or never signals recovery completion. Capture uses a
+covers the injected fault, reconnect and bounded recovery stage. The
+representative multi-host runner explicitly opts into the capture-stop handshake
+by supplying **both** `--recovery-complete` and `--capture-stopped`; supplying
+only one is rejected. After recovery operations finish, PerformanceLab writes
+the attempt-local `recovery-complete` marker and **does not enter the timed
+soak** until the runner has stopped tcpdump, normalized the rotated capture
+ownership, and acknowledged that stop through `capture-stopped`. The runner
+bounds its recovery-marker wait and fails closed if the SDK exits or never
+signals recovery completion. Historical PerformanceLab runners that supply
+neither marker retain their previous behavior and are not made dependent on this
+qualification-specific handshake. Capture uses a
 four-file ring with 64 MB rotation files, bounding on-disk PCAP growth to roughly
 256 MB per attempt while retaining the failover window instead of allowing
 15-minute-to-24-hour soak traffic to rotate out fault/reconnect packets.
@@ -203,11 +208,11 @@ the stable manifest to passed.
 
 Normal PR CI executes all 12 profile/fault plans, shell syntax checks and
 `python3 scripts/tests/test_qualification_safety.py` without external traffic.
-The 23 isolated tests cover peer build-marker validation, decimal fault-duration
+The 24 isolated tests cover peer build-marker validation, decimal fault-duration
 normalization, maximum-outage reconnect-budget coverage, authenticated peer
 endpoint ownership, fail-closed endpoint mismatch, failover-window capture
-ordering/size bounds, recovery-to-capture-stop-to-soak handshake ordering, and
-protected peer-label retention plus peer
+ordering/size bounds, recovery-to-capture-stop-to-soak handshake ordering,
+paired opt-in/legacy-runner compatibility, and protected peer-label retention plus peer
 arm-before-stop ordering, failed arming,
 independent retry after the initiating process exits, verify-before-disarm,
 failed recovery preserving rollback, invalid service rejection, full copy/digest
