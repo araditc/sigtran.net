@@ -64,6 +64,7 @@ jobs:
             done
           done
           python3 -u scripts/tests/test_qualification_safety.py
+          python3 -u scripts/tests/test_kubernetes_sctp_evidence.py
 
       - name: Verify development and release package identity
         shell: bash
