@@ -144,6 +144,8 @@ report="$raw/report.md"
 trace="$raw/sdk-trace.jsonl"
 failover_ready="$raw/failover-ready"
 failover_complete="$raw/failover-complete"
+recovery_complete="$raw/recovery-complete"
+capture_stopped="$raw/capture-stopped"
 capture_prefix="$raw/failover.pcap"
 capture_limit_mb=64
 capture_file_count=4
@@ -327,7 +329,8 @@ timeout "$((timeout_seconds + 300))s" dotnet run \
   --timeout-seconds "$timeout_seconds" --failover-timeout-seconds "$failover_timeout_seconds" \
   --reconnect-max-attempts "$reconnect_max_attempts" \
   --metrics "$metrics" --report "$report" --trace "$trace" \
-  --failover-ready "$failover_ready" --failover-complete "$failover_complete" >"$raw/sdk.log" 2>&1 &
+  --failover-ready "$failover_ready" --failover-complete "$failover_complete" \
+  --recovery-complete "$recovery_complete" --capture-stopped "$capture_stopped" >"$raw/sdk.log" 2>&1 &
 sdk_pid=$!
 for _ in $(seq 1 7200); do
   [[ -s "$failover_ready" ]] && break
@@ -381,9 +384,27 @@ EOF
 esac
 printf '%s scenario=%s event=released\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FAULT_SCENARIO" >>"$fault_log"
 touch "$failover_complete"
+
+# PerformanceLab writes recovery-complete only after the bounded recovery stage has
+# finished, then waits for capture-stopped before it is allowed to enter the
+# long timed soak. This handshake prevents soak traffic from rotating the fault
+# and reconnect packets out of the bounded capture ring.
+recovery_marker_timeout_seconds=$((failover_timeout_seconds + 300))
+recovery_marker_polls=$((recovery_marker_timeout_seconds * 4))
+for _ in $(seq 1 "$recovery_marker_polls"); do
+  [[ -s "$recovery_complete" ]] && break
+  kill -0 "$sdk_pid" 2>/dev/null || break
+  sleep 0.25
+done
+if [[ ! -s "$recovery_complete" ]]; then
+  echo "PerformanceLab did not signal recovery completion within the bounded capture window." >&2
+  exit 1
+fi
+stop_capture
+touch "$capture_stopped"
+
 wait "$sdk_pid"
 sdk_pid=""
-stop_capture
 completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 python3 - "$metrics" "$safe/summary.json" "$safe/report.md" \
