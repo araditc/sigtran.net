@@ -138,10 +138,13 @@ report="$raw/report.md"
 trace="$raw/sdk-trace.jsonl"
 failover_ready="$raw/failover-ready"
 failover_complete="$raw/failover-complete"
-pcap="$raw/traffic.pcap"
+capture_prefix="$raw/failover.pcap"
+capture_limit_mb=64
+capture_file_count=4
 fault_log="$raw/fault-events.log"
 sdk_host="$raw/sdk-host.txt"
 peer_host="$raw/peer-host.txt"
+peer_addresses="$raw/peer-addresses.txt"
 network_path="$raw/network-path.txt"
 peer_build="$raw/peer-build.json"
 started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -159,6 +162,37 @@ ssh_peer() {
     -i "$PEER_SSH_IDENTITY_FILE" \
     -o UserKnownHostsFile="$PEER_SSH_KNOWN_HOSTS_FILE" \
     "$PEER_SSH_USER@$PEER_SSH_HOST" "$@"
+}
+
+start_capture() {
+  [[ "$tcpdump_pid" == "" ]] || { echo "Packet capture is already active." >&2; return 1; }
+  sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U \
+    -C "$capture_limit_mb" -W "$capture_file_count" -w "$capture_prefix" \
+    "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" >"$raw/tcpdump.log" 2>&1 &
+  tcpdump_pid=$!
+  sleep 1
+  sudo -n kill -0 "$tcpdump_pid"
+}
+
+stop_capture() {
+  if [[ -n "$tcpdump_pid" ]] && sudo -n kill -0 "$tcpdump_pid" 2>/dev/null; then
+    sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
+    wait "$tcpdump_pid" 2>/dev/null || true
+  fi
+  tcpdump_pid=""
+
+  local -a captures=()
+  while IFS= read -r -d '' file; do
+    captures+=("$file")
+  done < <(find "$raw" -maxdepth 1 -type f -name 'failover.pcap*' -print0)
+
+  if (( ${#captures[@]} == 0 )); then
+    echo "Packet capture produced no PCAP evidence." >&2
+    return 1
+  fi
+
+  sudo -n chown "$(id -u):$(id -g)" "${captures[@]}" 2>/dev/null || return 1
+  chmod 600 "${captures[@]}"
 }
 
 persist_protected_evidence() {
@@ -214,11 +248,9 @@ cleanup() {
     kill -TERM "$sdk_pid" 2>/dev/null || true
     wait "$sdk_pid" 2>/dev/null || true
   fi
-  if [[ -n "$tcpdump_pid" ]] && sudo -n kill -0 "$tcpdump_pid" 2>/dev/null; then
-    sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
-    wait "$tcpdump_pid" 2>/dev/null || true
+  if [[ -n "$tcpdump_pid" ]]; then
+    stop_capture || exit_code=1
   fi
-  sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
   if [[ "$peer_rollback_armed" == "true" ]]; then
     recover_peer >/dev/null 2>&1 || exit_code=1
   else
@@ -252,7 +284,13 @@ ssh_peer "sudo -n systemctl start '$PEER_SERVICE'"
 ssh_peer "sudo -n systemctl is-active '$PEER_SERVICE'"
 ssh_peer "sudo -n cat -- '$PEER_BUILD_METADATA_FILE'" | \
   python3 "$script_dir/normalize-peer-build-metadata.py" >"$peer_build"
-ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo -n systemctl status '$PEER_SERVICE' --no-pager" >"$peer_host"
+ssh_peer "command -v ip >/dev/null && ip -o -4 addr show" >"$peer_addresses"
+python3 "$script_dir/verify-peer-endpoint.py" "$REMOTE_IP" "$peer_addresses"
+{
+  echo "label=$PEER_HOST_ID"
+  echo "verifiedRemoteIp=$REMOTE_IP"
+  ssh_peer "hostname; uname -r; nproc; free -h | sed -n '2p'; sudo -n systemctl status '$PEER_SERVICE' --no-pager"
+} >"$peer_host"
 {
   echo "remoteIp=$REMOTE_IP"
   echo "remotePort=$REMOTE_SCTP_PORT"
@@ -270,11 +308,6 @@ if [[ "$sdk_hostname" == "$peer_hostname" ]]; then
   exit 2
 fi
 
-sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U -w "$pcap" \
-  "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" >"$raw/tcpdump.log" 2>&1 &
-tcpdump_pid=$!
-sleep 1
-sudo -n kill -0 "$tcpdump_pid"
 timeout_seconds=$((SOAK_SECONDS + 1800))
 timeout "$((timeout_seconds + 300))s" dotnet run \
   --project src/Sigtran.NET.PerformanceLab/Sigtran.NET.PerformanceLab.csproj \
@@ -296,6 +329,7 @@ for _ in $(seq 1 7200); do
   sleep 0.25
 done
 test -s "$failover_ready"
+start_capture
 fault_started_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 printf '%s scenario=%s event=starting durationSeconds=%s\n' \
   "$fault_started_utc" "$FAULT_SCENARIO" "$FAULT_DURATION_SECONDS" >>"$fault_log"
@@ -343,10 +377,7 @@ printf '%s scenario=%s event=released\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$FAUL
 touch "$failover_complete"
 wait "$sdk_pid"
 sdk_pid=""
-sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
-wait "$tcpdump_pid" 2>/dev/null || true
-tcpdump_pid=""
-sudo -n chown "$(id -u):$(id -g)" "$pcap" "$raw/tcpdump.log" 2>/dev/null || true
+stop_capture
 completed_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 python3 - "$metrics" "$safe/summary.json" "$safe/report.md" \
