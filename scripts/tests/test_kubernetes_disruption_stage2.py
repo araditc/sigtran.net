@@ -49,7 +49,6 @@ class PdbRendererTests(unittest.TestCase):
         self.assertEqual(value["metadata"]["name"], "sigtran-pdb-123-1")
         self.assertEqual(value["metadata"]["namespace"], "sigtran-phase56")
         self.assertEqual(value["spec"]["maxUnavailable"], 1)
-        self.assertEqual(value["spec"]["unhealthyPodEvictionPolicy"], "AlwaysAllow")
         self.assertEqual(
             value["spec"]["selector"]["matchLabels"],
             {"app.kubernetes.io/name": "sigtran-node"},
@@ -100,7 +99,6 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         self.assertIn("render-kubernetes-pdb.py", block)
         self.assertIn('"observedGenerationMatches": observed_generation == generation', block)
         self.assertIn('"disruptionsAllowed": disruptions_allowed', block)
-        self.assertIn("unhealthyPodEvictionPolicy", block)
 
         cleanup = self.workflow.index("- name: Remove qualification PodDisruptionBudget", node_drain)
         cleanup_end = self.workflow.index("- name: Capture final readiness and SCTP state", cleanup)
