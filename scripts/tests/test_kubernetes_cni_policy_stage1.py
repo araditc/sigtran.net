@@ -20,6 +20,7 @@ class NetworkPolicyRendererTests(unittest.TestCase):
         mode: str,
         *,
         namespace: str = "sigtran-phase56",
+        policy_name: str = "sigtran-sctp-test-1",
         remote_ip: str = "192.0.2.44",
         remote_port: str = "2905",
     ):
@@ -31,6 +32,8 @@ class NetworkPolicyRendererTests(unittest.TestCase):
                     str(RENDERER),
                     "--namespace",
                     namespace,
+                    "--name",
+                    policy_name,
                     "--remote-ip",
                     remote_ip,
                     "--remote-port",
@@ -52,6 +55,7 @@ class NetworkPolicyRendererTests(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertEqual(value["kind"], "NetworkPolicy")
         self.assertEqual(value["metadata"]["namespace"], "sigtran-phase56")
+        self.assertEqual(value["metadata"]["name"], "sigtran-sctp-test-1")
         egress = value["spec"]["egress"]
         self.assertEqual(len(egress), 1)
         self.assertEqual(
@@ -72,6 +76,7 @@ class NetworkPolicyRendererTests(unittest.TestCase):
     def test_unsafe_or_nonrepresentative_values_fail_closed(self):
         cases = [
             {"namespace": "bad;namespace"},
+            {"policy_name": "bad;policy"},
             {"remote_ip": "127.0.0.1"},
             {"remote_ip": "::1"},
             {"remote_port": "0"},
@@ -101,6 +106,10 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
             'test "$K8S_NETWORK_PROFILE" = "cni"',
             self.workflow,
         )
+        self.assertIn(
+            "K8S_POLICY_NAME: sigtran-sctp-${{ github.run_id }}-${{ github.run_attempt }}",
+            self.workflow,
+        )
 
     def test_stage1_steps_run_only_for_cni_policy_profile(self):
         for step_id in ("service_exposure", "network_policy"):
@@ -122,30 +131,31 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
         self.assertIn('"associationBlocked": association_blocked == "true"', self.workflow)
         self.assertIn('"sctpAssociationRecovered": association_recovered == "true"', self.workflow)
 
-    def test_network_policy_cleanup_restores_allow_policy(self):
+    def test_network_policy_cleanup_removes_run_unique_policy(self):
         self.assertIn("cleanup_policy()", self.workflow)
         self.assertIn(
-            'kubectl apply -f "$allow" >/dev/null 2>&1 || true',
+            'delete networkpolicy "$K8S_POLICY_NAME"',
             self.workflow,
         )
         self.assertIn("trap cleanup_policy EXIT", self.workflow)
 
-        restore = self.workflow.index("- name: Restore CNI SCTP NetworkPolicy")
+        cleanup = self.workflow.index("- name: Remove qualification CNI SCTP NetworkPolicy")
         rollout = self.workflow.index("- name: Verify pod restart and rollout rollback")
-        block = self.workflow[restore:rollout]
+        block = self.workflow[cleanup:rollout]
         self.assertIn(
             "if: always() && inputs.matrix_profile == 'cni-policy'",
             block,
         )
-        self.assertIn("network-policy-restored.json", block)
-        self.assertIn("SCTP allow NetworkPolicy was not restored", block)
+        self.assertIn('--ignore-not-found=true', block)
+        self.assertIn('get networkpolicy "$K8S_POLICY_NAME"', block)
+        self.assertIn('test "$raise_cleanup_error" = "false"', block)
 
     def test_stage1_outcomes_are_fail_closed_in_finalizer(self):
         finalize = self.workflow.index("- name: Finalize and persist evidence")
         block = self.workflow[finalize:]
         self.assertIn("SERVICE_EXPOSURE_OUTCOME", block)
         self.assertIn("NETWORK_POLICY_OUTCOME", block)
-        self.assertIn("POLICY_RESTORE_OUTCOME", block)
+        self.assertIn("POLICY_CLEANUP_OUTCOME", block)
         self.assertIn(
             'if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then',
             block,
