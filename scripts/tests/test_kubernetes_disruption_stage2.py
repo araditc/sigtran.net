@@ -91,17 +91,19 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         self.assertIn("--grace-period=30", block)
         self.assertIn("terminationGracePeriodSeconds", block)
         self.assertIn("replacementReady", block)
+        self.assertIn('kill -0 "$log_pid"', block)
 
     def test_pdb_is_run_scoped_observed_and_cleanup_verified(self):
         start = self.workflow.index("- name: Verify run-scoped PodDisruptionBudget")
-        cleanup = self.workflow.index("- name: Remove qualification PodDisruptionBudget", start)
-        block = self.workflow[start:cleanup]
+        node_drain = self.workflow.index("- name: Qualify node drain and rescheduling", start)
+        block = self.workflow[start:node_drain]
         self.assertIn("render-kubernetes-pdb.py", block)
         self.assertIn('"observedGenerationMatches": observed_generation == generation', block)
         self.assertIn('"disruptionsAllowed": disruptions_allowed', block)
         self.assertIn("unhealthyPodEvictionPolicy", block)
 
-        cleanup_end = self.workflow.index("- name: Qualify node drain and rescheduling", cleanup)
+        cleanup = self.workflow.index("- name: Remove qualification PodDisruptionBudget", node_drain)
+        cleanup_end = self.workflow.index("- name: Capture final readiness and SCTP state", cleanup)
         cleanup_block = self.workflow[cleanup:cleanup_end]
         self.assertIn("if: always()", cleanup_block)
         self.assertIn('delete poddisruptionbudget "$K8S_PDB_NAME"', cleanup_block)
@@ -120,6 +122,7 @@ class DisruptionStage2WorkflowTests(unittest.TestCase):
         self.assertIn("node-role.kubernetes.io/master", block)
         self.assertIn("another schedulable Ready Linux node", block)
         self.assertIn("sctp-assocs-after-node-drain.txt", block)
+        self.assertIn('kill -0 "$log_pid"', block)
 
         restore_end = self.workflow.index("- name: Capture final readiness and SCTP state", end)
         restore_block = self.workflow[end:restore_end]
