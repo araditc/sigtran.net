@@ -242,6 +242,15 @@ class QualificationPlanTests(unittest.TestCase):
             ["bash", str(SCRIPTS / "run-multi-host-qualification.sh")],
             env=env, capture_output=True, text=True, timeout=5)
 
+    @staticmethod
+    def reconnect_delay_budget_seconds(attempts: int) -> float:
+        delay = 0.1
+        total = 0.0
+        for _ in range(attempts):
+            total += delay
+            delay = min(delay * 2, 1.0)
+        return total
+
     def test_zero_padded_fault_duration_is_canonical_decimal(self):
         for raw, expected in (("08", 8), ("09", 9)):
             with self.subTest(raw=raw):
@@ -249,6 +258,20 @@ class QualificationPlanTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 0, run.stderr)
                 value = json.loads(run.stdout)
                 self.assertEqual(value["faultDurationSeconds"], expected)
+
+    def test_maximum_fault_duration_has_bounded_retry_horizon(self):
+        run = self.run_plan("60")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        value = json.loads(run.stdout)
+        self.assertEqual(value["faultDurationSeconds"], 60)
+        self.assertEqual(value["failoverTimeoutSeconds"], 105)
+        attempts = value["reconnectMaxAttempts"]
+        self.assertGreaterEqual(attempts, 30)
+        self.assertLessEqual(attempts, 180)
+        self.assertGreaterEqual(
+            self.reconnect_delay_budget_seconds(attempts),
+            value["failoverTimeoutSeconds"] + 5,
+        )
 
 
 class SshMaterialTests(unittest.TestCase):
