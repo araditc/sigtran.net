@@ -177,6 +177,18 @@ try {
     Assert-True ($wrongScopeGate.evidence[0].pathPolicyValid -eq $false) "Wrong-scope evidence path must be rejected."
     Assert-True ($wrongScopeReport.blockers.Count -eq 1) "Wrong-scope evidence fixture must have one blocker."
 
+    $canonicalEscapeManifest = Write-FixtureManifest -Name "canonical-escape" -Gates (
+        New-FixtureGates -TargetId "multi-host-soak" -TargetEvidence @(
+            "docs/evidence/../COMMERCIAL_READINESS_REPORT.md"
+        )
+    )
+    $canonicalEscapeReport = Invoke-Fixture -Name "canonical-escape" -ManifestPath $canonicalEscapeManifest
+    $canonicalEscapeGate = $canonicalEscapeReport.gates | Where-Object { $_.id -eq "multi-host-soak" }
+    Assert-True ($canonicalEscapeReport.decision -eq "NO-GO") "Canonical path escape from governed evidence root must be NO-GO."
+    Assert-True ($canonicalEscapeGate.evidence[0].canonicalPath -eq "docs/COMMERCIAL_READINESS_REPORT.md") "Canonical evidence path must be reported."
+    Assert-True ($canonicalEscapeGate.evidence[0].pathPolicyValid -eq $false) "Canonical evidence root escape must be rejected."
+    Assert-True ($canonicalEscapeReport.blockers.Count -eq 1) "Canonical root escape fixture must have one blocker."
+
     $baselineEscapeManifest = Write-FixtureManifest -Name "baseline-escape" -Gates (New-FixtureGates) -Baseline "../README.md"
     $baselineEscapeReport = Invoke-Fixture -Name "baseline-escape" -ManifestPath $baselineEscapeManifest
     Assert-True ($baselineEscapeReport.decision -eq "NO-GO") "Repository-escaping API baseline must be NO-GO."
