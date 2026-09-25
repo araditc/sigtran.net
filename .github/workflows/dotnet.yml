@@ -66,6 +66,7 @@ jobs:
           python3 -u scripts/tests/test_qualification_safety.py
           python3 -u scripts/tests/test_kubernetes_sctp_evidence.py
           python3 -u scripts/tests/test_kubernetes_cni_policy_stage1.py
+          python3 -u scripts/tests/test_kubernetes_disruption_stage2.py
 
       - name: Verify development and release package identity
         shell: bash
