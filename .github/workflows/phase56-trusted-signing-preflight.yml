@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: phase56-trusted-signing-preflight
@@ -49,6 +48,7 @@ jobs:
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
+          umask 077
           test -n "$SIGNING_CERTIFICATE"
           test -n "$SIGNING_CERTIFICATE_PASSWORD"
 
@@ -57,10 +57,12 @@ jobs:
           chain="$RUNNER_TEMP/stable-signing-chain.pem"
 
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$pfx"
+          chmod 600 "$pfx"
+          test "$(stat -c '%a' "$pfx")" = "600"
 
-          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -clcerts -nokeys             -out "$cert"
+          openssl pkcs12             -in "$pfx"             -passin env:SIGNING_CERTIFICATE_PASSWORD             -clcerts -nokeys             -out "$cert"
 
-          openssl pkcs12             -in "$pfx"             -passin "pass:$SIGNING_CERTIFICATE_PASSWORD"             -cacerts -nokeys             -out "$chain"
+          openssl pkcs12             -in "$pfx"             -passin env:SIGNING_CERTIFICATE_PASSWORD             -cacerts -nokeys             -out "$chain"
 
           subject="$(openssl x509 -in "$cert" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')"
           issuer="$(openssl x509 -in "$cert" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')"
@@ -118,21 +120,32 @@ jobs:
           dotnet nuget verify "$package" --all --verbosity detailed             | tee artifacts/signing/package-verification.txt
           sha256sum artifacts/signing/* > artifacts/signing/sha256.txt
 
+      - name: Cleanup private signing material
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f -- \
+            "$RUNNER_TEMP/stable-signing.pfx" \
+            "$RUNNER_TEMP/stable-signing.crt" \
+            "$RUNNER_TEMP/stable-signing-chain.pem"
+
       - name: Write preflight summary
         shell: bash
         run: |
-          cat > artifacts/signing/summary.md <<EOF
-          # Phase 56 Trusted Stable Signing Preflight
-
-          - Workflow run: `$GITHUB_RUN_ID`
-          - Stable candidate: `Sigtran.NET $RELEASE_VERSION`
-          - Organization certificate validation: PASS
-          - Protected fingerprint match: PASS
-          - Public chain / expiry policy: PASS
-          - Timestamped NuGet author signing: PASS
-          - NuGet signature verification: PASS
-          - Publication performed: NO
-          EOF
+          set -euo pipefail
+          {
+            echo "# Phase 56 Trusted Stable Signing Preflight"
+            echo
+            printf -- '- Workflow run: `%s`\n' "$GITHUB_RUN_ID"
+            printf -- '- Stable candidate: `Sigtran.NET %s`\n' "$RELEASE_VERSION"
+            echo "- Organization certificate validation: PASS"
+            echo "- Protected fingerprint match: PASS"
+            echo "- Public chain / expiry policy: PASS"
+            echo "- Timestamped NuGet author signing: PASS"
+            echo "- NuGet signature verification: PASS"
+            echo "- Publication performed: NO"
+          } > artifacts/signing/summary.md
 
       - name: Upload signing preflight evidence
         if: always()
