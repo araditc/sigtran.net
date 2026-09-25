@@ -35,9 +35,11 @@ CORE_FILES = {
 }
 
 MATRIX_FILES = {
+    "serviceExposure": "service-exposure.json",
     "networkPolicy": "network-policy.json",
     "gracefulTermination": "graceful-termination.json",
     "rolloutRollback": "rollout-rollback.json",
+    "podDisruptionBudget": "pdb.json",
     "nodeDrainReschedule": "node-drain.json",
 }
 
