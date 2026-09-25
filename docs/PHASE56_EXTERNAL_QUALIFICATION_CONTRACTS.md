@@ -45,10 +45,13 @@ same-host network namespaces do not satisfy this gate.
 
 The retained topology must identify:
 
-- host/VM identity;
+- host/VM identity, including both configured SDK and peer labels in protected
+  evidence;
 - vCPU and memory limits;
 - OS and kernel;
 - NIC/network path;
+- authenticated proof that the management peer owns the configured SCTP data
+  endpoint;
 - SCTP settings;
 - peer implementation and version;
 - test start/end UTC;
@@ -77,9 +80,11 @@ do not substitute for host loss, network delay/loss impairment, or route
 withdrawal/recovery. Those scenarios require reviewed out-of-band controls and
 remain incomplete until actually executed.
 
-Raw PCAP, SDK logs/traces, host information and network-path details stay on
-protected lab storage. Only sanitized summary/report files and digest references
-are eligible for the public evidence branch. See
+Raw PCAP, SDK logs/traces, host/address inventory and network-path details stay
+on protected lab storage. Long-duration traffic must not create unbounded packet
+capture: the current runner captures only the failover/recovery window and uses a
+bounded rotating PCAP ring. Only sanitized summary/report files and digest
+references are eligible for the public evidence branch. See
 `docs/MULTI_HOST_QUALIFICATION.md` for the executable contract.
 
 ## Kubernetes SCTP/CNI
