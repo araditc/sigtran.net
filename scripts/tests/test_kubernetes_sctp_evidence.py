@@ -89,7 +89,7 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
         )
         (raw / "sctp-assocs.txt").write_text(assoc)
         (raw / "sctp-assocs-final.txt").write_text(assoc)
-        (raw / "image-source-revision.txt").write_text(SOURCE_SHA + "\\n")
+        (raw / "image-source-revision.txt").write_text(SOURCE_SHA + "\n")
         return raw, safe
 
     def write_matrix(self, raw: Path, *, passed=True, source_sha=SOURCE_SHA):
@@ -162,7 +162,7 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
     def test_image_revision_must_match_source_sha(self):
         with tempfile.TemporaryDirectory() as directory:
             raw, safe = self.make_evidence(Path(directory))
-            (raw / "image-source-revision.txt").write_text("2" * 40 + "\\n")
+            (raw / "image-source-revision.txt").write_text("2" * 40 + "\n")
             run = self.run_validator(raw, safe)
             self.assertEqual(run.returncode, 1)
             value = json.loads((safe / "summary.json").read_text())
