@@ -119,8 +119,8 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
         self.assertLess(delete, blocked)
         self.assertLess(blocked, allow)
         self.assertLess(allow, recovered)
-        self.assertIn('"associationBlocked":association_blocked=="true"', self.workflow)
-        self.assertIn('"sctpAssociationRecovered":association_recovered=="true"', self.workflow)
+        self.assertIn('"associationBlocked": association_blocked == "true"', self.workflow)
+        self.assertIn('"sctpAssociationRecovered": association_recovered == "true"', self.workflow)
 
     def test_network_policy_cleanup_restores_allow_policy(self):
         self.assertIn("cleanup_policy()", self.workflow)
