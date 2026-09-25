@@ -258,7 +258,7 @@ class QualificationRunnerContractTests(unittest.TestCase):
     def setUpClass(cls):
         cls.runner = (SCRIPTS / "run-multi-host-qualification.sh").read_text()
         cls.performance_lab = (
-            ROOT / "src" / "Sigtran.NET.PerformanceLab" / "Program.cs"
+            SCRIPTS.parent / "src" / "Sigtran.NET.PerformanceLab" / "Program.cs"
         ).read_text()
 
     def test_capture_starts_only_after_failover_ready_and_is_hard_bounded(self):
