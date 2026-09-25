@@ -20,6 +20,18 @@ on:
         options:
           - cni
           - hostNetwork
+      matrix_profile:
+        description: Additional qualification matrix slice
+        required: true
+        default: core
+        type: choice
+        options:
+          - core
+          - cni-policy
+      matrix_confirmation:
+        description: For cni-policy type "run kubernetes cni-policy <namespace>"
+        required: false
+        type: string
       confirmation:
         description: Type "run kubernetes sctp <namespace>"
         required: true
@@ -46,6 +58,7 @@ jobs:
       K8S_NAMESPACE: ${{ inputs.namespace }}
       K8S_IMAGE: ${{ inputs.image }}
       K8S_NETWORK_PROFILE: ${{ inputs.network_profile }}
+      K8S_MATRIX_PROFILE: ${{ inputs.matrix_profile }}
       REMOTE_IP: ${{ secrets.K8S_REMOTE_IP }}
       REMOTE_PORT: ${{ secrets.K8S_REMOTE_PORT }}
       LOCAL_POINT_CODE: ${{ vars.K8S_LOCAL_POINT_CODE || '1' }}
@@ -65,6 +78,7 @@ jobs:
         shell: bash
         env:
           QUALIFICATION_CONFIRMATION: ${{ inputs.confirmation }}
+          MATRIX_CONFIRMATION: ${{ inputs.matrix_confirmation }}
         run: |
           set -euo pipefail
           test "$QUALIFICATION_CONFIRMATION" = "run kubernetes sctp $K8S_NAMESPACE"
@@ -88,6 +102,21 @@ jobs:
           if port < 1 or port > 65535:
               raise SystemExit("K8S_REMOTE_PORT must be between 1 and 65535")
           PY
+
+          if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then
+            test "$K8S_NETWORK_PROFILE" = "cni"
+            test "$MATRIX_CONFIRMATION" = "run kubernetes cni-policy $K8S_NAMESPACE"
+            policy_check="$(mktemp "${RUNNER_TEMP:-/tmp}/sigtran-network-policy.XXXXXXXXXX.json")"
+            trap 'rm -f -- "$policy_check"' EXIT
+            python3 scripts/render-kubernetes-network-policy.py \
+              --namespace "$K8S_NAMESPACE" \
+              --remote-ip "$REMOTE_IP" \
+              --remote-port "$REMOTE_PORT" \
+              --mode allow \
+              --output "$policy_check"
+            rm -f -- "$policy_check"
+            trap - EXIT
+          fi
 
       - name: Configure private kubectl credentials
         shell: bash
@@ -198,6 +227,199 @@ jobs:
           wait "$pf_pid" 2>/dev/null || true
           trap - EXIT
 
+      - name: Verify management service exposure
+        id: service_exposure
+        if: inputs.matrix_profile == 'cni-policy'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          kubectl -n "$K8S_NAMESPACE" get service sigtran-node-management -o json \
+            > "$raw/service.json"
+          kubectl -n "$K8S_NAMESPACE" get endpointslice \
+            -l kubernetes.io/service-name=sigtran-node-management \
+            -o json > "$raw/service-endpoints.json"
+
+          kubectl -n "$K8S_NAMESPACE" port-forward service/sigtran-node-management 18082:8080 \
+            > "$raw/service-port-forward.log" 2>&1 &
+          pf_pid=$!
+          trap 'kill "$pf_pid" 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18082/health/ready \
+              > "$raw/service-ready.json"; then
+              break
+            fi
+            sleep 1
+          done
+          test -s "$raw/service-ready.json"
+          kill "$pf_pid" 2>/dev/null || true
+          wait "$pf_pid" 2>/dev/null || true
+          trap - EXIT
+
+          python3 - "$raw/service.json" "$raw/service-endpoints.json" \
+            "$raw/service-ready.json" "$raw/service-exposure.json" "$SOURCE_SHA" <<'PY'
+          import json, sys
+          service_path, endpoints_path, ready_path, out_path, source = sys.argv[1:]
+          service = json.load(open(service_path))
+          endpoints = json.load(open(endpoints_path))
+          ready = json.load(open(ready_path))
+          selector = service.get("spec", {}).get("selector", {})
+          ports = service.get("spec", {}).get("ports", [])
+          endpoint_count = sum(
+              len(item.get("endpoints", []))
+              for item in endpoints.get("items", [])
+          )
+          passed = (
+              selector.get("app.kubernetes.io/name") == "sigtran-node"
+              and any(port.get("port") == 8080 for port in ports)
+              and endpoint_count > 0
+              and str(ready.get("status", "")).lower() == "healthy"
+          )
+          json.dump({
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "managementServiceType": service.get("spec", {}).get("type", "ClusterIP"),
+              "readyEndpointCount": endpoint_count,
+              "passed": passed,
+          }, open(out_path, "w"), indent=2)
+          if not passed:
+              raise SystemExit("management service exposure evidence failed")
+          PY
+
+      - name: Qualify CNI SCTP NetworkPolicy enforcement and recovery
+        id: network_policy
+        if: inputs.matrix_profile == 'cni-policy'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          allow="$raw/network-policy-allow.json"
+          deny="$raw/network-policy-deny.json"
+
+          python3 scripts/render-kubernetes-network-policy.py \
+            --namespace "$K8S_NAMESPACE" \
+            --remote-ip "$REMOTE_IP" \
+            --remote-port "$REMOTE_PORT" \
+            --mode allow \
+            --output "$allow"
+          python3 scripts/render-kubernetes-network-policy.py \
+            --namespace "$K8S_NAMESPACE" \
+            --remote-ip "$REMOTE_IP" \
+            --remote-port "$REMOTE_PORT" \
+            --mode deny \
+            --output "$deny"
+
+          kubectl apply -f "$allow"
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+            -o json > "$raw/network-policy-observed-allow.json"
+
+          original_pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
+            -l app.kubernetes.io/name=sigtran-node \
+            -o jsonpath='{.items[0].metadata.name}')"
+          original_uid="$(kubectl -n "$K8S_NAMESPACE" get pod "$original_pod" \
+            -o jsonpath='{.metadata.uid}')"
+          test -n "$original_pod"
+          test -n "$original_uid"
+
+          cleanup_policy() {
+            kubectl apply -f "$allow" >/dev/null 2>&1 || true
+          }
+          trap cleanup_policy EXIT
+
+          kubectl apply -f "$deny"
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+            -o json > "$raw/network-policy-observed-deny.json"
+          kubectl -n "$K8S_NAMESPACE" delete pod "$original_pod" --wait=false
+
+          replacement_pod=""
+          for _ in $(seq 1 120); do
+            kubectl -n "$K8S_NAMESPACE" get pods \
+              -l app.kubernetes.io/name=sigtran-node -o json \
+              > "$raw/network-policy-pods-denied.json"
+            replacement_pod="$(python3 - "$raw/network-policy-pods-denied.json" "$original_uid" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          original_uid = sys.argv[2]
+          for item in value.get("items", []):
+              metadata = item.get("metadata", {})
+              if metadata.get("uid") != original_uid:
+                  print(metadata.get("name", ""))
+                  break
+          PY
+            )"
+            if [[ -n "$replacement_pod" ]]; then
+              break
+            fi
+            sleep 1
+          done
+          test -n "$replacement_pod"
+
+          blocked_samples=0
+          association_seen=false
+          for _ in $(seq 1 20); do
+            if kubectl -n "$K8S_NAMESPACE" exec "$replacement_pod" -- sh -c \
+              'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs-policy-denied.txt" 2>/dev/null; then
+              if awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' \
+                "$raw/sctp-assocs-policy-denied.txt"; then
+                association_seen=true
+                break
+              fi
+              blocked_samples=$((blocked_samples + 1))
+              if [[ "$blocked_samples" -ge 5 ]]; then
+                break
+              fi
+            fi
+            sleep 3
+          done
+
+          association_blocked=false
+          if [[ "$association_seen" == "false" && "$blocked_samples" -ge 5 ]]; then
+            association_blocked=true
+          fi
+          test "$association_blocked" = "true"
+
+          kubectl apply -f "$allow"
+          kubectl -n "$K8S_NAMESPACE" wait --for=condition=Ready pod/"$replacement_pod" \
+            --timeout=3m
+
+          association_recovered=false
+          for _ in $(seq 1 60); do
+            if kubectl -n "$K8S_NAMESPACE" exec "$replacement_pod" -- sh -c \
+              'cat /proc/net/sctp/assocs' > "$raw/sctp-assocs-after-network-policy.txt" \
+              && awk 'NR > 1 && NF > 0 { found=1 } END { exit(found ? 0 : 1) }' \
+                "$raw/sctp-assocs-after-network-policy.txt"; then
+              association_recovered=true
+              break
+            fi
+            sleep 2
+          done
+          test "$association_recovered" = "true"
+
+          kubectl -n "$K8S_NAMESPACE" get pod "$replacement_pod" -o json \
+            > "$raw/network-policy-pod-recovered.json"
+          trap - EXIT
+
+          python3 - "$raw/network-policy.json" "$SOURCE_SHA" \
+            "$association_blocked" "$association_recovered" <<'PY'
+          import json, sys
+          path, source, association_blocked, association_recovered = sys.argv[1:]
+          passed = (
+              association_blocked == "true"
+              and association_recovered == "true"
+          )
+          json.dump({
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "freshPodUnderDenyObserved": True,
+              "associationBlocked": association_blocked == "true",
+              "recoveryObserved": association_recovered == "true",
+              "sctpAssociationRecovered": association_recovered == "true",
+              "passed": passed,
+          }, open(path, "w"), indent=2)
+          if not passed:
+              raise SystemExit("SCTP NetworkPolicy enforcement/recovery evidence failed")
+          PY
+
       - name: Verify pod restart and rollout rollback
         id: rollout
         shell: bash
@@ -282,6 +504,8 @@ jobs:
           CLUSTER_OUTCOME: ${{ steps.cluster.outcome }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           INITIAL_OUTCOME: ${{ steps.initial.outcome }}
+          SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
+          NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
@@ -291,9 +515,10 @@ jobs:
 
           python3 - "$raw/qualification-steps.json" \
             "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
-            "$INITIAL_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$INITIAL_OUTCOME" "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
+            "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, rollout, final_capture = sys.argv[1:]
+          path, source, cluster, deploy, initial, service_exposure, network_policy, rollout, final_capture = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
@@ -301,6 +526,8 @@ jobs:
                   "cluster": cluster,
                   "deploy": deploy,
                   "initial": initial,
+                  "serviceExposure": service_exposure,
+                  "networkPolicy": network_policy,
                   "rollout": rollout,
                   "finalCapture": final_capture,
               },
@@ -316,6 +543,18 @@ jobs:
               workflow_steps_ok=false
             fi
           done
+
+          matrix_steps_ok=true
+          if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then
+            for outcome in "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME"; do
+              if [[ "$outcome" != "success" ]]; then
+                matrix_steps_ok=false
+              fi
+            done
+          fi
+          if [[ "$matrix_steps_ok" != "true" ]]; then
+            workflow_steps_ok=false
+          fi
 
           validator_status=0
           if python3 scripts/validate-kubernetes-sctp-evidence.py \
@@ -380,6 +619,8 @@ jobs:
             echo
             printf -- '- Source: `%s`\n' "$SOURCE_SHA"
             printf -- '- Network profile: `%s`\n' "$K8S_NETWORK_PROFILE"
+            printf -- '- Matrix profile: `%s`\n' "$K8S_MATRIX_PROFILE"
+            printf -- '- Matrix slice complete: `%s`\n' "$matrix_steps_ok"
             printf -- '- Capture stages complete: `%s`\n' "$workflow_steps_ok"
             if [[ "$validator_status" -eq 0 ]]; then
               echo "- Core evidence validation: PASS"
