@@ -29,7 +29,6 @@ def build(namespace: str, name: str) -> dict:
         },
         "spec": {
             "maxUnavailable": 1,
-            "unhealthyPodEvictionPolicy": "AlwaysAllow",
             "selector": {
                 "matchLabels": {
                     "app.kubernetes.io/name": "sigtran-node",
