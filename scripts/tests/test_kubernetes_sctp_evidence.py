@@ -97,6 +97,7 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
             "service-exposure.json",
             "network-policy.json",
             "graceful-termination.json",
+            "pdb.json",
             "rollout-rollback.json",
             "node-drain.json",
         ):
