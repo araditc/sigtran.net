@@ -121,5 +121,24 @@ The container must run on a Linux host whose kernel supports SCTP. Kubernetes
 network policy, CNI, load balancer, and firewall configuration must permit SCTP;
 TCP or UDP service exposure does not imply SCTP forwarding.
 
+Qualification images must also bind their immutable digest to the source commit
+under test. The Dockerfile records the supplied commit as both the OCI
+`org.opencontainers.image.revision` label and `SIGTRAN_IMAGE_REVISION`
+environment value. Build the candidate from the exact checked-out source, for
+example:
+
+```bash
+source_sha="$(git rev-parse HEAD)"
+docker build \
+  --build-arg SOURCE_REVISION="$source_sha" \
+  -f deploy/Dockerfile \
+  -t sigtran-operations-host:"$source_sha" .
+```
+
+The representative Kubernetes workflow accepts only a digest-pinned image and
+verifies the revision embedded in the running container exactly matches the
+workflow source SHA. An image with a missing, `unknown`, or mismatched revision
+cannot produce source-bound qualification evidence.
+
 Replace the example peer address, image version, point codes, routing context,
 resource limits, and topology values before deployment.
