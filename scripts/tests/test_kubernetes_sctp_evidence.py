@@ -10,6 +10,8 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 VALIDATOR = SCRIPTS / "validate-kubernetes-sctp-evidence.py"
+RENDERER = SCRIPTS / "render-kubernetes-deployment.py"
+WORKFLOW = SCRIPTS.parent / ".github" / "workflows" / "phase56-kubernetes-sctp.yml"
 SOURCE_SHA = "1" * 40
 IMAGE = "ghcr.io/araditc/sigtran-net-operations-host@sha256:" + "a" * 64
 
@@ -187,6 +189,83 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
                 {v["detail"] for v in value["matrix"].values()},
                 {"source SHA mismatch"},
             )
+
+
+class KubernetesWorkflowSafetyTests(unittest.TestCase):
+    def test_digest_image_renderer_accepts_expected_reference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            template = root / "deployment.yaml"
+            output = root / "rendered.yaml"
+            placeholder = "ghcr.io/araditc/sigtran-net-operations-host:VERSION"
+            template.write_text(f"image: {placeholder}\n")
+            run = subprocess.run(
+                [
+                    sys.executable,
+                    str(RENDERER),
+                    "--image", IMAGE,
+                    "--template", str(template),
+                    "--output", str(output),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            self.assertEqual(run.returncode, 0, run.stderr)
+            self.assertEqual(output.read_text(), f"image: {IMAGE}\n")
+
+    def test_multiline_or_sed_metacharacter_image_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            template = root / "deployment.yaml"
+            output = root / "rendered.yaml"
+            template.write_text(
+                "image: ghcr.io/araditc/sigtran-net-operations-host:VERSION\n"
+            )
+            malicious = (
+                "ghcr.io/araditc/image; touch /tmp/sigtran-injected #|e\n"
+                "@sha256:" + "a" * 64
+            )
+            run = subprocess.run(
+                [
+                    sys.executable,
+                    str(RENDERER),
+                    "--image", malicious,
+                    "--template", str(template),
+                    "--output", str(output),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            self.assertNotEqual(run.returncode, 0)
+            self.assertFalse(output.exists())
+
+    def test_workflow_never_interpolates_image_into_sed_program(self):
+        workflow = WORKFLOW.read_text()
+        self.assertNotIn(
+            "sed 's|ghcr.io/araditc/sigtran-net-operations-host:VERSION|",
+            workflow,
+        )
+        self.assertIn(
+            "python3 scripts/render-kubernetes-deployment.py",
+            workflow,
+        )
+
+    def test_failed_validator_is_persisted_before_status_is_returned(self):
+        workflow = WORKFLOW.read_text()
+        capture = workflow.index("validator_status=$?")
+        persist = workflow.index(
+            'python3 scripts/persist-qualification-evidence.py',
+            capture,
+        )
+        returned = workflow.index('exit "$validator_status"', persist)
+        self.assertLess(capture, persist)
+        self.assertLess(persist, returned)
+        self.assertIn(
+            "Core evidence validation: FAIL (protected evidence retained)",
+            workflow[capture:returned],
+        )
 
 
 if __name__ == "__main__":
