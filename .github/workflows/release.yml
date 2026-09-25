@@ -190,10 +190,14 @@ jobs:
           SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         run: |
+          set -euo pipefail
+          umask 077
           test -n "$SIGNING_CERTIFICATE"
           test -n "$SIGNING_CERTIFICATE_PASSWORD"
           signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
           printf '%s' "$SIGNING_CERTIFICATE" | base64 -d > "$signing_certificate_path"
+          chmod 600 "$signing_certificate_path"
+          test "$(stat -c '%a' "$signing_certificate_path")" = "600"
           if [ "$SIGTRAN_RELEASE_CHANNEL" = "stable" ]; then
             test -n "${{ vars.TRUSTED_SIGNING_CERTIFICATE_SHA256 }}"
             bash eng/verify-signing-certificate.sh \
@@ -237,6 +241,7 @@ jobs:
         env:
           SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         run: |
+          set -euo pipefail
           signing_certificate_path="$RUNNER_TEMP/sigtran-release-signing.pfx"
           signing_certificate_crt="$RUNNER_TEMP/sigtran-release-signing.crt"
           test -f "$signing_certificate_path"
@@ -264,6 +269,15 @@ jobs:
           cp "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.verification.sha256"
           sha256sum "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.md" > "artifacts/supply-chain/signing/Sigtran.NET.$RELEASE_VERSION.timestamp.sha256"
+
+      - name: Cleanup private signing material
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f -- \
+            "$RUNNER_TEMP/sigtran-release-signing.pfx" \
+            "$RUNNER_TEMP/sigtran-release-signing.crt"
 
       - name: Attest Package Provenance
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
