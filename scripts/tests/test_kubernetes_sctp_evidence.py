@@ -254,18 +254,56 @@ class KubernetesWorkflowSafetyTests(unittest.TestCase):
 
     def test_failed_validator_is_persisted_before_status_is_returned(self):
         workflow = WORKFLOW.read_text()
-        capture = workflow.index("validator_status=$?")
+        finalize = workflow.index("- name: Finalize and persist evidence")
+        validator = workflow.index("validator_status=0", finalize)
         persist = workflow.index(
             'python3 scripts/persist-qualification-evidence.py',
-            capture,
+            validator,
         )
         returned = workflow.index('exit "$validator_status"', persist)
-        self.assertLess(capture, persist)
+        self.assertLess(validator, persist)
         self.assertLess(persist, returned)
         self.assertIn(
-            "Core evidence validation: FAIL (protected evidence retained)",
-            workflow[capture:returned],
+            "Protected evidence persistence: PASS",
+            workflow[validator:returned],
         )
+
+    def test_capture_stage_failure_still_reaches_evidence_finalizer(self):
+        workflow = WORKFLOW.read_text()
+        finalize = workflow.index("- name: Finalize and persist evidence")
+        cleanup = workflow.index("- name: Cleanup private kubectl material", finalize)
+        block = workflow[finalize:cleanup]
+        self.assertIn(
+            "if: always() && steps.identity.outcome == 'success'",
+            block,
+        )
+        for step_id in (
+            "cluster",
+            "deploy",
+            "initial",
+            "rollout",
+            "final_capture",
+        ):
+            self.assertIn(f"steps.{step_id}.outcome", block)
+        self.assertIn("workflow_steps_ok=true", block)
+        self.assertIn(
+            'python3 scripts/persist-qualification-evidence.py',
+            block,
+        )
+        self.assertIn(
+            'if [[ "$workflow_steps_ok" != "true" ]]; then',
+            block,
+        )
+
+    def test_public_evidence_requires_successful_qualification_job(self):
+        workflow = WORKFLOW.read_text()
+        retain = workflow.index("  retain-evidence:")
+        condition = workflow.index(
+            "if: needs.qualify.result == 'success' "
+            "&& needs.qualify.outputs.gate_eligible == 'true'",
+            retain,
+        )
+        self.assertGreater(condition, retain)
 
 
 if __name__ == "__main__":
