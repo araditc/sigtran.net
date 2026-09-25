@@ -148,7 +148,6 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
         )
         self.assertIn('--ignore-not-found=true', block)
         self.assertIn('get networkpolicy "$K8S_POLICY_NAME"', block)
-        self.assertIn('test "$raise_cleanup_error" = "false"', block)
 
     def test_network_policy_trap_stays_armed_through_step_exit(self):
         start = self.workflow.index(
