@@ -378,9 +378,9 @@ jobs:
           {
             echo "### Kubernetes SCTP qualification"
             echo
-            printf -- '- Source: `%s`\\n' "$SOURCE_SHA"
-            printf -- '- Network profile: `%s`\\n' "$K8S_NETWORK_PROFILE"
-            printf -- '- Capture stages complete: `%s`\\n' "$workflow_steps_ok"
+            printf -- '- Source: `%s`\n' "$SOURCE_SHA"
+            printf -- '- Network profile: `%s`\n' "$K8S_NETWORK_PROFILE"
+            printf -- '- Capture stages complete: `%s`\n' "$workflow_steps_ok"
             if [[ "$validator_status" -eq 0 ]]; then
               echo "- Core evidence validation: PASS"
             else
@@ -396,7 +396,7 @@ jobs:
             else
               echo "- Protected evidence persistence: FAIL; private scratch retained"
             fi
-            printf -- '- Stable gate eligible: `%s`\\n' "$gate_eligible"
+            printf -- '- Stable gate eligible: `%s`\n' "$gate_eligible"
             if [[ "$gate_eligible" != "true" ]]; then
               echo "- Remaining matrix evidence is intentionally OPEN; no public evidence PR will be created."
             fi
