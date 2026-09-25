@@ -7,6 +7,9 @@ RUN dotnet publish src/Sigtran.NET.OperationsHost/Sigtran.NET.OperationsHost.csp
     --no-self-contained
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim
+ARG SOURCE_REVISION=unknown
+LABEL org.opencontainers.image.revision=$SOURCE_REVISION
+ENV SIGTRAN_IMAGE_REVISION=$SOURCE_REVISION
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
