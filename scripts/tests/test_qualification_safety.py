@@ -228,6 +228,29 @@ class PeerBuildMetadataTests(unittest.TestCase):
             self.run_normalizer(b"{" + b"x" * (16 * 1024) + b"}").returncode, 0)
 
 
+
+class QualificationPlanTests(unittest.TestCase):
+    def run_plan(self, duration: str):
+        env = dict(
+            os.environ,
+            PLAN_ONLY="true",
+            QUALIFICATION_PROFILE="smoke",
+            FAULT_SCENARIO="peer-outage",
+            FAULT_DURATION_SECONDS=duration,
+        )
+        return subprocess.run(
+            ["bash", str(SCRIPTS / "run-multi-host-qualification.sh")],
+            env=env, capture_output=True, text=True, timeout=5)
+
+    def test_zero_padded_fault_duration_is_canonical_decimal(self):
+        for raw, expected in (("08", 8), ("09", 9)):
+            with self.subTest(raw=raw):
+                run = self.run_plan(raw)
+                self.assertEqual(run.returncode, 0, run.stderr)
+                value = json.loads(run.stdout)
+                self.assertEqual(value["faultDurationSeconds"], expected)
+
+
 class SshMaterialTests(unittest.TestCase):
     def test_atomic_modes_and_cleanup_on_success_and_failure(self):
         for exit_code in (0, 7):
