@@ -16,9 +16,15 @@ import sys
 _DNS_LABEL = re.compile(r"^[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?$")
 
 
-def validate(namespace: str, remote_ip: str, remote_port: int) -> str:
-    if _DNS_LABEL.fullmatch(namespace) is None:
-        raise ValueError("namespace must be a Kubernetes DNS label")
+def validate_name(value: str, field: str) -> str:
+    if _DNS_LABEL.fullmatch(value) is None:
+        raise ValueError(f"{field} must be a Kubernetes DNS label")
+    return value
+
+
+def validate(namespace: str, policy_name: str, remote_ip: str, remote_port: int) -> str:
+    validate_name(namespace, "namespace")
+    validate_name(policy_name, "policy name")
 
     address = ipaddress.ip_address(remote_ip)
     if address.version != 4:
@@ -37,8 +43,14 @@ def validate(namespace: str, remote_ip: str, remote_port: int) -> str:
     return str(address)
 
 
-def build(namespace: str, remote_ip: str, remote_port: int, mode: str) -> dict:
-    remote_ip = validate(namespace, remote_ip, remote_port)
+def build(
+    namespace: str,
+    policy_name: str,
+    remote_ip: str,
+    remote_port: int,
+    mode: str,
+) -> dict:
+    remote_ip = validate(namespace, policy_name, remote_ip, remote_port)
     egress: list[dict] = []
 
     if mode == "allow":
@@ -55,7 +67,7 @@ def build(namespace: str, remote_ip: str, remote_port: int, mode: str) -> dict:
         "apiVersion": "networking.k8s.io/v1",
         "kind": "NetworkPolicy",
         "metadata": {
-            "name": "sigtran-node-sctp-egress",
+            "name": policy_name,
             "namespace": namespace,
         },
         "spec": {
@@ -71,6 +83,7 @@ def build(namespace: str, remote_ip: str, remote_port: int, mode: str) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--namespace", required=True)
+    parser.add_argument("--name", required=True)
     parser.add_argument("--remote-ip", required=True)
     parser.add_argument("--remote-port", required=True, type=int)
     parser.add_argument("--mode", choices=("allow", "deny"), required=True)
@@ -80,7 +93,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    value = build(args.namespace, args.remote_ip, args.remote_port, args.mode)
+    value = build(
+        args.namespace,
+        args.name,
+        args.remote_ip,
+        args.remote_port,
+        args.mode,
+    )
     output = Path(args.output)
     output.write_text(
         json.dumps(value, indent=2, sort_keys=True) + "\n",
