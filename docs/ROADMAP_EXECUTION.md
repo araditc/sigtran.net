@@ -57,15 +57,21 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 
 ## Current checkpoint
 
-- Parent roadmap tracker: GitHub issue `#12`.
-- 57A baseline/scope-lock and 57B SDK profile-framework implementation are admitted on `main`. The separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until genuine authorized operator/vendor acceptance evidence is retained.
-- **Milestone C — Multi-association M3UA HA runtime is VERIFIED-DONE for deterministic repository implementation** on canonical `main@ee9fda83930db82419174301d76306deafb155c4`.
-- The governed Milestone C chain includes PRs `#20`, `#21`, `#23`, `#24`, `#25`, `#26`, `#27`, and corrective PR `#29`. It now retains health-aware routing, SLS-aware bounded dispatch, drain/fencing, reconnect generation ownership, runtime/session binding, topology diagnostics, exact production-runtime identity, live outbound transport-ownership semantics, and stale-shutdown/association-mismatch lifecycle diagnostics that preserve the current transport generation.
-- PR `#27` established live outbound transport-ownership semantics. Corrective PR `#29` was subsequently merged as canonical `main@ee9fda83930db82419174301d76306deafb155c4` after current-head independent approval; it closes the stale recorded-`Stopped` shutdown ordering and association-mismatch diagnostic regressions without changing peer/network acceptance semantics.
-- Active implementation package: **Milestone D — Representative Multi-Host Qualification**, tracked by reopened issue `#6` and writer branch `multi-host-qualification-orchestration`.
-- Milestone D reuses the existing Phase 53/56 full-stack PerformanceLab and protected `sigtran-performance` environment. It does not infer multi-host qualification from single-host or same-machine lanes.
-- The first Milestone D package adds bounded-memory timed soak support, fixed profiles (15-minute smoke, 1-hour stress, 6-hour soak, 24-hour release), protected distinct-host orchestration, scoped fault injection, and source-bound digest evidence. See `docs/MULTI_HOST_QUALIFICATION.md`.
-- The current executable matrix covers peer restart, bounded peer outage, and an SCTP-scoped partition with independent fail-safe rollback. Host loss, delay/loss impairment, and route withdrawal/recovery remain unfinished until an authorized lab exposes reviewed out-of-band controls; these cases must not be administratively renamed or inferred.
-- The stable `multi-host-soak` gate remains **OPEN** until representative duration/fault evidence is actually executed, retained, reviewed, and promoted through the manifest.
-- Kubernetes SCTP qualification and trusted stable signing remain subsequent dependency-valid work packages. Safe implementation can continue while external evidence gates remain blocked.
-- Stable publication remains blocked until all four required open gates pass and the machine evaluator returns `GO`.
+- Parent roadmap tracker: GitHub issue `#12`; Kubernetes qualification tracker: reopened issue `#7`.
+- Canonical admitted branch before this package is `main@58da5b80e47bce59ba510de89f02411e6f04df9c`, the merge of PR `#30`.
+- 57A baseline/scope-lock and 57B SDK profile-framework implementation remain admitted. The separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until genuine authorized operator/vendor acceptance evidence is retained.
+- **Milestone C — Multi-association M3UA HA runtime remains VERIFIED-DONE for deterministic repository implementation.**
+- **Milestone D — Representative Multi-Host Qualification tooling is admitted through PR `#30`.** The stable `multi-host-soak` gate remains **OPEN / EXTERNAL-BLOCKED** because the required representative separate-host duration/fault matrix has not yet been executed and retained.
+- The admitted Milestone D tooling provides bounded-memory timed profiles, protected distinct-host orchestration, source-bound evidence, peer restart/outage/SCTP-partition scenarios, independent rollback, private SSH/evidence handling, authenticated peer endpoint ownership, and a bounded failover/recovery capture handshake. It does not substitute repository simulation for host-loss, delay/loss, route-withdrawal, or release-duration evidence.
+- **Active implementation package: Milestone E — Representative Kubernetes SCTP Qualification**, tracked by PR `#31` on branch `kubernetes-sctp-qualification`.
+- The Milestone E tooling requires digest-pinned image identity, exact source/run-attempt binding, private kubeconfig/evidence scratch, explicit `cni` versus `hostNetwork` profiles, retained Kubernetes/CNI/node identity, observed SCTP association rows, initial/final liveness/readiness, pod replacement, runtime image digest, and rollout/rollback evidence.
+- Sanitized Kubernetes PASS is derived from structured observed evidence rather than hard-coded booleans. Raw topology/cluster evidence remains protected. Failed validator and earlier capture-stage runs are retained through an `always()` finalizer after private scratch creation; public sanitized evidence is eligible only when the qualification job itself succeeds and the complete source-bound matrix is gate-eligible.
+- Repository CI for the Kubernetes package is synthetic/offline validation only. It does **not** close `kubernetes-sctp`.
+- Required representative Kubernetes matrix rows still include NetworkPolicy/firewall behavior, graceful termination/drain, and node drain/rescheduling. Those results must come from an authorized representative cluster and cannot be inferred from pod restart or rollout tests.
+- Trusted stable signing also remains **OPEN / EXTERNAL-BLOCKED** pending an organization-approved CA-issued identity. The rejected self-issued certificate is not accepted as stable author signing.
+- The stable evaluator remains **NO-GO** with exactly four required open gates: `operator-profile`, `multi-host-soak`, `kubernetes-sctp`, and `trusted-signing`.
+- Stable publication remains prohibited until retained evidence closes every required gate, the machine evaluator returns `GO`, applicable independent/protected approvals are current, and the exact release request is authorized.
+
+## Next dependency-valid action
+
+Complete PR `#31` only after exact-head CI, fresh Codex review, fresh independent review, zero substantive review threads, and mergeability are all current. After guarded merge and post-merge verification, continue the bounded Kubernetes representative-matrix implementation without promoting `kubernetes-sctp` until actual authorized-cluster evidence is retained. Safe repository work may continue around external evidence blockers; stable publication remains blocked.
