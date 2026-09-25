@@ -212,6 +212,18 @@ class KubernetesWorkflowSafetyTests(unittest.TestCase):
     def test_workflow_requires_runtime_image_revision_to_match_source(self):
         workflow = WORKFLOW.read_text()
         self.assertIn("image-source-revision.txt", workflow)
+        self.assertIn(
+            r'printf "%s\n" "$SIGTRAN_IMAGE_REVISION"',
+            workflow,
+        )
+        self.assertNotIn(
+            r'printf "%s\\n" "$SIGTRAN_IMAGE_REVISION"',
+            workflow,
+        )
+        self.assertIn(
+            'IFS= read -r observed_revision < "$raw/image-source-revision.txt"',
+            workflow,
+        )
         self.assertIn('test "$observed_revision" = "$SOURCE_SHA"', workflow)
 
     def test_digest_image_renderer_accepts_expected_reference(self):
