@@ -80,6 +80,12 @@ for name in "${required_vars[@]}"; do
 done
 
 [[ "$RUN_ID" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,120}$ ]] || { echo "Invalid attempt RUN_ID" >&2; exit 2; }
+for host_label in "$SDK_HOST_ID" "$PEER_HOST_ID"; do
+  [[ "$host_label" =~ ^[A-Za-z0-9][A-Za-z0-9_.:-]{0,120}$ ]] || {
+    echo "SDK_HOST_ID and PEER_HOST_ID must be bounded safe labels." >&2
+    exit 2
+  }
+done
 [[ "$PEER_SERVICE" =~ ^[A-Za-z0-9][A-Za-z0-9_.@:-]*\.service$ ]] || { echo "PEER_SERVICE must be a service unit name" >&2; exit 2; }
 [[ "$PEER_BUILD_METADATA_FILE" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "PEER_BUILD_METADATA_FILE must be an absolute safe path" >&2; exit 2; }
 case "/${PEER_BUILD_METADATA_FILE#/}/" in *"/../"*|*"/./"*|*"//"*) echo "PEER_BUILD_METADATA_FILE contains an unsafe path segment" >&2; exit 2 ;; esac
