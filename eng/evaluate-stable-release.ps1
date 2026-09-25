@@ -209,7 +209,7 @@ foreach ($gate in $manifest.gates) {
     }
 
     if ([bool]$gate.required -and -not $passed) {
-        $blocker = "$gateId: $($gate.note)"
+        $blocker = "${gateId}: $($gate.note)"
         if ($declaredPassed -and $null -ne $evidencePolicyIssue) {
             $blocker += " Evidence policy: $evidencePolicyIssue."
         }
