@@ -59,6 +59,7 @@ jobs:
       K8S_IMAGE: ${{ inputs.image }}
       K8S_NETWORK_PROFILE: ${{ inputs.network_profile }}
       K8S_MATRIX_PROFILE: ${{ inputs.matrix_profile }}
+      K8S_POLICY_NAME: sigtran-sctp-${{ github.run_id }}-${{ github.run_attempt }}
       REMOTE_IP: ${{ secrets.K8S_REMOTE_IP }}
       REMOTE_PORT: ${{ secrets.K8S_REMOTE_PORT }}
       LOCAL_POINT_CODE: ${{ vars.K8S_LOCAL_POINT_CODE || '1' }}
@@ -110,6 +111,7 @@ jobs:
             trap 'rm -f -- "$policy_check"' EXIT
             python3 scripts/render-kubernetes-network-policy.py \
               --namespace "$K8S_NAMESPACE" \
+              --name "$K8S_POLICY_NAME" \
               --remote-ip "$REMOTE_IP" \
               --remote-port "$REMOTE_PORT" \
               --mode allow \
@@ -298,19 +300,21 @@ jobs:
 
           python3 scripts/render-kubernetes-network-policy.py \
             --namespace "$K8S_NAMESPACE" \
+            --name "$K8S_POLICY_NAME" \
             --remote-ip "$REMOTE_IP" \
             --remote-port "$REMOTE_PORT" \
             --mode allow \
             --output "$allow"
           python3 scripts/render-kubernetes-network-policy.py \
             --namespace "$K8S_NAMESPACE" \
+            --name "$K8S_POLICY_NAME" \
             --remote-ip "$REMOTE_IP" \
             --remote-port "$REMOTE_PORT" \
             --mode deny \
             --output "$deny"
 
           kubectl apply -f "$allow"
-          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy "$K8S_POLICY_NAME" \
             -o json > "$raw/network-policy-observed-allow.json"
 
           original_pod="$(kubectl -n "$K8S_NAMESPACE" get pods \
@@ -322,12 +326,13 @@ jobs:
           test -n "$original_uid"
 
           cleanup_policy() {
-            kubectl apply -f "$allow" >/dev/null 2>&1 || true
+            kubectl -n "$K8S_NAMESPACE" delete networkpolicy "$K8S_POLICY_NAME" \
+              --ignore-not-found=true >/dev/null 2>&1 || true
           }
           trap cleanup_policy EXIT
 
           kubectl apply -f "$deny"
-          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy "$K8S_POLICY_NAME" \
             -o json > "$raw/network-policy-observed-deny.json"
           kubectl -n "$K8S_NAMESPACE" delete pod "$original_pod" --wait=false
 
@@ -420,47 +425,22 @@ jobs:
               raise SystemExit("SCTP NetworkPolicy enforcement/recovery evidence failed")
           PY
 
-      - name: Restore CNI SCTP NetworkPolicy
-        id: policy_restore
+      - name: Remove qualification CNI SCTP NetworkPolicy
+        id: policy_cleanup
         if: always() && inputs.matrix_profile == 'cni-policy' && steps.identity.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           raw="$EVIDENCE_SCRATCH/raw"
-          allow="$raw/network-policy-allow.json"
-          if [[ ! -s "$allow" ]]; then
-            python3 scripts/render-kubernetes-network-policy.py \
-              --namespace "$K8S_NAMESPACE" \
-              --remote-ip "$REMOTE_IP" \
-              --remote-port "$REMOTE_PORT" \
-              --mode allow \
-              --output "$allow"
+          kubectl -n "$K8S_NAMESPACE" delete networkpolicy "$K8S_POLICY_NAME" \
+            --ignore-not-found=true
+          if kubectl -n "$K8S_NAMESPACE" get networkpolicy "$K8S_POLICY_NAME" \
+            -o json > "$raw/network-policy-cleanup-unexpected.json" 2>/dev/null; then
+            raise_cleanup_error=true
+          else
+            raise_cleanup_error=false
           fi
-
-          kubectl apply -f "$allow"
-          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
-            -o json > "$raw/network-policy-restored.json"
-
-          python3 - "$raw/network-policy-restored.json" "$REMOTE_IP" "$REMOTE_PORT" <<'PY'
-          import json, sys
-          value = json.load(open(sys.argv[1]))
-          remote_ip = sys.argv[2]
-          remote_port = int(sys.argv[3])
-          egress = value.get("spec", {}).get("egress", [])
-          restored = any(
-              any(
-                  block.get("ipBlock", {}).get("cidr") == f"{remote_ip}/32"
-                  for block in rule.get("to", [])
-              )
-              and any(
-                  port.get("protocol") == "SCTP" and port.get("port") == remote_port
-                  for port in rule.get("ports", [])
-              )
-              for rule in egress
-          )
-          if not restored:
-              raise SystemExit("SCTP allow NetworkPolicy was not restored")
-          PY
+          test "$raise_cleanup_error" = "false"
 
       - name: Verify pod restart and rollout rollback
         id: rollout
@@ -548,7 +528,7 @@ jobs:
           INITIAL_OUTCOME: ${{ steps.initial.outcome }}
           SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
           NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
-          POLICY_RESTORE_OUTCOME: ${{ steps.policy_restore.outcome }}
+          POLICY_CLEANUP_OUTCOME: ${{ steps.policy_cleanup.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
@@ -559,9 +539,9 @@ jobs:
           python3 - "$raw/qualification-steps.json" \
             "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
             "$INITIAL_OUTCOME" "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
-            "$POLICY_RESTORE_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$POLICY_CLEANUP_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, service_exposure, network_policy, policy_restore, rollout, final_capture = sys.argv[1:]
+          path, source, cluster, deploy, initial, service_exposure, network_policy, policy_cleanup, rollout, final_capture = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
@@ -571,7 +551,7 @@ jobs:
                   "initial": initial,
                   "serviceExposure": service_exposure,
                   "networkPolicy": network_policy,
-                  "policyRestore": policy_restore,
+                  "policyCleanup": policy_cleanup,
                   "rollout": rollout,
                   "finalCapture": final_capture,
               },
@@ -592,7 +572,7 @@ jobs:
           if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then
             for outcome in \
               "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
-              "$POLICY_RESTORE_OUTCOME"; do
+              "$POLICY_CLEANUP_OUTCOME"; do
               if [[ "$outcome" != "success" ]]; then
                 matrix_steps_ok=false
               fi
