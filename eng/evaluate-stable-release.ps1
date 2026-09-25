@@ -39,18 +39,53 @@ function Resolve-RepositoryRelativePath {
     return $candidate
 }
 
+function Test-RepositoryPathHasNoLinks {
+    param([string]$FullPath)
+
+    if ([string]::IsNullOrWhiteSpace($FullPath)) {
+        return $false
+    }
+
+    $candidate = [IO.Path]::GetFullPath($FullPath)
+    if ($candidate -ne $rootPath -and -not $candidate.StartsWith(
+        $rootPrefix,
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        return $false
+    }
+
+    $relative = [IO.Path]::GetRelativePath($rootPath, $candidate)
+    if ($relative -eq ".") {
+        return $true
+    }
+
+    $current = $rootPath
+    foreach ($segment in $relative.Split(
+        [IO.Path]::DirectorySeparatorChar,
+        [StringSplitOptions]::RemoveEmptyEntries
+    )) {
+        $current = Join-Path $current $segment
+        if (-not (Test-Path -LiteralPath $current)) {
+            break
+        }
+
+        $item = Get-Item -LiteralPath $current -Force
+        $linkTypeProperty = $item.PSObject.Properties["LinkType"]
+        if ($null -ne $linkTypeProperty -and
+            -not [string]::IsNullOrWhiteSpace([string]$item.LinkType)) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Test-RegularRepositoryFile {
     param([string]$FullPath)
 
     if ([string]::IsNullOrWhiteSpace($FullPath) -or
+        -not (Test-RepositoryPathHasNoLinks -FullPath $FullPath) -or
         -not (Test-Path -LiteralPath $FullPath -PathType Leaf)) {
-        return $false
-    }
-
-    $item = Get-Item -LiteralPath $FullPath -Force
-    $linkTypeProperty = $item.PSObject.Properties["LinkType"]
-    if ($null -ne $linkTypeProperty -and
-        -not [string]::IsNullOrWhiteSpace([string]$item.LinkType)) {
         return $false
     }
 
@@ -91,6 +126,10 @@ $jsonOutputFullPath = Resolve-RepositoryRelativePath -RelativePath $JsonOutputPa
 $markdownOutputFullPath = Resolve-RepositoryRelativePath -RelativePath $MarkdownOutputPath
 if ($null -eq $jsonOutputFullPath -or $null -eq $markdownOutputFullPath) {
     throw "Stable release output paths must stay inside the repository."
+}
+if (-not (Test-RepositoryPathHasNoLinks -FullPath $jsonOutputFullPath) -or
+    -not (Test-RepositoryPathHasNoLinks -FullPath $markdownOutputFullPath)) {
+    throw "Stable release output paths must not traverse symbolic links or junctions."
 }
 
 New-Item -ItemType Directory -Force -Path (
