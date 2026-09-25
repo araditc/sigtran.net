@@ -32,6 +32,7 @@ CORE_FILES = {
     "ready_final": "ready-final.json",
     "sctp_initial": "sctp-assocs.txt",
     "sctp_final": "sctp-assocs-final.txt",
+    "image_revision": "image-source-revision.txt",
 }
 
 MATRIX_FILES = {
@@ -211,6 +212,9 @@ def main() -> int:
 
     initial_associations = sctp_association_count(paths["sctp_initial"])
     final_associations = sctp_association_count(paths["sctp_final"])
+    image_revision = paths["image_revision"].read_text(
+        encoding="utf-8", errors="strict"
+    ).strip().lower()
 
     core_checks = {
         "kubernetesServerVersionObserved": bool(server_version),
@@ -227,6 +231,7 @@ def main() -> int:
         "podNodeIdentityObserved": bool(initial_node) and bool(final_node),
         "digestPinnedImageConfigured": initial_image == args.image and final_image == args.image,
         "runtimeImageDigestObserved": image_digest_visible_initial and image_digest_visible_final,
+        "imageRevisionMatchesSource": image_revision == source_sha,
     }
     execution_passed = all(core_checks.values())
 
@@ -255,6 +260,7 @@ def main() -> int:
         "finalPodNode": final_node,
         "initialSctpAssociationCount": initial_associations,
         "finalSctpAssociationCount": final_associations,
+        "imageRevision": image_revision,
         "checks": core_checks,
         "matrix": matrix,
         "executionPassed": execution_passed,
@@ -277,6 +283,7 @@ def main() -> int:
         f"- CNI images: `{', '.join(cni_images) or 'missing'}`",
         f"- Linux worker nodes observed: `{linux_nodes}`",
         f"- Initial/final SCTP associations: `{initial_associations}/{final_associations}`",
+        f"- Image source revision: `{image_revision or 'missing'}`",
         "",
         "## Core observations",
         "",
