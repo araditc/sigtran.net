@@ -65,11 +65,17 @@ Primary references:
 A qualifying run must satisfy all of the following:
 
 - SDK workload and peer execute on distinct physical hosts or VMs;
-- runtime hostnames and configured host labels are different;
+- runtime hostnames and configured host labels are different; both labels are
+  syntax-bounded before use, and the peer label is retained only in protected
+  raw inventory;
 - native Linux SCTP is used on the measured data path;
 - the current runner accepts only a non-loopback, non-local IPv4 data endpoint
   and rejects a `REMOTE_IP` route resolving locally or through `lo`; IPv6
   partition behavior is not qualified by this implementation;
+- the authenticated SSH peer must additionally prove it owns the configured
+  `REMOTE_IP` through its own IPv4 interface inventory before qualification
+  proceeds. The protected address inventory is retained with the run so a stale
+  or mismatched management host cannot be mistaken for the measured data peer;
 - exact source SHA is retained in the sanitized summary;
 - local/remote point codes, network indicator and peer identity are recorded;
 - SDK/peer kernel, CPU, memory and route/SCTP settings are retained in protected
@@ -145,7 +151,12 @@ and `multi-host-soak` remains open.
 Raw PCAP/SDK trace/host inventory is created in a **random mode-0700 scratch
 directory under runner temp**, not in `GITHUB_WORKSPACE`. The script sets umask
 077 before directory/file creation. Even on failure the working copy is private.
-Tcpdump is stopped and its ownership normalized before persistence.
+Full packet capture is intentionally excluded from the long sustained/soak
+interval: tcpdump starts only after the SDK publishes `failover-ready`, then
+covers the injected fault, reconnect and bounded recovery stage. Capture uses a
+four-file ring with 64 MB rotation files, bounding on-disk PCAP growth to roughly
+256 MB per attempt while retaining the failover window. Tcpdump is stopped and
+all rotated capture files have ownership normalized before persistence.
 
 `persist-qualification-evidence.py` copies stopped-run `raw/` and `safe/` trees to
 a private staging directory under `PERF_RAW_EVIDENCE_ROOT`, restricts all copied
@@ -158,10 +169,15 @@ retains private scratch for recovery, rather than suppressing errors or deleting
 the sole copy. Interrupted staging/temporary directories require controlled lab
 cleanup, never blind public artifact upload.
 
-The validated marker is retained only as protected `raw/peer-build.json`.
-Unknown marker fields are rejected rather than copied, so qualification records
-the exact peer implementation/version without publishing peer configuration or
-turning repository simulation into vendor/operator acceptance.
+The validated build marker is retained only as protected
+`raw/peer-build.json`. Protected `raw/peer-host.txt` includes the validated
+`PEER_HOST_ID` and the verified data endpoint, while
+`raw/peer-addresses.txt` retains the authenticated peer interface inventory
+used for endpoint ownership proof. These values are intentionally absent from
+the sanitized public summary. Unknown build-marker fields are rejected rather
+than copied, so qualification records the exact peer implementation/version
+without publishing peer configuration or turning repository simulation into
+vendor/operator acceptance.
 
 Persistent raw evidence is under `PERF_RAW_EVIDENCE_ROOT/<run-id>/raw`. The private
 `protected-evidence.sha256.json` at the attempt root covers raw and sanitized files;
@@ -182,8 +198,10 @@ the stable manifest to passed.
 
 Normal PR CI executes all 12 profile/fault plans, shell syntax checks and
 `python3 scripts/tests/test_qualification_safety.py` without external traffic.
-The 18 isolated tests cover peer build-marker validation, decimal fault-duration
-normalization and maximum-outage reconnect-budget coverage plus peer
+The 22 isolated tests cover peer build-marker validation, decimal fault-duration
+normalization, maximum-outage reconnect-budget coverage, authenticated peer
+endpoint ownership, fail-closed endpoint mismatch, failover-window capture
+ordering/size bounds, and protected peer-label retention plus peer
 arm-before-stop ordering, failed arming,
 independent retry after the initiating process exits, verify-before-disarm,
 failed recovery preserving rollback, invalid service rejection, full copy/digest
