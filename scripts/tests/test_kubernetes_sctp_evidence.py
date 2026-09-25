@@ -202,6 +202,24 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
             )
 
 
+    def test_public_evidence_redacts_private_topology_and_registry_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, safe = self.make_evidence(Path(directory))
+            run = self.run_validator(raw, safe)
+            self.assertEqual(run.returncode, 0, run.stderr)
+
+            summary_text = (safe / "summary.json").read_text()
+            report_text = (safe / "report.md").read_text()
+            value = json.loads(summary_text)
+
+            self.assertEqual(value["initialPodNode"], "node-1")
+            self.assertEqual(value["finalPodNode"], "node-2")
+            self.assertEqual(value["cniImages"], ["cni:v1.2.3"])
+            for private_value in ("worker-a", "worker-b", "registry.example"):
+                self.assertNotIn(private_value, summary_text)
+                self.assertNotIn(private_value, report_text)
+
+
 class KubernetesWorkflowSafetyTests(unittest.TestCase):
     def test_operations_image_embeds_immutable_revision_metadata(self):
         dockerfile = DOCKERFILE.read_text()
@@ -340,15 +358,21 @@ class KubernetesWorkflowSafetyTests(unittest.TestCase):
         self.assertIn('&& "$checksums_ok" == "true"', block)
         self.assertIn('if [[ "$checksums_ok" != "true" ]]; then', block)
 
-    def test_job_summary_uses_literal_backticks_without_command_substitution(self):
+    def test_job_summary_uses_literal_backticks_and_real_newlines(self):
         workflow = WORKFLOW.read_text()
         finalize = workflow.index("- name: Finalize and persist evidence")
         cleanup = workflow.index("- name: Cleanup private kubectl material", finalize)
         block = workflow[finalize:cleanup]
         self.assertNotIn('echo "- Source: `', block)
         self.assertNotIn('echo "- Network profile: `', block)
-        self.assertIn("printf -- '- Source: `%s`", block)
-        self.assertIn("printf -- '- Stable gate eligible: `%s`", block)
+        for label in (
+            "Source",
+            "Network profile",
+            "Capture stages complete",
+            "Stable gate eligible",
+        ):
+            self.assertIn(f"printf -- '- {label}: `%s`\\n'", block)
+            self.assertNotIn(f"printf -- '- {label}: `%s`\\\\n'", block)
 
     def test_public_evidence_requires_successful_qualification_job(self):
         workflow = WORKFLOW.read_text()
