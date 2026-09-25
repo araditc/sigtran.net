@@ -559,6 +559,53 @@ jobs:
               raise SystemExit("graceful termination qualification failed")
           PY
 
+      - name: Verify pod restart and rollout rollback
+        id: rollout
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          old_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
+          before_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$old_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
+          test -n "$before_hash"
+
+          kubectl -n "$K8S_NAMESPACE" delete pod "$old_pod" --wait=false
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          kubectl -n "$K8S_NAMESPACE" wait             --for=condition=Ready pod             -l app.kubernetes.io/name=sigtran-node             --timeout=10m
+
+          restart_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
+          test "$restart_pod" != "$old_pod"
+
+          token="$(date -u +%Y%m%dT%H%M%SZ)"
+          kubectl -n "$K8S_NAMESPACE" patch deployment sigtran-node --type merge -p             '{"spec":{"template":{"metadata":{"annotations":{"phase56.sigtran.net/rollout-token":"'"$token"'"}}}}}'
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          rollout_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
+          rollout_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$rollout_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
+          test -n "$rollout_hash"
+          test "$rollout_hash" != "$before_hash"
+          kubectl -n "$K8S_NAMESPACE" rollout history deployment/sigtran-node > "$raw/rollout-history-after.txt"
+
+          kubectl -n "$K8S_NAMESPACE" rollout undo deployment/sigtran-node
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
+          kubectl -n "$K8S_NAMESPACE" wait             --for=condition=Ready pod             -l app.kubernetes.io/name=sigtran-node             --timeout=10m
+          rollback_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
+          rollback_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$rollback_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
+          test "$rollback_hash" = "$before_hash"
+          kubectl -n "$K8S_NAMESPACE" rollout history deployment/sigtran-node > "$raw/rollout-history-rollback.txt"
+
+          python3 - "$raw/rollout-rollback.json" "$SOURCE_SHA"             "$before_hash" "$rollout_hash" "$rollback_hash" <<'PY'
+          import json, sys
+          path,source,before,rolled,rollback=sys.argv[1:]
+          json.dump({
+              "schemaVersion":1,
+              "sourceSha":source,
+              "beforeTemplateHash":before,
+              "rolloutTemplateHash":rolled,
+              "rollbackTemplateHash":rollback,
+              "passed": bool(before and rolled != before and rollback == before),
+          }, open(path,"w"), indent=2)
+          PY
+
       - name: Verify run-scoped PodDisruptionBudget
         id: pdb
         if: inputs.matrix_profile == 'disruption'
@@ -635,53 +682,6 @@ jobs:
           }, open(out_path, "w"), indent=2)
           if not passed:
               raise SystemExit("run-scoped PodDisruptionBudget evidence failed")
-          PY
-
-      - name: Verify pod restart and rollout rollback
-        id: rollout
-        shell: bash
-        run: |
-          set -euo pipefail
-          raw="$EVIDENCE_SCRATCH/raw"
-          old_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
-          before_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$old_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
-          test -n "$before_hash"
-
-          kubectl -n "$K8S_NAMESPACE" delete pod "$old_pod" --wait=false
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
-          kubectl -n "$K8S_NAMESPACE" wait             --for=condition=Ready pod             -l app.kubernetes.io/name=sigtran-node             --timeout=10m
-
-          restart_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
-          test "$restart_pod" != "$old_pod"
-
-          token="$(date -u +%Y%m%dT%H%M%SZ)"
-          kubectl -n "$K8S_NAMESPACE" patch deployment sigtran-node --type merge -p             '{"spec":{"template":{"metadata":{"annotations":{"phase56.sigtran.net/rollout-token":"'"$token"'"}}}}}'
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
-          rollout_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
-          rollout_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$rollout_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
-          test -n "$rollout_hash"
-          test "$rollout_hash" != "$before_hash"
-          kubectl -n "$K8S_NAMESPACE" rollout history deployment/sigtran-node > "$raw/rollout-history-after.txt"
-
-          kubectl -n "$K8S_NAMESPACE" rollout undo deployment/sigtran-node
-          kubectl -n "$K8S_NAMESPACE" rollout status deployment/sigtran-node --timeout=10m
-          kubectl -n "$K8S_NAMESPACE" wait             --for=condition=Ready pod             -l app.kubernetes.io/name=sigtran-node             --timeout=10m
-          rollback_pod="$(kubectl -n "$K8S_NAMESPACE" get pods             -l app.kubernetes.io/name=sigtran-node             -o jsonpath='{.items[0].metadata.name}')"
-          rollback_hash="$(kubectl -n "$K8S_NAMESPACE" get pod "$rollback_pod"             -o jsonpath='{.metadata.labels.pod-template-hash}')"
-          test "$rollback_hash" = "$before_hash"
-          kubectl -n "$K8S_NAMESPACE" rollout history deployment/sigtran-node > "$raw/rollout-history-rollback.txt"
-
-          python3 - "$raw/rollout-rollback.json" "$SOURCE_SHA"             "$before_hash" "$rollout_hash" "$rollback_hash" <<'PY'
-          import json, sys
-          path,source,before,rolled,rollback=sys.argv[1:]
-          json.dump({
-              "schemaVersion":1,
-              "sourceSha":source,
-              "beforeTemplateHash":before,
-              "rolloutTemplateHash":rolled,
-              "rollbackTemplateHash":rollback,
-              "passed": bool(before and rolled != before and rollback == before),
-          }, open(path,"w"), indent=2)
           PY
 
       - name: Qualify node drain and rescheduling
