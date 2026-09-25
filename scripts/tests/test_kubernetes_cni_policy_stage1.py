@@ -130,11 +130,22 @@ class CniPolicyStage1WorkflowTests(unittest.TestCase):
         )
         self.assertIn("trap cleanup_policy EXIT", self.workflow)
 
+        restore = self.workflow.index("- name: Restore CNI SCTP NetworkPolicy")
+        rollout = self.workflow.index("- name: Verify pod restart and rollout rollback")
+        block = self.workflow[restore:rollout]
+        self.assertIn(
+            "if: always() && inputs.matrix_profile == 'cni-policy'",
+            block,
+        )
+        self.assertIn("network-policy-restored.json", block)
+        self.assertIn("SCTP allow NetworkPolicy was not restored", block)
+
     def test_stage1_outcomes_are_fail_closed_in_finalizer(self):
         finalize = self.workflow.index("- name: Finalize and persist evidence")
         block = self.workflow[finalize:]
         self.assertIn("SERVICE_EXPOSURE_OUTCOME", block)
         self.assertIn("NETWORK_POLICY_OUTCOME", block)
+        self.assertIn("POLICY_RESTORE_OUTCOME", block)
         self.assertIn(
             'if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then',
             block,
