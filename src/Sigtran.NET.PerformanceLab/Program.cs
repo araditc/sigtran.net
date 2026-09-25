@@ -52,7 +52,7 @@ static async Task<PerformanceRunResult> RunAsync(
             reconnectTimeout: TimeSpan.FromSeconds(2),
             shutdownTimeout: TimeSpan.FromSeconds(5)),
         new SctpReconnectPolicy(
-            maxAttempts: 30,
+            maxAttempts: options.ReconnectMaxAttempts,
             initialDelay: TimeSpan.FromMilliseconds(100),
             maxDelay: TimeSpan.FromSeconds(1)),
         requireKernelMetadata: true);
@@ -92,7 +92,7 @@ static async Task<PerformanceRunResult> RunAsync(
                 aspUpInfoString: "Sigtran.NET performance lab"u8.ToArray(),
                 aspActiveInfoString: "map-sms-load"u8.ToArray()),
             new SctpReconnectPolicy(
-                maxAttempts: 30,
+                maxAttempts: options.ReconnectMaxAttempts,
                 initialDelay: TimeSpan.FromMilliseconds(100),
                 maxDelay: TimeSpan.FromSeconds(1)),
             outboundQueueCapacity: options.QueueCapacity,
@@ -630,6 +630,7 @@ static async Task WriteArtifactsAsync(
             options.RunId,
             ExecutionPassed = false,
             CapacityQualified = false,
+            options.ReconnectMaxAttempts,
             Error = error
         }
         : result;
@@ -678,6 +679,7 @@ static async Task WriteArtifactsAsync(
     report.AppendLine($"- Peak CPU: `{options.MaximumCpuPercent:F1}%`");
     report.AppendLine($"- Peak working set: `{options.MaximumWorkingSetMegabytes} MB`");
     report.AppendLine($"- Allocation: `{options.MaximumAllocatedBytesPerOperation} B/op`");
+    report.AppendLine($"- Reconnect max attempts: `{options.ReconnectMaxAttempts}`");
     if (options.SoakDuration > TimeSpan.Zero)
     {
         report.AppendLine(
@@ -1113,6 +1115,7 @@ internal sealed record PerformanceLabOptions(
     int RecoveryConcurrency,
     int SoakConcurrency,
     int QueueCapacity,
+    int ReconnectMaxAttempts,
     double MinimumSustainedTps,
     double MinimumPeakTps,
     double MaximumP95Milliseconds,
@@ -1184,6 +1187,7 @@ internal sealed record PerformanceLabOptions(
             GetInt(values, "recovery-concurrency", 32),
             GetInt(values, "soak-concurrency", 64),
             GetInt(values, "queue-capacity", 16384),
+            GetIntInRange(values, "reconnect-max-attempts", 30, 1, 180),
             GetDouble(values, "minimum-sustained-tps", 10000),
             GetDouble(values, "minimum-peak-tps", 20000),
             GetDouble(values, "maximum-p95-ms", 20),
@@ -1212,7 +1216,8 @@ internal sealed record PerformanceLabOptions(
             + (SoakDuration > TimeSpan.Zero
                 ? $"soakDurationSeconds={SoakDuration.TotalSeconds:F0}/{SoakConcurrency} "
                 : $"soak={SoakOperations}/{SoakConcurrency} ")
-            + $"latencySamples={LatencySampleCapacity}";
+            + $"latencySamples={LatencySampleCapacity} "
+            + $"reconnectMaxAttempts={ReconnectMaxAttempts}";
     }
 
     private static string Get(
@@ -1234,6 +1239,25 @@ internal sealed record PerformanceLabOptions(
         return int.Parse(
             Get(values, key, fallback.ToString(CultureInfo.InvariantCulture)),
             CultureInfo.InvariantCulture);
+    }
+
+    private static int GetIntInRange(
+        IReadOnlyDictionary<string, string> values,
+        string key,
+        int fallback,
+        int minimum,
+        int maximum)
+    {
+        int value = GetInt(values, key, fallback);
+        if (value < minimum || value > maximum)
+        {
+            throw new ArgumentOutOfRangeException(
+                key,
+                value,
+                $"{key} must be between {minimum} and {maximum}.");
+        }
+
+        return value;
     }
 
     private static long GetLong(
