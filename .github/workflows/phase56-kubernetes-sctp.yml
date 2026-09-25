@@ -38,7 +38,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      gate_eligible: ${{ steps.validate.outputs.gate_eligible }}
+      gate_eligible: ${{ steps.finalize.outputs.gate_eligible }}
       run_id: ${{ steps.identity.outputs.run_id }}
     env:
       RUN_ID: phase56-k8s-${{ github.run_id }}-${{ github.run_attempt }}
@@ -117,6 +117,7 @@ jobs:
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Capture cluster and CNI identity
+        id: cluster
         shell: bash
         run: |
           set -euo pipefail
@@ -137,6 +138,7 @@ jobs:
           PY
 
       - name: Deploy operations host
+        id: deploy
         shell: bash
         run: |
           set -euo pipefail
@@ -162,6 +164,7 @@ jobs:
           kubectl -n "$K8S_NAMESPACE" get deployment sigtran-node -o json > "$raw/deployment.json"
 
       - name: Capture initial readiness and SCTP state
+        id: initial
         shell: bash
         run: |
           set -euo pipefail
@@ -192,6 +195,7 @@ jobs:
           trap - EXIT
 
       - name: Verify pod restart and rollout rollback
+        id: rollout
         shell: bash
         run: |
           set -euo pipefail
@@ -238,6 +242,7 @@ jobs:
           PY
 
       - name: Capture final readiness and SCTP state
+        id: final_capture
         shell: bash
         run: |
           set -euo pipefail
@@ -265,30 +270,73 @@ jobs:
           wait "$pf_pid" 2>/dev/null || true
           trap - EXIT
 
-      - name: Validate and persist evidence
-        id: validate
+      - name: Finalize and persist evidence
+        id: finalize
+        if: always() && steps.identity.outcome == 'success'
         shell: bash
+        env:
+          CLUSTER_OUTCOME: ${{ steps.cluster.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          INITIAL_OUTCOME: ${{ steps.initial.outcome }}
+          ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
+          FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           raw="$EVIDENCE_SCRATCH/raw"
           safe="$EVIDENCE_SCRATCH/safe"
 
-          set +e
-          python3 scripts/validate-kubernetes-sctp-evidence.py             --raw-root "$raw"             --safe-root "$safe"             --source-sha "$SOURCE_SHA"             --run-id "$RUN_ID"             --network-profile "$K8S_NETWORK_PROFILE"             --image "$K8S_IMAGE"
-          validator_status=$?
-          set -e
+          python3 - "$raw/qualification-steps.json" \
+            "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
+            "$INITIAL_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+          import json, sys
+          path, source, cluster, deploy, initial, rollout, final_capture = sys.argv[1:]
+          value = {
+              "schemaVersion": 1,
+              "sourceSha": source,
+              "steps": {
+                  "cluster": cluster,
+                  "deploy": deploy,
+                  "initial": initial,
+                  "rollout": rollout,
+                  "finalCapture": final_capture,
+              },
+          }
+          json.dump(value, open(path, "w"), indent=2)
+          PY
+
+          workflow_steps_ok=true
+          for outcome in \
+            "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" "$INITIAL_OUTCOME" \
+            "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME"; do
+            if [[ "$outcome" != "success" ]]; then
+              workflow_steps_ok=false
+            fi
+          done
+
+          validator_status=0
+          if python3 scripts/validate-kubernetes-sctp-evidence.py \
+            --raw-root "$raw" \
+            --safe-root "$safe" \
+            --source-sha "$SOURCE_SHA" \
+            --run-id "$RUN_ID" \
+            --network-profile "$K8S_NETWORK_PROFILE" \
+            --image "$K8S_IMAGE"; then
+            validator_status=0
+          else
+            validator_status=$?
+          fi
 
           (
             cd "$raw"
-            find . -type f -print0 | sort -z | xargs -0 sha256sum
+            find . -type f -print0 | sort -z | xargs -0 -r sha256sum
           ) > "$safe/raw-evidence.sha256"
           (
             cd "$safe"
-            find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 sha256sum
+            find . -type f ! -name sha256.txt -print0 | sort -z | xargs -0 -r sha256sum
           ) > "$safe/sha256.txt"
 
           gate_eligible=false
-          if [[ "$validator_status" -eq 0 ]]; then
+          if [[ "$validator_status" -eq 0 && "$workflow_steps_ok" == "true" ]]; then
             gate_eligible="$(python3 - "$safe/summary.json" <<'PY'
           import json, sys
           value=json.load(open(sys.argv[1]))
@@ -298,17 +346,29 @@ jobs:
           fi
           echo "gate_eligible=$gate_eligible" >> "$GITHUB_OUTPUT"
 
-          python3 scripts/persist-qualification-evidence.py             "$EVIDENCE_SCRATCH" "$RAW_EVIDENCE_ROOT/$RUN_ID"
+          persist_status=0
+          if python3 scripts/persist-qualification-evidence.py \
+            "$EVIDENCE_SCRATCH" "$RAW_EVIDENCE_ROOT/$RUN_ID"; then
+            persist_status=0
+          else
+            persist_status=$?
+          fi
 
           {
             echo "### Kubernetes SCTP qualification"
             echo
             echo "- Source: `$SOURCE_SHA`"
             echo "- Network profile: `$K8S_NETWORK_PROFILE`"
+            echo "- Capture stages complete: `$workflow_steps_ok`"
             if [[ "$validator_status" -eq 0 ]]; then
               echo "- Core evidence validation: PASS"
             else
-              echo "- Core evidence validation: FAIL (protected evidence retained)"
+              echo "- Core evidence validation: FAIL"
+            fi
+            if [[ "$persist_status" -eq 0 ]]; then
+              echo "- Protected evidence persistence: PASS"
+            else
+              echo "- Protected evidence persistence: FAIL; private scratch retained"
             fi
             echo "- Stable gate eligible: `$gate_eligible`"
             if [[ "$gate_eligible" != "true" ]]; then
@@ -316,6 +376,12 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+          if [[ "$persist_status" -ne 0 ]]; then
+            exit "$persist_status"
+          fi
+          if [[ "$workflow_steps_ok" != "true" ]]; then
+            exit 1
+          fi
           exit "$validator_status"
 
       - name: Cleanup private kubectl material
@@ -329,7 +395,7 @@ jobs:
 
   retain-evidence:
     needs: qualify
-    if: needs.qualify.outputs.gate_eligible == 'true'
+    if: needs.qualify.result == 'success' && needs.qualify.outputs.gate_eligible == 'true'
     runs-on: [self-hosted, linux, sigtran-kubernetes-lab]
     environment:
       name: kubernetes-sctp
