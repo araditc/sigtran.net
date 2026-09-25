@@ -94,6 +94,7 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
 
     def write_matrix(self, raw: Path, *, passed=True, source_sha=SOURCE_SHA):
         for filename in (
+            "service-exposure.json",
             "network-policy.json",
             "graceful-termination.json",
             "rollout-rollback.json",
