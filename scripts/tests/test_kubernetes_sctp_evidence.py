@@ -12,6 +12,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 VALIDATOR = SCRIPTS / "validate-kubernetes-sctp-evidence.py"
 RENDERER = SCRIPTS / "render-kubernetes-deployment.py"
 WORKFLOW = SCRIPTS.parent / ".github" / "workflows" / "phase56-kubernetes-sctp.yml"
+DOCKERFILE = SCRIPTS.parent / "deploy" / "Dockerfile"
 SOURCE_SHA = "1" * 40
 IMAGE = "ghcr.io/araditc/sigtran-net-operations-host@sha256:" + "a" * 64
 
@@ -88,6 +89,7 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
         )
         (raw / "sctp-assocs.txt").write_text(assoc)
         (raw / "sctp-assocs-final.txt").write_text(assoc)
+        (raw / "image-source-revision.txt").write_text(SOURCE_SHA + "\\n")
         return raw, safe
 
     def write_matrix(self, raw: Path, *, passed=True, source_sha=SOURCE_SHA):
@@ -157,6 +159,15 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
             self.assertFalse(value["checks"]["finalSctpAssociationObserved"])
             self.assertFalse(value["executionPassed"])
 
+    def test_image_revision_must_match_source_sha(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, safe = self.make_evidence(Path(directory))
+            (raw / "image-source-revision.txt").write_text("2" * 40 + "\\n")
+            run = self.run_validator(raw, safe)
+            self.assertEqual(run.returncode, 1)
+            value = json.loads((safe / "summary.json").read_text())
+            self.assertFalse(value["checks"]["imageRevisionMatchesSource"])
+
     def test_network_profile_must_match_deployment(self):
         with tempfile.TemporaryDirectory() as directory:
             raw, safe = self.make_evidence(Path(directory), host_network=False)
@@ -192,6 +203,17 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
 
 
 class KubernetesWorkflowSafetyTests(unittest.TestCase):
+    def test_operations_image_embeds_immutable_revision_metadata(self):
+        dockerfile = DOCKERFILE.read_text()
+        self.assertIn("ARG SOURCE_REVISION=unknown", dockerfile)
+        self.assertIn("LABEL org.opencontainers.image.revision=$SOURCE_REVISION", dockerfile)
+        self.assertIn("ENV SIGTRAN_IMAGE_REVISION=$SOURCE_REVISION", dockerfile)
+
+    def test_workflow_requires_runtime_image_revision_to_match_source(self):
+        workflow = WORKFLOW.read_text()
+        self.assertIn("image-source-revision.txt", workflow)
+        self.assertIn('test "$observed_revision" = "$SOURCE_SHA"', workflow)
+
     def test_digest_image_renderer_accepts_expected_reference(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -294,6 +316,27 @@ class KubernetesWorkflowSafetyTests(unittest.TestCase):
             'if [[ "$workflow_steps_ok" != "true" ]]; then',
             block,
         )
+
+    def test_checksum_failures_block_gate_and_finalizer_success(self):
+        workflow = WORKFLOW.read_text()
+        finalize = workflow.index("- name: Finalize and persist evidence")
+        cleanup = workflow.index("- name: Cleanup private kubectl material", finalize)
+        block = workflow[finalize:cleanup]
+        self.assertIn("raw_checksum_status=0", block)
+        self.assertIn("safe_checksum_status=0", block)
+        self.assertIn("checksums_ok=false", block)
+        self.assertIn('&& "$checksums_ok" == "true"', block)
+        self.assertIn('if [[ "$checksums_ok" != "true" ]]; then', block)
+
+    def test_job_summary_uses_literal_backticks_without_command_substitution(self):
+        workflow = WORKFLOW.read_text()
+        finalize = workflow.index("- name: Finalize and persist evidence")
+        cleanup = workflow.index("- name: Cleanup private kubectl material", finalize)
+        block = workflow[finalize:cleanup]
+        self.assertNotIn('echo "- Source: `', block)
+        self.assertNotIn('echo "- Network profile: `', block)
+        self.assertIn("printf -- '- Source: `%s`", block)
+        self.assertIn("printf -- '- Stable gate eligible: `%s`", block)
 
     def test_public_evidence_requires_successful_qualification_job(self):
         workflow = WORKFLOW.read_text()
