@@ -420,6 +420,48 @@ jobs:
               raise SystemExit("SCTP NetworkPolicy enforcement/recovery evidence failed")
           PY
 
+      - name: Restore CNI SCTP NetworkPolicy
+        id: policy_restore
+        if: always() && inputs.matrix_profile == 'cni-policy' && steps.identity.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$EVIDENCE_SCRATCH/raw"
+          allow="$raw/network-policy-allow.json"
+          if [[ ! -s "$allow" ]]; then
+            python3 scripts/render-kubernetes-network-policy.py \
+              --namespace "$K8S_NAMESPACE" \
+              --remote-ip "$REMOTE_IP" \
+              --remote-port "$REMOTE_PORT" \
+              --mode allow \
+              --output "$allow"
+          fi
+
+          kubectl apply -f "$allow"
+          kubectl -n "$K8S_NAMESPACE" get networkpolicy sigtran-node-sctp-egress \
+            -o json > "$raw/network-policy-restored.json"
+
+          python3 - "$raw/network-policy-restored.json" "$REMOTE_IP" "$REMOTE_PORT" <<'PY'
+          import json, sys
+          value = json.load(open(sys.argv[1]))
+          remote_ip = sys.argv[2]
+          remote_port = int(sys.argv[3])
+          egress = value.get("spec", {}).get("egress", [])
+          restored = any(
+              any(
+                  block.get("ipBlock", {}).get("cidr") == f"{remote_ip}/32"
+                  for block in rule.get("to", [])
+              )
+              and any(
+                  port.get("protocol") == "SCTP" and port.get("port") == remote_port
+                  for port in rule.get("ports", [])
+              )
+              for rule in egress
+          )
+          if not restored:
+              raise SystemExit("SCTP allow NetworkPolicy was not restored")
+          PY
+
       - name: Verify pod restart and rollout rollback
         id: rollout
         shell: bash
@@ -506,6 +548,7 @@ jobs:
           INITIAL_OUTCOME: ${{ steps.initial.outcome }}
           SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
           NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
+          POLICY_RESTORE_OUTCOME: ${{ steps.policy_restore.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
@@ -516,9 +559,9 @@ jobs:
           python3 - "$raw/qualification-steps.json" \
             "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
             "$INITIAL_OUTCOME" "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
-            "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$POLICY_RESTORE_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, service_exposure, network_policy, rollout, final_capture = sys.argv[1:]
+          path, source, cluster, deploy, initial, service_exposure, network_policy, policy_restore, rollout, final_capture = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
@@ -528,6 +571,7 @@ jobs:
                   "initial": initial,
                   "serviceExposure": service_exposure,
                   "networkPolicy": network_policy,
+                  "policyRestore": policy_restore,
                   "rollout": rollout,
                   "finalCapture": final_capture,
               },
@@ -546,7 +590,9 @@ jobs:
 
           matrix_steps_ok=true
           if [[ "$K8S_MATRIX_PROFILE" == "cni-policy" ]]; then
-            for outcome in "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME"; do
+            for outcome in \
+              "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
+              "$POLICY_RESTORE_OUTCOME"; do
               if [[ "$outcome" != "success" ]]; then
                 matrix_steps_ok=false
               fi
