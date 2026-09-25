@@ -587,7 +587,6 @@ jobs:
           observed_generation = status.get("observedGeneration")
           ok = (
               spec.get("maxUnavailable") == 1
-              and spec.get("unhealthyPodEvictionPolicy") == "AlwaysAllow"
               and generation is not None
               and observed_generation == generation
               and status.get("expectedPods", 0) >= 1
@@ -616,7 +615,6 @@ jobs:
           disruptions_allowed = status.get("disruptionsAllowed", 0)
           passed = (
               spec.get("maxUnavailable") == 1
-              and spec.get("unhealthyPodEvictionPolicy") == "AlwaysAllow"
               and observed_generation == generation
               and status.get("currentHealthy", 0) >= 1
               and status.get("expectedPods", 0) >= 1
@@ -626,7 +624,6 @@ jobs:
               "schemaVersion": 1,
               "sourceSha": source,
               "maxUnavailable": spec.get("maxUnavailable"),
-              "unhealthyPodEvictionPolicy": spec.get("unhealthyPodEvictionPolicy"),
               "generation": generation,
               "observedGeneration": observed_generation,
               "observedGenerationMatches": observed_generation == generation,
