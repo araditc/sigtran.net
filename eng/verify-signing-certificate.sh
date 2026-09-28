@@ -24,13 +24,13 @@ test -n "${EXPECTED_SHA256}"
 
 openssl pkcs12 \
     -in "${PFX_PATH}" \
-    -passin "pass:${PASSWORD}" \
+    -passin env:SIGNING_CERTIFICATE_PASSWORD \
     -clcerts \
     -nokeys \
     -out "${CERTIFICATE_PATH}"
 openssl pkcs12 \
     -in "${PFX_PATH}" \
-    -passin "pass:${PASSWORD}" \
+    -passin env:SIGNING_CERTIFICATE_PASSWORD \
     -cacerts \
     -nokeys \
     -out "${CHAIN_PATH}"

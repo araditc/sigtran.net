@@ -1,0 +1,36 @@
+name: trusted-signing-contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase56-trusted-signing-preflight.yml'
+      - '.github/workflows/release.yml'
+      - '.github/workflows/trusted-signing-contract.yml'
+      - 'eng/verify-signing-certificate.sh'
+      - 'scripts/tests/test_trusted_signing_workflow_contract.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase56-trusted-signing-preflight.yml'
+      - '.github/workflows/release.yml'
+      - '.github/workflows/trusted-signing-contract.yml'
+      - 'eng/verify-signing-certificate.sh'
+      - 'scripts/tests/test_trusted_signing_workflow_contract.py'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate signing scripts and workflow contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n eng/verify-signing-certificate.sh
+          python3 -u scripts/tests/test_trusted_signing_workflow_contract.py
