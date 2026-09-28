@@ -6,7 +6,19 @@ on:
     paths:
       - 'eng/release/stable-release.json'
       - 'eng/evaluate-stable-release.ps1'
+      - 'eng/tests/test-stable-release-evaluator.ps1'
       - 'eng/api/Sigtran.NET.1.0.public-api.txt'
+      - 'eng/api/Sigtran.NET.1.0.accepted-additions.txt'
+      - 'docs/evidence/**'
+      - '.github/workflows/stable-gate-assessment.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'eng/release/stable-release.json'
+      - 'eng/evaluate-stable-release.ps1'
+      - 'eng/tests/test-stable-release-evaluator.ps1'
+      - 'eng/api/Sigtran.NET.1.0.public-api.txt'
+      - 'eng/api/Sigtran.NET.1.0.accepted-additions.txt'
       - 'docs/evidence/**'
       - '.github/workflows/stable-gate-assessment.yml'
   workflow_dispatch:
@@ -21,6 +33,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Test stable evaluator fail-closed evidence policy
+        shell: pwsh
+        run: ./eng/tests/test-stable-release-evaluator.ps1
 
       - name: Evaluate stable release gates
         shell: pwsh
