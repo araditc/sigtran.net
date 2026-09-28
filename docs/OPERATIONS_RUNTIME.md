@@ -140,5 +140,28 @@ verifies the revision embedded in the running container exactly matches the
 workflow source SHA. An image with a missing, `unknown`, or mismatched revision
 cannot produce source-bound qualification evidence.
 
+Qualification is split into explicit opt-in slices:
+
+- `core` captures source-bound cluster/CNI identity, liveness/readiness, SCTP
+  association state, pod replacement, rollout/rollback, and final health.
+- `cni-policy` additionally exercises a run/attempt-unique SCTP egress
+  NetworkPolicy against a fresh pod connection, proves association blocking and
+  recovery, and removes the qualification policy with independent verification.
+- `disruption` additionally exercises graceful pod termination, a run-scoped
+  `policy/v1` PodDisruptionBudget, and node drain/rescheduling. The drain target
+  must carry the configured qualification label, must not be a control-plane or
+  already-unschedulable node, and another Ready Linux worker must exist.
+
+The disruption slice uses a run-owned node annotation so rollback does not
+silently take ownership of unrelated maintenance. The in-step failure path
+keeps that ownership marker until uncordon succeeds; a separate `always()`
+restore step verifies the node is schedulable and the marker is absent. The
+run-scoped PDB is also removed and absence-verified independently.
+
+These repository controls prepare representative qualification; they are not
+representative-cluster evidence by themselves. A single-replica
+`maxUnavailable: 1` PDB demonstrates a policy-governed voluntary eviction
+path, not zero-downtime availability.
+
 Replace the example peer address, image version, point codes, routing context,
 resource limits, and topology values before deployment.

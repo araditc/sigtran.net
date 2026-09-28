@@ -5,7 +5,7 @@ This document is the durable execution checkpoint for the owner-approved SDK roa
 ## Canonical baseline
 
 - Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.
-- Current canonical `main` at this checkpoint: `ee9fda83930db82419174301d76306deafb155c4`; every execution must reconcile the live branch before using this pointer.
+- Current canonical `main` at this checkpoint: `2c5302e21fe789ed55631f921cbc04a527859d27`; every execution must reconcile the live branch before using this pointer.
 - Latest immutable public prerelease: `Sigtran.NET 1.0.0-rc.2`.
 - Public tag `v1.0.0-rc.2` resolves to source commit `e2c663460823cd29f073467a79c4f761fb7c1002` and must not be retagged or overwritten.
 - Current unpublished source-development package identity: `1.0.0-rc.3-dev`.
@@ -58,20 +58,21 @@ A stable gate is promoted only when the exact candidate has retained, digest-cov
 ## Current checkpoint
 
 - Parent roadmap tracker: GitHub issue `#12`; Kubernetes qualification tracker: reopened issue `#7`.
-- Canonical admitted branch is `main@77856e97933c3648401234793594e60164e71af0`, the merge of PR `#31`.
+- Canonical admitted branch is `main@2c5302e21fe789ed55631f921cbc04a527859d27`, the merge of PR `#32`.
 - 57A baseline/scope-lock and 57B SDK profile-framework implementation remain admitted. The separate stable `operator-profile` gate remains **EXTERNAL-BLOCKED** until genuine authorized operator/vendor acceptance evidence is retained.
 - **Milestone C — Multi-association M3UA HA runtime remains VERIFIED-DONE for deterministic repository implementation.**
 - **Milestone D — Representative Multi-Host Qualification tooling remains admitted through PR `#30`.** The stable `multi-host-soak` gate remains **OPEN / EXTERNAL-BLOCKED** pending actual representative separate-host matrix/duration evidence.
-- **Milestone E baseline qualification tooling is admitted through PR `#31`.** It preserves source-bound image provenance, fail-closed digest handling, private raw evidence, sanitized public output, initial/final SCTP association checks, health probes and rollout/rollback capture. Repository CI remains synthetic/offline and does not close `kubernetes-sctp`.
-- **Active bounded package: Kubernetes CNI Policy Stage 1** on branch `kubernetes-cni-policy-stage1`. This slice adds explicit `core` versus `cni-policy` opt-in, management-Service exposure evidence, and source-bound SCTP NetworkPolicy enforcement/recovery evidence.
-- The NetworkPolicy scenario is deliberately connection-fresh: a run/attempt-unique policy applies deny before replacing the pod, repeated protected observations must show no SCTP association, then allow is applied and both pod readiness and an SCTP association must recover.
-- The qualification policy never reuses a fixed environment policy name. Failure paths attempt immediate cleanup, and a separate `always()` cleanup step deletes the run-unique policy and verifies it is absent before the package can succeed.
-- Public sanitized evidence still excludes raw peer addressing and cluster topology; NetworkPolicy manifests, pod identity and raw association observations remain protected evidence.
-- This Stage 1 package does **not** claim graceful termination, PDB/node-drain/rescheduling, representative-cluster execution, or stable-gate completion. Those remain separate matrix work/evidence requirements.
+- **Milestone E baseline tooling is admitted through PR `#31`; CNI Policy Stage 1 is admitted through PR `#32`.** Stage 1 adds explicit CNI-only opt-in, run/attempt-unique SCTP NetworkPolicy isolation, fresh-connection deny/recovery evidence, management-Service exposure evidence and independently verified cleanup.
+- **Active bounded package: Kubernetes Disruption Stage 2** on branch `kubernetes-disruption-stage2`. This slice adds source-bound graceful termination evidence, a run-scoped `policy/v1` PodDisruptionBudget, voluntary node-drain/rescheduling evidence, SCTP recovery verification and independently owned cleanup/restore.
+- The Stage 2 PDB uses `policy/v1` with `maxUnavailable: 1` for this single-replica qualification workload. It proves the voluntary-eviction/reschedule path is policy-governed; it does **not** claim zero-downtime or multi-replica availability. Optional newer PDB fields are not required because the repository does not pin a Kubernetes >=1.31 baseline.
+- Node drain is restricted to a node carrying the configured qualification label, rejects control-plane or already-unschedulable nodes, requires another schedulable Ready Linux node, uses `kubectl drain` without `--disable-eviction` or `--force`, and tags temporary drain ownership with the exact run id.
+- Failure paths attempt immediate owned-node recovery; a separate `always()` restore step verifies the owned node is schedulable and no longer owned by the run. The run-scoped PDB is separately removed and absence-verified.
+- Graceful termination requires the pod's 30-second grace period, retained `m3ua.shutdown.completed` structured event, bounded termination duration, replacement readiness and SCTP association recovery.
+- Repository CI remains synthetic/offline validation only. Stage 2 implementation does **not** claim representative-cluster execution and does not promote `kubernetes-sctp`.
 - Trusted stable signing remains **OPEN / EXTERNAL-BLOCKED** pending an organization-approved CA-issued identity. The rejected self-issued certificate is not accepted as stable author signing.
 - The stable evaluator remains **NO-GO** with exactly four required open gates: `operator-profile`, `multi-host-soak`, `kubernetes-sctp`, and `trusted-signing`.
 - Stable publication remains prohibited until retained evidence closes every required gate, the machine evaluator returns `GO`, applicable independent/protected approvals are current, and the exact release request is authorized.
 
 ## Next dependency-valid action
 
-Run exact-head CI/review for the bounded CNI Policy Stage 1 package and admit it only with current successful checks, clean substantive threads, independent review and mergeability. Then implement the next bounded Kubernetes slice for graceful termination plus PDB/node-drain/rescheduling while keeping actual representative execution external-evidence-bound. Do not promote `kubernetes-sctp` from repository-only tests.
+Run exact-head CI and independent review for Kubernetes Disruption Stage 2. Admit it only with successful current checks, clean substantive threads and mergeability. After admission, compose the already-admitted CNI Policy and Disruption slices into a representative-cluster matrix runner without fabricating execution evidence. The stable `kubernetes-sctp` gate remains open until an authorized representative cluster run is retained and digest-covered.
