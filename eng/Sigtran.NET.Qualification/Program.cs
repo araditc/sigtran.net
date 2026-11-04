@@ -49,9 +49,11 @@ namespace Sigtran.Qualification
                 return Contracts.Report(Contracts.Read<LabTopology>(args[1]).Validate());
             if (args.Length == 3 && args[0] == "bundle")
                 return Contracts.Report(Contracts.Read<EvidenceBundle>(args[1]).ValidateIntegrity(args[2]));
-            if (args.Length == 3 && args[0] == "evaluate")
+            if ((args.Length == 3 || args.Length == 6) && args[0] == "evaluate")
             {
-                ReleaseEvaluation result = ReleaseEvaluation.Evaluate(Contracts.Read<QualificationPolicy>(args[1]), args[2]);
+                CandidateContext? context = args.Length == 6
+                    ? CandidateContext.Create(args[3], args[4], Contracts.Read<ProductScope>(args[5])) : null;
+                ReleaseEvaluation result = ReleaseEvaluation.Evaluate(Contracts.Read<QualificationPolicy>(args[1]), args[2], context);
                 Console.WriteLine(JsonSerializer.Serialize(result, Contracts.Json));
                 return result.Decision == "GO" ? 0 : 1;
             }

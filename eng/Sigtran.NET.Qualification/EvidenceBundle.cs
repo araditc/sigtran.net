@@ -46,14 +46,16 @@ internal static class EvidenceFiles
 
 /// <summary>Binds immutable result files to a recorded run; trust and release binding are evaluated separately.</summary>
 internal sealed record EvidenceBundle(int SchemaVersion, string ScopeId, string GateId, string RunId,
-    string SourceCommit, string PackageSha256, DateTimeOffset CompletedAtUtc, RunOutcome Result, EvidenceArtifact[] Artifacts)
+    string SourceCommit, string PackageSha256, string PackageVersion, string ScopeSha256,
+    DateTimeOffset CompletedAtUtc, RunOutcome Result, EvidenceArtifact[] Artifacts)
 {
     internal string[] ValidateIntegrity(string root)
     {
         List<string> errors = [];
         if (SchemaVersion != 2 || ScopeId != "itu-map-sms-v1" || !LabTopology.SafeLabel(GateId)
             || !LabTopology.SafeLabel(RunId) || !EvidenceFiles.IsCommit(SourceCommit)
-            || !EvidenceFiles.IsDigest(PackageSha256)) errors.Add("Invalid evidence identity/schema.");
+            || !EvidenceFiles.IsDigest(PackageSha256) || PackageVersion != "1.0.0"
+            || !EvidenceFiles.IsDigest(ScopeSha256)) errors.Add("Invalid evidence identity/schema.");
         if (Result is null) errors.Add("Run result required.");
         if (Artifacts is null || Artifacts.Length == 0) return [..errors, "Non-empty artifact inventory required."];
         if (Artifacts.Select(a => a.Path).Distinct(StringComparer.OrdinalIgnoreCase).Count() != Artifacts.Length)

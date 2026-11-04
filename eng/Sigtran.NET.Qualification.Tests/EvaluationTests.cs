@@ -34,7 +34,7 @@ internal static partial class Tests
         {
             var p = Contracts.Read<QualificationPolicy>("eng/qualification/release-policy.json");
             var r = ReleaseEvaluation.Evaluate(p, Directory.GetCurrentDirectory());
-            Check(r.Decision == "NO-GO" && r.Errors.Length == 0 && r.Gates.Length == 15 && r.Gates.All(g => !g.Passed), "current policy");
+            Check(r.Decision == "NO-GO" && r.Gates.Length == 15 && r.Gates.All(g => !g.Passed), "current policy");
         }));
     }
 }

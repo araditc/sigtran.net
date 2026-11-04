@@ -11,7 +11,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 5 | Remote peer traffic runner with selectable capture | Complete |
 | 6 | Versioned evidence envelopes and artifact integrity | Complete |
 | 7 | Fail-closed release gate evaluation | Complete |
-| 8 | Provenance, freshness and source/package binding | Pending |
+| 8 | Provenance, freshness and source/package binding | Complete |
 | 9 | CI and stable workflow integration | Pending |
 | 10 | Rehearsal, retained inventory and final report | Pending |
 
@@ -61,3 +61,12 @@ empty run, short single-host capacity and non-finite metrics fail closed.
 The candidate policy intentionally starts NO-GO with no converted historical
 passes. Existing schema-1 evidence stays retained with its original scope;
 it is not relabeled as exact-candidate qualification.
+
+Unit 8 reads candidate identity/version from the actual nupkg, binds source
+commit, package SHA-256 and semantic scope digest, and rejects evidence older
+than 30 days or future timestamps. A structurally successful envelope additionally
+requires `gh attestation verify` against the fixed repository, candidate source
+SHA, main ref and protected `qualification-evidence.yml` producer identity.
+No retained `verified=true` flag is trusted. Missing verifier/network/provenance
+fails closed. Producer admission and genuine external results are later-phase
+requirements; the synthetic test verifier exists only in the test assembly.

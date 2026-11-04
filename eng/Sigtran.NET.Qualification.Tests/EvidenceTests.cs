@@ -12,6 +12,7 @@ internal static partial class Tests
             Directory.CreateDirectory(Root);
             File.WriteAllText(Path.Combine(Root, "result.json"), "{\"synthetic\":true}");
             Bundle = new(2, "itu-map-sms-v1", "wire-conformance", "test-run", new string('a', 40), new string('b', 64),
+                "1.0.0", CandidateContext.ScopeDigest(ValidScope()),
                 DateTimeOffset.UtcNow, new("passed", 10, 0, new() { ["vectorCount"] = 10 }),
                 [new("report", "result.json", EvidenceFiles.Hash(Path.Combine(Root, "result.json")))]);
         }

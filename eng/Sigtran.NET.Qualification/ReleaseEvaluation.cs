@@ -19,9 +19,12 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
      "capacity-target", "multi-host-soak", "operations-runtime", "kubernetes-sctp", "trusted-signing",
      "public-api-baseline", "protected-publication", "wire-conformance", "native-multihoming", "mtp3-m2pa"];
 
-    internal static ReleaseEvaluation Evaluate(QualificationPolicy policy, string root)
+    internal static ReleaseEvaluation Evaluate(QualificationPolicy policy, string root,
+        CandidateContext? context = null, IEvidenceAttestationVerifier? verifier = null)
     {
         List<string> errors = [];
+        if (context is null) errors.Add("An actual candidate package and source commit are required.");
+        else if (context.PackageVersion != policy.Version) errors.Add("Candidate package version does not match stable policy.");
         if (policy.SchemaVersion != 2 || policy.PackageId != "Sigtran.NET" || policy.Version != "1.0.0"
             || policy.ScopeId != "itu-map-sms-v1") errors.Add("Unknown qualification target/schema.");
         if (policy.Gates is null || !policy.Gates.Select(g => g.Id).Order().SequenceEqual(RequiredGates.Order()))
@@ -43,6 +46,10 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
                         EvidenceBundle bundle = Contracts.Read<EvidenceBundle>(path);
                         failures.AddRange(bundle.ValidateIntegrity(root));
                         failures.AddRange(CheckOutcome(gate.Id, bundle));
+                        if (context is null) failures.Add("Candidate context missing.");
+                        else failures.AddRange(context.Validate(bundle));
+                        if (failures.Count == 0 && !(verifier ?? new GitHubEvidenceAttestationVerifier()).Verify(path, context!.SourceCommit))
+                            failures.Add("Trusted source-bound GitHub attestation required.");
                     }
                 }
             }
