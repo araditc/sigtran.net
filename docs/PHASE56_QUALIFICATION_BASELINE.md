@@ -8,7 +8,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 2 | Owned defect ledger and acceptance mapping | Complete |
 | 3 | Multi-host topology contract | Complete |
 | 4 | Read-only Linux host inventory and prerequisites | Complete |
-| 5 | Remote peer traffic runner with selectable capture | Pending |
+| 5 | Remote peer traffic runner with selectable capture | Complete |
 | 6 | Versioned evidence envelopes and artifact integrity | Pending |
 | 7 | Fail-closed release gate evaluation | Pending |
 | 8 | Provenance, freshness and source/package binding | Pending |
@@ -39,3 +39,11 @@ Run it on each host, retain JSON privately, then run `qualification inventory
 requires fresh inventories, distinct machine hashes, Linux kernel SCTP,
 lksctp, .NET 10, capture privileges and all named tools. Private inventory is
 not automatically an authenticated external qualification result.
+
+Unit 5 reuses `run-multi-host-qualification.sh`; no competing traffic runner
+is introduced. `qualification plan <topology> <sdk-inventory> <peer-inventory>
+<run-id> <tier> <fault>` emits protected JSON inputs. The Python plan launcher
+passes only whitelisted environment inputs without shell interpolation.
+Existing protected SSH/source/raw-evidence requirements still apply. The new
+`endurance` tier adds the approved 72-hour target; historical `release` remains
+24 hours. Plan-only output never counts as executed traffic evidence.

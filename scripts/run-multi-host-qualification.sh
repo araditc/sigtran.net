@@ -12,6 +12,7 @@ case "$PROFILE" in
   stress)  SOAK_SECONDS=3600 ;;
   soak)    SOAK_SECONDS=21600 ;;
   release) SOAK_SECONDS=86400 ;;
+  endurance) SOAK_SECONDS=259200 ;;
   *) echo "Unsupported qualification profile: $PROFILE" >&2; exit 2 ;;
 esac
 case "$FAULT_SCENARIO" in

@@ -50,6 +50,14 @@ namespace Sigtran.Qualification
             if (args.Length == 4 && args[0] == "inventory")
                 return Contracts.Report(HostInventory.ValidatePair(Contracts.Read<LabTopology>(args[1]),
                     [Contracts.Read<HostInventory>(args[2]), Contracts.Read<HostInventory>(args[3])], DateTimeOffset.UtcNow));
+            if (args.Length == 7 && args[0] == "plan")
+            {
+                var plan = LabPlan.Create(Contracts.Read<LabTopology>(args[1]),
+                    [Contracts.Read<HostInventory>(args[2]), Contracts.Read<HostInventory>(args[3])],
+                    args[4], args[5], args[6], DateTimeOffset.UtcNow);
+                Console.WriteLine(JsonSerializer.Serialize(plan, Contracts.Json));
+                return 0;
+            }
             Console.Error.WriteLine("Usage: qualification scope <scope.json>");
             return 2;
         }

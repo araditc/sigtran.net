@@ -13,6 +13,7 @@ internal static partial class Tests
         RegisterDefects();
         RegisterTopology();
         RegisterInventory();
+        RegisterPlan();
         int failed = 0;
         foreach ((string name, Action body) in Cases)
         {
