@@ -235,3 +235,12 @@ For all roadmap stages:
 ## Current Execution Pointer
 
 Use [Roadmap Execution](ROADMAP_EXECUTION.md) for the current work package, dependency state, and acceptance checkpoint. Use [Phase Index](PHASE_INDEX.md) to navigate historical phase documents and retained evidence.
+
+## Approved Qualification Continuation - 2026-11-04
+
+The owner approved the [phases 56-65 qualification baseline](RELEASE_QUALIFICATION_ROADMAP.md).
+This continuation preserves all admitted HA, profile, multi-host and Kubernetes
+work above. The [Phase 56 baseline](PHASE56_QUALIFICATION_BASELINE.md) is a new
+ten-unit qualification audit, distinct from the historical Phase 56 stable
+evidence closure. Existing M2PA and numeric capacity evidence is retained;
+wire conformance and candidate-specific external qualification remain required.

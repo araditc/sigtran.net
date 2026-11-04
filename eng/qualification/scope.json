@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "itu-map-sms-v1",
+  "framework": "net10.0",
+  "operatingSystem": "linux",
+  "variant": "itu",
+  "capabilities": ["native-sctp", "m3ua", "m2pa-mtp3", "sccp-connectionless", "tcap-itu", "map-sms"],
+  "exclusions": ["diameter", "ansi", "sccp-connection-oriented", "map-non-sms"]
+}

@@ -12,6 +12,10 @@ Repository: <https://github.com/araditc/sigtran.net>
 
 SIGTRAN.NET is a standards-oriented C#/.NET SDK for building and testing SS7-over-IP and SIGTRAN signaling applications.
 
+The approved continuation is [phases 56-65](docs/RELEASE_QUALIFICATION_ROADMAP.md).
+[Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
+Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
+
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
 ---
