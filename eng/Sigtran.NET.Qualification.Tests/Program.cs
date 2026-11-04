@@ -15,6 +15,7 @@ internal static partial class Tests
         RegisterInventory();
         RegisterPlan();
         RegisterEvidence();
+        RegisterEvaluation();
         int failed = 0;
         foreach ((string name, Action body) in Cases)
         {

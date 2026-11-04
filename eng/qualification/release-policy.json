@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "packageId": "Sigtran.NET",
+  "version": "1.0.0",
+  "scopeId": "itu-map-sms-v1",
+  "gates": [
+    {"id":"native-linux-sctp","bundlePath":null,"bundleSha256":null},
+    {"id":"external-m3ua","bundlePath":null,"bundleSha256":null},
+    {"id":"full-stack-traffic","bundlePath":null,"bundleSha256":null},
+    {"id":"independent-m2pa","bundlePath":null,"bundleSha256":null},
+    {"id":"operator-profile","bundlePath":null,"bundleSha256":null},
+    {"id":"capacity-target","bundlePath":null,"bundleSha256":null},
+    {"id":"multi-host-soak","bundlePath":null,"bundleSha256":null},
+    {"id":"operations-runtime","bundlePath":null,"bundleSha256":null},
+    {"id":"kubernetes-sctp","bundlePath":null,"bundleSha256":null},
+    {"id":"trusted-signing","bundlePath":null,"bundleSha256":null},
+    {"id":"public-api-baseline","bundlePath":null,"bundleSha256":null},
+    {"id":"protected-publication","bundlePath":null,"bundleSha256":null},
+    {"id":"wire-conformance","bundlePath":null,"bundleSha256":null},
+    {"id":"native-multihoming","bundlePath":null,"bundleSha256":null},
+    {"id":"mtp3-m2pa","bundlePath":null,"bundleSha256":null}
+  ]
+}

@@ -24,6 +24,8 @@ Validated plans reuse the protected multi-host runner, including an explicit
 72-hour endurance tier and selectable network capture interface.
 Evidence envelopes verify expected artifact hashes and reject empty inventories
 or paths escaping the evidence root.
+Candidate evaluation requires measured outcomes and all mandatory product gates;
+historical capacity/M2PA passes retain their original qualification boundaries.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

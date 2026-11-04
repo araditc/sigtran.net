@@ -10,7 +10,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 4 | Read-only Linux host inventory and prerequisites | Complete |
 | 5 | Remote peer traffic runner with selectable capture | Complete |
 | 6 | Versioned evidence envelopes and artifact integrity | Complete |
-| 7 | Fail-closed release gate evaluation | Pending |
+| 7 | Fail-closed release gate evaluation | Complete |
 | 8 | Provenance, freshness and source/package binding | Pending |
 | 9 | CI and stable workflow integration | Pending |
 | 10 | Rehearsal, retained inventory and final report | Pending |
@@ -53,3 +53,11 @@ artifact has an expected SHA-256, kind and root-relative path; traversal,
 absolute paths, links, empty inventories and changed bytes fail validation.
 `qualification bundle <bundle.json> <evidence-root>` checks integrity only.
 It does not establish independent provenance or declare a release GO.
+
+Unit 7 evaluates all 15 mandatory product gates with pinned envelopes,
+non-empty observations, zero failures, required artifact kinds and fixed
+numeric acceptance criteria. Missing/duplicate gates, a successful-looking
+empty run, short single-host capacity and non-finite metrics fail closed.
+The candidate policy intentionally starts NO-GO with no converted historical
+passes. Existing schema-1 evidence stays retained with its original scope;
+it is not relabeled as exact-candidate qualification.
