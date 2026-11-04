@@ -45,6 +45,8 @@ namespace Sigtran.Qualification
                 return Contracts.Report(Contracts.Read<ProductScope>(args[1]).Validate());
             if (args.Length == 3 && args[0] == "defects")
                 return Contracts.Report(Contracts.Read<DefectLedger>(args[1]).Validate(args[2]));
+            if (args.Length == 2 && args[0] == "topology")
+                return Contracts.Report(Contracts.Read<LabTopology>(args[1]).Validate());
             Console.Error.WriteLine("Usage: qualification scope <scope.json>");
             return 2;
         }

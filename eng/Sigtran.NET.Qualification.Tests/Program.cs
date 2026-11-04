@@ -11,6 +11,7 @@ internal static partial class Tests
     {
         RegisterScope();
         RegisterDefects();
+        RegisterTopology();
         int failed = 0;
         foreach ((string name, Action body) in Cases)
         {

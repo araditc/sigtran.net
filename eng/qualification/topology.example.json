@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "itu-map-sms-v1",
+  "nodes": [
+    {"id":"sdk-node","role":"sdk","address":"192.0.2.10","captureInterface":"eth0"},
+    {"id":"peer-node","role":"peer","address":"192.0.2.11","captureInterface":"eth0"}
+  ],
+  "sctpPort": 2906
+}

@@ -17,6 +17,7 @@ The approved continuation is [phases 56-65](docs/RELEASE_QUALIFICATION_ROADMAP.m
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
 remaining wire, transport, MTP3 and evidence work with explicit acceptance.
+Qualification topology validation rejects local data paths and ambiguous lab roles.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

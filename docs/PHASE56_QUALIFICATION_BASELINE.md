@@ -6,7 +6,7 @@ Status: in progress. Stable decision remains NO-GO.
 | --- | --- | --- |
 | 1 | Locked roadmap and executable product scope | Complete |
 | 2 | Owned defect ledger and acceptance mapping | Complete |
-| 3 | Multi-host topology contract | Pending |
+| 3 | Multi-host topology contract | Complete |
 | 4 | Read-only Linux host inventory and prerequisites | Pending |
 | 5 | Remote peer traffic runner with selectable capture | Pending |
 | 6 | Versioned evidence envelopes and artifact integrity | Pending |
@@ -26,3 +26,9 @@ Unit 2 records seven source-anchored findings in `eng/qualification/defects.json
 Validate with `qualification defects <ledger> <repository-root>`. A ledger
 entry cannot close a defect by changing its state; closure requires evaluated
 evidence. Existing HA, M2PA and numeric capacity work is preserved.
+
+Unit 3 validates a protected two-node topology with exactly one SDK and peer.
+Use `qualification topology <path>`. The documentation-address example is not
+an executed lab. Inventory must additionally prove distinct machine identities;
+different labels/IPs alone do not prove separate hosts. Real topology stays in
+protected evidence storage, never in the public repository.
