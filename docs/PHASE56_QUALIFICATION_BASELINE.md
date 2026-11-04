@@ -9,7 +9,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 3 | Multi-host topology contract | Complete |
 | 4 | Read-only Linux host inventory and prerequisites | Complete |
 | 5 | Remote peer traffic runner with selectable capture | Complete |
-| 6 | Versioned evidence envelopes and artifact integrity | Pending |
+| 6 | Versioned evidence envelopes and artifact integrity | Complete |
 | 7 | Fail-closed release gate evaluation | Pending |
 | 8 | Provenance, freshness and source/package binding | Pending |
 | 9 | CI and stable workflow integration | Pending |
@@ -47,3 +47,9 @@ passes only whitelisted environment inputs without shell interpolation.
 Existing protected SSH/source/raw-evidence requirements still apply. The new
 `endurance` tier adds the approved 72-hour target; historical `release` remains
 24 hours. Plan-only output never counts as executed traffic evidence.
+
+Unit 6 introduces schema-2 evidence envelopes outside the SDK API. Every
+artifact has an expected SHA-256, kind and root-relative path; traversal,
+absolute paths, links, empty inventories and changed bytes fail validation.
+`qualification bundle <bundle.json> <evidence-root>` checks integrity only.
+It does not establish independent provenance or declare a release GO.

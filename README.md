@@ -22,6 +22,8 @@ The read-only Linux inventory collector checks native SCTP and lab prerequisites
 and detects aliases of the same machine before multi-host execution.
 Validated plans reuse the protected multi-host runner, including an explicit
 72-hour endurance tier and selectable network capture interface.
+Evidence envelopes verify expected artifact hashes and reject empty inventories
+or paths escaping the evidence root.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
