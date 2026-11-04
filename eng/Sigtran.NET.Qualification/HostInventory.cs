@@ -5,7 +5,7 @@ namespace Sigtran.Qualification;
 /// <summary>Retains observed host prerequisites; a pair additionally proves distinct machine identities.</summary>
 internal sealed record HostInventory(int SchemaVersion, string NodeId, string Role, string MachineHash,
     string OperatingSystem, string Kernel, string DotnetVersion, bool SctpAvailable, bool LksctpAvailable,
-    bool SudoAvailable, Dictionary<string, bool> Tools, DateTimeOffset CapturedAtUtc)
+    bool SudoAvailable, Dictionary<string, bool> Tools, DateTimeOffset CapturedAtUtc, bool CaptureAvailable = false)
 {
     internal static readonly string[] RequiredTools = ["gcc", "tcpdump", "tshark", "ip", "ssh", "timeout", "python3"];
 
@@ -19,7 +19,7 @@ internal sealed record HostInventory(int SchemaVersion, string NodeId, string Ro
         if (DotnetVersion is null || !Regex.IsMatch(DotnetVersion, "^10\\.\\d+\\.\\d+")) errors.Add(".NET 10 SDK required.");
         if (!SctpAvailable) errors.Add("Native kernel SCTP socket unavailable.");
         if (!LksctpAvailable) errors.Add("lksctp library unavailable.");
-        if (!SudoAvailable) errors.Add("Non-interactive capture/fault privileges unavailable.");
+        if (!CaptureAvailable && !SudoAvailable) errors.Add("Non-interactive capture privileges unavailable.");
         if (Tools is null || RequiredTools.Any(t => !Tools.GetValueOrDefault(t))) errors.Add("Required lab tools missing.");
         if (CapturedAtUtc > now.AddMinutes(5) || CapturedAtUtc < now.AddHours(-24)) errors.Add("Inventory must be current (24h).");
         return errors.ToArray();

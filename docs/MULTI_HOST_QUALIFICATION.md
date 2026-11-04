@@ -62,6 +62,14 @@ Primary references:
 
 ## Required topology
 
+For a host configured with Wireshark's non-root capture capabilities, set
+`SIGTRAN_CAPTURE_BACKEND=dumpcap` (protected workflow variable
+`PERF_CAPTURE_BACKEND=dumpcap`). Inventory records actual interface-open
+permission separately from sudo, and validated plans select this backend when
+available. Capture then runs and stops as the lab user without privileged
+chown/kill. Peer service and firewall fault controls still require their own
+authorization. See [Linux lab setup](LINUX_LAB_SETUP.md).
+
 A qualifying run must satisfy all of the following:
 
 - SDK workload and peer execute on distinct physical hosts or VMs;

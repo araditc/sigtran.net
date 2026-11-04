@@ -1,7 +1,8 @@
 # Phase 56 - Qualification Baseline
 
 Status: all ten implementation units delivered; lab acceptance is blocked by
-the second independent Linux host and non-interactive capture privileges.
+the second independent Linux host. Non-root capture on the existing VM has
+subsequently been configured and verified; fault-control authorization is separate.
 Stable decision remains NO-GO. This phase is not externally accepted yet.
 
 | Unit | Deliverable | Status |
@@ -83,14 +84,16 @@ and proves `-RequireGo` still rejects publication. See
 
 The read-only collector ran successfully on the previously authorized Linux VM
 on 2026-11-04. Kernel SCTP, lksctp, .NET 10 and the required binaries were
-observed. Passwordless sudo was not available. Only one independent Linux
+observed. Non-root dumpcap capture is now configured and verified with generated
+SCTP traffic. Passwordless sudo remains unavailable and is not required for
+capture; fault-control permissions are handled separately. Only one independent Linux
 machine inventory is currently retained in protected local artifacts.
 
 The baseline audit intentionally reports `toolingValid=true`, `labReady=false`
 and `stableDecision=NO-GO`. A second reachable Linux host, fresh distinct
-machine inventories and approved non-interactive capture/fault privileges are
-needed before declaring the two-host laboratory ready. No traffic run or
-external acceptance is claimed by this phase.
+machine inventories and scenario-specific fault-control authorization are
+needed before declaring the two-host laboratory ready. The capture proof is
+a loopback permission test, not multi-host traffic or external acceptance.
 
 The final rehearsal uses synthetic evidence in temporary directories, with a
 test-only verifier. It proves all-gate evaluation, provenance rejection and

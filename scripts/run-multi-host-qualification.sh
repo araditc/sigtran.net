@@ -6,6 +6,11 @@ PROFILE="${QUALIFICATION_PROFILE:-smoke}"
 FAULT_SCENARIO="${FAULT_SCENARIO:-peer-restart}"
 FAULT_DURATION_SECONDS="${FAULT_DURATION_SECONDS:-10}"
 PLAN_ONLY="${PLAN_ONLY:-false}"
+CAPTURE_BACKEND="${SIGTRAN_CAPTURE_BACKEND:-sudo-tcpdump}"
+case "$CAPTURE_BACKEND" in
+  sudo-tcpdump|dumpcap) ;;
+  *) echo "Unsupported capture backend: $CAPTURE_BACKEND" >&2; exit 2 ;;
+esac
 
 case "$PROFILE" in
   smoke)   SOAK_SECONDS=900 ;;
@@ -49,7 +54,7 @@ read -r FAULT_DURATION_SECONDS failover_timeout_seconds reconnect_max_attempts <
 
 if [[ "$PLAN_ONLY" == "true" ]]; then
   python3 - "$PROFILE" "$FAULT_SCENARIO" "$SOAK_SECONDS" "$FAULT_DURATION_SECONDS" \
-    "$failover_timeout_seconds" "$reconnect_max_attempts" <<'PY'
+    "$failover_timeout_seconds" "$reconnect_max_attempts" "$CAPTURE_BACKEND" <<'PY'
 import json, sys
 print(json.dumps({
     "schemaVersion": 1,
@@ -62,6 +67,7 @@ print(json.dumps({
     "requiresDistinctHosts": True,
     "rawEvidenceStorage": "protected",
     "stableGatePromotion": False,
+    "captureBackend": sys.argv[7],
 }, indent=2))
 PY
   exit 0
@@ -97,7 +103,14 @@ fi
 for cmd in dotnet tcpdump tshark sha256sum python3 ssh timeout ip mktemp; do
   command -v "$cmd" >/dev/null || { echo "Required command is missing: $cmd" >&2; exit 2; }
 done
-sudo -n true >/dev/null
+if [[ "$CAPTURE_BACKEND" == "dumpcap" ]]; then
+  command -v dumpcap >/dev/null || { echo "dumpcap is required for non-root capture." >&2; exit 2; }
+  dumpcap -i "$CAPTURE_INTERFACE" -p -L >/dev/null 2>&1 || {
+    echo "Non-root capture access is unavailable on CAPTURE_INTERFACE." >&2; exit 2;
+  }
+else
+  sudo -n true >/dev/null
+fi
 
 python3 - "$REMOTE_IP" "$RAW_EVIDENCE_ROOT" "$RUN_ID" <<'PY'
 import ipaddress, os, stat, sys
@@ -175,17 +188,34 @@ ssh_peer() {
 
 start_capture() {
   [[ "$tcpdump_pid" == "" ]] || { echo "Packet capture is already active." >&2; return 1; }
-  sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U \
-    -C "$capture_limit_mb" -W "$capture_file_count" -w "$capture_prefix" \
-    "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" >"$raw/tcpdump.log" 2>&1 &
-  tcpdump_pid=$!
+  if [[ "$CAPTURE_BACKEND" == "dumpcap" ]]; then
+    # The suffix keeps dumpcap's numbered ring files within the existing evidence glob.
+    dumpcap -q -p -P -i "$CAPTURE_INTERFACE" \
+      -b "filesize:$((capture_limit_mb * 1000))" -b "files:$capture_file_count" \
+      -w "${capture_prefix}.capture" -f "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" \
+      >"$raw/tcpdump.log" 2>&1 &
+    tcpdump_pid=$!
+  else
+    sudo -n tcpdump -i "$CAPTURE_INTERFACE" --immediate-mode -U \
+      -C "$capture_limit_mb" -W "$capture_file_count" -w "$capture_prefix" \
+      "sctp and host $REMOTE_IP and port $REMOTE_SCTP_PORT" >"$raw/tcpdump.log" 2>&1 &
+    tcpdump_pid=$!
+  fi
   sleep 1
-  sudo -n kill -0 "$tcpdump_pid"
+  if [[ "$CAPTURE_BACKEND" == "dumpcap" ]]; then
+    kill -0 "$tcpdump_pid"
+  else
+    sudo -n kill -0 "$tcpdump_pid"
+  fi
 }
 
 stop_capture() {
-  if [[ -n "$tcpdump_pid" ]] && sudo -n kill -0 "$tcpdump_pid" 2>/dev/null; then
-    sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
+  if [[ -n "$tcpdump_pid" ]]; then
+    if [[ "$CAPTURE_BACKEND" == "dumpcap" ]]; then
+      if kill -0 "$tcpdump_pid" 2>/dev/null; then kill -INT "$tcpdump_pid" 2>/dev/null || true; fi
+    elif sudo -n kill -0 "$tcpdump_pid" 2>/dev/null; then
+      sudo -n kill -INT "$tcpdump_pid" 2>/dev/null || true
+    fi
     wait "$tcpdump_pid" 2>/dev/null || true
   fi
   tcpdump_pid=""
@@ -200,7 +230,13 @@ stop_capture() {
     return 1
   fi
 
-  sudo -n chown "$(id -u):$(id -g)" "${captures[@]}" 2>/dev/null || return 1
+  if [[ "$CAPTURE_BACKEND" == "dumpcap" ]]; then
+    for file in "${captures[@]}"; do
+      [[ -O "$file" && ! -L "$file" ]] || { echo "Capture is not a caller-owned regular artifact." >&2; return 1; }
+    done
+  else
+    sudo -n chown "$(id -u):$(id -g)" "${captures[@]}" 2>/dev/null || return 1
+  fi
   chmod 600 "${captures[@]}"
 }
 

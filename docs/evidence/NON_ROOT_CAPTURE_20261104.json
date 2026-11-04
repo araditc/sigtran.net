@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "capture-permission-proof",
+  "assessmentDate": "2026-11-04",
+  "captureBackend": "dumpcap",
+  "accountEffectiveUid": 1000,
+  "setup": {
+    "distributionMechanism": "wireshark-common non-root capture",
+    "captureGroup": "wireshark",
+    "binaryMode": "0750",
+    "binaryOwner": "root",
+    "capabilities": ["cap_net_admin", "cap_net_raw"],
+    "setuid": false,
+    "generalPasswordlessSudoEnabled": false
+  },
+  "observedChecks": {
+    "freshSshGroupMembership": true,
+    "loopbackDeviceOpen": true,
+    "ethernetDeviceOpen": true,
+    "generatedLoopbackSctpTraffic": true,
+    "capturedSctpFrames": 11,
+    "pcapBytes": 1442,
+    "pcapSha256": "d2a3b2b6d6e2ad0fc06462e152cf058b7a7198d99e3e0e24611cd7de0e0967a5",
+    "pcapOwnerIsLabUser": true,
+    "pcapMode": "0600",
+    "captureDirectoryMode": "0700",
+    "ringFilenameMatchesRunner": true,
+    "captureAvailable": true,
+    "sudoAvailable": false
+  },
+  "verification": {
+    "qualificationTestsWindows": {"passed": 37, "total": 37},
+    "qualificationTestsLinux": {"passed": 38, "total": 38},
+    "coreSdkTests": {"passed": 499, "total": 499},
+    "linuxBackendPlanAndRunnerTests": {"passed": 28, "total": 28},
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "pack": "passed"
+  },
+  "remainingBaselineLabBlocker": "Second independent reachable Linux host with a fresh peer inventory.",
+  "faultControl": "Peer service restart and SDK-host firewall injection require separately configured authorization; capture capabilities do not grant those privileges.",
+  "evidenceBoundary": "This is a generated loopback capture-access test, not a multi-host or protocol interoperability qualification run. Raw PCAP and machine/topology inventory remain in protected lab storage."
+}

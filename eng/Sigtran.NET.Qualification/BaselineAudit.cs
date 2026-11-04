@@ -14,6 +14,8 @@ internal sealed record BaselineAudit(bool ToolingValid, bool LabReady, string St
             errors.Add("Mandatory product gate inventory invalid.");
         List<string> blockers = [];
         foreach (HostInventory host in hosts) blockers.AddRange(host.Validate(now));
+        if (hosts.Any(h => h.Role == "peer" && !h.SudoAvailable))
+            blockers.Add("Peer service fault-control authorization has not been demonstrated.");
         if (hosts.Length != 2 || hosts.Select(h => h.Role).Distinct().Count() != 2)
             blockers.Add("Observed SDK and peer inventories from two independent Linux hosts are required.");
         if (hosts.Length == 2 && hosts[0].MachineHash == hosts[1].MachineHash)

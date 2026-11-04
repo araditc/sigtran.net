@@ -4,6 +4,19 @@ internal static partial class Tests
 {
     private static void RegisterPlan()
     {
+        Cases.Add(("Observed non-root capture selects dumpcap without granting firewall control", () =>
+        {
+            HostInventory sdk = ValidHost("sdk", "sdk", 'a') with { SudoAvailable = false, CaptureAvailable = true };
+            HostInventory[] hosts = [sdk, ValidHost("peer", "peer", 'b')];
+            var plan = LabPlan.Create(ValidTopology(), hosts, "run-capture", "smoke", "peer-restart", DateTimeOffset.UtcNow);
+            Check(plan["SIGTRAN_CAPTURE_BACKEND"] == "dumpcap", "capture backend not selected");
+            try
+            {
+                LabPlan.Create(ValidTopology(), hosts, "run-partition", "smoke", "sctp-partition", DateTimeOffset.UtcNow);
+                throw new InvalidOperationException("Capture access granted firewall privileges");
+            }
+            catch (ArgumentException) { }
+        }));
         Cases.Add(("Runner plan binds peer address and capture to observed topology", () =>
         {
             var plan = LabPlan.Create(ValidTopology(), [ValidHost("sdk", "sdk", 'a'), ValidHost("peer", "peer", 'b')],

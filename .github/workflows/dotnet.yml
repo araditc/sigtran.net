@@ -36,6 +36,9 @@ jobs:
       - name: Test qualification plan launcher
         run: python3 scripts/tests/test_qualification_plan.py
 
+      - name: Test capture backend and inventory
+        run: python3 scripts/tests/test_capture_backend.py
+
       - name: Test legacy flag promotion rejection
         shell: pwsh
         run: ./eng/test-qualification-gate.ps1

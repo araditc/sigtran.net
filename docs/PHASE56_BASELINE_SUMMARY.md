@@ -8,8 +8,9 @@ stable/CI integration, and end-to-end validator rehearsal.
 This work preserves `main@981113c` improvements, historical Phase 56 evidence,
 the public immutable RC.2, and the `1.0.0-rc.3-dev` development identity.
 
-The laboratory is not yet accepted: a second independent Linux host and
-non-interactive capture privileges are absent from the observed inventory.
+The laboratory is not yet accepted: a second independent Linux host is absent.
+Non-root capture on the existing VM was subsequently configured and verified;
+the earlier baseline artifact retains the original pre-configuration state.
 No external multi-host traffic or qualification GO has been manufactured.
 The stable evaluator retains four legacy blockers and adds the mandatory
 candidate qualification blocker. The schema-2 candidate validator separately

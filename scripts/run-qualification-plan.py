@@ -6,15 +6,16 @@ from pathlib import Path
 import subprocess
 import sys
 
-ALLOWED = {"RUN_ID", "QUALIFICATION_PROFILE", "FAULT_SCENARIO", "REMOTE_IP",
-           "REMOTE_SCTP_PORT", "SDK_HOST_ID", "PEER_HOST_ID", "CAPTURE_INTERFACE"}
+REQUIRED = {"RUN_ID", "QUALIFICATION_PROFILE", "FAULT_SCENARIO", "REMOTE_IP",
+            "REMOTE_SCTP_PORT", "SDK_HOST_ID", "PEER_HOST_ID", "CAPTURE_INTERFACE"}
+ALLOWED = REQUIRED | {"SIGTRAN_CAPTURE_BACKEND"}
 
 
 def launch(plan_path, plan_only=False):
     """Protected SSH, source SHA and raw-evidence settings remain required by the runner."""
     plan = json.loads(Path(plan_path).read_text(encoding="utf-8-sig"))
-    if not isinstance(plan, dict) or set(plan) != ALLOWED:
-        raise ValueError("Plan must contain exactly the qualification runner inputs")
+    if not isinstance(plan, dict) or not REQUIRED.issubset(plan) or set(plan) - ALLOWED:
+        raise ValueError("Plan must contain the required qualification inputs and no unknown keys")
     if any(not isinstance(v, str) or not v or "\n" in v or "\r" in v for v in plan.values()):
         raise ValueError("Invalid plan value")
     env = os.environ.copy()

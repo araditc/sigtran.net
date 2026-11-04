@@ -61,6 +61,7 @@ jobs:
       SDK_HOST_ID: ${{ vars.PERF_SDK_HOST_ID }}
       PEER_HOST_ID: ${{ vars.PERF_PEER_HOST_ID }}
       CAPTURE_INTERFACE: ${{ vars.PERF_CAPTURE_INTERFACE || 'any' }}
+      SIGTRAN_CAPTURE_BACKEND: ${{ vars.PERF_CAPTURE_BACKEND || 'sudo-tcpdump' }}
       RAW_EVIDENCE_ROOT: ${{ vars.PERF_RAW_EVIDENCE_ROOT }}
       PEER_SSH_HOST: ${{ secrets.PERF_PEER_SSH_HOST }}
       PEER_SSH_USER: ${{ secrets.PERF_PEER_SSH_USER }}

@@ -31,6 +31,8 @@ def collect(node_id, role):
         pass
     _, dotnet_version = command("dotnet", "--version")
     sudo_available, _ = command("sudo", "-n", "true")
+    # Listing link-layer types opens the device but captures/stores no packets.
+    capture_available, _ = command("dumpcap", "-i", "lo", "-p", "-L")
     names = ("gcc", "tcpdump", "tshark", "ip", "ssh", "timeout", "python3")
     return {
         "schemaVersion": 1,
@@ -43,6 +45,7 @@ def collect(node_id, role):
         "sctpAvailable": sctp,
         "lksctpAvailable": ctypes.util.find_library("sctp") is not None,
         "sudoAvailable": sudo_available,
+        "captureAvailable": capture_available,
         "tools": {name: shutil.which(name) is not None for name in names},
         "capturedAtUtc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }

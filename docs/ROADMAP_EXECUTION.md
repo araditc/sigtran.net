@@ -7,7 +7,8 @@ adds a ten-unit [baseline audit](PHASE56_QUALIFICATION_BASELINE.md) while
 preserving the admitted work below. Earlier references to exactly four
 blockers describe the legacy manifest; the stable evaluator now additionally
 requires exact-candidate qualification. The baseline lab remains blocked on
-the second independent Linux host and capture privileges.
+the second independent Linux host. Capture on the existing VM is configured;
+scenario-specific service/firewall fault control is handled separately.
 
 ## Canonical baseline
 

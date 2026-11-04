@@ -8,6 +8,9 @@ internal static partial class Tests
 
     private static void RegisterInventory()
     {
+        Cases.Add(("Non-root capture does not require unrestricted sudo", () => Check(
+            (ValidHost("sdk", "sdk", 'a') with { SudoAvailable = false, CaptureAvailable = true })
+                .Validate(DateTimeOffset.UtcNow).Length == 0, "non-root capture rejected")));
         Cases.Add(("Distinct observed Linux inventories are accepted", () => Check(HostInventory.ValidatePair(
             ValidTopology(), [ValidHost("sdk", "sdk", 'a'), ValidHost("peer", "peer", 'b')], DateTimeOffset.UtcNow).Length == 0, "inventory")));
         Cases.Add(("Aliased same machine cannot qualify as two hosts", () => Check(HostInventory.ValidatePair(
