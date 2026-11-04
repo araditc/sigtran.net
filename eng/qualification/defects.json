@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "itu-map-sms-v1",
+  "defects": [
+    {"id":"tcap-wire-tags","owner":"TCAP","phase":57,"state":"open","acceptance":"Transaction IDs and dialogue/component portions match ITU Q.773 independent vectors.","sources":["src/Sigtran.NET/Layers/TCAP/TcapTransaction.cs","src/Sigtran.NET/Layers/TCAP/TcapTransactionMessage.cs"]},
+    {"id":"tcap-component-parameters","owner":"TCAP/MAP","phase":57,"state":"open","acceptance":"Component argument/result and linked-ID encodings match independent ASN.1 vectors; malformed inputs fail boundedly.","sources":["src/Sigtran.NET/Layers/TCAP/TcapBerComponents.cs","src/Sigtran.NET/Layers/TCAP/TcapBerOutcomeComponents.cs"]},
+    {"id":"sctp-multi-address","owner":"SCTP","phase":58,"state":"open","acceptance":"Bind/connect multiple addresses and retain a successful path-loss traffic run.","sources":["src/Sigtran.NET/Layers/SCTP/NativeSctpConnector.cs"]},
+    {"id":"sctp-notifications","owner":"SCTP","phase":58,"state":"open","acceptance":"Kernel association/path events are surfaced and message boundaries validated.","sources":["src/Sigtran.NET/Layers/SCTP/NativeSctpInterop.cs"]},
+    {"id":"mtp3-over-m2pa","owner":"MTP3","phase":59,"state":"open","acceptance":"IMtp3Network over IMtp2Link carries SCCP with link/route management and failover evidence.","sources":["src/Sigtran.NET/Layers/MTP3/Mtp3NetworkContracts.cs","src/Sigtran.NET/Layers/MTP2/M2paLink.cs"]},
+    {"id":"candidate-evidence-binding","owner":"Release tooling","phase":56,"state":"open","acceptance":"Release evaluation rejects missing, altered, stale and candidate-mismatched evidence.","sources":["eng/evaluate-stable-release.ps1"]},
+    {"id":"long-run-external-qualification","owner":"Lab","phase":62,"state":"open","acceptance":"Retain representative multi-host 72-hour run; existing 24-hour tooling and numeric capacity remain historical evidence.","sources":["scripts/run-multi-host-qualification.sh"]}
+  ]
+}

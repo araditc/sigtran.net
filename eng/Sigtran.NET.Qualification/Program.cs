@@ -43,6 +43,8 @@ namespace Sigtran.Qualification
         {
             if (args.Length == 2 && args[0] == "scope")
                 return Contracts.Report(Contracts.Read<ProductScope>(args[1]).Validate());
+            if (args.Length == 3 && args[0] == "defects")
+                return Contracts.Report(Contracts.Read<DefectLedger>(args[1]).Validate(args[2]));
             Console.Error.WriteLine("Usage: qualification scope <scope.json>");
             return 2;
         }

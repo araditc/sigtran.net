@@ -10,6 +10,7 @@ internal static partial class Tests
     internal static int Run()
     {
         RegisterScope();
+        RegisterDefects();
         int failed = 0;
         foreach ((string name, Action body) in Cases)
         {
