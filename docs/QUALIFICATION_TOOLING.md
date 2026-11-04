@@ -6,6 +6,7 @@ input/tool failure. Repository qualification types are not SDK public APIs.
 
 | Command | Arguments |
 | --- | --- |
+| baseline | repository-root [protected-inventory.json ...] |
 | scope | scope.json |
 | defects | defects.json repository-root |
 | topology | protected-topology.json |
@@ -28,6 +29,13 @@ All fifteen mandatory gates must be present. Empty/missing envelopes fail.
 
 Scope SHA-256 covers strict deserialized scope JSON serialized by the tool,
 so checkout newline conventions do not change semantic scope identity.
+
+For final release, supply a reviewed immutable evidence index from protected
+storage using `-QualificationPolicyPath` and `-QualificationEvidenceRoot` on
+the stable evaluator. The index pins the external envelopes; it is not committed
+back into the tested source candidate. This avoids a circular dependency where
+adding evidence digests changes the very source commit they must qualify.
+The repository default index deliberately contains no passing envelopes.
 Package SHA-256 covers the actual tested nupkg; the ID/version are read from
 its nuspec. Source SHA must be the exact tested candidate. Evidence is valid
 for 30 days, with at most five minutes of future clock skew.

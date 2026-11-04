@@ -17,7 +17,9 @@ internal sealed record HostInventory(int SchemaVersion, string NodeId, string Ro
         if (OperatingSystem != "linux" || string.IsNullOrWhiteSpace(Kernel)
             || Kernel.Contains("microsoft", StringComparison.OrdinalIgnoreCase)) errors.Add("Representative Linux host required.");
         if (DotnetVersion is null || !Regex.IsMatch(DotnetVersion, "^10\\.\\d+\\.\\d+")) errors.Add(".NET 10 SDK required.");
-        if (!SctpAvailable || !LksctpAvailable || !SudoAvailable) errors.Add("Native SCTP/lksctp/capture prerequisites are incomplete.");
+        if (!SctpAvailable) errors.Add("Native kernel SCTP socket unavailable.");
+        if (!LksctpAvailable) errors.Add("lksctp library unavailable.");
+        if (!SudoAvailable) errors.Add("Non-interactive capture/fault privileges unavailable.");
         if (Tools is null || RequiredTools.Any(t => !Tools.GetValueOrDefault(t))) errors.Add("Required lab tools missing.");
         if (CapturedAtUtc > now.AddMinutes(5) || CapturedAtUtc < now.AddHours(-24)) errors.Add("Inventory must be current (24h).");
         return errors.ToArray();

@@ -5,7 +5,8 @@ param(
     [string]$ExpectedVersion = "",
     [switch]$RequireGo,
     [string]$CandidatePackagePath = '',
-    [string]$QualificationEvidenceRoot = ''
+    [string]$QualificationEvidenceRoot = '',
+    [string]$QualificationPolicyPath = 'eng/qualification/release-policy.json'
 )
 
 $ErrorActionPreference = "Stop"
@@ -106,6 +107,7 @@ if (-not $acceptedAdditionsPresent) {
 
 $commit = (git -C $root rev-parse HEAD).Trim()
 $qualification = & (Join-Path $PSScriptRoot 'evaluate-candidate-qualification.ps1') `
+    -PolicyPath $QualificationPolicyPath `
     -SourceCommit $commit -PackagePath $CandidatePackagePath -EvidenceRoot $QualificationEvidenceRoot `
     -JsonOutputPath 'artifacts/qualification/candidate-decision.json'
 $qualified = $qualification.decision -eq 'GO'

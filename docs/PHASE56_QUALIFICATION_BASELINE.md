@@ -1,6 +1,8 @@
 # Phase 56 - Qualification Baseline
 
-Status: in progress. Stable decision remains NO-GO.
+Status: all ten implementation units delivered; lab acceptance is blocked by
+the second independent Linux host and non-interactive capture privileges.
+Stable decision remains NO-GO. This phase is not externally accepted yet.
 
 | Unit | Deliverable | Status |
 | --- | --- | --- |
@@ -13,7 +15,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 7 | Fail-closed release gate evaluation | Complete |
 | 8 | Provenance, freshness and source/package binding | Complete |
 | 9 | CI and stable workflow integration | Complete |
-| 10 | Rehearsal, retained inventory and final report | Pending |
+| 10 | Rehearsal, retained inventory and final report | Implementation complete; two-host lab acceptance blocked |
 
 Repository tooling lives in `eng/Sigtran.NET.Qualification`, outside the SDK
 assembly. Run `dotnet run --project eng/Sigtran.NET.Qualification -- scope
@@ -76,3 +78,22 @@ Four historical blockers remain; the aggregate candidate gate is a fifth
 release blocker. A negative integration test sets all legacy flags to passed
 and proves `-RequireGo` still rejects publication. See
 [Qualification Tooling](QUALIFICATION_TOOLING.md) for commands and schema.
+
+## Observed Environment And Exit Decision
+
+The read-only collector ran successfully on the previously authorized Linux VM
+on 2026-11-04. Kernel SCTP, lksctp, .NET 10 and the required binaries were
+observed. Passwordless sudo was not available. Only one independent Linux
+machine inventory is currently retained in protected local artifacts.
+
+The baseline audit intentionally reports `toolingValid=true`, `labReady=false`
+and `stableDecision=NO-GO`. A second reachable Linux host, fresh distinct
+machine inventories and approved non-interactive capture/fault privileges are
+needed before declaring the two-host laboratory ready. No traffic run or
+external acceptance is claimed by this phase.
+
+The final rehearsal uses synthetic evidence in temporary directories, with a
+test-only verifier. It proves all-gate evaluation, provenance rejection and
+tamper rejection; it never creates retained passing production envelopes.
+Legacy M2PA/capacity evidence remains historical. The four legacy blockers and
+new aggregate candidate qualification gate remain open.

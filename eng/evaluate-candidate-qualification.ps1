@@ -15,7 +15,8 @@ New-Item -ItemType Directory -Force (Split-Path $outputPath -Parent) | Out-Null
 # Build the verifier from this checkout, rather than accidentally executing stale tool binaries.
 & dotnet build "$PSScriptRoot/Sigtran.NET.Qualification/Sigtran.NET.Qualification.csproj" -c Release -m:1 --nologo -v:q *> "$outputPath.build.log"
 if ($LASTEXITCODE -ne 0) { throw 'Qualification verifier build failed.' }
-$arguments = @('evaluate', (Join-Path $root $PolicyPath), $EvidenceRoot)
+$policyFullPath = if ([IO.Path]::IsPathRooted($PolicyPath)) { $PolicyPath } else { Join-Path $root $PolicyPath }
+$arguments = @('evaluate', $policyFullPath, $EvidenceRoot)
 if ($PackagePath) {
     $arguments += @($SourceCommit, (Resolve-Path $PackagePath).Path, (Join-Path $root 'eng/qualification/scope.json'))
 }

@@ -68,6 +68,8 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 The approved continuation is [phases 56-65](RELEASE_QUALIFICATION_ROADMAP.md).
 The ten-unit [Phase 56 baseline audit](PHASE56_QUALIFICATION_BASELINE.md)
 preserves the historical Phase 56 closure and admitted Phase 57/HA work.
+All ten tooling units are delivered; [the exit summary](PHASE56_BASELINE_SUMMARY.md)
+records incomplete two-host lab acceptance and the mandatory candidate gate.
 
 The retained verification catalog reports native Linux SCTP, external SCTP peer
 traffic, independent M3UA, independent M2PA, repository-profile full-stack MAP

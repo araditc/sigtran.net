@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "assessmentDate": "2026-11-04",
+  "kind": "qualification-baseline-tooling-and-prerequisites",
+  "sourceBaseCommit": "9e3c4857334069f92892a852fdb9471fab26d3aa",
+  "sourceSnapshot": "Unit 10 working tree based on sourceBaseCommit; this is not an exact-candidate production qualification envelope.",
+  "implementationUnits": 10,
+  "phaseAccepted": false,
+  "toolingValid": true,
+  "labReady": false,
+  "stableDecision": "NO-GO",
+  "externalTrafficExecuted": false,
+  "trackedDefects": 7,
+  "observedIndependentLinuxHosts": 1,
+  "observedPrerequisites": {
+    "kernelSctp": true,
+    "lksctp": true,
+    "dotnet10": true,
+    "requiredTools": true,
+    "nonInteractiveCapturePrivileges": false
+  },
+  "labBlockers": [
+    "Second independent reachable Linux host with fresh SDK/peer inventory required.",
+    "Approved non-interactive capture/fault privileges required."
+  ],
+  "verification": {
+    "allTenUnitBuildTestPackRuns": "passed",
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "coreSdkTestsPassed": 499,
+    "sdkAndHaTestProjectsPassed": 7,
+    "qualificationTestsWindows": {"passed": 35, "total": 35},
+    "qualificationTestsLinux": {"passed": 36, "total": 36},
+    "linuxOfflinePythonRegressions": {"passed": 60, "total": 60},
+    "legacyFlagPromotionRejected": true,
+    "linuxRunnerSyntax": "passed",
+    "endurancePlanSeconds": 259200,
+    "endurancePlanExecutedTraffic": false,
+    "workflowYamlLint": "passed"
+  },
+  "developmentPackage": {
+    "version": "1.0.0-rc.3-dev",
+    "published": false,
+    "nupkgSha256": "d07caf478bfc726483a3e91ef301623312b37f37beb14a4914bd233775db4c11",
+    "snupkgSha256": "fdb2f568889b31e3edb685cee80e1981e7e18da67b22444651583ca2c3444fdd"
+  },
+  "stableEvaluation": {
+    "legacyOpenGates": ["operator-profile", "multi-host-soak", "kubernetes-sctp", "trusted-signing"],
+    "additionalMandatoryGate": "candidate-qualification",
+    "missingCandidateEnvelopes": 15
+  },
+  "privacy": "Raw inventories and machine/topology identifiers remain in protected local artifacts. This report contains only sanitized observations.",
+  "hostedCiAtCapture": "Final unit commit has not yet been submitted; subsequent CI status must be checked independently."
+}

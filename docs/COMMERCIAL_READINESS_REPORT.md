@@ -2,6 +2,13 @@
 
 Status: public RC prerelease publication is closed; stable commercial publication remains gated.
 
+As of the 2026-11-04 qualification-baseline audit, the stable evaluator also
+requires exact-candidate schema-2 evidence. Four historical qualification
+blockers remain and one aggregate candidate-qualification blocker is added.
+The baseline tooling is implemented; two-host lab acceptance still requires
+a second independent Linux host and non-interactive capture privileges.
+See [the baseline exit decision](PHASE56_QUALIFICATION_BASELINE.md).
+
 The latest public prerelease is immutable `1.0.0-rc.2`. Current source development
 uses unpublished package identity `1.0.0-rc.3-dev`; it is not a published release
 candidate. Stable release manifest `eng/release/stable-release.json` and

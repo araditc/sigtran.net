@@ -27,8 +27,10 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
         else if (context.PackageVersion != policy.Version) errors.Add("Candidate package version does not match stable policy.");
         if (policy.SchemaVersion != 2 || policy.PackageId != "Sigtran.NET" || policy.Version != "1.0.0"
             || policy.ScopeId != "itu-map-sms-v1") errors.Add("Unknown qualification target/schema.");
-        if (policy.Gates is null || !policy.Gates.Select(g => g.Id).Order().SequenceEqual(RequiredGates.Order()))
+        if (policy.Gates is null || policy.Gates.Any(g => g is null)
+            || !policy.Gates.Select(g => g.Id).Order().SequenceEqual(RequiredGates.Order()))
             errors.Add("Exactly the mandatory product gates are required, without duplicates or omissions.");
+        if (policy.Gates?.Any(g => g is null) == true) return new("NO-GO", [], errors.ToArray());
         List<GateDecision> gates = [];
         foreach (GateEvidence gate in policy.Gates ?? [])
         {

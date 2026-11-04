@@ -30,6 +30,9 @@ Candidate evidence must also match the tested source/package/scope, be current,
 and pass GitHub attestation verification for the protected producer workflow.
 [Qualification tooling](docs/QUALIFICATION_TOOLING.md) is mandatory in the stable
 evaluator; legacy readiness flags alone cannot authorize publication.
+The Phase 56 baseline tooling is delivered in ten units. Actual two-host lab
+acceptance remains blocked by the second Linux host and capture privileges;
+the [baseline report](docs/PHASE56_QUALIFICATION_BASELINE.md) records that limit.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

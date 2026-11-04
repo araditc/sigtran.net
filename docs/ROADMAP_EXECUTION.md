@@ -2,6 +2,13 @@
 
 This document is the durable execution checkpoint for the owner-approved SDK roadmap. It complements the historical phase documents without renumbering completed phases.
 
+The 2026-11-04 [approved qualification continuation](RELEASE_QUALIFICATION_ROADMAP.md)
+adds a ten-unit [baseline audit](PHASE56_QUALIFICATION_BASELINE.md) while
+preserving the admitted work below. Earlier references to exactly four
+blockers describe the legacy manifest; the stable evaluator now additionally
+requires exact-candidate qualification. The baseline lab remains blocked on
+the second independent Linux host and capture privileges.
+
 ## Canonical baseline
 
 - Historical roadmap-activation baseline: `main` at `b60dfdf621aff17ff3fa2816d3d40e5730155c3c`; this SHA is retained only as history and must not be treated as the current branch head.

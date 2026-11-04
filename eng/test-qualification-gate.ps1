@@ -18,3 +18,5 @@ if ($decision.decision -ne 'NO-GO' -or @($decision.blockers).Count -ne 1 `
     throw 'Forged legacy promotion did not produce the expected isolated candidate blocker.'
 }
 Write-Output 'PASS legacy flag promotion is rejected by the stable gate'
+# The child rejection was expected; communicate success to GitHub's pwsh wrapper.
+$global:LASTEXITCODE = 0

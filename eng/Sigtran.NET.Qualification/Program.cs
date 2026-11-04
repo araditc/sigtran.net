@@ -25,7 +25,9 @@ namespace Sigtran.Qualification
         };
 
         internal static T Read<T>(string path) =>
-            JsonSerializer.Deserialize<T>(File.ReadAllText(path), Json)
+            new FileInfo(path).Length > 2 * 1024 * 1024
+            ? throw new ArgumentException("Qualification JSON exceeds the 2 MiB envelope limit.")
+            : JsonSerializer.Deserialize<T>(File.ReadAllText(path), Json)
             ?? throw new ArgumentException($"Empty contract: {path}");
 
         internal static int Report(IEnumerable<string> errors)
@@ -41,6 +43,12 @@ namespace Sigtran.Qualification
     {
         internal static int Execute(string[] args)
         {
+            if (args.Length >= 2 && args[0] == "baseline")
+            {
+                BaselineAudit audit = BaselineAudit.Assess(args[1], args.Skip(2).Select(Contracts.Read<HostInventory>).ToArray(), DateTimeOffset.UtcNow);
+                Console.WriteLine(JsonSerializer.Serialize(audit, Contracts.Json));
+                return audit.ToolingValid && audit.LabReady ? 0 : 1;
+            }
             if (args.Length == 2 && args[0] == "scope")
                 return Contracts.Report(Contracts.Read<ProductScope>(args[1]).Validate());
             if (args.Length == 3 && args[0] == "defects")
@@ -68,7 +76,7 @@ namespace Sigtran.Qualification
                 Console.WriteLine(JsonSerializer.Serialize(plan, Contracts.Json));
                 return 0;
             }
-            Console.Error.WriteLine("Commands: scope, defects, topology, inventory, plan, bundle, evaluate. See docs/QUALIFICATION_TOOLING.md.");
+            Console.Error.WriteLine("Commands: baseline, scope, defects, topology, inventory, plan, bundle, evaluate. See docs/QUALIFICATION_TOOLING.md.");
             return 2;
         }
     }

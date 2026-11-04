@@ -58,6 +58,7 @@ internal sealed record EvidenceBundle(int SchemaVersion, string ScopeId, string 
             || !EvidenceFiles.IsDigest(ScopeSha256)) errors.Add("Invalid evidence identity/schema.");
         if (Result is null) errors.Add("Run result required.");
         if (Artifacts is null || Artifacts.Length == 0) return [..errors, "Non-empty artifact inventory required."];
+        if (Artifacts.Any(a => a is null)) return [..errors, "Null artifact entry."];
         if (Artifacts.Select(a => a.Path).Distinct(StringComparer.OrdinalIgnoreCase).Count() != Artifacts.Length)
             errors.Add("Duplicate artifact path.");
         foreach (EvidenceArtifact artifact in Artifacts) errors.AddRange(EvidenceFiles.Verify(root, artifact));
