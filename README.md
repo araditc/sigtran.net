@@ -28,6 +28,8 @@ Candidate evaluation requires measured outcomes and all mandatory product gates;
 historical capacity/M2PA passes retain their original qualification boundaries.
 Candidate evidence must also match the tested source/package/scope, be current,
 and pass GitHub attestation verification for the protected producer workflow.
+[Qualification tooling](docs/QUALIFICATION_TOOLING.md) is mandatory in the stable
+evaluator; legacy readiness flags alone cannot authorize publication.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

@@ -68,7 +68,7 @@ namespace Sigtran.Qualification
                 Console.WriteLine(JsonSerializer.Serialize(plan, Contracts.Json));
                 return 0;
             }
-            Console.Error.WriteLine("Usage: qualification scope <scope.json>");
+            Console.Error.WriteLine("Commands: scope, defects, topology, inventory, plan, bundle, evaluate. See docs/QUALIFICATION_TOOLING.md.");
             return 2;
         }
     }

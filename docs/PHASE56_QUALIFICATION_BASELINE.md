@@ -12,7 +12,7 @@ Status: in progress. Stable decision remains NO-GO.
 | 6 | Versioned evidence envelopes and artifact integrity | Complete |
 | 7 | Fail-closed release gate evaluation | Complete |
 | 8 | Provenance, freshness and source/package binding | Complete |
-| 9 | CI and stable workflow integration | Pending |
+| 9 | CI and stable workflow integration | Complete |
 | 10 | Rehearsal, retained inventory and final report | Pending |
 
 Repository tooling lives in `eng/Sigtran.NET.Qualification`, outside the SDK
@@ -70,3 +70,9 @@ SHA, main ref and protected `qualification-evidence.yml` producer identity.
 No retained `verified=true` flag is trusted. Missing verifier/network/provenance
 fails closed. Producer admission and genuine external results are later-phase
 requirements; the synthetic test verifier exists only in the test assembly.
+
+Unit 9 makes candidate qualification mandatory in the stable evaluator and CI.
+Four historical blockers remain; the aggregate candidate gate is a fifth
+release blocker. A negative integration test sets all legacy flags to passed
+and proves `-RequireGo` still rejects publication. See
+[Qualification Tooling](QUALIFICATION_TOOLING.md) for commands and schema.

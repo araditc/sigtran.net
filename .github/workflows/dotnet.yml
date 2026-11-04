@@ -30,6 +30,16 @@ jobs:
       - name: Test
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
 
+      - name: Test qualification contracts and tamper rejection
+        run: dotnet run --project eng/Sigtran.NET.Qualification.Tests --configuration Release --no-build
+
+      - name: Test qualification plan launcher
+        run: python3 scripts/tests/test_qualification_plan.py
+
+      - name: Test legacy flag promotion rejection
+        shell: pwsh
+        run: ./eng/test-qualification-gate.ps1
+
       - name: Test operator profile framework
         run: dotnet run --project src/Sigtran.NET.ProfileTests/Sigtran.NET.ProfileTests.csproj --configuration Release
 
@@ -104,8 +114,8 @@ jobs:
           if ($decision.decision -ne "NO-GO") {
             throw "Stable evaluator must remain NO-GO while qualification gates are open."
           }
-          if (@($decision.blockers).Count -ne 4) {
-            throw "Stable evaluator must report exactly four required blockers; observed $(@($decision.blockers).Count)."
+          if (@($decision.blockers).Count -ne 5 -or $decision.candidateQualification.decision -ne 'NO-GO') {
+            throw "Expected four historical blockers plus the mandatory candidate qualification blocker."
           }
           if (-not $decision.publicApiBaseline.acceptedAdditionsPresent) {
             throw "Stable evaluator did not retain the accepted public API additions evidence."

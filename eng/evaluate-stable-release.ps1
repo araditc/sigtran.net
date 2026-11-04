@@ -3,7 +3,9 @@ param(
     [string]$JsonOutputPath = "artifacts/release-evidence/stable-release-decision.json",
     [string]$MarkdownOutputPath = "artifacts/release-evidence/stable-release-decision.md",
     [string]$ExpectedVersion = "",
-    [switch]$RequireGo
+    [switch]$RequireGo,
+    [string]$CandidatePackagePath = '',
+    [string]$QualificationEvidenceRoot = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -102,8 +104,23 @@ if (-not $acceptedAdditionsPresent) {
     $blockers += "public-api-baseline: $acceptedAdditionsPath is missing."
 }
 
-$decision = if ($blockers.Count -eq 0) { "GO" } else { "NO-GO" }
 $commit = (git -C $root rev-parse HEAD).Trim()
+$qualification = & (Join-Path $PSScriptRoot 'evaluate-candidate-qualification.ps1') `
+    -SourceCommit $commit -PackagePath $CandidatePackagePath -EvidenceRoot $QualificationEvidenceRoot `
+    -JsonOutputPath 'artifacts/qualification/candidate-decision.json'
+$qualified = $qualification.decision -eq 'GO'
+$gateResults += [ordered]@{
+    id = 'candidate-qualification'
+    title = 'Exact candidate product qualification'
+    required = $true
+    declaredPassed = $false
+    evidenceComplete = $qualified
+    passed = $qualified
+    note = 'Schema-2 measured, digest-pinned, current, source/package-bound and authenticated product evidence is mandatory.'
+    evidence = @()
+}
+if (-not $qualified) { $blockers += 'candidate-qualification: mandatory exact-candidate product evidence is incomplete.' }
+$decision = if ($blockers.Count -eq 0) { "GO" } else { "NO-GO" }
 $report = [ordered]@{
     schemaVersion = 1
     packageId = $manifest.packageId
@@ -133,6 +150,7 @@ $report = [ordered]@{
         }
     }
     decision = $decision
+    candidateQualification = $qualification
     blockers = $blockers
     gates = $gateResults
 }

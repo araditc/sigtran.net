@@ -112,6 +112,10 @@ jobs:
           }
           ./eng/compare-public-api.ps1 @arguments
 
+      - name: Pack
+        shell: bash
+        run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build /p:Version="$RELEASE_VERSION"
+
       - name: Evaluate Stable Release Readiness
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.channel == 'stable' }}
         shell: pwsh
@@ -119,7 +123,8 @@ jobs:
           ./eng/evaluate-stable-release.ps1 `
             -ExpectedVersion "$env:RELEASE_VERSION" `
             -JsonOutputPath "artifacts/release-evidence/stable-release-decision.json" `
-            -MarkdownOutputPath "artifacts/release-evidence/stable-release-decision.md"
+            -MarkdownOutputPath "artifacts/release-evidence/stable-release-decision.md" `
+            -CandidatePackagePath "src/Sigtran.NET/bin/Release/Sigtran.NET.$env:RELEASE_VERSION.nupkg"
 
       - name: Enforce Stable Release Readiness
         if: ${{ github.event_name != 'workflow_dispatch' || (inputs.channel == 'stable' && inputs.publish == true) }}
@@ -133,11 +138,8 @@ jobs:
             -ExpectedVersion "$env:RELEASE_VERSION" `
             -JsonOutputPath "artifacts/release-evidence/stable-release-decision.json" `
             -MarkdownOutputPath "artifacts/release-evidence/stable-release-decision.md" `
+            -CandidatePackagePath "src/Sigtran.NET/bin/Release/Sigtran.NET.$env:RELEASE_VERSION.nupkg" `
             -RequireGo
-
-      - name: Pack
-        shell: bash
-        run: dotnet pack src/Sigtran.NET/Sigtran.NET.csproj --configuration Release --no-build /p:Version="$RELEASE_VERSION"
 
       - name: Dry-Run Release Evidence
         shell: bash
