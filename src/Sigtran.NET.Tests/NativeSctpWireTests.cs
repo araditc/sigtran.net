@@ -141,6 +141,25 @@ internal static class NativeSctpWireTests
             "Kernel association loss was not recorded.");
     }
 
+    internal static void RecordBoundaries()
+    {
+        SctpPayloadMetadata metadata = new(2, 0x12345678, unordered: true);
+        NativeSctpRecord record = default;
+        Require(record.Observe(new(8, metadata, 0, null), 12) && record.InProgress && record.BytesWritten == 8,
+            "A partial receive ended the record.");
+        Require(record.Observe(new(4, metadata, 0x80, null), 12) && !record.InProgress
+            && record.BytesWritten == 12 && record.Metadata.PayloadProtocolIdentifier == 0x12345678,
+            "Fragments did not assemble one record with its original metadata.");
+        record = default;
+        Require(!record.Observe(new(8, metadata, 0, null), 4) && record.InProgress && record.Discarded,
+            "Oversized record was not marked for draining.");
+        Require(!record.Observe(new(1, metadata, 0x80, null), 4) && !record.InProgress && record.Discarded,
+            "Oversized tail was delivered as data.");
+        record = default;
+        Require(!record.Observe(new(1, metadata, 0xA0, null), 8) && record.Discarded,
+            "A truncated end of record was accepted.");
+    }
+
     private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
     {
         public Socket CreateSocket() => throw new InvalidOperationException("Validation opened a socket.");

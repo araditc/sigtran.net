@@ -319,6 +319,7 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         SctpOperationCancellationBudget budget = StartBudget(SctpOperationKind.Receive, ct);
         bool acquired = false;
         byte[]? rented = null;
+        NativeSctpRecord record = default;
         try
         {
             acquired = await _receiveGate.WaitAsync(budget.Timeout, ct).ConfigureAwait(false);
@@ -327,11 +328,13 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
                 throw new TimeoutException("Timed out waiting for the native SCTP receive reader.");
             }
 
-            Memory<byte> receiveBuffer = buffer.Length >= MinimumReceiveBuffer
-                ? buffer
-                : (rented = ArrayPool<byte>.Shared.Rent(MinimumReceiveBuffer)).AsMemory(0, MinimumReceiveBuffer);
             while (true)
             {
+                Memory<byte> remaining = buffer[record.BytesWritten..];
+                bool direct = !record.Discarded && remaining.Length >= MinimumReceiveBuffer;
+                Memory<byte> receiveBuffer = direct
+                    ? remaining
+                    : (rented ??= ArrayPool<byte>.Shared.Rent(MinimumReceiveBuffer)).AsMemory(0, MinimumReceiveBuffer);
                 await WaitForSocketAsync(SelectMode.SelectRead, budget, ct).ConfigureAwait(false);
                 if (!NativeSctpInterop.TryReceiveFrame(_socket, receiveBuffer, out NativeSctpReceiveFrame frame))
                 {
@@ -343,6 +346,11 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
                     if (frame.Notification is { } notification)
                     {
                         RecordKernelNotification(notification);
+                        if (record.InProgress && notification is { Type: SctpKernelNotificationType.PartialDelivery, StateCode: 0 })
+                        {
+                            record = default;
+                            throw new InvalidDataException("The SCTP kernel aborted partial delivery of a user record.");
+                        }
                     }
 
                     continue;
@@ -351,28 +359,49 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
                 if (frame.ByteCount == 0)
                 {
                     CloseFromKernel();
+                    if (record.InProgress)
+                    {
+                        record = default;
+                        throw new InvalidDataException("The SCTP association closed mid-record.");
+                    }
+
                     return default;
                 }
 
-                if (frame.IsTruncated || !frame.IsEndOfRecord || frame.ByteCount > buffer.Length)
+                if (record.Observe(frame, buffer.Length) && !direct)
                 {
-                    MarkFailed("Incomplete native SCTP user record");
-                    _socket.Dispose();
+                    receiveBuffer[..frame.ByteCount].CopyTo(remaining);
+                }
+
+                if (record.InProgress)
+                {
+                    continue;
+                }
+
+                if (record.Discarded)
+                {
                     throw new InvalidDataException("The receive buffer could not hold a complete SCTP user record.");
                 }
 
-                if (rented is not null)
-                {
-                    receiveBuffer[..frame.ByteCount].CopyTo(buffer);
-                }
-
                 Interlocked.Increment(ref _receivedMessages);
-                return new(frame.ByteCount, frame.Metadata);
+                return new(record.BytesWritten, record.Metadata);
             }
         }
-        catch (Exception ex) when (ex is SocketException or TimeoutException or OperationCanceledException or DllNotFoundException or EntryPointNotFoundException)
+        catch (Exception ex) when (ex is SocketException or TimeoutException or OperationCanceledException
+            or DllNotFoundException or EntryPointNotFoundException or InvalidDataException)
         {
-            RecordFault(ToFault(ex, SctpOperationKind.Receive));
+            // When no record boundary was reached, a later reader must not see the unread tail as a new message.
+            if (record.InProgress)
+            {
+                MarkFailed("SCTP receive interrupted before the end of a user record");
+                _socket.Dispose();
+            }
+
+            if (acquired && ex is not InvalidDataException)
+            {
+                RecordFault(ToFault(ex, SctpOperationKind.Receive));
+            }
+
             throw;
         }
         finally

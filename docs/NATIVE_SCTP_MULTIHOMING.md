@@ -12,7 +12,7 @@ to another address is not proof of failover within the same association.
 | 4 | SDK connector and listener integration | Implemented |
 | 5 | Kernel notification decoding | Implemented |
 | 6 | Lifecycle and path notification exposure | Implemented |
-| 7 | Receive record boundaries and cancellation | Pending |
+| 7 | Receive record boundaries and cancellation | Implemented |
 | 8 | Bounded multistream traffic workload | Pending |
 | 9 | Isolated dual-path Linux failure lab | Pending |
 | 10 | Evidence checks and qualification decision | Pending |
@@ -59,3 +59,13 @@ application receives and never returned as user payload. Linux path states
 0/1/4/5/6 indicate available/unreachable/made-primary/confirmed/potentially
 failed, respectively. A path change does not invalidate the association.
 Communication loss and shutdown are reflected in the lifecycle journal.
+
+## Message Boundaries
+
+The native adapter serializes readers and returns one record only after
+`MSG_EOR`. An oversized record is drained under the receive deadline and
+reported as `InvalidDataException`, without delivering a truncated message.
+If cancellation or an error interrupts an unfinished record, the adapter
+fails and closes its socket so a later receive cannot return the tail as
+a new message. A cancellation before reading any fragment leaves the
+association available.
