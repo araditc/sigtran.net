@@ -45,6 +45,7 @@ Run("Reference host owns the MAP, TCAP and SCCP lifecycles over one MTP3 network
 Run("Reference operations validate input and bound admission before correlated MAP dispatch", ReferenceServiceTests.Operations);
 Run("Reference HTTP boundary rejects forwarded identity, bad credentials and invalid bodies", ReferenceServiceTests.LocalHttpBoundary);
 Run("Reference M3UA requires explicit context acknowledgement and an active dispatch generation", ReferenceServiceTests.RoutingContext);
+Run("M3UA separates DATA stream one from control stream zero", ReferenceServiceTests.DataStream);
 Run("SIGTRAN deployment profiles expose production and development gates", SigtranDeploymentProfilesExposeProductionAndDevelopmentGates);
 Run("SIGTRAN productionization status summarizes foundation", SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);
@@ -12244,12 +12245,14 @@ internal sealed class M3uaLoopbackTransport : ISctpTransport
     private bool _disposed;
 
     public ISctpAssociation Association { get; } = new M3uaLoopbackAssociation();
+    internal System.Collections.Concurrent.ConcurrentQueue<SctpPayloadMetadata> SentMetadata { get; } = new();
 
     public ValueTask SendAsync(
         SctpOutboundMessage message,
         CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        SentMetadata.Enqueue(message.Metadata);
         M3uaMessage decoded = new();
         if (!decoded.TryDecode(message.Payload.Span, out string? decodeError))
         {

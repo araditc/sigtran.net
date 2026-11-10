@@ -47,6 +47,19 @@ internal static partial class ReferenceServiceTests
     internal static void Operations() => ExerciseOperationsAsync().GetAwaiter().GetResult();
     internal static void LocalHttpBoundary() => ExerciseLocalHttpBoundaryAsync().GetAwaiter().GetResult();
     internal static void RoutingContext() => ExerciseRoutingContextAsync().GetAwaiter().GetResult();
+    internal static void DataStream() => ExerciseDataStreamAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseDataStreamAsync()
+    {
+        M3uaLoopbackTransport lower = new();
+        await using M3uaTransportSession session = new(lower);
+        await session.SendAspUpAsync(1, ReadOnlyMemory<byte>.Empty);
+        await session.SendPayloadDataAsync(new byte[] { 9 }, 1, 2, 3, 2, 0, 1);
+        var metadata = lower.SentMetadata.ToArray();
+        Require(metadata.Length == 2 && metadata[0].StreamId == 0 && metadata[1].StreamId == 1
+            && metadata.All(item => item.PayloadProtocolIdentifier == 3 && !item.Unordered),
+            "RFC 4666 DATA uses ordered stream 1 while ASP control uses stream 0");
+    }
 
     private static async Task ExerciseRoutingContextAsync()
     {

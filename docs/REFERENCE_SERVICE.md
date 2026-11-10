@@ -15,7 +15,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 5 | Readiness, metrics and shutdown drain | Implemented |
 | 6 | Explicit M3UA application-server routing context | Implemented |
 | 7 | Independent peer positive and negative scenario matrix | Implemented; C wire fixtures verified |
-| 8 | Real host traffic and independent PCAP/trace comparison | Pending |
+| 8 | Real host traffic and independent PCAP/trace comparison | Implemented; Linux host matrix executed |
 | 9 | Separately maintained peer path | Pending |
 | 10 | Reproducible evidence, limitations and phase decision | Pending |
 
@@ -117,3 +117,24 @@ is preceded by a foreign-context ReturnError that must not reach the
 application. A separate activation run sends the wrong ASP Active Ack
 context and must not admit any DATA. The C `--self-test` command checks
 the negative BER fixtures and M3UA Routing Context encoding offline.
+
+## Rootless Host Lab
+
+```bash
+bash scripts/run-reference-service-lab.sh reference
+bash scripts/run-reference-service-lab.sh wrong-context
+```
+
+The Linux runner builds the real OperationsHost and the independent C
+peer, creates a private loopback network namespace and generates an
+ephemeral local API token. It does not install services or change host
+interfaces. Raw captures, host/peer logs, HTTP outcome summaries and
+subscriber-free metric snapshots stay under the unique private run
+directory. The verifier checks explicit activation, PPID 3, ordered
+nonzero DATA streams, point codes, TCAP transaction/invoke correlation,
+dialogue acceptance and the declared negative outcomes. A missing or
+contradictory observation prevents `report.json` from being published.
+
+The first strict peer run exposed DATA on SCTP stream zero. The SDK
+now sends DATA on ordered stream one and control on stream zero,
+with a regression test. Configure at least two SCTP streams.

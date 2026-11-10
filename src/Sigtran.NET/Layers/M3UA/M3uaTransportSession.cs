@@ -770,9 +770,11 @@ public sealed class M3uaTransportSession : IAsyncDisposable, IDisposable
                 throw new InvalidOperationException(error);
             }
 
+            // RFC 4666 1.4.7 reserves stream zero for control, never DATA.
+            ushort stream = rented[2] == (byte)M3uaMessageClass.Transfer && rented[3] == 1 ? (ushort)1 : (ushort)0;
             SctpOutboundMessage message = new(
                 rented.AsMemory(0, written),
-                new SctpPayloadMetadata(streamId: 0, payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua));
+                new SctpPayloadMetadata(streamId: stream, payloadProtocolIdentifier: SctpPayloadProtocolIdentifiers.M3ua));
             await _transport.SendAsync(message, ct).ConfigureAwait(false);
             Interlocked.Increment(ref _sentPdus);
         }

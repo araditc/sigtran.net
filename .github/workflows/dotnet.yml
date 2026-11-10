@@ -51,6 +51,11 @@ jobs:
       - name: Test MTP3 M2PA changeover evidence verification
         run: python3 scripts/tests/test_mtp3_m2pa_evidence.py
 
+      - name: Test reference-service evidence verification
+        run: |
+          bash -n scripts/run-reference-service-lab.sh
+          python3 scripts/tests/test_reference_service_evidence.py
+
       - name: Test legacy flag promotion rejection
         shell: pwsh
         run: ./eng/test-qualification-gate.ps1
