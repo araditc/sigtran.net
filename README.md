@@ -57,6 +57,9 @@ before upgrading a peer; external and exact-candidate qualification remain open.
 The original MAP parameter constants remain API-compatible; the operation
 codecs use separate TS 29.002 wire tags.
 
+[Native SCTP multihoming](docs/NATIVE_SCTP_MULTIHOMING.md) tracks the Linux
+address-set, kernel notification and path-failover qualification work.
+
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
 ---

@@ -440,6 +440,7 @@ Run("SCTP outbound message builder validates stream and PPID", SctpOutboundMessa
 Run("SCTP backpressure policy gates send queue pressure", SctpBackpressurePolicyGatesSendQueuePressure);
 Run("SCTP operation timeout policy creates cancellation budgets", SctpOperationTimeoutPolicyCreatesCancellationBudgets);
 Run("SCTP multi-homing readiness evaluates endpoint sets", SctpMultiHomingReadinessEvaluatesEndpointSets);
+Run("Native SCTP validates resolved IPv4 address sets", NativeSctpWireTests.AddressSets);
 Run("SCTP fault recovery selects deterministic actions", SctpFaultRecoverySelectsDeterministicActions);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);
