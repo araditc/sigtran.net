@@ -39,6 +39,56 @@ internal static class Mtp3LinkNetworkTests
     internal static void TransferNetwork() => ExerciseTransferNetworkAsync().GetAwaiter().GetResult();
     internal static void ManagementRoutes() => ExerciseManagementRoutesAsync().GetAwaiter().GetResult();
     internal static void RecoverySnapshot() => ExerciseRecoverySnapshotAsync().GetAwaiter().GetResult();
+    internal static void LinkChangeover() => ExerciseLinkChangeoverAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseLinkChangeoverAsync()
+    {
+        foreach (bool emergency in new[] { false, true })
+        {
+            using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+            TestLink primary = new()
+            {
+                LastAcceptedSequence = 0x020304,
+                PeerRecoveryBoundary = 0xFFFFFE,
+                Retained = [new byte[] { 0x83, 2, 0x40, 0, 0, 1 }]
+            };
+            TestLink alternate = new();
+            await using Mtp3LinkNetwork network = new(1, 2, [new(2, 1, primary), new(2, 2, alternate)], [new(2, 2)]);
+            primary.State = Mtp2LinkState.Failed;
+            Task send = network.SendAsync(new(new(Mtp3ServiceIndicator.Sccp, 2), new(2, 1, 0), new byte[] { 2 }),
+                timeout.Token).AsTask();
+            byte[] order = await NextSentAsync(alternate, timeout.Token);
+            Require(order.SequenceEqual(new byte[] { 0x80, 2, 0x40, 0, 0x10, 0x31, 4, 3, 2 }),
+                "Extended changeover order carries the failed link code and frozen 24-bit sequence");
+            alternate.Inject([0x80, 1, 0x80, 0, 0x20, 0x41, 0xFE, 0xFF, 0xFF]);
+            Require(!send.IsCompleted, "An acknowledgement for a different link cannot end changeover");
+            alternate.Inject(emergency
+                ? [0x80, 1, 0x80, 0, 0x10, 0x22]
+                : [0x80, 1, 0x80, 0, 0x10, 0x41, 0xFE, 0xFF, 0xFF]);
+            await send.WaitAsync(timeout.Token);
+            if (!emergency)
+            {
+                Require((await NextSentAsync(alternate, timeout.Token))[^1] == 1, "Peer-confirmed MSU is replayed first");
+            }
+
+            Require((await NextSentAsync(alternate, timeout.Token))[^1] == 2
+                && alternate.Sent.IsEmpty && primary.Sent.IsEmpty && network.IsLinkDiverted(2, 1),
+                "New traffic follows changeover without replaying unknown records");
+        }
+    }
+
+    private static async Task<byte[]> NextSentAsync(TestLink link, CancellationToken ct)
+    {
+        while (true)
+        {
+            if (link.Sent.TryDequeue(out byte[]? record))
+            {
+                return record;
+            }
+
+            await Task.Delay(5, ct);
+        }
+    }
 
     private static async Task ExerciseRecoverySnapshotAsync()
     {
@@ -208,12 +258,15 @@ internal static class Mtp3LinkNetworkTests
     }
 
     /// <summary>Supplies test MSUs without depending on the M2PA framing implementation.</summary>
-    private sealed class TestLink : IMtp2Link
+    private sealed class TestLink : IMtp2LinkRecovery
     {
         private readonly Channel<byte[]> _inbound = Channel.CreateUnbounded<byte[]>();
 
         public Mtp2LinkState State { get; set; } = Mtp2LinkState.InService;
         internal ConcurrentQueue<byte[]> Sent { get; } = new();
+        internal uint? LastAcceptedSequence { get; init; }
+        internal uint? PeerRecoveryBoundary { get; init; }
+        internal IReadOnlyList<ReadOnlyMemory<byte>> Retained { get; init; } = [];
 
         internal void Inject(byte[] msu) => _inbound.Writer.TryWrite(msu);
 
@@ -229,6 +282,19 @@ internal static class Mtp3LinkNetworkTests
             byte[] msu = await _inbound.Reader.ReadAsync(ct);
             msu.CopyTo(buffer);
             return msu.Length;
+        }
+
+        public ValueTask<(uint? LastAcceptedSequence, long AcceptedMsuCount)> FreezeForChangeoverAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            State = Mtp2LinkState.OutOfService;
+            return ValueTask.FromResult((LastAcceptedSequence, 0L));
+        }
+
+        public bool TryRetrieveAfter(uint peerLastAcceptedSequence, out IReadOnlyList<ReadOnlyMemory<byte>> messages)
+        {
+            messages = peerLastAcceptedSequence == PeerRecoveryBoundary ? Retained : [];
+            return peerLastAcceptedSequence == PeerRecoveryBoundary;
         }
     }
 }

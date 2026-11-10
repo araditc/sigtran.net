@@ -56,7 +56,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 4 | MTP3 transfer network and bounded receive ownership | Implemented |
 | 5 | Network management framing and route state | Implemented |
 | 6 | 24-bit link retrieval and peer confirmation | Implemented |
-| 7 | Extended changeover and emergency handling | Pending |
+| 7 | Extended changeover and emergency handling | Implemented |
 | 8 | Acknowledged changeback and ordered traffic | Pending |
 | 9 | SCCP traffic against an independent wire peer | Pending |
 | 10 | Live fault evidence and qualification decision | Pending |
@@ -98,3 +98,21 @@ peer-confirmed retrieval to the ordinary MTP2 contract. Retrieval
 accepts only the last acknowledged boundary or a sequence in the
 frozen window, including wrap from `0xFFFFFF` to zero. It returns only
 subsequent MSUs in send order. Unknown sequences never trigger replay.
+
+## Link Changeover
+
+The network observes an established link failing or an order from its
+adjacent peer. It holds outbound user traffic during changeover, drains
+locally accepted ingress to the upper queue, and exchanges Q.2210
+XCO/XCA on a surviving link in the same linkset. The label identifies
+the affected link code, not the carrier. Retrieved local user MSUs
+are replayed before new traffic, only with a reconciled peer boundary
+and while their route remains permitted. See [RFC 4165 section 4.2.3](https://www.rfc-editor.org/rfc/rfc4165.html#section-4.2.3)
+and [ITU-T Q.2210](https://www.itu.int/rec/T-REC-Q.2210/en).
+
+Emergency or timed-out changeover permits new traffic to take an
+available route without replaying uncertain transmissions. A failed
+replay is not blindly retried. `IsLinkDiverted` reports that diversion
+finished; it does not certify that all pre-fault transfers were delivered.
+The application must wait for diversion before replacing a failed
+association. Transient Busy is backpressure, not a changeover trigger.

@@ -42,7 +42,12 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
             SingleWriter = false,
             SingleReader = false
         });
+        _controls = _routing.Links.ToDictionary(binding => binding, binding => new LinkControl(binding)
+        {
+            ObservedService = IsOperational(binding)
+        });
         _readers = _routing.Links.Select(ReadLinkAsync).ToArray();
+        _linkMonitor = MonitorLinksAsync();
     }
 
     /// <inheritdoc />
@@ -63,6 +68,8 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
         await _egress.WaitAsync(operation.Token).ConfigureAwait(false);
         try
         {
+            await ApplyLinkChangesAsync(_lifetime.Token).ConfigureAwait(false);
+            operation.Token.ThrowIfCancellationRequested();
             Mtp3RoutingLabel label = message.RoutingLabel;
             Mtp3LinkBinding selected = _routing.Select(label.DestinationPointCode, label.SignallingLinkSelection, CanRoute)
                 ?? throw new InvalidOperationException($"No available route to MTP3 destination {label.DestinationPointCode}.");
@@ -92,11 +99,15 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
 
         await _lifetime.CancelAsync().ConfigureAwait(false);
         _inbound.Writer.TryComplete();
+        await _linkMonitor.ConfigureAwait(false);
         await Task.WhenAll(_readers).ConfigureAwait(false);
         _lifetime.Dispose();
     }
 
     private bool CanRoute(Mtp3LinkBinding link)
+        => _controls[link].Traffic == LinkTraffic.Normal && IsOperational(link);
+
+    private bool IsOperational(Mtp3LinkBinding link)
         => !_failedReaders.ContainsKey(link) && link.Link.State is Mtp2LinkState.InService or Mtp2LinkState.Busy;
 
     private async Task ReadLinkAsync(Mtp3LinkBinding link)
@@ -113,25 +124,32 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
                     throw new InvalidDataException("The MTP2 link returned an invalid MSU length.");
                 }
 
-                if (!Mtp3Msu.TryDecode(bytes.AsSpan(0, count), out Mtp3TransferMessage? message)
-                    || message!.ServiceInformation.NetworkIndicator != _networkIndicator
-                    || message.RoutingLabel.DestinationPointCode != _localPointCode)
+                try
                 {
-                    continue;
-                }
-
-                if (message.ServiceInformation.ServiceIndicator == Mtp3ServiceIndicator.SignallingNetworkManagement)
-                {
-                    if (message.RoutingLabel.OriginatingPointCode == link.AdjacentPointCode
-                        && Mtp3ManagementMessage.TryDecode(message.UserPayload.Span, out Mtp3ManagementMessage management)
-                        && (management.Kind != Mtp3ManagementKind.TransferRestricted || _networkIndicator >= 2))
+                    if (!Mtp3Msu.TryDecode(bytes.AsSpan(0, count), out Mtp3TransferMessage? message)
+                        || message!.ServiceInformation.NetworkIndicator != _networkIndicator
+                        || message.RoutingLabel.DestinationPointCode != _localPointCode)
                     {
-                        _routing.UpdateRoute(link.AdjacentPointCode, management);
+                        continue;
+                    }
+
+                    if (message.ServiceInformation.ServiceIndicator == Mtp3ServiceIndicator.SignallingNetworkManagement)
+                    {
+                        if (message.RoutingLabel.OriginatingPointCode == link.AdjacentPointCode
+                            && Mtp3ManagementMessage.TryDecode(message.UserPayload.Span, out Mtp3ManagementMessage management)
+                            && (management.Kind != Mtp3ManagementKind.TransferRestricted || _networkIndicator >= 2))
+                        {
+                            ObserveManagement(link, message, management);
+                        }
+                    }
+                    else if (message.ServiceInformation.ServiceIndicator != Mtp3ServiceIndicator.SignallingNetworkTesting)
+                    {
+                        await _inbound.Writer.WriteAsync(message, ct).ConfigureAwait(false);
                     }
                 }
-                else if (message.ServiceInformation.ServiceIndicator != Mtp3ServiceIndicator.SignallingNetworkTesting)
+                finally
                 {
-                    await _inbound.Writer.WriteAsync(message, ct).ConfigureAwait(false);
+                    _controls[link].MarkIngressProcessed();
                 }
             }
         }

@@ -130,6 +130,12 @@ internal sealed class Mtp3LinkRoutingTable
         }
     }
 
+    /// <summary>Checks whether an alternate link in this adjacency may carry a retrieved MSU.</summary>
+    internal bool CanUseRoute(uint destination, uint adjacent)
+        => _routesets.TryGetValue(destination, out Mtp3Route[]? routes)
+            && routes.Any(route => route.AdjacentPointCode == adjacent)
+            && _routeStates.GetValueOrDefault((destination, adjacent)) != Mtp3ManagementKind.TransferProhibited;
+
     /// <summary>Walks configured buckets without remapping SLS values on healthy links.</summary>
     internal Mtp3LinkBinding? SelectLink(uint adjacent, byte sls, Func<Mtp3LinkBinding, bool> available)
     {
