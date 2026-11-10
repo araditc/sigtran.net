@@ -444,11 +444,8 @@ static int build_tcap_result(
     size_t component_content_length = 0U;
     size_t component_length = 0U;
     size_t transaction_content_length = 0U;
-    uint8_t result_parameters[] = {0x30U, 0x00U};
-    const uint8_t *parameters =
-        invoke->operation_code == 45U ? result_parameters : NULL;
-    size_t parameters_length =
-        invoke->operation_code == 45U ? sizeof(result_parameters) : 0U;
+    /* The optional result SEQUENCE contains the local opcode and the encoded result. */
+    const uint8_t routing_result[] = {0x02U, 0x01U, 45U, 0x30U, 0x00U};
 
     if (append_ber_tlv(
             component_content,
@@ -457,20 +454,13 @@ static int build_tcap_result(
             0x02U,
             &invoke->invoke_id,
             1U) != 0
-        || append_ber_tlv(
+        || (invoke->operation_code == 45U && append_ber_tlv(
             component_content,
             sizeof(component_content),
             &component_content_length,
-            0x02U,
-            &invoke->operation_code,
-            1U) != 0
-        || append_ber_tlv(
-            component_content,
-            sizeof(component_content),
-            &component_content_length,
-            0x04U,
-            parameters,
-            parameters_length) != 0
+            0x30U,
+            routing_result,
+            sizeof(routing_result)) != 0)
         || append_ber_tlv(
             component,
             sizeof(component),

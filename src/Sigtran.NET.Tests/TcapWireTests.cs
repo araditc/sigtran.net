@@ -92,6 +92,30 @@ internal static class TcapWireTests
         }
     }
 
+    internal static void OutcomeFields()
+    {
+        byte[] emptyResult = Convert.FromHexString("A2030201FF");
+        var result = new TcapBerReturnResultComponent(255, (TcapOperationCode)45, default);
+        Require(result.Encode().AsSpan().SequenceEqual(emptyResult)
+            && TcapBerReturnResultComponent.TryDecode(emptyResult, out var decoded, out _)
+            && decoded?.OperationCode is null, "ID-only result did not round-trip");
+
+        byte[] error = Convert.FromHexString("A309020101020124040101");
+        Require(TcapBerReturnErrorComponent.TryDecode(error, out var decodedError, out _)
+            && (byte)decodedError!.ErrorCode == 36 && decodedError.Encode().AsSpan().SequenceEqual(error),
+            "ReturnError open type changed");
+
+        byte[] uncorrelated = Convert.FromHexString("A4050500820102");
+        Require(TcapBerRejectComponent.TryDecode(uncorrelated, out var reject, out _)
+            && reject?.CorrelatedInvokeId is null && reject!.ProblemCode == TcapRejectProblemCode.MistypedResult
+            && reject.Encode().AsSpan().SequenceEqual(uncorrelated), "Uncorrelated result problem changed");
+
+        Require(!TcapBerReturnResultComponent.TryDecode(Convert.FromHexString("A20602010102012D"), out _, out _),
+            "Flattened result accepted");
+        Require(!TcapBerRejectComponent.TryDecode(Convert.FromHexString("A406020101810108"), out _, out _),
+            "Unknown problem code accepted");
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

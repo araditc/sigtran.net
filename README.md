@@ -43,6 +43,7 @@ transaction tags follow Q.773; rebuild the reference peer for new lab runs.
 The decoder validates package-specific IDs, field order and provider abort causes.
 BER length and dialogue OID limits are enforced before accepting wire data.
 TCAP Invoke carries a complete ASN.1 argument without an extra OCTET STRING wrapper.
+TCAP results use the optional result SEQUENCE; Reject encodes the problem family.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

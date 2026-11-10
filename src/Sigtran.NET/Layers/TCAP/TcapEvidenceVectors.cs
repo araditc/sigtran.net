@@ -30,10 +30,10 @@ internal static class TcapEvidenceVectors
             "TCAP End with destination transaction id and ReturnResult component.",
             new byte[]
             {
-                0x64, 0x10,
+                0x64, 0x12,
                 0x49, 0x01, 0x01,
-                0x6C, 0x0B,
-                0xA2, 0x09, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01, 0x04, 0x01, 0xCC
+                0x6C, 0x0D,
+                0xA2, 0x0B, 0x02, 0x01, 0x02, 0x30, 0x06, 0x02, 0x01, 0x01, 0x04, 0x01, 0xCC
             },
             Source)
     ];
@@ -75,7 +75,7 @@ internal static class TcapEvidenceVectors
 
     private static TcapTransactionMessage CreateEndReturnResult()
     {
-        TcapBerReturnResultComponent result = new(2, TcapOperationCode.MoForwardShortMessage, new byte[] { 0xCC });
+        TcapBerReturnResultComponent result = new(2, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x04, 0x01, 0xCC });
         return new(
             TcapPackageType.End,
             destinationTransactionId: new TcapTransactionId([0x01]),

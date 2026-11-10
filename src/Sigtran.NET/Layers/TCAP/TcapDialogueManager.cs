@@ -840,15 +840,13 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             return null;
         }
 
-        PendingInvoke? pending =
-            RemovePendingInvoke(context, component!.InvokeId);
-        if (pending is not null)
+        PendingInvoke? pending = RemovePendingInvoke(context, component!.InvokeId, component.OperationCode);
+        if (pending is null)
         {
-            CompletePending(
-                pending,
-                TcapInvokeOutcomeKind.Result,
-                component.Parameters);
+            return null;
         }
+
+        CompletePending(pending, TcapInvokeOutcomeKind.Result, component.Parameters);
 
         return new(
             context.Handle,
@@ -905,8 +903,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             return null;
         }
 
-        PendingInvoke? pending =
-            RemovePendingInvoke(context, component!.InvokeId);
+        PendingInvoke? pending = component!.CorrelatedInvokeId is { } invokeId
+            ? RemovePendingInvoke(context, invokeId)
+            : null;
         if (pending is not null)
         {
             CompletePending(
@@ -1151,17 +1150,18 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
 
     private static PendingInvoke? RemovePendingInvoke(
         DialogueContext context,
-        byte invokeId)
+        byte invokeId,
+        TcapOperationCode? expectedOperation = null)
     {
         lock (context.Sync)
         {
-            if (!context.PendingOutbound.Remove(
-                    invokeId,
-                    out PendingInvoke? pending))
+            if (!context.PendingOutbound.TryGetValue(invokeId, out PendingInvoke? pending)
+                || (expectedOperation.HasValue && pending.OperationCode != expectedOperation.Value))
             {
                 return null;
             }
 
+            context.PendingOutbound.Remove(invokeId);
             return pending;
         }
     }

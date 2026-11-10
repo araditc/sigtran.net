@@ -387,6 +387,7 @@ Run("TCAP transaction tags match independently encoded Q.773 bytes", TcapWireTes
 Run("TCAP transaction fields and provider abort follow Q.773", TcapWireTests.TransactionFields);
 Run("TCAP BER and object identifier boundaries are deterministic", TcapWireTests.BerBoundaries);
 Run("TCAP Invoke uses an implicit linked ID and an ASN.1 open type", TcapWireTests.InvokeFields);
+Run("TCAP outcome components match X.880 result and reject fields", TcapWireTests.OutcomeFields);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
@@ -7609,23 +7610,23 @@ static void TcapBerInvokeComponentRoundTrips()
 
 static void TcapBerOutcomeComponentsRoundTrip()
 {
-    TcapBerReturnResultComponent result = new(7, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x10, 0x20 });
+    TcapBerReturnResultComponent result = new(7, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x04, 0x02, 0x10, 0x20 });
     byte[] resultBytes = result.Encode();
-    AssertSequence([0xA2, 0x0A, 0x02, 0x01, 0x07, 0x02, 0x01, 0x01, 0x04, 0x02, 0x10, 0x20], resultBytes, "TCAP ReturnResult bytes");
+    AssertSequence([0xA2, 0x0C, 0x02, 0x01, 0x07, 0x30, 0x07, 0x02, 0x01, 0x01, 0x04, 0x02, 0x10, 0x20], resultBytes, "TCAP ReturnResult bytes");
     Assert(TcapBerReturnResultComponent.TryDecode(resultBytes, out TcapBerReturnResultComponent? decodedResult, out string? error), error ?? "TCAP ReturnResult decode failed");
     AssertEqual((byte)7, decodedResult!.InvokeId, "TCAP ReturnResult invoke id");
     AssertEqual(TcapOperationCode.MoForwardShortMessage, decodedResult.OperationCode, "TCAP ReturnResult operation");
-    AssertSequence([0x10, 0x20], decodedResult.Parameters.Span, "TCAP ReturnResult parameters");
+    AssertSequence([0x04, 0x02, 0x10, 0x20], decodedResult.Parameters.Span, "TCAP ReturnResult parameters");
 
-    TcapBerReturnErrorComponent returnError = new(7, TcapReturnErrorCode.SystemFailure, new byte[] { 0x01 });
+    TcapBerReturnErrorComponent returnError = new(7, TcapReturnErrorCode.SystemFailure, new byte[] { 0x04, 0x01, 0x01 });
     byte[] errorBytes = returnError.Encode();
     Assert(TcapBerReturnErrorComponent.TryDecode(errorBytes, out TcapBerReturnErrorComponent? decodedError, out error), error ?? "TCAP ReturnError decode failed");
     AssertEqual(TcapReturnErrorCode.SystemFailure, decodedError!.ErrorCode, "TCAP ReturnError code");
-    AssertSequence([0x01], decodedError.Parameters.Span, "TCAP ReturnError parameters");
+    AssertSequence([0x04, 0x01, 0x01], decodedError.Parameters.Span, "TCAP ReturnError parameters");
 
     TcapBerRejectComponent reject = new(7, TcapRejectProblemCode.DuplicateInvokeId);
     byte[] rejectBytes = reject.Encode();
-    AssertSequence([0xA4, 0x06, 0x02, 0x01, 0x07, 0x02, 0x01, 0x02], rejectBytes, "TCAP Reject bytes");
+    AssertSequence([0xA4, 0x06, 0x02, 0x01, 0x07, 0x81, 0x01, 0x00], rejectBytes, "TCAP Reject bytes");
     Assert(TcapBerRejectComponent.TryDecode(rejectBytes, out TcapBerRejectComponent? decodedReject, out error), error ?? "TCAP Reject decode failed");
     AssertEqual(TcapRejectProblemCode.DuplicateInvokeId, decodedReject!.ProblemCode, "TCAP Reject problem code");
 }
@@ -7715,7 +7716,7 @@ static void TcapSessionBuilderCreatesBeginAndEndMessages()
     Assert(TcapTransactionMessage.TryDecode(built.EncodedMessage, out TcapTransactionMessage? decodedBegin, out string? error), error ?? "TCAP built Begin decode failed");
     AssertEqual(TcapPackageType.Begin, decodedBegin!.PackageType, "TCAP built Begin package");
 
-    byte[] end = builder.EndResult(built.OriginatingTransactionId, built.InvokeId, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x01 });
+    byte[] end = builder.EndResult(built.OriginatingTransactionId, built.InvokeId, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x04, 0x01, 0x01 });
     Assert(TcapTransactionMessage.TryDecode(end, out TcapTransactionMessage? decodedEnd, out error), error ?? "TCAP built End decode failed");
     AssertEqual(TcapPackageType.End, decodedEnd!.PackageType, "TCAP built End package");
     AssertEqual("03", decodedEnd.DestinationTransactionId?.ToString(), "TCAP built End destination id");
@@ -7743,7 +7744,7 @@ static void TcapEvidenceVectorsValidateTransactionBytes()
     AssertEqual(TcapPackageType.End, end!.PackageType, "TCAP evidence End package");
     Assert(TcapBerReturnResultComponent.TryDecode(end.ComponentPortion.Span, out TcapBerReturnResultComponent? result, out error), error ?? "TCAP evidence result decode failed");
     AssertEqual((byte)2, result!.InvokeId, "TCAP evidence result invoke id");
-    AssertSequence([0xCC], result.Parameters.Span, "TCAP evidence result parameters");
+    AssertSequence([0x04, 0x01, 0xCC], result.Parameters.Span, "TCAP evidence result parameters");
 }
 
 static void TcapDialogueManagerCorrelatesConcurrentInvokes()
@@ -7823,7 +7824,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
                 invoke.Dialogue,
                 invoke.InvokeId,
                 invoke.OperationCode,
-                new byte[] { (byte)(invoke.Parameters.Span[2] + 10) },
+                new byte[] { 0x04, 0x01, (byte)(invoke.Parameters.Span[2] + 10) },
                 endDialogue: true,
                 timeout.Token)
             .AsTask()
@@ -7840,7 +7841,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
             .GetAwaiter()
             .GetResult();
         AssertEqual(TcapInvokeOutcomeKind.Result, outcome.Kind, "TCAP correlated result outcome");
-        AssertSequence([(byte)(index + 10)], outcome.Parameters.Span, "TCAP correlated result parameters");
+        AssertSequence([0x04, 0x01, (byte)(index + 10)], outcome.Parameters.Span, "TCAP correlated result parameters");
     }
 
     Assert(
@@ -7911,7 +7912,7 @@ static void TcapDialogueManagerCompletesTerminalOutcomes()
             errorInvoke.Dialogue,
             errorInvoke.InvokeId,
             TcapReturnErrorCode.SystemFailure,
-            new byte[] { 0xEE },
+            new byte[] { 0x04, 0x01, 0xEE },
             endDialogue: true,
             timeout.Token)
         .AsTask()

@@ -11,7 +11,7 @@ checks do not establish operator or release-candidate acceptance.
 | 2 | Transaction field validation and abort encoding | Implemented |
 | 3 | Bounded BER and OID decoding | Implemented |
 | 4 | Invoke and linked ID | Implemented |
-| 5 | Result, error and reject | Pending |
+| 5 | Result, error and reject | Implemented |
 | 6 | Structured dialogue APDUs | Pending |
 | 7 | Dialogue negotiation at runtime | Pending |
 | 8 | Connectionless SCCP wire checks | Pending |
@@ -51,3 +51,13 @@ the supported byte range are encoded as non-negative INTEGERs. The optional
 argument is a single, complete ASN.1 value. The MAP repository-profile
 parameter set now supplies a SEQUENCE, with field-level mapping tracked
 separately in unit 9.
+
+## Component Outcomes
+
+ReturnResultLast carries an invoke ID and, only when a result value exists,
+a SEQUENCE containing the local opcode and encoded result. ReturnError
+preserves an optional ASN.1 parameter. Reject uses the four context-tagged
+problem families and supports NULL for an uncorrelatable invoke ID.
+The manager does not complete an invoke with a mismatched result opcode.
+Global operation/error codes and fragmented ReturnResultNotLast are outside
+the declared MAP SMS profile.

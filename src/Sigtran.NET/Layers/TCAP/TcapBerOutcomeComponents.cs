@@ -1,44 +1,68 @@
+using System.Formats.Asn1;
+
 namespace Sigtran.NET.Layers.TCAP;
 
-/// <summary>
-/// TCAP ReturnError problem codes used by the SDK foundation.
-/// </summary>
+/// <summary>Convenience names for local application error codes.</summary>
 public enum TcapReturnErrorCode : byte
 {
     /// <summary>Unrecognized error.</summary>
     Unrecognized = 0,
-
     /// <summary>Unexpected data value.</summary>
     UnexpectedDataValue = 1,
-
     /// <summary>System failure.</summary>
     SystemFailure = 2
 }
 
-/// <summary>
-/// TCAP Reject problem codes used by the SDK foundation.
-/// </summary>
+/// <summary>Identifies a TCAP Reject problem by family and meaning.</summary>
 public enum TcapRejectProblemCode : byte
 {
-    /// <summary>General unrecognized component.</summary>
+    /// <summary>General: unrecognized component.</summary>
     UnrecognizedComponent = 0,
-
-    /// <summary>Mistyped component.</summary>
+    /// <summary>General: mistyped component.</summary>
     MistypedComponent = 1,
-
-    /// <summary>Duplicate invoke identifier.</summary>
-    DuplicateInvokeId = 2
+    /// <summary>Invoke: duplicate invocation ID.</summary>
+    DuplicateInvokeId = 2,
+    /// <summary>General: badly structured component.</summary>
+    BadlyStructuredComponent = 3,
+    /// <summary>Invoke: unrecognized operation.</summary>
+    UnrecognizedOperation = 11,
+    /// <summary>Invoke: mistyped argument.</summary>
+    MistypedArgument = 12,
+    /// <summary>Invoke: resource limitation.</summary>
+    ResourceLimitation = 13,
+    /// <summary>Invoke: release in progress.</summary>
+    ReleaseInProgress = 14,
+    /// <summary>Invoke: unrecognized linked ID.</summary>
+    UnrecognizedLinkedId = 15,
+    /// <summary>Invoke: unexpected linked response.</summary>
+    UnexpectedLinkedResponse = 16,
+    /// <summary>Invoke: unexpected linked operation.</summary>
+    UnexpectedLinkedOperation = 17,
+    /// <summary>Return result: unrecognized invocation.</summary>
+    ResultUnrecognizedInvokeId = 20,
+    /// <summary>Return result: unexpected response.</summary>
+    UnexpectedResult = 21,
+    /// <summary>Return result: mistyped result value.</summary>
+    MistypedResult = 22,
+    /// <summary>Return error: unrecognized invocation.</summary>
+    ErrorUnrecognizedInvokeId = 30,
+    /// <summary>Return error: unexpected error response.</summary>
+    UnexpectedErrorResponse = 31,
+    /// <summary>Return error: unrecognized error code.</summary>
+    UnrecognizedErrorCode = 32,
+    /// <summary>Return error: unexpected error code.</summary>
+    UnexpectedErrorCode = 33,
+    /// <summary>Return error: mistyped error parameter.</summary>
+    MistypedErrorParameter = 34
 }
 
-/// <summary>
-/// Represents a BER TCAP ReturnResult component.
-/// </summary>
+/// <summary>Represents a TCAP ReturnResultLast component.</summary>
 public sealed class TcapBerReturnResultComponent
 {
-    /// <summary>Creates a BER ReturnResult component.</summary>
-    /// <param name="invokeId">The invoke id.</param>
-    /// <param name="operationCode">The optional operation code.</param>
-    /// <param name="parameters">The result parameters.</param>
+    /// <summary>Creates a result component.</summary>
+    /// <param name="invokeId">The invoke ID octet.</param>
+    /// <param name="operationCode">The local operation code when a result value is present.</param>
+    /// <param name="parameters">The complete encoded result value, or empty for an ID-only result.</param>
     public TcapBerReturnResultComponent(byte invokeId, TcapOperationCode? operationCode, ReadOnlyMemory<byte> parameters)
     {
         InvokeId = invokeId;
@@ -46,78 +70,83 @@ public sealed class TcapBerReturnResultComponent
         Parameters = parameters;
     }
 
-    /// <summary>The invoke id.</summary>
+    /// <summary>The invoke ID octet.</summary>
     public byte InvokeId { get; }
 
-    /// <summary>The optional operation code.</summary>
+    /// <summary>The local operation code, if present.</summary>
     public TcapOperationCode? OperationCode { get; }
 
-    /// <summary>The result parameters.</summary>
+    /// <summary>The encoded result value, if present.</summary>
     public ReadOnlyMemory<byte> Parameters { get; }
 
-    /// <summary>Encodes the component.</summary>
-    /// <returns>The encoded component bytes.</returns>
+    /// <summary>Encodes the component, with the optional opcode and result inside a SEQUENCE.</summary>
+    /// <returns>The complete component TLV.</returns>
     public byte[] Encode()
     {
-        TcapComponentContentWriter writer = new();
-        writer.WriteInteger(InvokeId);
-        if (OperationCode.HasValue)
+        AsnWriter writer = new(AsnEncodingRules.BER);
+        using (writer.PushSequence(TcapOutcomeEncoding.Tag(TcapComponentType.ReturnResultLast)))
         {
-            writer.WriteInteger((byte)OperationCode.Value);
+            writer.WriteInteger(unchecked((sbyte)InvokeId));
+            if (!Parameters.IsEmpty)
+            {
+                if (!OperationCode.HasValue)
+                {
+                    throw new InvalidOperationException("A TCAP result value requires the local operation code.");
+                }
+
+                using (writer.PushSequence())
+                {
+                    writer.WriteInteger((byte)OperationCode.Value);
+                    writer.WriteEncodedValue(Parameters.Span);
+                }
+            }
         }
 
-        writer.WriteElement(TcapComponentTags.Parameter, Parameters.Span);
-        return writer.Wrap(TcapComponentTags.Component(TcapComponentType.ReturnResultLast));
+        return writer.Encode();
     }
 
-    /// <summary>Attempts to decode a ReturnResult component.</summary>
-    /// <param name="data">The encoded bytes.</param>
-    /// <param name="component">The decoded component on success.</param>
-    /// <param name="error">An error message on failure.</param>
-    /// <returns>True if decoding succeeded; otherwise false.</returns>
+    /// <summary>Attempts to decode one complete ReturnResultLast component.</summary>
+    /// <param name="data">The encoded component bytes.</param>
+    /// <param name="component">The result on success.</param>
+    /// <param name="error">The decoding error, if any.</param>
+    /// <returns>True when decoding succeeds.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out TcapBerReturnResultComponent? component, out string? error)
     {
         component = null;
-        if (!TcapComponentContentReader.TryUnwrap(data, TcapComponentType.ReturnResultLast, out TcapComponentContentReader reader, out error))
+        try
         {
-            return false;
-        }
-
-        if (!reader.TryReadInteger(out byte invokeId, out error))
-        {
-            return false;
-        }
-
-        TcapOperationCode? operationCode = null;
-        if (reader.PeekTag(TcapComponentTags.Integer))
-        {
-            if (!reader.TryReadInteger(out byte operationCodeValue, out error))
+            AsnReader fields = TcapOutcomeEncoding.ReadFields(data, TcapComponentType.ReturnResultLast);
+            byte invokeId = TcapBerInvokeComponent.ReadInvokeId(fields);
+            TcapOperationCode? opcode = null;
+            ReadOnlyMemory<byte> result = default;
+            if (fields.HasData)
             {
-                return false;
+                AsnReader sequence = fields.ReadSequence();
+                opcode = (TcapOperationCode)TcapOutcomeEncoding.ReadLocalCode(sequence);
+                result = sequence.ReadEncodedValue();
+                sequence.ThrowIfNotEmpty();
             }
 
-            operationCode = (TcapOperationCode)operationCodeValue;
+            fields.ThrowIfNotEmpty();
+            component = new(invokeId, opcode, result);
+            error = null;
+            return true;
         }
-
-        if (!reader.TryReadElement(TcapComponentTags.Parameter, out ReadOnlyMemory<byte> parameters, out error))
+        catch (AsnContentException exception)
         {
+            error = exception.Message;
             return false;
         }
-
-        component = new(invokeId, operationCode, parameters);
-        return true;
     }
 }
 
-/// <summary>
-/// Represents a BER TCAP ReturnError component.
-/// </summary>
+/// <summary>Represents a TCAP ReturnError component with a local error code.</summary>
 public sealed class TcapBerReturnErrorComponent
 {
-    /// <summary>Creates a BER ReturnError component.</summary>
-    /// <param name="invokeId">The invoke id.</param>
-    /// <param name="errorCode">The error code.</param>
-    /// <param name="parameters">The error parameters.</param>
+    /// <summary>Creates an error component.</summary>
+    /// <param name="invokeId">The invoke ID octet.</param>
+    /// <param name="errorCode">The application-defined local error code.</param>
+    /// <param name="parameters">The complete encoded error parameter, or empty if absent.</param>
     public TcapBerReturnErrorComponent(byte invokeId, TcapReturnErrorCode errorCode, ReadOnlyMemory<byte> parameters)
     {
         InvokeId = invokeId;
@@ -125,211 +154,194 @@ public sealed class TcapBerReturnErrorComponent
         Parameters = parameters;
     }
 
-    /// <summary>The invoke id.</summary>
+    /// <summary>The invoke ID octet.</summary>
     public byte InvokeId { get; }
 
-    /// <summary>The error code.</summary>
+    /// <summary>The application-defined local error code.</summary>
     public TcapReturnErrorCode ErrorCode { get; }
 
-    /// <summary>The error parameters.</summary>
+    /// <summary>The encoded error parameter, if present.</summary>
     public ReadOnlyMemory<byte> Parameters { get; }
 
-    /// <summary>Encodes the component.</summary>
-    /// <returns>The encoded component bytes.</returns>
+    /// <summary>Encodes the component with its optional open-type parameter.</summary>
+    /// <returns>The complete component TLV.</returns>
     public byte[] Encode()
     {
-        TcapComponentContentWriter writer = new();
-        writer.WriteInteger(InvokeId);
-        writer.WriteInteger((byte)ErrorCode);
-        writer.WriteElement(TcapComponentTags.Parameter, Parameters.Span);
-        return writer.Wrap(TcapComponentTags.Component(TcapComponentType.ReturnError));
+        AsnWriter writer = new(AsnEncodingRules.BER);
+        using (writer.PushSequence(TcapOutcomeEncoding.Tag(TcapComponentType.ReturnError)))
+        {
+            writer.WriteInteger(unchecked((sbyte)InvokeId));
+            writer.WriteInteger((byte)ErrorCode);
+            if (!Parameters.IsEmpty)
+            {
+                writer.WriteEncodedValue(Parameters.Span);
+            }
+        }
+
+        return writer.Encode();
     }
 
-    /// <summary>Attempts to decode a ReturnError component.</summary>
-    /// <param name="data">The encoded bytes.</param>
-    /// <param name="component">The decoded component on success.</param>
-    /// <param name="error">An error message on failure.</param>
-    /// <returns>True if decoding succeeded; otherwise false.</returns>
+    /// <summary>Attempts to decode one complete ReturnError component.</summary>
+    /// <param name="data">The encoded component bytes.</param>
+    /// <param name="component">The decoded error on success.</param>
+    /// <param name="error">The decoding error, if any.</param>
+    /// <returns>True when decoding succeeds.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out TcapBerReturnErrorComponent? component, out string? error)
     {
         component = null;
-        if (!TcapComponentContentReader.TryUnwrap(data, TcapComponentType.ReturnError, out TcapComponentContentReader reader, out error)
-            || !reader.TryReadInteger(out byte invokeId, out error)
-            || !reader.TryReadInteger(out byte errorCode, out error)
-            || !reader.TryReadElement(TcapComponentTags.Parameter, out ReadOnlyMemory<byte> parameters, out error))
+        try
         {
+            AsnReader fields = TcapOutcomeEncoding.ReadFields(data, TcapComponentType.ReturnError);
+            byte invokeId = TcapBerInvokeComponent.ReadInvokeId(fields);
+            var code = (TcapReturnErrorCode)TcapOutcomeEncoding.ReadLocalCode(fields);
+            ReadOnlyMemory<byte> parameter = fields.HasData ? fields.ReadEncodedValue() : default;
+            fields.ThrowIfNotEmpty();
+            component = new(invokeId, code, parameter);
+            error = null;
+            return true;
+        }
+        catch (AsnContentException exception)
+        {
+            error = exception.Message;
             return false;
         }
-
-        component = new(invokeId, (TcapReturnErrorCode)errorCode, parameters);
-        return true;
     }
 }
 
-/// <summary>
-/// Represents a BER TCAP Reject component.
-/// </summary>
+/// <summary>Represents a TCAP Reject component with a categorized problem.</summary>
 public sealed class TcapBerRejectComponent
 {
-    /// <summary>Creates a BER Reject component.</summary>
-    /// <param name="invokeId">The invoke id.</param>
-    /// <param name="problemCode">The reject problem code.</param>
+    /// <summary>Creates a Reject correlated to a known invoke ID.</summary>
+    /// <param name="invokeId">The invoke ID octet.</param>
+    /// <param name="problemCode">The reject problem.</param>
     public TcapBerRejectComponent(byte invokeId, TcapRejectProblemCode problemCode)
+        : this((byte?)invokeId, problemCode)
     {
-        InvokeId = invokeId;
+    }
+
+    /// <summary>Creates a Reject, optionally without an invoke ID.</summary>
+    /// <param name="invokeId">The invoke ID octet, or null if unavailable.</param>
+    /// <param name="problemCode">The reject problem.</param>
+    public TcapBerRejectComponent(byte? invokeId, TcapRejectProblemCode problemCode)
+    {
+        CorrelatedInvokeId = invokeId;
         ProblemCode = problemCode;
     }
 
-    /// <summary>The invoke id.</summary>
-    public byte InvokeId { get; }
+    /// <summary>The invoke ID octet, or zero if no ID is present. Use <see cref="CorrelatedInvokeId"/> to distinguish absence.</summary>
+    public byte InvokeId => CorrelatedInvokeId.GetValueOrDefault();
 
-    /// <summary>The reject problem code.</summary>
+    /// <summary>The optional correlated invoke ID.</summary>
+    public byte? CorrelatedInvokeId { get; }
+
+    /// <summary>The reject problem.</summary>
     public TcapRejectProblemCode ProblemCode { get; }
 
     /// <summary>Encodes the component.</summary>
-    /// <returns>The encoded component bytes.</returns>
+    /// <returns>The complete component TLV.</returns>
     public byte[] Encode()
     {
-        TcapComponentContentWriter writer = new();
-        writer.WriteInteger(InvokeId);
-        writer.WriteInteger((byte)ProblemCode);
-        return writer.Wrap(TcapComponentTags.Component(TcapComponentType.Reject));
+        (int family, int code) = ProblemCode switch
+        {
+            TcapRejectProblemCode.UnrecognizedComponent => (0, 0),
+            TcapRejectProblemCode.MistypedComponent => (0, 1),
+            TcapRejectProblemCode.BadlyStructuredComponent => (0, 2),
+            TcapRejectProblemCode.DuplicateInvokeId => (1, 0),
+            >= TcapRejectProblemCode.UnrecognizedOperation and <= TcapRejectProblemCode.UnexpectedLinkedOperation => (1, (byte)ProblemCode - 10),
+            >= TcapRejectProblemCode.ResultUnrecognizedInvokeId and <= TcapRejectProblemCode.MistypedResult => (2, (byte)ProblemCode - 20),
+            >= TcapRejectProblemCode.ErrorUnrecognizedInvokeId and <= TcapRejectProblemCode.MistypedErrorParameter => (3, (byte)ProblemCode - 30),
+            _ => throw new InvalidOperationException("Invalid TCAP Reject problem.")
+        };
+        AsnWriter writer = new(AsnEncodingRules.BER);
+        using (writer.PushSequence(TcapOutcomeEncoding.Tag(TcapComponentType.Reject)))
+        {
+            if (CorrelatedInvokeId is { } invokeId)
+            {
+                writer.WriteInteger(unchecked((sbyte)invokeId));
+            }
+            else
+            {
+                writer.WriteNull();
+            }
+
+            writer.WriteInteger(code, new Asn1Tag(TagClass.ContextSpecific, family));
+        }
+
+        return writer.Encode();
     }
 
-    /// <summary>Attempts to decode a Reject component.</summary>
-    /// <param name="data">The encoded bytes.</param>
-    /// <param name="component">The decoded component on success.</param>
-    /// <param name="error">An error message on failure.</param>
-    /// <returns>True if decoding succeeded; otherwise false.</returns>
+    /// <summary>Attempts to decode one complete Reject component.</summary>
+    /// <param name="data">The encoded component bytes.</param>
+    /// <param name="component">The decoded Reject on success.</param>
+    /// <param name="error">The decoding error, if any.</param>
+    /// <returns>True when decoding succeeds.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out TcapBerRejectComponent? component, out string? error)
     {
         component = null;
-        if (!TcapComponentContentReader.TryUnwrap(data, TcapComponentType.Reject, out TcapComponentContentReader reader, out error)
-            || !reader.TryReadInteger(out byte invokeId, out error)
-            || !reader.TryReadInteger(out byte problemCode, out error))
+        try
         {
+            AsnReader fields = TcapOutcomeEncoding.ReadFields(data, TcapComponentType.Reject);
+            byte? invokeId = null;
+            if (fields.PeekTag().HasSameClassAndValue(Asn1Tag.Null))
+            {
+                fields.ReadNull();
+            }
+            else
+            {
+                invokeId = TcapBerInvokeComponent.ReadInvokeId(fields);
+            }
+
+            Asn1Tag tag = fields.PeekTag();
+            if (tag.TagClass != TagClass.ContextSpecific || !fields.TryReadInt32(out int code, tag))
+            {
+                throw new AsnContentException("Expected a categorized TCAP Reject problem.");
+            }
+
+            var problem = (tag.TagValue, code) switch
+            {
+                (0, 0) => TcapRejectProblemCode.UnrecognizedComponent,
+                (0, 1) => TcapRejectProblemCode.MistypedComponent,
+                (0, 2) => TcapRejectProblemCode.BadlyStructuredComponent,
+                (1, 0) => TcapRejectProblemCode.DuplicateInvokeId,
+                (1, >= 1 and <= 7) => (TcapRejectProblemCode)(10 + code),
+                (2, >= 0 and <= 2) => (TcapRejectProblemCode)(20 + code),
+                (3, >= 0 and <= 4) => (TcapRejectProblemCode)(30 + code),
+                _ => throw new AsnContentException("Invalid TCAP Reject problem.")
+            };
+
+            fields.ThrowIfNotEmpty();
+            component = new(invokeId, problem);
+            error = null;
+            return true;
+        }
+        catch (AsnContentException exception)
+        {
+            error = exception.Message;
             return false;
         }
-
-        component = new(invokeId, (TcapRejectProblemCode)problemCode);
-        return true;
     }
 }
 
-internal sealed class TcapComponentContentWriter
+/// <summary>Reads the common envelope and local code range of TCAP outcome components.</summary>
+internal static class TcapOutcomeEncoding
 {
-    private readonly byte[] _content;
-    private int _offset;
+    internal static Asn1Tag Tag(TcapComponentType type) => new(TagClass.ContextSpecific, (byte)type, isConstructed: true);
 
-    public TcapComponentContentWriter()
+    internal static AsnReader ReadFields(ReadOnlySpan<byte> data, TcapComponentType type)
     {
-        _content = new byte[512];
-        _offset = 0;
+        AsnReader wrapper = new(data.ToArray(), AsnEncodingRules.BER);
+        AsnReader fields = wrapper.ReadSequence(Tag(type));
+        wrapper.ThrowIfNotEmpty();
+        return fields;
     }
 
-    public void WriteInteger(byte value)
+    internal static byte ReadLocalCode(AsnReader fields)
     {
-        Span<byte> encoded = stackalloc byte[1];
-        encoded[0] = value;
-        WriteElement(TcapComponentTags.Integer, encoded);
-    }
-
-    public void WriteElement(TcapBerTag tag, ReadOnlySpan<byte> value)
-    {
-        if (!TcapBer.TryWriteElement(_content.AsSpan(_offset), tag, value, out int written, out string? error))
+        if (!fields.TryReadInt32(out int value) || value is < 0 or > byte.MaxValue)
         {
-            throw new InvalidOperationException(error);
+            throw new AsnContentException("TCAP requires a supported local code.");
         }
 
-        _offset += written;
-    }
-
-    public byte[] Wrap(TcapBerTag tag)
-    {
-        byte[] result = new byte[_offset + 4];
-        if (!TcapBer.TryWriteElement(result, tag, _content.AsSpan(0, _offset), out int written, out string? error))
-        {
-            throw new InvalidOperationException(error);
-        }
-
-        Array.Resize(ref result, written);
-        return result;
-    }
-}
-
-internal sealed class TcapComponentContentReader
-{
-    private readonly ReadOnlyMemory<byte> _content;
-    private int _offset;
-
-    private TcapComponentContentReader(ReadOnlyMemory<byte> content)
-    {
-        _content = content;
-        _offset = 0;
-    }
-
-    public static bool TryUnwrap(
-        ReadOnlySpan<byte> data,
-        TcapComponentType componentType,
-        out TcapComponentContentReader reader,
-        out string? error)
-    {
-        reader = null!;
-        if (!TcapBer.TryReadElement(data, out TcapBerElement wrapper, out error))
-        {
-            return false;
-        }
-
-        if (wrapper.Tag.TagClass != TcapBerTagClass.ContextSpecific || wrapper.Tag.Number != (byte)componentType)
-        {
-            error = $"BER component is not {componentType}";
-            return false;
-        }
-
-        reader = new(wrapper.Value);
-        return true;
-    }
-
-    public bool PeekTag(TcapBerTag tag)
-    {
-        return _offset < _content.Length && _content.Span[_offset] == tag.Encode();
-    }
-
-    public bool TryReadInteger(out byte value, out string? error)
-    {
-        value = 0;
-        if (!TcapBer.TryReadElement(_content.Span[_offset..], out TcapBerElement element, out error))
-        {
-            return false;
-        }
-
-        if (element.Tag.Encode() != TcapComponentTags.Integer.Encode() || element.Value.Length != 1)
-        {
-            error = "TCAP integer field is malformed";
-            return false;
-        }
-
-        value = element.Value.Span[0];
-        _offset += element.TotalLength;
-        return true;
-    }
-
-    public bool TryReadElement(TcapBerTag tag, out ReadOnlyMemory<byte> value, out string? error)
-    {
-        value = default;
-        if (!TcapBer.TryReadElement(_content.Span[_offset..], out TcapBerElement element, out error))
-        {
-            return false;
-        }
-
-        if (element.Tag.Encode() != tag.Encode())
-        {
-            error = "TCAP component field tag did not match";
-            return false;
-        }
-
-        value = element.Value;
-        _offset += element.TotalLength;
-        return true;
+        return (byte)value;
     }
 }
