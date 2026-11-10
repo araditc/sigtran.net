@@ -379,10 +379,11 @@ Run("SIGTRAN native SCTP implementation status summarizes foundation", SigtranNa
 Run("Native SCTP transport options expose production policies", NativeSctpTransportOptionsExposeProductionPolicies);
 Run("Native SCTP connector records reconnect attempts", NativeSctpConnectorRecordsReconnectAttempts);
 Run("TCAP BER element encodes short and long lengths", TcapBerElementEncodesShortAndLongLengths);
-Run("TCAP transaction identifiers use BER context tags", TcapTransactionIdentifiersUseBerContextTags);
+Run("TCAP transaction identifiers use BER application tags", TcapTransactionIdentifiersUseBerApplicationTags);
 Run("TCAP BER Invoke component round-trips", TcapBerInvokeComponentRoundTrips);
 Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip);
 Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
+Run("TCAP transaction tags match independently encoded Q.773 bytes", TcapWireTests.TransactionTags);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
@@ -7566,7 +7567,7 @@ static void TcapBerElementEncodesShortAndLongLengths()
     AssertEqual(130, longElement.Value.Length, "BER long value length");
 }
 
-static void TcapTransactionIdentifiersUseBerContextTags()
+static void TcapTransactionIdentifiersUseBerApplicationTags()
 {
     TcapTransactionId transactionId = TcapTransactionId.FromUInt32(0x010203);
     AssertEqual(3, transactionId.Length, "TCAP transaction id length");
@@ -7576,9 +7577,9 @@ static void TcapTransactionIdentifiersUseBerContextTags()
     Assert(
         TcapBer.TryWriteElement(buffer, TcapTransactionTags.TransactionId(originating: true), transactionId.ToArray(), out int written, out string? error),
         error ?? "TCAP transaction id write failed");
-    AssertSequence([0x88, 0x03, 0x01, 0x02, 0x03], buffer.Slice(0, written), "TCAP originating transaction id TLV");
+    AssertSequence([0x48, 0x03, 0x01, 0x02, 0x03], buffer.Slice(0, written), "TCAP originating transaction id TLV");
     Assert(TcapBer.TryReadElement(buffer.Slice(0, written), out TcapBerElement element, out error), error ?? "TCAP transaction id read failed");
-    AssertEqual(TcapBerTagClass.ContextSpecific, element.Tag.TagClass, "TCAP transaction id tag class");
+    AssertEqual(TcapBerTagClass.Application, element.Tag.TagClass, "TCAP transaction id tag class");
     AssertEqual((byte)TcapTransactionTags.OriginatingTransactionId, element.Tag.Number, "TCAP transaction id tag number");
 
     TcapBerTag beginTag = TcapTransactionTags.Package(TcapPackageType.Begin);
@@ -7722,7 +7723,7 @@ static void TcapEvidenceVectorsValidateTransactionBytes()
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = TcapEvidenceVectors.GetVectors();
     AssertEqual(2, vectors.Count, "TCAP evidence vector count");
     Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.Tcap), "all TCAP vectors should use TCAP surface");
-    AssertEqual("6217880101AB0406022A03AC0CA10A0201020201010402AABB", vectors[0].ToHex(), "TCAP Begin evidence hex");
+    AssertEqual("62174801016B0406022A036C0CA10A0201020201010402AABB", vectors[0].ToHex(), "TCAP Begin evidence hex");
 
     IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = TcapEvidenceVectors.ValidateEncoders();
     AssertEqual(vectors.Count, reports.Count, "TCAP evidence report count");

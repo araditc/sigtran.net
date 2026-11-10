@@ -37,6 +37,10 @@ non-root PCAP on the SDK host. This does not close the endurance or external
 operator gates. See [Linux lab setup](docs/LINUX_LAB_SETUP.md) for the
 separate SDK, capture and peer-service permission boundaries.
 
+[Protocol wire conformance](docs/PROTOCOL_WIRE_CONFORMANCE.md) tracks the
+ITU profile corrections and independent byte vectors. Current TCAP
+transaction tags follow Q.773; rebuild the reference peer for new lab runs.
+
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
 ---

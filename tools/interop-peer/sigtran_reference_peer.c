@@ -339,10 +339,11 @@ static int parse_tcap_invoke(
             return -1;
         }
 
-        if (item.tag == 0x88U) {
+        /* Q.773 assigns transaction IDs and the component portion to the application class. */
+        if (item.tag == 0x48U) {
             result->originating_transaction_id = item.value;
             result->originating_transaction_id_length = item.value_length;
-        } else if (item.tag == 0xACU) {
+        } else if (item.tag == 0x6CU) {
             component = item.value;
             component_length = item.value_length;
         }
@@ -480,14 +481,14 @@ static int build_tcap_result(
             transaction_content,
             sizeof(transaction_content),
             &transaction_content_length,
-            0x89U,
+            0x49U,
             invoke->originating_transaction_id,
             invoke->originating_transaction_id_length) != 0
         || append_ber_tlv(
             transaction_content,
             sizeof(transaction_content),
             &transaction_content_length,
-            0xACU,
+            0x6CU,
             component,
             component_length) != 0) {
         return -1;

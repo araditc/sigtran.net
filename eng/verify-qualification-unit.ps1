@@ -1,9 +1,14 @@
-param([Parameter(Mandatory)][ValidateRange(1,10)][int]$Unit)
+param(
+    [Parameter(Mandatory)][ValidateRange(1,10)][int]$Unit,
+    [ValidateRange(56,65)][int]$Phase = 56
+)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 Push-Location $root
 try {
-    $output = "artifacts/qualification/units/$('{0:d2}' -f $Unit)"
+    # Keep the original baseline logs in place and separate later phase results.
+    $unitRoot = if ($Phase -eq 56) { 'units' } else { "phase-$Phase/units" }
+    $output = "artifacts/qualification/$unitRoot/$('{0:d2}' -f $Unit)"
     New-Item -ItemType Directory -Force $output | Out-Null
     # Every unit retains its own command output; a failed native process stops promotion.
     $commands = @(

@@ -58,12 +58,12 @@ public sealed class TcapTransactionMessage
 
         if (!DialoguePortion.IsEmpty)
         {
-            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.ContextSpecific, constructed: true, TcapTransactionTags.DialoguePortion), DialoguePortion.Span);
+            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.DialoguePortion), DialoguePortion.Span);
         }
 
         if (!ComponentPortion.IsEmpty)
         {
-            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.ContextSpecific, constructed: true, TcapTransactionTags.ComponentPortion), ComponentPortion.Span);
+            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.ComponentPortion), ComponentPortion.Span);
         }
 
         byte[] result = new byte[offset + 4];
@@ -108,19 +108,19 @@ public sealed class TcapTransactionMessage
                 return false;
             }
 
-            if (element.Tag.TagClass == TcapBerTagClass.ContextSpecific && element.Tag.Number == TcapTransactionTags.OriginatingTransactionId)
+            if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.OriginatingTransactionId)
             {
                 originating = new TcapTransactionId(element.Value.Span);
             }
-            else if (element.Tag.TagClass == TcapBerTagClass.ContextSpecific && element.Tag.Number == TcapTransactionTags.DestinationTransactionId)
+            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.DestinationTransactionId)
             {
                 destination = new TcapTransactionId(element.Value.Span);
             }
-            else if (element.Tag.TagClass == TcapBerTagClass.ContextSpecific && element.Tag.Number == TcapTransactionTags.DialoguePortion)
+            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.DialoguePortion)
             {
                 dialogue = element.Value;
             }
-            else if (element.Tag.TagClass == TcapBerTagClass.ContextSpecific && element.Tag.Number == TcapTransactionTags.ComponentPortion)
+            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.ComponentPortion)
             {
                 components = element.Value;
             }

@@ -94,16 +94,16 @@ public readonly struct TcapTransactionId
 /// </summary>
 public static class TcapTransactionTags
 {
-    /// <summary>Originating transaction ID context tag number.</summary>
+    /// <summary>Originating transaction ID application tag number.</summary>
     public const byte OriginatingTransactionId = 8;
 
-    /// <summary>Destination transaction ID context tag number.</summary>
+    /// <summary>Destination transaction ID application tag number.</summary>
     public const byte DestinationTransactionId = 9;
 
-    /// <summary>Component portion context tag number.</summary>
+    /// <summary>Component portion application tag number.</summary>
     public const byte ComponentPortion = 12;
 
-    /// <summary>Dialogue portion context tag number.</summary>
+    /// <summary>Dialogue portion application tag number.</summary>
     public const byte DialoguePortion = 11;
 
     /// <summary>Builds an application-class tag for a package type.</summary>
@@ -114,11 +114,11 @@ public static class TcapTransactionTags
         return new(TcapBerTagClass.Application, constructed: true, (byte)packageType);
     }
 
-    /// <summary>Builds a context-specific transaction id tag.</summary>
+    /// <summary>Builds the Q.773 application-class transaction ID tag.</summary>
     /// <param name="originating">True for originating transaction id; false for destination transaction id.</param>
     /// <returns>The BER tag.</returns>
     public static TcapBerTag TransactionId(bool originating)
     {
-        return new(TcapBerTagClass.ContextSpecific, constructed: false, originating ? OriginatingTransactionId : DestinationTransactionId);
+        return new(TcapBerTagClass.Application, constructed: false, originating ? OriginatingTransactionId : DestinationTransactionId);
     }
 }
