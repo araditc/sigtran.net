@@ -67,7 +67,7 @@ def sccp(data):
     return values
 
 
-def messages(table, port):
+def messages(table, port, endpoint=None):
     """Extract independently decoded M3UA messages, deduplicating identical SCTP retransmissions."""
     reader = csv.DictReader(io.StringIO(table), delimiter="\t")
     require(tuple(reader.fieldnames or ()) == FIELDS, "Unexpected capture field schema")
@@ -75,6 +75,8 @@ def messages(table, port):
     for row in reader:
         frame, src, dst = (int(row[key]) for key in FIELDS[:3])
         require((src == port) != (dst == port), "Unexpected SCTP endpoints")
+        if endpoint is not None and endpoint not in (src, dst):
+            continue
         vectors = [row[key].split(",") for key in FIELDS[3:]]
         require(len({len(value) for value in vectors}) == 1, "Bundled chunk fields do not align")
         for tsn, stream, ppid, value in zip(*vectors):
@@ -170,10 +172,35 @@ def verify_wire(wire, profile):
             pending.pop(tid)
             responses.append(index)
     require(case == 10 and responses == [1, 2, 3, 4, 5, 6, 7, 8, 10]
-            and len(pending) == 1 and next(iter(pending.values()))[0] == 9 and foreign == 1,
+            and len(pending) == 1 and next(iter(pending.values()))[0] == 9
+            and foreign == (0 if profile == "maintained" else 1),
             "The wire trace did not complete the declared negative matrix")
     return {"invokes": case, "correlatedTerminalResponses": len(responses), "intentionallyUnanswered": 1,
             "foreignContextResponses": foreign, "dataMessages": len(data), "positiveOperations": 5, "negativeCases": 5}
+
+
+def verify_transit(host, peer):
+    """Prove the external STP relayed the original bytes and translated the two AS contexts."""
+    active = [entry for entry in peer if not entry[1] and entry[3:5] == (4, 3)]
+    require(len(active) == 1 and active[0][5].get(6) == (200).to_bytes(4, "big"),
+            "External peer leg did not activate Routing Context 200")
+    payloads = [(entry[1], int.from_bytes(entry[5][6], "big"), entry[5][0x210])
+                for entry in peer if entry[3:5] == (1, 1) and entry[2] != 0]
+    requests = [pdu for sending, context, pdu in payloads if not sending and context == 200]
+    responses = [pdu for sending, context, pdu in payloads if sending and context == 200]
+    invalid = [pdu for sending, context, pdu in payloads if sending and context == 201]
+    require(len(payloads) == 20 and len(invalid) == 1, "External peer leg did not carry the declared foreign-context probe")
+    host_data = [entry for entry in host if entry[3:5] == (1, 1)]
+    require(requests == [entry[5][0x210] for entry in host_data if entry[1]]
+            and responses == [entry[5][0x210] for entry in host_data if not entry[1]],
+            "External STP did not preserve Protocol Data across both associations")
+    probe_frame = next(entry[0] for entry in peer if entry[1] and entry[3:5] == (1, 1)
+                       and entry[5].get(6) == (201).to_bytes(4, "big"))
+    errors = [entry for entry in peer if entry[0] > probe_frame and not entry[1]
+              and entry[3:5] == (0, 0) and entry[5].get(0x0C) == b"\0\0\0\x19"]
+    require(len(errors) == 1, "External STP did not reject the foreign Routing Context")
+    return {"stpForwardedInvokes": len(requests), "stpForwardedResponses": len(responses),
+            "stpRejectedForeignContext": 1, "stpApplicationServerContexts": [100, 200]}
 
 
 def verify_http(report, profile):
@@ -190,7 +217,7 @@ def verify(root, profile):
     def read(name):
         return (root / name).read_text(encoding="utf-8-sig").strip()
 
-    verify_http(json.loads(read("http-result.json")), profile)
+    verify_http(json.loads(read("http-result.json")), "reference" if profile == "maintained" else profile)
     counters = re.search(r"Packets received/dropped on interface .*?: ([1-9]\d*)/0\b", read("capture.log"))
     require(counters, "Capture counters are absent or report drops")
     sha = read("source-commit.txt")
@@ -200,25 +227,33 @@ def verify(root, profile):
     for field in FIELDS:
         command.extend(("-e", field))
     table = subprocess.run(command, capture_output=True, text=True, check=True, timeout=20).stdout
-    result = verify_wire(messages(table, 33060), profile)
+    host = messages(table, 33060, 33061 if profile == "maintained" else None)
+    result = verify_wire(host, profile)
+    files = ["traffic.pcap", "wire-m3ua.tsv", "http-result.json", "peer.log", "host.log", "capture.log"]
+    environment = {"kernel": read("kernel.txt"), "dotnetSdk": read("dotnet.txt"),
+                   "topology": "Reference host and independent C/lksctp peer in a private Linux loopback namespace"}
+    if profile == "maintained":
+        result.update(verify_transit(host, messages(table, 33060, 33062)))
+        files.extend(("stp.log", "stp.cfg", "stp-version.txt", "stp-binaries.sha256"))
+        environment["maintainedStp"] = read("stp-version.txt").splitlines()[0]
+        environment["topology"] = "Reference host and C/lksctp endpoint connected through an external STP over two native SCTP associations"
     (root / "wire-m3ua.tsv").write_text(table, encoding="utf-8")
     peer = read("peer.log")
     require("event=validation-failed" not in peer, "Independent peer rejected a request")
-    require(("event=complete " in peer and "operations=10 expected=10 passed=true" in peer) if profile == "reference"
+    require(("event=complete " in peer and "operations=10 expected=10 passed=true" in peer) if profile != "wrong-context"
             else "event=wrong-activation-context" in peer, "Missing peer completion")
     return {"result": "pass", "profile": profile, "sourceCommit": sha,
-            "environment": {"kernel": read("kernel.txt"), "dotnetSdk": read("dotnet.txt"),
-                            "topology": "Reference host and independent C/lksctp peer in a private Linux loopback namespace"},
+            "environment": environment,
             "observations": {"capturePackets": int(counters[1]), "captureDrops": 0, **result},
             "privateArtifactSha256": {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
-                                     for name in ("traffic.pcap", "wire-m3ua.tsv", "http-result.json", "peer.log", "host.log", "capture.log")},
-            "limitations": ["Repository-owned C peer, not an operator or vendor acceptance.",
+                                     for name in files},
+            "limitations": ["The MAP endpoint is a repository-owned C peer, not operator or vendor acceptance.",
                             "Synthetic loopback workload, not load, long-run or exact-candidate qualification."]}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("profile", choices=("reference", "wrong-context"))
+    parser.add_argument("profile", choices=("reference", "wrong-context", "maintained"))
     parser.add_argument("artifacts", type=Path)
     args = parser.parse_args()
     try:

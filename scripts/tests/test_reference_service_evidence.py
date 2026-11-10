@@ -86,6 +86,21 @@ class ReferenceEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "terminal outcomes"):
             wire.verify_http(report, "reference")
 
+    def test_external_stp_must_relay_the_same_payload_and_reject_foreign_context(self):
+        host = [row for row in conversation() if row[5].get(6) != (101).to_bytes(4, "big")]
+        self.assertEqual(wire.verify_wire(host, "maintained")["foreignContextResponses"], 0)
+        peer = [(2, False, 0, 4, 3, {6: (200).to_bytes(4, "big")})]
+        for frame, request, stream, kind, subtype, params in host[1:]:
+            peer.append((frame + 1, not request, stream, kind, subtype, {**params, 6: (200).to_bytes(4, "big")}))
+        peer.append((32, True, 1, 1, 1, parameters(10, False, 201, True)))
+        peer.append((33, False, 0, 0, 0, {0x0C: b"\0\0\0\x19"}))
+        self.assertEqual(wire.verify_transit(host, peer)["stpForwardedInvokes"], 10)
+        with self.assertRaisesRegex(ValueError, "did not reject"):
+            wire.verify_transit(host, peer[:-1])
+        peer[1][5][0x210] = b"changed"
+        with self.assertRaisesRegex(ValueError, "did not preserve"):
+            wire.verify_transit(host, peer)
+
 
 if __name__ == "__main__":
     unittest.main()

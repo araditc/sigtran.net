@@ -75,6 +75,8 @@ static volatile sig_atomic_t stop_requested = 0;
 static int quiet_traffic = 0;
 static int reference_profile = 0;
 static int wrong_activation_context = 0;
+static int asp_client = 0;
+static uint32_t reference_context = REFERENCE_CONTEXT;
 
 enum map_reply { REPLY_RESULT, REPLY_ERROR, REPLY_REJECT, REPLY_MALFORMED, REPLY_SILENCE };
 
@@ -765,6 +767,20 @@ static int send_reference_activation_ack(int socket_fd, const uint8_t *request, 
     return send_m3ua(socket_fd, response, sizeof(response), 0U);
 }
 
+/* The transit test waits for the real STP error before closing its SCTP leg. */
+static int is_invalid_context_error(const uint8_t *message, size_t length)
+{
+    for (size_t offset = 8U; offset + 4U <= length;) {
+        uint16_t size = read_u16_be(message + offset + 2U);
+        if (size < 4U || offset + size > length) return 0;
+        if (read_u16_be(message + offset) == 0x000CU && size == 8U) {
+            return read_u32_be(message + offset + 4U) == 0x19U;
+        }
+        offset += (size + 3U) & ~3U;
+    }
+    return 0;
+}
+
 static int send_map_reply(
     int socket_fd,
     const struct protocol_data_view *protocol_data,
@@ -822,7 +838,7 @@ static int handle_data(int socket_fd, const uint8_t *message, size_t message_len
 
     if (parse_m3ua_protocol_data(message, message_length, &protocol_data) != 0
         || protocol_data.service_indicator != 3U || stream_id == 0U
-        || (reference_profile && (!protocol_data.has_context || protocol_data.routing_context != REFERENCE_CONTEXT))
+        || (reference_profile && (!protocol_data.has_context || protocol_data.routing_context != reference_context))
         || parse_sccp_udt(protocol_data.payload, protocol_data.payload_length, &sccp) != 0
         || parse_tcap_invoke(sccp.user_data, sccp.user_data_length, &invoke) != 0
         || validate_map_parameters(&invoke) != 0) {
@@ -906,13 +922,20 @@ int main(int argc, char **argv)
     struct timeval receive_timeout;
     uint8_t message[BUFFER_SIZE];
     unsigned int operation_count = 0U;
+    int invalid_context_acknowledged = 0;
     char detail[128];
 
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
     quiet_traffic = argc > 4 && strcmp(argv[4], "quiet") == 0;
-    reference_profile = argc > 4 && strcmp(argv[4], "reference") == 0;
+    asp_client = argc > 4 && strcmp(argv[4], "reference-asp") == 0;
+    reference_profile = argc > 4 && (strcmp(argv[4], "reference") == 0 || asp_client);
+    reference_context = asp_client ? 200U : REFERENCE_CONTEXT;
     wrong_activation_context = argc > 4 && strcmp(argv[4], "wrong-context") == 0;
+    if ((reference_profile || wrong_activation_context) && strcmp(bind_ip, "127.0.0.1") != 0) {
+        fprintf(stderr, "The reference fault fixtures require an isolated IPv4 loopback endpoint.\n");
+        return 2;
+    }
     if (reference_profile) expected_operations = sizeof(reference_cases) / sizeof(reference_cases[0]);
     if (wrong_activation_context) expected_operations = 0U;
 
@@ -974,22 +997,35 @@ int main(int argc, char **argv)
 
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
-    address.sin_port = htons((uint16_t)bind_port);
+    address.sin_port = htons((uint16_t)(asp_client ? 33062 : bind_port));
     if (inet_pton(AF_INET, bind_ip, &address.sin_addr) != 1
         || bind(
             listener_fd,
             (struct sockaddr *)&address,
             sizeof(address)) != 0
-        || listen(listener_fd, 1) != 0) {
+        || (!asp_client && listen(listener_fd, 1) != 0)) {
         perror("bind/listen");
         close(listener_fd);
         return 1;
     }
 
     snprintf(detail, sizeof(detail), "endpoint=%s:%d", bind_ip, bind_port);
-    log_event("listening", detail);
-    connection_fd = accept(listener_fd, NULL, NULL);
-    close(listener_fd);
+    if (asp_client) {
+        address.sin_port = htons((uint16_t)bind_port);
+        if (connect(listener_fd, (struct sockaddr *)&address, sizeof(address)) != 0) {
+            perror("connect STP");
+            close(listener_fd);
+            return 1;
+        }
+        connection_fd = listener_fd;
+        const uint8_t asp_up[] = {1U, 0U, 3U, 1U, 0U, 0U, 0U, 8U};
+        if (send_m3ua(connection_fd, asp_up, sizeof(asp_up), 0U) != 0) return 1;
+        log_event("asp-client-connected", detail);
+    } else {
+        log_event("listening", detail);
+        connection_fd = accept(listener_fd, NULL, NULL);
+        close(listener_fd);
+    }
     if (connection_fd < 0) {
         perror("accept");
         return 1;
@@ -1078,7 +1114,14 @@ int main(int argc, char **argv)
             ntohl(receive_info.sinfo_ppid));
         log_event("m3ua-receive", detail);
 
-        if (message_class == M3UA_CLASS_ASPSM && message_type == 1U) {
+        if (asp_client && message_class == M3UA_CLASS_ASPSM && message_type == 4U) {
+            uint8_t active[] = {1U, 0U, 4U, 1U, 0U, 0U, 0U, 24U, 0U, 0x0BU, 0U, 8U, 0U, 0U, 0U, 2U,
+                0U, 6U, 0U, 8U, 0U, 0U, 0U, 0U};
+            write_u32_be(active + 20U, reference_context);
+            if (send_m3ua(connection_fd, active, sizeof(active), 0U) != 0) return 1;
+        } else if (asp_client && message_class == M3UA_CLASS_ASPTM && message_type == 3U) {
+            log_event("asp-client-active", "routingContext=200");
+        } else if (message_class == M3UA_CLASS_ASPSM && message_type == 1U) {
             if (send_ack(
                     connection_fd,
                     message,
@@ -1135,6 +1178,11 @@ int main(int argc, char **argv)
                 break;
             }
             log_event("asp-down-ack", detail);
+        } else if (asp_client && message_class == 0U && message_type == 0U
+            && is_invalid_context_error(message, (size_t)received)) {
+            invalid_context_acknowledged = 1;
+            log_event("stp-invalid-context-error", "code=25");
+            if (operation_count >= expected_operations) break;
         } else if (message_class == M3UA_CLASS_TRANSFER
             && message_type == M3UA_TYPE_DATA) {
             if (handle_data(
@@ -1146,25 +1194,23 @@ int main(int argc, char **argv)
                 close(connection_fd);
                 return 1;
             }
-            if (expected_operations > 0U
-                && operation_count >= expected_operations) {
+            if (expected_operations > 0U && operation_count >= expected_operations
+                && (!asp_client || invalid_context_acknowledged)) {
                 break;
             }
         }
     }
 
+    int passed = ((expected_operations == 0U && operation_count > 0U)
+        || operation_count == expected_operations) && (!asp_client || invalid_context_acknowledged);
     snprintf(
         detail,
         sizeof(detail),
         "operations=%u expected=%u passed=%s",
         operation_count,
         expected_operations,
-        (expected_operations == 0U && operation_count > 0U)
-            || operation_count == expected_operations
-                ? "true"
-                : "false");
+        passed ? "true" : "false");
     log_event("complete", detail);
     close(connection_fd);
-    return ((expected_operations == 0U && operation_count > 0U)
-        || operation_count == expected_operations) ? 0 : 1;
+    return passed ? 0 : 1;
 }

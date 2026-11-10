@@ -16,7 +16,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 6 | Explicit M3UA application-server routing context | Implemented |
 | 7 | Independent peer positive and negative scenario matrix | Implemented; C wire fixtures verified |
 | 8 | Real host traffic and independent PCAP/trace comparison | Implemented; Linux host matrix executed |
-| 9 | Separately maintained peer path | Pending |
+| 9 | Separately maintained peer path | Verified on Linux |
 | 10 | Reproducible evidence, limitations and phase decision | Pending |
 
 ## Service Configuration
@@ -138,3 +138,28 @@ contradictory observation prevents `report.json` from being published.
 The first strict peer run exposed DATA on SCTP stream zero. The SDK
 now sends DATA on ordered stream one and control on stream zero,
 with a regression test. Configure at least two SCTP streams.
+
+## Maintained STP Path
+
+Use an extracted Ubuntu/Debian amd64 OsmoSTP bundle with its runtime
+libraries. The runner does not install packages or change a system
+service. It starts the supplied executable only inside the private
+loopback namespace, using [the fixed lab configuration](../eng/interop/reference-stp.cfg).
+
+```bash
+SIGTRAN_MAINTAINED_STP_PREFIX=/absolute/path/to/extracted/root \
+  bash scripts/run-reference-service-lab.sh maintained
+```
+
+The SDK ASP and the independent C MAP endpoint each connect to the STP.
+They use Routing Context 100 and 200 respectively. The verifier compares
+the exact Protocol Data bytes across both SCTP legs, validates all
+positive and negative application outcomes, and requires a real
+M3UA Invalid Routing Context error for the attempted context 201.
+The C endpoint waits for that response before closing its association.
+The run captures the STP version, binary hashes, configuration and logs.
+See the [upstream STP manual](https://downloads.osmocom.org/docs/osmo-stp/1.2.1/osmostp-usermanual.pdf).
+
+The STP is separately maintained; the MAP endpoint is a repository-owned
+independent implementation. This is neither a maintained MAP server
+qualification nor operator acceptance.
