@@ -77,7 +77,8 @@ requires a matching AARE before components can complete invokes. Missing
 or mismatched responses fail closed; an explicit refusal uses Abort with
 rejected AARE per [Q.774](https://www.itu.int/rec/T-REC-Q.774/en).
 The MAP server checks the requested context against its operation profile
-and refuses mismatches. Bare TCAP dialogues remain available to callers
+and refuses mismatches. After acceptance, a context violation uses ABRT
+rather than a second AARE. Bare TCAP dialogues remain available to callers
 who omit the dialogue portion.
 
 ## Connectionless SCCP

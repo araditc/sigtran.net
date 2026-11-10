@@ -486,10 +486,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
 
         if (canAddressPeer)
         {
-            TcapTransactionMessage transaction = CreateTransaction(
-                context,
-                TcapPackageType.Abort,
-                componentPortion: default);
+            var transaction = new TcapTransactionMessage(TcapPackageType.Abort,
+                destinationTransactionId: context.RemoteTransactionId,
+                dialoguePortion: context.ApplicationContext is null ? default : TcapDialoguePortion.EncodeUserAbort());
             try
             {
                 await SendTransactionAsync(context, transaction, ct)
@@ -1028,13 +1027,11 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
         await context.ResponseGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (context.AssociationEstablished)
-            {
-                throw new InvalidOperationException("TCAP association response was already sent.");
-            }
-
-            byte[] refusal = TcapDialoguePortion.CreateResponse(applicationContext, false,
-                TcapDialogueDiagnosticSource.User, diagnostic: 2).Encode();
+            // After AARE, an invalid application operation uses ABRT, not a second AARE.
+            byte[] refusal = context.AssociationEstablished
+                ? TcapDialoguePortion.EncodeUserAbort()
+                : TcapDialoguePortion.CreateResponse(applicationContext, false,
+                    TcapDialogueDiagnosticSource.User, diagnostic: 2).Encode();
             var abort = new TcapTransactionMessage(TcapPackageType.Abort,
                 destinationTransactionId: context.RemoteTransactionId, dialoguePortion: refusal);
             try

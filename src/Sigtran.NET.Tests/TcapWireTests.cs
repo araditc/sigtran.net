@@ -164,7 +164,7 @@ internal static class TcapWireTests
         var request = new TcapBeginInvokeRequest(secondParty, firstParty, (TcapOperationCode)45, new byte[] { 0x30, 0 },
             new TcapDialoguePortion(context).Encode());
 
-        foreach (string scenario in new[] { "accept", "refuse", "missing", "wrong-context" })
+        foreach (string scenario in new[] { "accept", "refuse", "refuse-established", "missing", "wrong-context" })
         {
             TcapInvokeHandle outbound = await first.BeginInvokeAsync(request, ct);
             TcapDialogueEvent begin = await second.ReceiveAsync(ct);
@@ -174,8 +174,17 @@ internal static class TcapWireTests
             {
                 await second.SendResultAsync(inbound.Dialogue, inbound.InvokeId, inbound.OperationCode, default, true, ct);
             }
-            else if (scenario == "refuse")
+            else if (scenario is "refuse" or "refuse-established")
             {
+                if (scenario == "refuse-established")
+                {
+                    await second.ContinueAsync(inbound.Dialogue, new(new(TcapPackageType.Continue)), ct);
+                    TcapDialogueEvent continuation = await first.ReceiveAsync(ct);
+                    Require(continuation.Transaction.PackageType == TcapPackageType.Continue
+                        && TcapDialoguePortion.TryDecode(continuation.Transaction.DialoguePortion.Span, out var accepted, out _)
+                        && accepted?.Accepted == true, "Initial Continue did not accept the association");
+                }
+
                 await second.RefuseAssociationAsync(inbound.Dialogue, ct);
             }
             else
@@ -198,6 +207,14 @@ internal static class TcapWireTests
                 Require(responseEvent.Transaction.PackageType == (scenario == "accept" ? TcapPackageType.End : TcapPackageType.Abort)
                     && TcapDialoguePortion.TryDecode(responseEvent.Transaction.DialoguePortion.Span, out var aare, out _)
                     && aare?.Accepted == (scenario == "accept"), "Invalid association response APDU");
+            }
+            else if (scenario == "refuse-established")
+            {
+                TcapDialogueEvent abort = await first.ReceiveAsync(ct);
+                Require(abort.Transaction.PackageType == TcapPackageType.Abort
+                    && abort.Transaction.DialoguePortion.Span.SequenceEqual(
+                        Convert.FromHexString("2810060700118605010101A0056403800100")),
+                    "Established association must receive ABRT instead of a second AARE");
             }
         }
     }

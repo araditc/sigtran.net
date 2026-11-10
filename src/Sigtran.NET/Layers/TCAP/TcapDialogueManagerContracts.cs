@@ -427,8 +427,8 @@ public interface ITcapComponentDialogues : ITcapDialogues
         TcapDialogueHandle dialogue,
         CancellationToken ct = default);
 
-    /// <summary>Refuses the initial association because its application context is unsupported.</summary>
-    /// <param name="dialogue">The inbound dialogue awaiting association.</param>
+    /// <summary>Refuses an unsupported inbound application context, or aborts an established dialogue.</summary>
+    /// <param name="dialogue">The inbound dialogue.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>A value task that completes when the refusal is sent.</returns>
     ValueTask RefuseAssociationAsync(TcapDialogueHandle dialogue, CancellationToken ct = default)

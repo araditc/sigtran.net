@@ -236,7 +236,25 @@ public sealed class TcapDialoguePortion
             }
         }
 
-        byte[] encodedFields = fields.Encode();
+        return WrapExternal(fields.Encode());
+    }
+
+    /// <summary>Encodes a Q.773 ABRT issued by the dialogue service user.</summary>
+    internal static byte[] EncodeUserAbort()
+    {
+        AsnWriter fields = new(AsnEncodingRules.BER);
+        fields.WriteObjectIdentifier(StructuredDialogueOid);
+        using (fields.PushSequence(SingleAsn1))
+        using (fields.PushSequence(new Asn1Tag(TagClass.Application, 4, true)))
+        {
+            fields.WriteInteger(0, new Asn1Tag(TagClass.ContextSpecific, 0));
+        }
+
+        return WrapExternal(fields.Encode());
+    }
+
+    private static byte[] WrapExternal(byte[] encodedFields)
+    {
         byte[] external = new byte[encodedFields.Length + 4];
         if (!TcapBer.TryWriteElement(external, External, encodedFields, out int written, out string? error))
         {

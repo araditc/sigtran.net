@@ -45,7 +45,8 @@ BER length and dialogue OID limits are enforced before accepting wire data.
 TCAP Invoke carries a complete ASN.1 argument without an extra OCTET STRING wrapper.
 TCAP results use the optional result SEQUENCE; Reject encodes the problem family.
 Structured dialogue portions encode Q.773 AARQ and AARE inside EXTERNAL.
-The dialogue manager requires a matching AARE before accepting a structured result.
+The dialogue manager requires a matching AARE before accepting a structured
+result and uses ABRT for context violations after association.
 SCCP validates variable-part bounds and uses the Q.713 LUDT pointer/length format.
 The five MAP SMS operations encode TS 29.002 ASN.1 fields for the supported
 profile; SRI-SM validates and exposes the returned IMSI and network node.
