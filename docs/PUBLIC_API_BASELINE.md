@@ -57,6 +57,10 @@ see [migration notes](PROTOCOL_WIRE_CONFORMANCE.md#migration-and-exit).
 The per-unit verifier runs the same strict API comparison before packing for
 Phase 57 and later.
 
+The native SCTP additions include explicit multi-address connect/listen
+and typed kernel-notification snapshots. Their exact declarations are
+listed in the accepted additions; see [native SCTP multihoming](NATIVE_SCTP_MULTIHOMING.md).
+
 ## Comparison
 
 ```powershell

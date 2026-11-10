@@ -13,9 +13,9 @@ to another address is not proof of failover within the same association.
 | 5 | Kernel notification decoding | Implemented |
 | 6 | Lifecycle and path notification exposure | Implemented |
 | 7 | Receive record boundaries and cancellation | Implemented |
-| 8 | Bounded multistream traffic workload | Implemented |
+| 8 | Bounded multistream traffic workload | Verified on Linux |
 | 9 | Isolated dual-path Linux failure lab | Verified on Linux |
-| 10 | Evidence checks and qualification decision | Pending |
+| 10 | Evidence checks and qualification decision | Verified for the isolated Linux profile |
 
 ## Address Contract
 
@@ -83,7 +83,7 @@ server. No reconnect is enabled in this workload.
 ## Isolated Path-Loss Run
 
 On a Linux host with kernel SCTP, lksctp, .NET 10, iproute2, util-linux,
-dumpcap and TShark, run:
+dumpcap, TShark and Python 3.10 or later, run:
 
 ```bash
 SIGTRAN_ARTIFACT_ROOT="$HOME/sigtran-lab/artifacts" bash scripts/run-native-sctp-multihoming-lab.sh
@@ -99,7 +99,32 @@ the private client namespace; it does not use host interfaces, routes,
 firewall rules or other services.
 
 The unique run directory holds a PCAP, SDK traces, kernel and runtime
-versions, topology, the UTC cut timestamp, and a TShark DATA table.
-Before returning success the runner checks bidirectional DATA on the
-primary before the cut and on the alternate after it. A run in two
-namespaces on one host does not qualify separate-host or operator peers.
+versions, topology, the UTC cut timestamp, a TShark SCTP field table, and
+`report.json`. Success requires one INIT/COOKIE exchange, an unchanged
+verification tag in each direction, primary-path DATA before the cut and
+alternate-path DATA after it. All four streams and all three PPIDs must
+appear on the alternate in both directions. Each SDK trace must contain
+48 validated records, one COMM_UP, the original path's unreachable
+notification, and no reconnect. The request for sequence 16 must reach
+the server before the cut and its response reach the client after it.
+
+Recheck retained evidence directly from the PCAP and the SDK traces:
+
+```bash
+python3 scripts/verify-sctp-multihoming-evidence.py /path/to/sctp-multihoming.RUN
+```
+
+## Qualification Result
+
+The [retained report](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json)
+records a passing live run with 48 round trips, four streams, three PPIDs,
+zero capture drops, a single handshake and zero reconnects. Both kernel
+endpoints reported their original peer address unreachable. The raw PCAP,
+traces, capture log and topology are private; their SHA-256 digests are in
+the report.
+
+Phase 58 implementation and the declared isolated Linux test are complete.
+The test covers one primary-path cut, not failback, sustained load, IPv6,
+independent SCTP implementations or failure across physical hosts. It is
+not a release-candidate evidence bundle. The stable evaluator and defect
+ledger retain their independent evidence requirements.

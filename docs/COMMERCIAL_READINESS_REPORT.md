@@ -149,6 +149,12 @@ operator/vendor acceptance evidence is retained.
 
 ## Production Decision
 
+[Native SCTP multihoming](NATIVE_SCTP_MULTIHOMING.md) passed a bounded
+live cut in two private Linux network namespaces with one SCTP association,
+48 round trips, unchanged verification tags and no reconnect. This closes
+the isolated path-loss test, not the separate-host soak, operator-profile
+or exact-candidate gates.
+
 Do not publish this SDK as stable commercially production-ready yet.
 
 The SDK has enough retained evidence for public RC consumption and controlled

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
+export LC_ALL=C
 
 die() { printf '%s\n' "$*" >&2; exit 1; }
 
@@ -125,7 +126,7 @@ fi
 
 [[ $# -eq 0 ]] || die "Usage: bash scripts/run-native-sctp-multihoming-lab.sh"
 [[ $(uname -s) == Linux ]] || die "This lab requires Linux with kernel SCTP and lksctp"
-for tool in dotnet ip nsenter sysctl dumpcap tshark timeout unshare; do
+for tool in dotnet ip nsenter sysctl dumpcap tshark python3 timeout unshare; do
     command -v "$tool" >/dev/null || die "Missing required tool: $tool"
 done
 
@@ -152,16 +153,7 @@ timeout --kill-after=5s 75s unshare --user --map-root-user --net --mount \
     bash "$repo/scripts/run-native-sctp-multihoming-lab.sh" --isolated \
     "$root" "$root/app/Sigtran.NET.NativeSctpLab.dll" "$(readlink /proc/self/ns/net)"
 
-# Keep wire metadata separate from SDK traces so a reviewer can compare them.
-tshark -n -r "$root/traffic.pcap" -Y 'sctp.chunk_type == 0' -T fields -E header=y \
-    -e frame.time_epoch -e ip.src -e ip.dst -e sctp.verification_tag \
-    -e sctp.data_tsn -e sctp.data_sid -e sctp.data_payload_proto_id \
-    >"$root/wire-data.tsv" 2>"$root/tshark.log"
-awk -F '\t' -v cut="$(<"$root/cut-epoch.txt")" '
-    $1 < cut && $2 == "192.0.2.1" && $3 == "192.0.2.2" { pre_c++ }
-    $1 < cut && $2 == "192.0.2.2" && $3 == "192.0.2.1" { pre_s++ }
-    $1 > cut && $2 == "198.51.100.1" && $3 == "198.51.100.2" { post_c++ }
-    $1 > cut && $2 == "198.51.100.2" && $3 == "198.51.100.1" { post_s++ }
-    END { if (!(pre_c && pre_s && post_c && post_s)) exit 1 }
-' "$root/wire-data.tsv" || die "Did not capture bidirectional SCTP DATA on both sides of the cut"
-printf 'Captured bidirectional SCTP DATA before and after the primary path cut.\n'
+# Publish a report file only after both the raw capture and the SDK traces pass.
+python3 "$repo/scripts/verify-sctp-multihoming-evidence.py" "$root" >"$root/report.pending.json"
+mv "$root/report.pending.json" "$root/report.json"
+printf 'Verified SCTP path loss without reconnect: %s/report.json\n' "$root"

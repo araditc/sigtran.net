@@ -57,16 +57,13 @@ before upgrading a peer; external and exact-candidate qualification remain open.
 The original MAP parameter constants remain API-compatible; the operation
 codecs use separate TS 29.002 wire tags.
 
-[Native SCTP multihoming](docs/NATIVE_SCTP_MULTIHOMING.md) tracks the Linux
-address-set, kernel notification and path-failover qualification work.
-The multihoming bind primitive uses explicit Linux SCTP address lists.
-Native connectx submits the peer list as one cancellable association attempt.
-Use `ConnectMultiHomedAsync` and `StartMultiHomedAsync` for explicit Linux address sets.
-The kernel notification decoder distinguishes association, peer path and shutdown records.
-Native adapters expose a bounded snapshot of kernel notifications observed during reads.
-Native reads preserve SCTP message boundaries and reject oversized records without returning their tails.
-The multihoming lab checks four streams, mixed message sizes and receive cancellation on one association.
-Its Linux runner captures traffic before and after primary link loss in private network namespaces.
+[Native SCTP multihoming](docs/NATIVE_SCTP_MULTIHOMING.md) supports explicit
+Linux IPv4 address sets through `ConnectMultiHomedAsync` and
+`StartMultiHomedAsync`. Native reads preserve record boundaries, and adapters
+expose a bounded snapshot of kernel association and path notifications.
+The isolated Linux lab verified 48 round trips across four streams, including
+primary path loss during an outstanding reply, without reconnecting.
+This is single-kernel lab evidence, not separate-host or operator qualification.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

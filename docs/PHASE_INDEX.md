@@ -62,6 +62,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 55 | Stable release execution | [Phase 55 Stable Release Execution](PHASE55_STABLE_RELEASE_EXECUTION.md), [Phase 55 Summary](PHASE55_SUMMARY.md), [Public API Baseline](PUBLIC_API_BASELINE.md) | Assessment run 30088170594 complete with verified attestations; machine decision NO-GO and no stable publication |
 | 56 | Stable evidence closure | [Phase 56 Stable Evidence Closure](PHASE56_STABLE_EVIDENCE_CLOSURE.md) | Active; independent M2PA and numeric capacity gates closed; four required stable gates remain |
 | 57 | Protocol wire conformance | [Wire Conformance](PROTOCOL_WIRE_CONFORMANCE.md), [Historical Roadmap Execution](ROADMAP_EXECUTION.md) | Ten implementation units and bounded wire smoke verified; exact-candidate gate remains open |
+| 58 | Native SCTP multihoming and live path failover | [Native SCTP Multihoming](NATIVE_SCTP_MULTIHOMING.md), [Retained Evidence](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json) | Ten units complete; isolated Linux same-association path loss verified; separate-host and stable qualification remain open |
 
 ## Current Production Gate
 

@@ -45,6 +45,9 @@ jobs:
           bash -n scripts/run-end-to-end-ss7-lab.sh
           python3 scripts/tests/test_wire_profile.py
 
+      - name: Test SCTP multihoming evidence verification
+        run: python3 scripts/tests/test_sctp_multihoming_evidence.py
+
       - name: Test legacy flag promotion rejection
         shell: pwsh
         run: ./eng/test-qualification-gate.ps1

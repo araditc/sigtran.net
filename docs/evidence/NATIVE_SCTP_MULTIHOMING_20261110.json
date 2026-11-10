@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "evidenceKind": "isolated-linux-native-sctp-path-loss",
+  "sdkSourceCommit": "19559a797702b61c8f0f75582e75881a8b9e8293",
+  "cutEpochSeconds": "1794345133.253719575",
+  "environment": {
+    "kernel": "Linux 5.15.0-191-generic",
+    "dotnetSdk": "10.0.401",
+    "topology": "Two private network namespaces on one Linux kernel, two veth links, no default route"
+  },
+  "observations": {
+    "roundTrips": 48,
+    "inFlightSequence": 16,
+    "streams": 4,
+    "ppids": [
+      1397183488,
+      1397183489,
+      1397183490
+    ],
+    "associationAttempts": 1,
+    "reconnects": 0,
+    "capturePackets": 276,
+    "captureDrops": 0,
+    "primaryUnreachableObservedBy": [
+      "client",
+      "server"
+    ],
+    "inFlightReplyAfterCutMilliseconds": 237.868,
+    "sctpFrames": 276,
+    "associationHandshakes": 1,
+    "primaryDataChunks": {
+      "client": 40,
+      "server": 36
+    },
+    "alternateDataChunks": {
+      "client": 72,
+      "server": 71
+    },
+    "sameVerificationTagPerDirection": true
+  },
+  "privateArtifactSha256": {
+    "traffic.pcap": "0590908986521f3a4e0e3732eeb5f5b28acdd233ee5c9d080da7ee615d86a425",
+    "wire-sctp.tsv": "6cd4d1282b37e2dbaf436c29397b212bb3ca882a12ffed7f8bf0fdf91d0e33ce",
+    "client.jsonl": "98d4b92da7d02fd7db094289a29a12a3a8872a7402fcbf87b40de80d63fd6a98",
+    "server.jsonl": "ba5426ec7311ef6eb244205af1e18fa6fc3ad9d51bb14436a042c1f1538253f9",
+    "capture.log": "fbcbb9d939b0b47f45d729b75bada8b43da7a60305a6464c163b7052aa353d4d",
+    "cut-epoch.txt": "0db3d9e051fe1a1a2245feca0d07c1006aed0cbedf78ec8a5c73e67a643ad8eb",
+    "topology.log": "82e153e10186e31b4eb751989bbcd3cfe83c6a190c29c14ae13b73d08ebd5967"
+  },
+  "limitations": [
+    "Synthetic workload; not a latency SLA or capacity test.",
+    "No separate-host, operator peer or release-candidate qualification."
+  ]
+}
