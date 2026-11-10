@@ -72,6 +72,9 @@ The Linux labs verified SCCP UDTs with an independent C/lksctp peer and
 selective replay after native SCTP association loss between SDK endpoints.
 These are isolated endpoint tests, not operator or cross-host qualification.
 
+The [ITU MAP SMS reference service](docs/REFERENCE_SERVICE.md) builds on
+the OperationsHost with opt-in, validated settings and an explicit operation allowlist.
+
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
 ---

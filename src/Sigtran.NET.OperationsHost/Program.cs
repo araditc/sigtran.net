@@ -6,6 +6,7 @@ using System.Text.Json;
 using Sigtran.NET.Layers.M3UA;
 using Sigtran.NET.Layers.SCTP;
 using Sigtran.NET.Operations;
+using Sigtran.NET.OperationsHost;
 
 Dictionary<string, string?> environment = new(StringComparer.Ordinal);
 foreach (string key in RequiredConfigurationKeys.All)
@@ -27,6 +28,12 @@ if (!configurationResult.IsValid)
 }
 
 SigtranNodeConfiguration configuration = configurationResult.Configuration!;
+if (!ReferenceServiceOptions.TryParse(configuration, Environment.GetEnvironmentVariable, out _, out string? invalidReferenceKey))
+{
+    Console.Error.WriteLine($"configuration.invalid key={invalidReferenceKey}");
+    return 2;
+}
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton(CreateRuntime);
