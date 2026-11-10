@@ -16,7 +16,7 @@ checks do not establish operator or release-candidate acceptance.
 | 7 | Dialogue negotiation at runtime | Implemented |
 | 8 | Connectionless SCCP wire checks | Implemented |
 | 9 | MAP SMS ASN.1 profile and vectors | Implemented |
-| 10 | Integrated vectors, migration and exit report | Pending |
+| 10 | Integrated vectors, migration and exit report | Implemented and smoke verified |
 
 ## Transaction Tags
 
@@ -48,9 +48,8 @@ The [remote operations ASN.1](https://www.itu.int/ITU-T/formal-language/itu-t/x/
 uses implicit context tag `80` for a linked invoke ID. The byte-valued API
 retains the octet of a signed -128..127 invoke ID. Local operation codes in
 the supported byte range are encoded as non-negative INTEGERs. The optional
-argument is a single, complete ASN.1 value. The MAP repository-profile
-parameter set now supplies a SEQUENCE, with field-level mapping tracked
-separately in unit 9.
+argument is a single, complete ASN.1 value. The MAP operation models
+encode the corresponding SEQUENCE directly.
 
 ## Component Outcomes
 
@@ -76,9 +75,10 @@ The stateful dialogue manager sends one AARE on the first Continue or End
 of an inbound structured dialogue. An outbound dialogue that sent AARQ
 requires a matching AARE before components can complete invokes. Missing
 or mismatched responses fail closed; an explicit refusal uses Abort with
-rejected AARE per [Q.774](https://www.itu.int/rec/T-REC-Q.774/en). The MAP server checks the requested context against its operation
-profile and refuses mismatches. Bare TCAP dialogues remain available to
-callers who omit the dialogue portion.
+rejected AARE per [Q.774](https://www.itu.int/rec/T-REC-Q.774/en).
+The MAP server checks the requested context against its operation profile
+and refuses mismatches. Bare TCAP dialogues remain available to callers
+who omit the dialogue portion.
 
 ## Connectionless SCCP
 
@@ -108,3 +108,39 @@ additional delivery outcomes and extension negotiation are not implemented.
 Unmodeled fields are rejected rather than silently dropped. Direct
 `MapSmsAddress.Encode()` is a standalone SDK format; pass the address to an
 operation model for wire encoding. The default MAP nature is 1 (international).
+
+## Reproduce And Verify
+
+On a dedicated Linux lab host with .NET 10, GCC, lksctp, TShark, Python 3
+and [non-root dumpcap](LINUX_LAB_SETUP.md), use a free loopback SCTP port:
+
+```bash
+SIGTRAN_CAPTURE_BACKEND=dumpcap SIGTRAN_VERIFY_WIRE_PROFILE=true \
+  REMOTE_SCTP_PORT=32906 bash scripts/run-end-to-end-ss7-lab.sh
+```
+
+The independent dissector checks each M3UA DATA frame's SCCP, TCAP and MAP
+fields, correlates the five Begin/End pairs, checks AARQ/AARE, opcode, SRI-SM
+and delivery-outcome fields, and rejects missing or malformed frames. The
+test suite also rejects every truncated prefix of the retained vectors.
+Private outputs include PCAP, SDK trace, peer log, configuration, decoded
+comparison and a SHA-256 manifest. Keep these outputs in protected storage.
+
+The [sanitized 2026-11-10 observation](evidence/ITU_MAP_SMS_WIRE_SMOKE_20261110.json)
+retains 23 SCTP frames, 10 M3UA DATA frames, five accepted dialogue pairs
+and zero malformed DATA frames. It ran only on the dedicated SDK Linux VM.
+Neither the shared peer VM nor Kafka was used.
+
+## Migration And Exit
+
+Rebuild the peer before using this wire profile. Do not mix historical and
+new wire encoders in the same dialogue. Pass complete argument, result and
+error TLVs to TCAP; use an empty value to omit optional parameters. Recompile
+callers that use MAP tag constants or the old address default. Replace
+placeholder SRI-SM success payloads with a `MapSmsRoutingInfo` result.
+
+All ten Phase 57 implementation units have local build/test/pack logs in
+`artifacts/qualification/phase-57/units`. Phase 58 covers multi-address
+native SCTP and path failover. Phase 60 covers separately maintained peer
+or vendor interoperability. Stable release remains NO-GO: the historical
+defect ledger and exact-candidate evidence gate are not closed by this run.

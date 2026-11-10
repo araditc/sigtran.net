@@ -32,6 +32,11 @@ if (result.ErrorCode == MapSmsErrorCode.UnknownSubscriber)
 {
     // Apply the operator's subscriber-not-found policy.
 }
+
+if (result.RoutingInfo is { } routing)
+{
+    // Use the decoded IMSI and network-node ISDN address for the next step.
+}
 ```
 
 ## Operation Catalog
@@ -67,7 +72,8 @@ The assignments follow
 
 ## Parameter Set
 
-`MapSmsParameterSet` is the shared BER context-specific parameter container used by the operation models.
+`MapSmsParameterSet` is a generic SDK utility for a SEQUENCE of context-specific
+values. It is not used to encode the five standardized operation arguments.
 
 ```csharp
 MapSmsParameterSet parameters = new();
@@ -77,7 +83,7 @@ parameters.Add(tagNumber: 1, smRpOa);
 byte[] encoded = parameters.Encode();
 ```
 
-Operation-specific models build on this container so the public APIs can stay typed while still preserving deterministic BER payloads.
+Use the operation-specific models below to encode TS 29.002 arguments.
 
 ## Address Primitives
 
@@ -91,7 +97,10 @@ MapSmsAddress msisdn = new(
 byte[] encoded = msisdn.Encode();
 ```
 
-The address payload stores address kind, nature of address, numbering plan, and TBCD digits. Operation-specific models reuse this primitive instead of duplicating digit encoding rules.
+The standalone payload stores address kind, nature, numbering plan and TBCD
+digits. Operation codecs instead write an ASN.1 AddressString (one
+type/numbering-plan octet followed by TBCD) or IMSI (TBCD only). Use MAP
+nature value 1 for an international number, not the SCCP nature value 4.
 
 ## MO-ForwardSM
 
@@ -110,7 +119,8 @@ MapMoForwardShortMessage mo = new(
 byte[] parameters = mo.Encode();
 ```
 
-`MapSmsOperations.CreateMoForwardSm(smRpDa, smRpOa, userData)` is a compatibility helper that produces the same BER-shaped parameter payload.
+`MapSmsOperations.CreateMoForwardSm(smRpDa, smRpOa, userData)` produces the
+same ASN.1 argument: service-centre DA, MSISDN OA and SignalInfo.
 
 ## MT-ForwardSM
 
@@ -129,7 +139,8 @@ MapMtForwardShortMessage mt = new(
 byte[] parameters = mt.Encode();
 ```
 
-`MapSmsOperations.CreateMtForwardSm(smRpDa, smRpOa, userData)` produces the typed BER-shaped payload.
+`MapSmsOperations.CreateMtForwardSm(smRpDa, smRpOa, userData)` produces the
+same ASN.1 argument: IMSI DA, service-centre OA and SignalInfo.
 
 ## SendRoutingInfoForSM
 
@@ -143,6 +154,11 @@ MapSendRoutingInfoForShortMessage sri = new(
 
 byte[] parameters = sri.Encode();
 ```
+
+The priority BOOLEAN defaults to false; the four-argument constructor allows
+an explicit value. A successful result contains IMSI and network-node ISDN
+address; an empty or malformed result is not reported as success. A server
+handler can return `MapSmsOperationResponse.Result(new MapSmsRoutingInfo(imsi, node).Encode())`.
 
 ## ReportSM-DeliveryStatus
 

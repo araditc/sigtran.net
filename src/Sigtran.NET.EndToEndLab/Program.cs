@@ -149,17 +149,18 @@ static async Task RunAsync(
                 ct: ct)
             .AsTask(),
         trace).ConfigureAwait(false);
+    // Use complete synthetic SMS-SUBMIT and SMS-DELIVER TPDUs for independent dissection.
     await ExecuteAsync(
         "mo-ForwardSM",
         () => map.InvokeMoForwardShortMessageAsync(
-                new(serviceCentre, subscriber, new byte[] { 0x01, 0x02, 0x03 }),
+                new(serviceCentre, subscriber, Convert.FromHexString("01000B915155100000F100040141")),
                 ct: ct)
             .AsTask(),
         trace).ConfigureAwait(false);
     await ExecuteAsync(
         "mt-ForwardSM",
         () => map.InvokeMtForwardShortMessageAsync(
-                new(imsi, serviceCentre, new byte[] { 0x11, 0x22, 0x33 }),
+                new(imsi, serviceCentre, Convert.FromHexString("040B915155100000F10004621101210000000141")),
                 ct: ct)
             .AsTask(),
         trace).ConfigureAwait(false);
@@ -304,9 +305,9 @@ internal sealed record EndToEndLabOptions(
             byte.Parse(Get(values, "network-indicator", "2")),
             uint.Parse(Get(values, "asp-identifier", "1001")),
             Get(values, "peer-name", "independent-c-reference-peer"),
-            Get(values, "subscriber-msisdn", "989121234567"),
-            Get(values, "subscriber-imsi", "432109876543210"),
-            Get(values, "service-centre", "989120000000"),
+            Get(values, "subscriber-msisdn", "15550100001"),
+            Get(values, "subscriber-imsi", "001010000000001"),
+            Get(values, "service-centre", "15550100002"),
             Get(values, "trace", $"artifacts/{runId}/sdk-trace.jsonl"),
             Get(values, "summary", $"artifacts/{runId}/summary.json"),
             runId,

@@ -61,7 +61,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 54 | Production operations package | [Phase 54 Production Operations Package](PHASE54_PRODUCTION_OPERATIONS_PACKAGE.md), [Phase 54 Summary](PHASE54_SUMMARY.md), [Runtime Operations](OPERATIONS_RUNTIME.md) | Implementation complete; representative Kubernetes SCTP validation remains |
 | 55 | Stable release execution | [Phase 55 Stable Release Execution](PHASE55_STABLE_RELEASE_EXECUTION.md), [Phase 55 Summary](PHASE55_SUMMARY.md), [Public API Baseline](PUBLIC_API_BASELINE.md) | Assessment run 30088170594 complete with verified attestations; machine decision NO-GO and no stable publication |
 | 56 | Stable evidence closure | [Phase 56 Stable Evidence Closure](PHASE56_STABLE_EVIDENCE_CLOSURE.md) | Active; independent M2PA and numeric capacity gates closed; four required stable gates remain |
-| 57 | Approved roadmap execution and 1.0 scope lock | [Roadmap Execution](ROADMAP_EXECUTION.md) | Active; 57A baseline reconciliation and 57B operator profile framework |
+| 57 | Protocol wire conformance | [Wire Conformance](PROTOCOL_WIRE_CONFORMANCE.md), [Historical Roadmap Execution](ROADMAP_EXECUTION.md) | Ten implementation units and bounded wire smoke verified; exact-candidate gate remains open |
 
 ## Current Production Gate
 
@@ -69,7 +69,7 @@ The approved continuation is [phases 56-65](RELEASE_QUALIFICATION_ROADMAP.md).
 The ten-unit [Phase 56 baseline audit](PHASE56_QUALIFICATION_BASELINE.md)
 preserves the historical Phase 56 closure and admitted Phase 57/HA work.
 All ten tooling units are delivered; [the exit summary](PHASE56_BASELINE_SUMMARY.md)
-records incomplete two-host lab acceptance and the mandatory candidate gate.
+records the bounded two-host smoke and the mandatory candidate gate.
 
 The retained verification catalog reports native Linux SCTP, external SCTP peer
 traffic, independent M3UA, independent M2PA, repository-profile full-stack MAP

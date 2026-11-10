@@ -67,7 +67,9 @@ Historical phase text must be interpreted through the latest retained evidence. 
 
 ## Phase 57 — Approved Roadmap Execution And 1.0 Scope Lock
 
-Phase 57 is the active roadmap-execution phase. It does not renumber prior history.
+This historical checkpoint is preserved without renumbering. In the
+[approved qualification continuation](RELEASE_QUALIFICATION_ROADMAP.md),
+Phase 57 is [protocol wire conformance](PROTOCOL_WIRE_CONFORMANCE.md).
 
 ### 57A — Baseline Reconciliation
 

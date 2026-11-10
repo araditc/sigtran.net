@@ -10,6 +10,11 @@ two-host SCTP smoke test with non-root capture and scoped peer restart.
 The shared peer is not an endurance or operator test environment. See
 [the baseline exit decision](PHASE56_QUALIFICATION_BASELINE.md).
 
+The bounded ITU SCCP/TCAP/MAP SMS wire profile now has corrected codecs,
+positive/negative vectors and an independently dissected native SCTP smoke
+run. See [wire conformance](PROTOCOL_WIRE_CONFORMANCE.md). The run does not
+satisfy exact-candidate or operator qualification.
+
 The latest public prerelease is immutable `1.0.0-rc.2`. Current source development
 uses unpublished package identity `1.0.0-rc.3-dev`; it is not a published release
 candidate. Stable release manifest `eng/release/stable-release.json` and

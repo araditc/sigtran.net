@@ -1,0 +1,38 @@
+{
+  "observedAtUtc": "2026-11-10T20:32:04Z",
+  "runId": "itu-map-sms-wire-verified",
+  "evidenceKind": "bounded-native-sctp-wire-smoke",
+  "sdkAndPeerSourceCommit": "232c6455a47ee56e234a22d646b42cde66854a1b",
+  "scope": "Five synthetic MAP SMS operations over ITU SCCP, TCAP, M3UA and native Linux SCTP.",
+  "environment": {
+    "kernel": "5.15.0-191-generic",
+    "dotnetSdk": "10.0.401",
+    "independentDissector": "TShark 3.6.2",
+    "topology": "SDK and repository C reference peer on one Linux VM, loopback only",
+    "capture": "Non-root dumpcap",
+    "sharedKafkaHostUsed": false
+  },
+  "observations": {
+    "sdkOperationCount": 5,
+    "peerInvokeCount": 5,
+    "peerResultCount": 5,
+    "sctpFrames": 23,
+    "m3uaDataFrames": 10,
+    "matchedTransactionPairs": 5,
+    "aarq": 5,
+    "acceptedAare": 5,
+    "mapLocalOperationCodes": [44, 45, 46, 47, 64],
+    "relayTpdusDecoded": 2,
+    "malformedDataFrames": 0
+  },
+  "privateArtifactSha256": {
+    "pcap": "c0184f9f2bda9825f9003f98cc5fde0ff14314b03c3f2f269c5ff0d751f26b02",
+    "sdkTrace": "aec637976750851dd97d55834251f218e70b2bb6bec93dcb1d9d9ae6e4470e72",
+    "wireProfileReport": "3f46945310e192717525b93e7ee5930f9d38fa2a2556302df16fc83779f33f68"
+  },
+  "limitations": [
+    "The sample and dissection runner were the Phase 57 unit 10 versions.",
+    "No operator peer, multi-host failover, load or exact-candidate qualification was exercised.",
+    "The raw capture, logs and comparison files are private."
+  ]
+}

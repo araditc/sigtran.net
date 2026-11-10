@@ -49,6 +49,10 @@ The dialogue manager requires a matching AARE before accepting a structured resu
 SCCP validates variable-part bounds and uses the Q.713 LUDT pointer/length format.
 The five MAP SMS operations encode TS 29.002 ASN.1 fields for the supported
 profile; SRI-SM validates and exposes the returned IMSI and network node.
+[Phase 57 smoke evidence](docs/evidence/ITU_MAP_SMS_WIRE_SMOKE_20261110.json)
+records five accepted dialogue pairs independently decoded from a native
+SCTP capture. See the [migration notes](docs/PROTOCOL_WIRE_CONFORMANCE.md#migration-and-exit)
+before upgrading a peer; external and exact-candidate qualification remain open.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

@@ -135,7 +135,9 @@ service uses it automatically and emits only a complete logical indication.
 
 ## Long Unitdata
 
-`SccpLongUnitdataMessage` carries larger connectionless payloads with 16-bit pointer and length fields.
+`SccpLongUnitdataMessage` carries 1..3952 user-data octets. Q.713 LUDT uses
+little-endian 16-bit pointers relative to each pointer's second octet,
+one-octet address lengths and a little-endian 16-bit long-data length.
 
 ```csharp
 SccpLongUnitdataMessage ludt = new(

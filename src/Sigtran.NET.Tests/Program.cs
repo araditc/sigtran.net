@@ -409,6 +409,7 @@ Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMap
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
 Run("MAP SMS evidence vectors validate operation bytes", MapSmsEvidenceVectorsValidateOperationBytes);
 Run("MAP SMS ASN.1 validates supported argument and result fields", MapSmsWireTests.Fields);
+Run("Protocol vectors reject every truncated prefix", WireBoundaryTests.RejectTruncatedVectors);
 Run("MAP SMS readiness reports foundation status", MapSmsReadinessSnapshotsFoundationStatus);
 Run("MAP SMS operation profiles expose standardized codes and contexts", MapSmsOperationProfilesExposeStandardizedCodesAndContexts);
 Run("MAP SMS service correlates client and server workflows", MapSmsServiceCorrelatesClientAndServerWorkflows);

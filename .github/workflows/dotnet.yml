@@ -39,6 +39,12 @@ jobs:
       - name: Test capture backend and inventory
         run: python3 scripts/tests/test_capture_backend.py
 
+      - name: Test MAP SMS wire evidence verification
+        shell: bash
+        run: |
+          bash -n scripts/run-end-to-end-ss7-lab.sh
+          python3 scripts/tests/test_wire_profile.py
+
       - name: Test legacy flag promotion rejection
         shell: pwsh
         run: ./eng/test-qualification-gate.ps1

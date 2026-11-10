@@ -1,6 +1,6 @@
 # TCAP
 
-SIGTRAN.NET provides ASN.1 BER-shaped transaction, dialogue, and component
+SIGTRAN.NET provides ASN.1 BER transaction, structured dialogue, and component
 primitives together with a concurrent stateful dialogue manager.
 
 ## Dialogue Contract
@@ -61,11 +61,15 @@ TcapBer.TryWriteElement(
     out string? error);
 ```
 
-Transaction identifiers are limited to four octets so they remain compatible with common TCAP deployments and compact enough for deterministic logging.
+Transaction identifiers are opaque one- to four-octet values. Q.773 uses
+application tags `48`/`49` for IDs and `6B`/`6C` for the dialogue and
+component portions. The decoder validates the package-specific field set.
 
 ## Components
 
-`TcapBerInvokeComponent` encodes a TCAP Invoke component using BER component tags and nested integer/octet-string fields.
+`TcapBerInvokeComponent` encodes the invoke ID, optional implicit linked ID,
+local operation code and one complete ASN.1 argument. Callers pass a full
+argument TLV, not arbitrary payload bytes to be automatically wrapped.
 
 ```csharp
 TcapBerInvokeComponent invoke = new(
@@ -117,8 +121,8 @@ The envelope supports Begin, Continue, End, Abort, and Unidirectional package ta
 `TcapObjectIdentifier` and `TcapDialoguePortion` model the application context and optional user information carried by dialogue-capable TCAP packages.
 
 ```csharp
-TcapObjectIdentifier mapContext = new(0, 0, 17, 773, 1, 1, 1);
-TcapDialoguePortion dialogue = new(mapContext, userInformation);
+TcapObjectIdentifier mapContext = new(0, 4, 0, 0, 1, 0, 20, 3);
+TcapDialoguePortion dialogue = new(mapContext);
 
 TcapTransactionMessage begin = new(
     TcapPackageType.Begin,
@@ -127,7 +131,10 @@ TcapTransactionMessage begin = new(
     componentPortion: invoke.Encode());
 ```
 
-MAP-specific application contexts are introduced later, but the BER OID and user-information boundary is now explicit.
+The portion encodes AARQ or AARE inside EXTERNAL. Its direct-reference OID
+`0.0.17.773.1.1.1` identifies the dialogue abstract syntax, not the MAP
+application context. The dialogue manager requires a matching accepted AARE
+before completing an invoke on a structured dialogue.
 
 ## Dialogue State
 

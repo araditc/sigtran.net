@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_ID="${SIGTRAN_RUN_ID:-end-to-end-$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -13,6 +14,13 @@ LOCAL_POINT_CODE="${OPC:-1}"
 REMOTE_POINT_CODE="${DPC:-2}"
 NETWORK_INDICATOR="${NETWORK_INDICATOR:-2}"
 PEER_NAME="${PEER_NAME:-independent-c-reference-peer}"
+CAPTURE_BACKEND="${SIGTRAN_CAPTURE_BACKEND:-tcpdump}"
+VERIFY_WIRE_PROFILE="${SIGTRAN_VERIFY_WIRE_PROFILE:-false}"
+
+[[ "${RUN_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$ ]] || { echo "Invalid lab run ID." >&2; exit 2; }
+[[ "${REMOTE_SCTP_PORT}" =~ ^[1-9][0-9]{0,4}$ ]] && (( REMOTE_SCTP_PORT <= 65535 )) || {
+    echo "Invalid SCTP port." >&2; exit 2;
+}
 
 CONFIG_DIR="${ARTIFACT_ROOT}/config"
 PCAP_DIR="${ARTIFACT_ROOT}/pcap"
@@ -25,12 +33,13 @@ SUMMARY_FILE="${REPORT_DIR}/${RUN_ID}-summary.json"
 TRACE_FILE="${TRACE_DIR}/${RUN_ID}-sdk.jsonl"
 PEER_LOG="${LOG_DIR}/${RUN_ID}-peer.log"
 SDK_LOG="${LOG_DIR}/${RUN_ID}-sdk.log"
-CAPTURE_LOG="${LOG_DIR}/${RUN_ID}-tcpdump.log"
+CAPTURE_LOG="${LOG_DIR}/${RUN_ID}-${CAPTURE_BACKEND}.log"
 PCAP_FILE="${PCAP_DIR}/${RUN_ID}.pcap"
 TSHARK_FILE="${COMPARISON_DIR}/${RUN_ID}-tshark.tsv"
 COMPARISON_FILE="${COMPARISON_DIR}/${RUN_ID}-comparison.txt"
 REPORT_FILE="${REPORT_DIR}/${RUN_ID}-report.md"
 DIGEST_FILE="${REPORT_DIR}/${RUN_ID}-sha256.txt"
+WIRE_PROFILE_FILE="${REPORT_DIR}/${RUN_ID}-wire-profile.json"
 CONFIG_FILE="${CONFIG_DIR}/${RUN_ID}.env"
 PEER_BINARY="${BUILD_DIR}/sigtran-reference-peer"
 
@@ -50,19 +59,32 @@ require_command() {
     fi
 }
 
-for command_name in dotnet gcc sed tcpdump tshark sha256sum timeout; do
+for command_name in dotnet gcc sed tshark sha256sum timeout; do
     require_command "${command_name}"
 done
-
-if sudo -n true >/dev/null 2>&1; then
-    SUDO=(sudo -n)
-elif [[ -n "${SIGTRAN_SUDO_PASSWORD:-}" ]]; then
-    printf '%s\n' "${SIGTRAN_SUDO_PASSWORD}" | sudo -S -v >/dev/null
-    SUDO=(sudo)
-else
-    echo "Packet capture requires passwordless sudo or SIGTRAN_SUDO_PASSWORD." >&2
-    exit 2
+if [[ "${VERIFY_WIRE_PROFILE}" == true ]]; then
+    require_command python3
 fi
+
+case "${CAPTURE_BACKEND}" in
+    dumpcap)
+        require_command dumpcap
+        dumpcap -i lo -p -L >/dev/null
+        ;;
+    tcpdump)
+        require_command tcpdump
+        if sudo -n true >/dev/null 2>&1; then
+            SUDO=(sudo -n)
+        elif [[ -n "${SIGTRAN_SUDO_PASSWORD:-}" ]]; then
+            printf '%s\n' "${SIGTRAN_SUDO_PASSWORD}" | sudo -S -v >/dev/null
+            SUDO=(sudo)
+        else
+            echo "Configure dumpcap access or authorize tcpdump capture." >&2
+            exit 2
+        fi
+        ;;
+    *) echo "Unknown capture backend." >&2; exit 2 ;;
+esac
 
 cat > "${CONFIG_FILE}" <<EOF
 RUN_ID=${RUN_ID}
@@ -102,42 +124,58 @@ CAPTURE_PID=""
 CAPTURE_PID_FILE="${BUILD_DIR}/tcpdump.pid"
 PEER_PID=""
 
+stop_capture() {
+    if [[ -n "${CAPTURE_PID}" ]]; then
+        if [[ "${CAPTURE_BACKEND}" == dumpcap ]]; then
+            kill -INT "${CAPTURE_PID}" 2>/dev/null || true
+        else
+            "${SUDO[@]}" kill -INT "${CAPTURE_PID}" 2>/dev/null || true
+        fi
+    fi
+    if [[ -n "${CAPTURE_LAUNCH_PID}" ]]; then
+        wait "${CAPTURE_LAUNCH_PID}" 2>/dev/null || true
+    fi
+    CAPTURE_LAUNCH_PID=""
+    CAPTURE_PID=""
+}
+
 cleanup() {
     local exit_code=$?
     if [[ -n "${PEER_PID}" ]] && kill -0 "${PEER_PID}" 2>/dev/null; then
         kill "${PEER_PID}" 2>/dev/null || true
         wait "${PEER_PID}" 2>/dev/null || true
     fi
-    if [[ -n "${CAPTURE_PID}" ]] && kill -0 "${CAPTURE_PID}" 2>/dev/null; then
-        "${SUDO[@]}" kill -INT "${CAPTURE_PID}" 2>/dev/null || true
-    fi
-    if [[ -n "${CAPTURE_LAUNCH_PID}" ]]; then
-        wait "${CAPTURE_LAUNCH_PID}" 2>/dev/null || true
-    fi
+    stop_capture
     return "${exit_code}"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-"${SUDO[@]}" sh -c \
-    'echo "$$" > "$1"; shift; exec tcpdump "$@"' \
-    sh \
-    "${CAPTURE_PID_FILE}" \
-    -i lo \
-    --immediate-mode \
-    -U \
-    -w "${PCAP_FILE}" \
-    "sctp and (port ${LOCAL_SCTP_PORT} or port ${REMOTE_SCTP_PORT})" \
-    >"${CAPTURE_LOG}" 2>&1 &
-CAPTURE_LAUNCH_PID=$!
+capture_filter="sctp and port ${REMOTE_SCTP_PORT}"
+if [[ "${CAPTURE_BACKEND}" == dumpcap ]]; then
+    dumpcap -q -p -P -i lo -a duration:120 -a filesize:8192 -w "${PCAP_FILE}" \
+        -f "${capture_filter}" >"${CAPTURE_LOG}" 2>&1 &
+    CAPTURE_LAUNCH_PID=$!
+    CAPTURE_PID="${CAPTURE_LAUNCH_PID}"
+else
+    "${SUDO[@]}" sh -c 'echo "$$" > "$1"; shift; exec tcpdump "$@"' \
+        sh "${CAPTURE_PID_FILE}" -i lo --immediate-mode -U -w "${PCAP_FILE}" \
+        "${capture_filter}" >"${CAPTURE_LOG}" 2>&1 &
+    CAPTURE_LAUNCH_PID=$!
+fi
 for _ in {1..50}; do
-    if [[ -s "${CAPTURE_PID_FILE}" ]]; then
+    if [[ "${CAPTURE_BACKEND}" == tcpdump && -s "${CAPTURE_PID_FILE}" ]]; then
         CAPTURE_PID="$(cat "${CAPTURE_PID_FILE}")"
+    fi
+    if [[ -n "${CAPTURE_PID}" && -s "${PCAP_FILE}" ]]; then
         break
     fi
+    kill -0 "${CAPTURE_LAUNCH_PID}" 2>/dev/null || break
     sleep 0.1
 done
-if [[ -z "${CAPTURE_PID}" ]] || ! "${SUDO[@]}" kill -0 "${CAPTURE_PID}" 2>/dev/null; then
-    echo "tcpdump did not start successfully." >&2
+if [[ -z "${CAPTURE_PID}" || ! -s "${PCAP_FILE}" ]] || ! kill -0 "${CAPTURE_LAUNCH_PID}" 2>/dev/null; then
+    echo "Packet capture did not start successfully." >&2
     exit 2
 fi
 
@@ -145,6 +183,10 @@ timeout 60s "${PEER_BINARY}" "${REMOTE_IP}" "${REMOTE_SCTP_PORT}" \
     >"${PEER_LOG}" 2>&1 &
 PEER_PID=$!
 sleep 1
+if ! kill -0 "${PEER_PID}" 2>/dev/null; then
+    echo "The lab peer failed to start; see ${PEER_LOG}." >&2
+    exit 2
+fi
 
 set +e
 timeout 60s dotnet run \
@@ -171,12 +213,10 @@ set -e
 
 # Allow the capture process to drain packets already delivered by the kernel.
 sleep 1
-"${SUDO[@]}" kill -INT "${CAPTURE_PID}" 2>/dev/null || true
-wait "${CAPTURE_LAUNCH_PID}" 2>/dev/null || true
-CAPTURE_LAUNCH_PID=""
-CAPTURE_PID=""
-"${SUDO[@]}" chown "$(id -u):$(id -g)" "${PCAP_FILE}" "${CAPTURE_LOG}" \
-    2>/dev/null || true
+stop_capture
+if [[ "${CAPTURE_BACKEND}" == tcpdump ]]; then
+    "${SUDO[@]}" chown "$(id -u):$(id -g)" "${PCAP_FILE}" "${CAPTURE_LOG}" 2>/dev/null || true
+fi
 
 tshark \
     -r "${PCAP_FILE}" \
@@ -221,6 +261,10 @@ if [[ "${SDK_EXIT}" -eq 0 \
     && "${PEER_RESULT_COUNT}" -eq 5 \
     && "${M3UA_DATA_COUNT}" -ge 10 ]]; then
     PASSED=true
+fi
+if [[ "${PASSED}" == true && "${VERIFY_WIRE_PROFILE}" == true ]]; then
+    python3 "${REPOSITORY_ROOT}/scripts/verify-wire-profile.py" "${PCAP_FILE}" "${REMOTE_SCTP_PORT}" \
+        >"${WIRE_PROFILE_FILE}" || PASSED=false
 fi
 
 cat > "${COMPARISON_FILE}" <<EOF
@@ -279,7 +323,7 @@ This run is cross-implementation evidence for the repository profile. Vendor or
 operator peer validation remains a separate promotion requirement.
 EOF
 
-sha256sum \
+digest_inputs=(
     "${CONFIG_FILE}" \
     "${PCAP_FILE}" \
     "${PEER_LOG}" \
@@ -288,8 +332,12 @@ sha256sum \
     "${SUMMARY_FILE}" \
     "${TSHARK_FILE}" \
     "${COMPARISON_FILE}" \
-    "${REPORT_FILE}" \
-    >"${DIGEST_FILE}"
+    "${REPORT_FILE}"
+)
+if [[ -s "${WIRE_PROFILE_FILE}" ]]; then
+    digest_inputs+=("${WIRE_PROFILE_FILE}")
+fi
+sha256sum "${digest_inputs[@]}" >"${DIGEST_FILE}"
 
 echo "runId=${RUN_ID}"
 echo "artifactRoot=${ARTIFACT_ROOT}"
