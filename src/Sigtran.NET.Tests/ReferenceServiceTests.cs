@@ -57,7 +57,7 @@ internal static partial class ReferenceServiceTests
             _ => null
         }, out var options, out _), "Valid local HTTP policy");
         await using ReferenceMapStack stack = new(new SccpLoopbackMtp3Network(), node, options!);
-        ReferenceOperationExecutor executor = new(stack.Map, options!);
+        using ReferenceOperationExecutor executor = new(stack.Map, options!);
 
         async Task Check(int expected, IPAddress ip, string? suppliedToken, string body, bool ready = true, string operation = "sri-sm")
         {
@@ -130,7 +130,7 @@ internal static partial class ReferenceServiceTests
         Task worker = server.RunAsync(serving.Token);
         try
         {
-            ReferenceOperationExecutor executor = new(stack.Map, options!);
+            using ReferenceOperationExecutor executor = new(stack.Map, options!);
             ReferenceSmsRequest sri = new("15550100001", "15550100003", GprsSupport: true);
             Require((await executor.ExecuteAsync("alert-service-centre", sri, deadline.Token)).Outcome == "OperationNotAllowed",
                 "Disallowed operation must not dispatch");
@@ -140,11 +140,19 @@ internal static partial class ReferenceServiceTests
             Task<ReferenceSmsResult> first = executor.ExecuteAsync("sri-sm", sri, deadline.Token).AsTask();
             await entered.Task.WaitAsync(deadline.Token);
             Require((await executor.ExecuteAsync("sri-sm", sri, deadline.Token)).Outcome == "Busy", "No queued work above the admission bound");
+            Task drain = executor.CloseAdmission();
+            Require(!drain.IsCompleted && !executor.IsAccepting
+                && (await executor.ExecuteAsync("sri-sm", sri, deadline.Token)).Outcome == "Unavailable",
+                "Drain must close admission before waiting for active work");
             release.TrySetResult();
             ReferenceSmsResult result = await first.WaitAsync(deadline.Token);
+            await drain.WaitAsync(deadline.Token);
+            Require(executor.Snapshot() == new ReferenceAdmissionSnapshot(0, 1, 1, 1),
+                "Every admitted operation reaches a terminal accounting state");
             Require(result.Outcome == "Result" && result.Imsi == "001010000000001" && result.NetworkNodeNumber == "15550100002",
                 "Return only the decoded SRI-SM result");
-            result = await executor.ExecuteAsync("mt-forward-sm", new(ServiceCentre: "15550100003",
+            using ReferenceOperationExecutor next = new(stack.Map, options!);
+            result = await next.ExecuteAsync("mt-forward-sm", new(ServiceCentre: "15550100003",
                 Imsi: "001010000000001", TpduHex: "0401"), deadline.Token);
             Require(result.Outcome == "Error" && result.ErrorCode == (byte)MapSmsErrorCode.AbsentSubscriberForShortMessage,
                 "A peer MAP error is not presented as success");

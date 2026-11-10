@@ -21,7 +21,8 @@ internal static class ReferenceSmsEndpoint
     {
         app.MapPost("/v1/map-sms/{operation}", (HttpContext context, string operation, ReferenceOperationExecutor executor,
             ReferenceServiceOptions options, ReferenceMapStack stack, M3uaRuntime runtime) =>
-            HandleAsync(context, operation, executor, options, () => stack.IsRunning && runtime.State == M3uaRuntimeState.Active));
+            HandleAsync(context, operation, executor, options,
+                () => stack.IsRunning && executor.IsAccepting && runtime.State == M3uaRuntimeState.Active));
     }
 
     /// <summary>Authenticates the real socket peer and bounds the body before dispatching a typed operation.</summary>

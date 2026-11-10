@@ -99,8 +99,6 @@ internal static class ReferenceMapOperations
 /// <summary>Applies the allowlist, non-queuing admission bound and timeout to typed MAP work.</summary>
 internal sealed partial class ReferenceOperationExecutor(IMapSmsService map, ReferenceServiceOptions options)
 {
-    private readonly SemaphoreSlim _slots = new(options.MaxInFlight, options.MaxInFlight);
-
     internal async ValueTask<ReferenceSmsResult> ExecuteAsync(string operationName, ReferenceSmsRequest request, CancellationToken ct)
     {
         if (!ReferenceServiceOptions.TryGetOperation(operationName, out MapSmsOperationCode operation)
@@ -116,12 +114,12 @@ internal sealed partial class ReferenceOperationExecutor(IMapSmsService map, Ref
         }
 
         ct.ThrowIfCancellationRequested();
-        if (!_slots.Wait(0))
+        if (TryAdmit(out CancellationToken stop) is { } rejection)
         {
-            return new("Busy");
+            return new(rejection);
         }
 
-        using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(ct, stop);
         // The TCAP timer owns the normal timeout; also bound queue admission and transport waiting.
         deadline.CancelAfter(options.Timeout + TimeSpan.FromMilliseconds(250));
         try
@@ -132,11 +130,11 @@ internal sealed partial class ReferenceOperationExecutor(IMapSmsService map, Ref
         }
         catch (OperationCanceledException) when (deadline.IsCancellationRequested && !ct.IsCancellationRequested)
         {
-            return new("TimedOut");
+            return new(stop.IsCancellationRequested ? "Stopped" : "TimedOut");
         }
         finally
         {
-            _slots.Release();
+            Complete();
         }
     }
 }

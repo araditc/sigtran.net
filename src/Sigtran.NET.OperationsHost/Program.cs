@@ -50,20 +50,39 @@ if (referenceOptions is not null)
 builder.Services.AddSingleton<ISigtranEventSink>(
     _ => new JsonLineSigtranEventSink(Console.Out, leaveOpen: true));
 builder.Services.AddSingleton<M3uaRuntimeObserver>();
-builder.Services.AddSingleton(
-    services => new SigtranHealthService(
+builder.Services.AddSingleton(services =>
+{
+    List<ISigtranHealthProbe> probes =
     [
         new M3uaRuntimeHealthProbe(
             services.GetRequiredService<M3uaRuntime>(),
             configuration.QueueCapacity,
             configuration.QueueCapacity)
-    ]));
+    ];
+    if (services.GetService<ReferenceMapStack>() is { } stack
+        && services.GetService<ReferenceOperationExecutor>() is { } operations)
+    {
+        probes.Add(new DelegateSigtranHealthProbe("map-sms", ct =>
+        {
+            ct.ThrowIfCancellationRequested();
+            bool ready = stack.IsRunning && operations.IsAccepting;
+            return ValueTask.FromResult(new SigtranHealthProbeResult("map-sms",
+                ready ? SigtranHealthStatus.Healthy : SigtranHealthStatus.Unhealthy,
+                ready ? "MAP SMS stack is accepting work." : "MAP SMS stack is starting, stopped or draining.",
+                DateTimeOffset.UtcNow));
+        }));
+    }
+
+    return new SigtranHealthService(probes);
+});
 builder.Services.AddHostedService<SigtranRuntimeService>();
 
 WebApplication app = builder.Build();
 if (referenceOptions is not null)
 {
     ReferenceSmsEndpoint.Map(app);
+    ReferenceOperationExecutor operations = app.Services.GetRequiredService<ReferenceOperationExecutor>();
+    app.Lifetime.ApplicationStopping.Register(() => { _ = operations.CloseAdmission(); });
 }
 
 app.MapGet(
@@ -96,8 +115,9 @@ app.MapGet(
     });
 app.MapGet(
     "/metrics",
-    (M3uaRuntime runtime) => Results.Text(
-        MetricsText.Format(runtime.GetMetrics()),
+    (M3uaRuntime runtime, IServiceProvider services) => Results.Text(
+        MetricsText.Format(runtime.GetMetrics(), services.GetService<ReferenceOperationExecutor>()?.Snapshot(),
+            services.GetService<ReferenceMapStack>()),
         "text/plain; version=0.0.4",
         Encoding.UTF8));
 
@@ -186,6 +206,7 @@ internal sealed class SigtranRuntimeService : BackgroundService
     private readonly M3uaRuntime _runtime;
     private readonly M3uaRuntimeObserver _observer;
     private readonly ReferenceMapStack? _reference;
+    private readonly ReferenceOperationExecutor? _operations;
 
     public SigtranRuntimeService(
         M3uaRuntime runtime,
@@ -195,6 +216,7 @@ internal sealed class SigtranRuntimeService : BackgroundService
         _runtime = runtime;
         _observer = observer;
         _reference = services.GetService<ReferenceMapStack>();
+        _operations = services.GetService<ReferenceOperationExecutor>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -213,6 +235,11 @@ internal sealed class SigtranRuntimeService : BackgroundService
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (_operations is not null)
+            {
+                await _operations.DrainAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             if (_reference is not null)
             {
                 await _reference.StopAsync(cancellationToken).ConfigureAwait(false);
@@ -220,15 +247,15 @@ internal sealed class SigtranRuntimeService : BackgroundService
         }
         finally
         {
-            await _runtime.StopAsync(cancellationToken).ConfigureAwait(false);
-            _observer.Dispose();
+            try { await _runtime.StopAsync(cancellationToken).ConfigureAwait(false); }
+            finally { _observer.Dispose(); }
         }
     }
 }
 
 internal static class MetricsText
 {
-    internal static string Format(M3uaRuntimeMetrics metrics)
+    internal static string Format(M3uaRuntimeMetrics metrics, ReferenceAdmissionSnapshot? operations = null, ReferenceMapStack? stack = null)
     {
         StringBuilder text = new();
         AppendGauge(
@@ -266,6 +293,20 @@ internal static class MetricsText
             "sigtran_m3ua_faults_total",
             "M3UA runtime faults.",
             metrics.Faults);
+        if (operations is { } value)
+        {
+            AppendGauge(text, "sigtran_map_sms_in_flight", "Currently admitted MAP SMS operations.", value.InFlight);
+            AppendCounter(text, "sigtran_map_sms_accepted_total", "Admitted MAP SMS operations.", value.Accepted);
+            AppendCounter(text, "sigtran_map_sms_terminal_total", "Terminal MAP SMS operations.", value.Terminal);
+            AppendCounter(text, "sigtran_map_sms_busy_total", "MAP SMS operations rejected by the admission bound.", value.Busy);
+        }
+
+        if (stack is not null)
+        {
+            AppendCounter(text, "sigtran_map_sms_unsolicited_invokes_total", "Unsolicited inbound invokes refused.", stack.UnsolicitedInvokes);
+            AppendCounter(text, "sigtran_map_sms_sccp_returns_total", "SCCP service returns observed.", stack.SccpReturns);
+        }
+
         return text.ToString();
     }
 

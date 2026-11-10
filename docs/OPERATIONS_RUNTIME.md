@@ -97,9 +97,10 @@ accept defaults for topology-sensitive values.
 - serves `/health/live`, `/health/ready`, and `/metrics`;
 - performs graceful M3UA and SCTP shutdown.
 
-The host is intentionally an M3UA/MTP3 boundary. Product-specific SCCP, TCAP,
-and MAP request handling belongs in the adopter service and can use the same
-health, event, and telemetry contracts.
+The default host is an M3UA/MTP3 boundary. The opt-in
+[MAP SMS reference service](REFERENCE_SERVICE.md) composes SCCP, TCAP and MAP,
+adds an authenticated loopback entry point, and drains admitted operations
+before stopping the upper readers and transport.
 
 Run the Linux host smoke test with:
 

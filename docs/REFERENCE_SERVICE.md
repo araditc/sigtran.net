@@ -12,7 +12,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 2 | Single SCTP/M3UA/SCCP/TCAP/MAP composition | Implemented |
 | 3 | Bounded typed MAP operation execution | Implemented |
 | 4 | Loopback-only authenticated service entry point | Implemented |
-| 5 | Readiness, metrics and shutdown drain | Pending |
+| 5 | Readiness, metrics and shutdown drain | Implemented |
 | 6 | Explicit M3UA application-server routing context | Pending |
 | 7 | Independent peer positive and negative scenario matrix | Pending |
 | 8 | Real host traffic and independent PCAP/trace comparison | Pending |
@@ -77,3 +77,17 @@ The local API returns 200 for Result, 422 for MAP Error, 502 for
 Reject/malformed result/early dialogue closure, and 504 for timeout.
 Invalid requests return 400, disabled operations 403, busy 429,
 and a non-ready stack 503. The API does not retry an operation.
+
+## Health And Shutdown
+
+`/health/live` only describes the HTTP process. Reference-mode
+`/health/ready` requires active M3UA and live SCCP/TCAP readers and
+an open admission gate. `/metrics` adds in-flight, accepted,
+terminal, busy, unsolicited-invoke and SCCP return counts. Counters
+do not include subscriber data; terminal does not mean successful.
+
+On process shutdown the gate closes immediately. Admitted work can
+complete before the upper layers stop. The drain waits up to ten
+seconds within the host shutdown budget, cancels remaining work
+and allows up to two more seconds for cleanup. The host does not
+retry work that times out or gets canceled.
