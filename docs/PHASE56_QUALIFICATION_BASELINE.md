@@ -1,9 +1,8 @@
 # Phase 56 - Qualification Baseline
 
-Status: all ten implementation units delivered; lab acceptance is blocked by
-the second independent Linux host. Non-root capture on the existing VM has
-subsequently been configured and verified; fault-control authorization is separate.
-Stable decision remains NO-GO. This phase is not externally accepted yet.
+Status: all ten implementation units delivered; two distinct Linux guests
+have passed baseline inventory and a bounded native SCTP smoke test. This
+does not establish external acceptance. Stable decision remains NO-GO.
 
 | Unit | Deliverable | Status |
 | --- | --- | --- |
@@ -16,7 +15,7 @@ Stable decision remains NO-GO. This phase is not externally accepted yet.
 | 7 | Fail-closed release gate evaluation | Complete |
 | 8 | Provenance, freshness and source/package binding | Complete |
 | 9 | CI and stable workflow integration | Complete |
-| 10 | Rehearsal, retained inventory and final report | Implementation complete; two-host lab acceptance blocked |
+| 10 | Rehearsal, retained inventory and final report | Baseline and two-VM smoke verified; full qualification open |
 
 Repository tooling lives in `eng/Sigtran.NET.Qualification`, outside the SDK
 assembly. Run `dotnet run --project eng/Sigtran.NET.Qualification -- scope
@@ -39,9 +38,11 @@ protected evidence storage, never in the public repository.
 Unit 4 adds `scripts/collect-host-inventory.py` (read-only, no installation).
 Run it on each host, retain JSON privately, then run `qualification inventory
 <topology.json> <sdk-inventory.json> <peer-inventory.json>`. The validator
-requires fresh inventories, distinct machine hashes, Linux kernel SCTP,
-lksctp, .NET 10, capture privileges and all named tools. Private inventory is
-not automatically an authenticated external qualification result.
+requires fresh inventories, distinct machine hashes and Linux kernel SCTP.
+The SDK role additionally requires lksctp, .NET 10, capture privileges and
+the SDK tools. A prebuilt reference peer needs endpoint inventory tooling
+without the SDK toolchain. Private inventory is not automatically an
+authenticated external qualification result.
 
 Unit 5 reuses `run-multi-host-qualification.sh`; no competing traffic runner
 is introduced. `qualification plan <topology> <sdk-inventory> <peer-inventory>
@@ -86,14 +87,14 @@ The read-only collector ran successfully on the previously authorized Linux VM
 on 2026-11-04. Kernel SCTP, lksctp, .NET 10 and the required binaries were
 observed. Non-root dumpcap capture is now configured and verified with generated
 SCTP traffic. Passwordless sudo remains unavailable and is not required for
-capture; fault-control permissions are handled separately. Only one independent Linux
-machine inventory is currently retained in protected local artifacts.
+capture; fault-control permissions are handled separately. The historical
+audit retained only one independent Linux machine inventory.
 
-The baseline audit intentionally reports `toolingValid=true`, `labReady=false`
-and `stableDecision=NO-GO`. A second reachable Linux host, fresh distinct
-machine inventories and scenario-specific fault-control authorization are
-needed before declaring the two-host laboratory ready. The capture proof is
-a loopback permission test, not multi-host traffic or external acceptance.
+On 2026-11-10 the fresh SDK and peer inventories passed topology validation.
+The baseline audit reports `toolingValid=true`, `labReady=true` and
+`stableDecision=NO-GO`. A separate [native SCTP smoke test](evidence/SEPARATE_HOST_LAB_SMOKE_20261110.json)
+passed on both sides of a scoped peer-service restart. No in-flight fault,
+endurance, external operator or exact-candidate qualification was exercised.
 
 The final rehearsal uses synthetic evidence in temporary directories, with a
 test-only verifier. It proves all-gate evaluation, provenance rejection and

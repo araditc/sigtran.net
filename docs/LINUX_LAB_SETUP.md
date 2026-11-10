@@ -4,9 +4,9 @@
 
 The authorized VM was inspected on 2026-11-04: Ubuntu 22.04, kernel 5.15,
 4 vCPUs and 16 GiB RAM. Native SCTP, lksctp, .NET 10, GCC, tcpdump and TShark
-are available. It can remain the SDK endpoint. Its root filesystem is about
-96% full; provide at least 30 GiB free before long-duration work. No files or
-volumes were removed or resized by capture setup.
+are available. This is the SDK endpoint. On 2026-11-10 the root filesystem
+had 21 GiB free; provide at least 30 GiB free before long-duration work.
+No files or volumes were removed or resized by capture setup.
 
 Non-root capture is now configured with the Debian/Ubuntu `wireshark-common`
 setting, group `wireshark`, and `cap_net_admin,cap_net_raw=eip` on `dumpcap`.
@@ -47,7 +47,7 @@ own user, and produces caller-owned files. The historical sudo/tcpdump backend
 remains available. Peer service restart and SDK firewall fault injection need
 separately authorized privileges; capture capabilities do not grant them.
 
-## Second Linux VM
+## Separate Peer VM
 
 Use Ubuntu Server 24.04 LTS amd64 with normal security updates and the supported
 distribution kernel. No kernel downgrade or OpenSS7 installation is required.
@@ -61,16 +61,48 @@ on a separate data subnet/virtual switch. Permit SSH TCP/22 and SCTP protocol
 is needed for package/source retrieval. Enable time synchronization and avoid
 automatic suspend during long runs.
 
-Provide a non-root SSH account with sudo and SSH-key access. .NET 10, lksctp,
-peer service, capture tools, protected artifact directories and restricted
-automation privileges are configured after access is available.
+Use a non-root SSH account with pinned host-key verification. Install .NET,
+GCC, lksctp and capture tools on the SDK host. A statically linked reference
+peer needs a Linux kernel with SCTP, not an SDK or dynamic lksctp on the peer.
+Build on an authorized lab build host:
+
+```bash
+gcc -static -std=c11 -D_POSIX_C_SOURCE=200809L -O2 -Wall -Wextra -Werror \
+  tools/interop-peer/sigtran_reference_peer.c -o reference-peer -lsctp
+sha256sum reference-peer
+```
+
+Transfer the installer and binary over SSH, then run the reviewed installer
+once with administrator approval on the peer:
+
+```bash
+sudo bash provision-reference-peer.sh <lab-user> ./reference-peer <sha256> \
+  <source-commit> <peer-ip> <sdk-ip> 2906
+```
+
+The installer manages only `sigtran-reference-peer.service`,
+`/opt/sigtran-lab-peer`, and its dedicated sudoers file. The unit runs with a
+dynamic identity, source-address restriction, half-core CPU quota and 96 MiB
+memory limit. It is not enabled on boot. Set
+`PEER_SERVICE=sigtran-reference-peer.service` and
+`PEER_BUILD_METADATA_FILE=/opt/sigtran-lab-peer/build.json` for the protected
+runner. The non-sensitive build metadata is readable without sudo; service
+control is authorized only for the named lab unit. A successful `sudo -n true`
+inventory probe is not proof of authorization for any other command.
+
+The Ubuntu 24.04 peer VM shared with Kafka was verified on 2026-11-10 using
+two bounded, synthetic five-operation runs and SDK-side non-root PCAP.
+Kafka broker/controller state, process identities and restart counts were
+unchanged. No packages, Kafka settings or host firewall rules were changed.
+Use this shared VM for bounded smoke and scoped peer restart only; use
+isolated hosts for load, peer-outage, partition or endurance runs. See
+[the sanitized result](evidence/SEPARATE_HOST_LAB_SMOKE_20261110.json).
 
 Both VMs may run on the same VMware host. Record that shared physical host in
 the benchmark topology: two guests support guest/association recovery tests,
 but do not demonstrate survival of a physical-host failure. A container or
 network namespace in the existing guest shares its kernel and does not satisfy
-the separate-host gate. The inspected guest exposes neither `/dev/kvm` nor
-nested virtualization CPU flags and has too little free disk for another VM.
+the separate-host gate.
 
 References: [Ubuntu lifecycle](https://ubuntu.com/about/release-cycle),
 [Wireshark capture privileges](https://wiki.wireshark.org/CaptureSetup/CapturePrivileges),

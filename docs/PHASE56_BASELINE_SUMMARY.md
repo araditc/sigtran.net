@@ -8,10 +8,10 @@ stable/CI integration, and end-to-end validator rehearsal.
 This work preserves `main@981113c` improvements, historical Phase 56 evidence,
 the public immutable RC.2, and the `1.0.0-rc.3-dev` development identity.
 
-The laboratory is not yet accepted: a second independent Linux host is absent.
-Non-root capture on the existing VM was subsequently configured and verified;
-the earlier baseline artifact retains the original pre-configuration state.
-No external multi-host traffic or qualification GO has been manufactured.
+The original artifact retains the single-host, pre-capture state. On
+2026-11-10, fresh inventories from two Linux guests and
+[bounded two-host SCTP smoke](evidence/SEPARATE_HOST_LAB_SMOKE_20261110.json)
+were verified. This is not external operator, failover or endurance evidence.
 The stable evaluator retains four legacy blockers and adds the mandatory
 candidate qualification blocker. The schema-2 candidate validator separately
 reports fifteen missing exact-candidate evidence envelopes.

@@ -66,6 +66,7 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/run-multi-host-qualification.sh
+          bash -n scripts/provision-reference-peer.sh
           bash -n scripts/peer-outage-recovery.sh
           bash -n scripts/run-with-peer-ssh.sh
           for profile in smoke stress soak release; do

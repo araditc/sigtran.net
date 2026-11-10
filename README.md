@@ -30,12 +30,12 @@ Candidate evidence must also match the tested source/package/scope, be current,
 and pass GitHub attestation verification for the protected producer workflow.
 [Qualification tooling](docs/QUALIFICATION_TOOLING.md) is mandatory in the stable
 evaluator; legacy readiness flags alone cannot authorize publication.
-The Phase 56 baseline tooling is delivered in ten units. Actual two-host lab
-acceptance remains blocked by the second Linux host and scenario-specific fault control;
-the [baseline report](docs/PHASE56_QUALIFICATION_BASELINE.md) records that limit.
-The existing VM now has verified non-root dumpcap access. See
-[Linux lab setup](docs/LINUX_LAB_SETUP.md) for the second-VM specification and
-the separate capture/fault-control permission boundaries.
+The ten-unit Phase 56 baseline now has a
+[two-VM native SCTP smoke result](docs/evidence/SEPARATE_HOST_LAB_SMOKE_20261110.json):
+five MAP SMS operations passed before and after a scoped peer restart, with
+non-root PCAP on the SDK host. This does not close the endurance or external
+operator gates. See [Linux lab setup](docs/LINUX_LAB_SETUP.md) for the
+separate SDK, capture and peer-service permission boundaries.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

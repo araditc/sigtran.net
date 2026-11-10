@@ -15,6 +15,12 @@ input/tool failure. Repository qualification types are not SDK public APIs.
 | bundle | bundle.json evidence-root |
 | evaluate | policy.json evidence-root [source-commit candidate.nupkg scope.json] |
 
+Inventory requires native SCTP and distinct machine identities for both roles.
+The SDK role also requires the SDK build and capture toolchain. A prebuilt peer
+only needs endpoint inventory tooling; the protected runner separately checks
+the live endpoint, service control and build metadata readable by its SSH user.
+See [Linux lab setup](LINUX_LAB_SETUP.md) for the restricted peer service.
+
 The no-package evaluation deliberately returns NO-GO. The stable evaluator
 requires the candidate validator as an additional mandatory gate. Existing
 historical evidence remains visible; toggling legacy `passed` fields cannot

@@ -5,10 +5,10 @@ Status: public RC prerelease publication is closed; stable commercial publicatio
 As of the 2026-11-04 qualification-baseline audit, the stable evaluator also
 requires exact-candidate schema-2 evidence. Four historical qualification
 blockers remain and one aggregate candidate-qualification blocker is added.
-The baseline tooling is implemented; two-host lab acceptance still requires
-a second independent Linux host. Non-root capture on the existing VM is now
-configured and verified; fault-control authorization remains scenario-specific.
-See [the baseline exit decision](PHASE56_QUALIFICATION_BASELINE.md).
+Two distinct Linux guests now pass the baseline inventory and a bounded
+two-host SCTP smoke test with non-root capture and scoped peer restart.
+The shared peer is not an endurance or operator test environment. See
+[the baseline exit decision](PHASE56_QUALIFICATION_BASELINE.md).
 
 The latest public prerelease is immutable `1.0.0-rc.2`. Current source development
 uses unpublished package identity `1.0.0-rc.3-dev`; it is not a published release

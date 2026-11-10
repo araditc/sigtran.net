@@ -16,11 +16,19 @@ internal sealed record HostInventory(int SchemaVersion, string NodeId, string Ro
         if (MachineHash is null || !Regex.IsMatch(MachineHash, "^[a-f0-9]{64}$")) errors.Add("Missing machine identity digest.");
         if (OperatingSystem != "linux" || string.IsNullOrWhiteSpace(Kernel)
             || Kernel.Contains("microsoft", StringComparison.OrdinalIgnoreCase)) errors.Add("Representative Linux host required.");
-        if (DotnetVersion is null || !Regex.IsMatch(DotnetVersion, "^10\\.\\d+\\.\\d+")) errors.Add(".NET 10 SDK required.");
         if (!SctpAvailable) errors.Add("Native kernel SCTP socket unavailable.");
-        if (!LksctpAvailable) errors.Add("lksctp library unavailable.");
-        if (!CaptureAvailable && !SudoAvailable) errors.Add("Non-interactive capture privileges unavailable.");
-        if (Tools is null || RequiredTools.Any(t => !Tools.GetValueOrDefault(t))) errors.Add("Required lab tools missing.");
+        if (Role == "sdk")
+        {
+            if (DotnetVersion is null || !Regex.IsMatch(DotnetVersion, "^10\\.\\d+\\.\\d+")) errors.Add(".NET 10 SDK required.");
+            if (!LksctpAvailable) errors.Add("lksctp library unavailable.");
+            if (!CaptureAvailable && !SudoAvailable) errors.Add("Non-interactive capture privileges unavailable.");
+            if (Tools is null || RequiredTools.Any(t => !Tools.GetValueOrDefault(t))) errors.Add("Required SDK lab tools missing.");
+        }
+        else if (Role == "peer" && (Tools is null || !Tools.GetValueOrDefault("ip")))
+        {
+            // The separately built peer needs native SCTP and endpoint inventory, not the SDK toolchain.
+            errors.Add("Peer IPv4 inventory tool missing.");
+        }
         if (CapturedAtUtc > now.AddMinutes(5) || CapturedAtUtc < now.AddHours(-24)) errors.Add("Inventory must be current (24h).");
         return errors.ToArray();
     }

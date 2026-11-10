@@ -345,6 +345,10 @@ class QualificationRunnerContractTests(unittest.TestCase):
         peer_block_end = self.runner.index('} >"$peer_host"', peer_block_start)
         self.assertLess(peer_block_start, peer_block_end)
 
+    def test_peer_build_metadata_is_read_without_sudo(self):
+        self.assertIn('ssh_peer "cat -- \'$PEER_BUILD_METADATA_FILE\'"', self.runner)
+        self.assertNotIn('sudo -n cat', self.runner)
+
 
 class QualificationPlanTests(unittest.TestCase):
     def run_plan(self, duration: str):

@@ -327,7 +327,8 @@ trap 'exit 143' TERM
 } >"$sdk_host"
 ssh_peer "sudo -n systemctl start '$PEER_SERVICE'"
 ssh_peer "sudo -n systemctl is-active '$PEER_SERVICE'"
-ssh_peer "sudo -n cat -- '$PEER_BUILD_METADATA_FILE'" | \
+# Build metadata is readable by the SSH account; service control does not grant root file access.
+ssh_peer "cat -- '$PEER_BUILD_METADATA_FILE'" | \
   python3 "$script_dir/normalize-peer-build-metadata.py" >"$peer_build"
 ssh_peer "command -v ip >/dev/null && ip -o -4 addr show" >"$peer_addresses"
 python3 "$script_dir/verify-peer-endpoint.py" "$REMOTE_IP" "$peer_addresses"

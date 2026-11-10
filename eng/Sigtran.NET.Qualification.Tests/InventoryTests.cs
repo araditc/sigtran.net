@@ -8,6 +8,16 @@ internal static partial class Tests
 
     private static void RegisterInventory()
     {
+        Cases.Add(("Peer-only host does not require SDK or capture tools", () =>
+        {
+            HostInventory peer = ValidHost("peer", "peer", 'b') with
+            {
+                DotnetVersion = "", LksctpAvailable = false, CaptureAvailable = false, SudoAvailable = false,
+                Tools = new() { ["ip"] = true }
+            };
+            Check(peer.Validate(DateTimeOffset.UtcNow).Length == 0, "peer-only inventory rejected");
+            Check((peer with { SctpAvailable = false }).Validate(DateTimeOffset.UtcNow).Length > 0, "peer accepted without kernel SCTP");
+        }));
         Cases.Add(("Non-root capture does not require unrestricted sudo", () => Check(
             (ValidHost("sdk", "sdk", 'a') with { SudoAvailable = false, CaptureAvailable = true })
                 .Validate(DateTimeOffset.UtcNow).Length == 0, "non-root capture rejected")));

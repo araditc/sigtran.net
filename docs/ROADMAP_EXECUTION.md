@@ -6,9 +6,10 @@ The 2026-11-04 [approved qualification continuation](RELEASE_QUALIFICATION_ROADM
 adds a ten-unit [baseline audit](PHASE56_QUALIFICATION_BASELINE.md) while
 preserving the admitted work below. Earlier references to exactly four
 blockers describe the legacy manifest; the stable evaluator now additionally
-requires exact-candidate qualification. The baseline lab remains blocked on
-the second independent Linux host. Capture on the existing VM is configured;
-scenario-specific service/firewall fault control is handled separately.
+requires exact-candidate qualification. Two Linux guests now pass baseline
+inventory and [bounded native SCTP smoke](evidence/SEPARATE_HOST_LAB_SMOKE_20261110.json).
+Service restart and capture were exercised; partition and endurance remain
+outside the shared peer's authorized scope.
 
 ## Canonical baseline
 

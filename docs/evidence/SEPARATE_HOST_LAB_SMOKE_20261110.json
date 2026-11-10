@@ -1,0 +1,63 @@
+{
+  "observedOnUtc": "2026-11-10",
+  "evidenceKind": "separate-host-native-sctp-smoke",
+  "scope": "Synthetic MAP SMS over the repository M3UA/SCCP/TCAP profile, not external operator conformance.",
+  "sourceCommit": "5edc82a930804153165b7b063a65ce74c42c26ce",
+  "peerBinarySha256": "27c6053f9b4cf59a9065db0506da5b4af45aab54876742af619b29c4feedad6c",
+  "environment": {
+    "sdk": "Ubuntu 22.04, Linux 5.15, .NET 10",
+    "peer": "Ubuntu 24.04, Linux 6.8, statically linked C reference implementation",
+    "distinctLinuxGuests": true,
+    "nativeSctpOnBothHosts": true,
+    "capture": "Non-root dumpcap on the SDK host, filtered to the peer SCTP endpoint",
+    "peerCpuQuotaPercentOfOneCore": 50,
+    "peerMemoryLimitMiB": 96
+  },
+  "inventory": {
+    "valid": true,
+    "toolingValid": true,
+    "labReady": true,
+    "stableDecision": "NO-GO"
+  },
+  "operations": [
+    "sendRoutingInfoForSM",
+    "mo-ForwardSM",
+    "mt-ForwardSM",
+    "reportSM-DeliveryStatus",
+    "alertServiceCentre"
+  ],
+  "runs": [
+    {
+      "stage": "before-peer-restart",
+      "completedAtUtc": "2026-11-10T19:31:58.1097974Z",
+      "passedOperations": 5,
+      "sctpFramesFromSdk": 12,
+      "sctpFramesFromPeer": 11,
+      "m3uaFrames": 14,
+      "pcapSha256": "b670de917c705d23cb9100a5af1cb04bc47fb4248bf66ea0ecc6a464d475cfbe",
+      "sdkTraceSha256": "b2fc8f821ddb8ebacd916e6b5b3e2d73277e8a1e2b77b600b1bbd9194c30a6a3",
+      "summarySha256": "b70f4d831f4ea1b773c9f8b9b1f8e98cadace877768a11259d1794f6beb1b384"
+    },
+    {
+      "stage": "after-peer-restart",
+      "completedAtUtc": "2026-11-10T19:33:21.6386773Z",
+      "passedOperations": 5,
+      "sctpFramesFromSdk": 12,
+      "sctpFramesFromPeer": 11,
+      "m3uaFrames": 14,
+      "pcapSha256": "e62b8dd66eed299556a313942cd7aea37eb93b9153516250cd3d49dcfe28d8a8",
+      "sdkTraceSha256": "3905d8e79107b1dfcafce397523fe7647124ef362f4b117b847dbaf8d87f4774",
+      "summarySha256": "0e90fa2c2d8763479fd95cc42f2cddb88a6b7dd0e9b1cb638d4035a78a089d0a"
+    }
+  ],
+  "sharedHost": {
+    "brokerAndControllerActiveBeforeAndAfter": true,
+    "servicePidsStartTimesAndRestartCountsUnchanged": true,
+    "kafkaConfigurationDataAndFirewallRulesChanged": false
+  },
+  "limitations": [
+    "Restart was between sessions, not an in-flight recovery or failover test.",
+    "No load, endurance, physical-host failure or carrier connection was exercised.",
+    "Raw artifacts and topology are private; this is not a candidate qualification envelope."
+  ]
+}
