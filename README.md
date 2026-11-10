@@ -66,6 +66,7 @@ The kernel notification decoder distinguishes association, peer path and shutdow
 Native adapters expose a bounded snapshot of kernel notifications observed during reads.
 Native reads preserve SCTP message boundaries and reject oversized records without returning their tails.
 The multihoming lab checks four streams, mixed message sizes and receive cancellation on one association.
+Its Linux runner captures traffic before and after primary link loss in private network namespaces.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

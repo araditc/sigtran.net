@@ -14,7 +14,7 @@ to another address is not proof of failover within the same association.
 | 6 | Lifecycle and path notification exposure | Implemented |
 | 7 | Receive record boundaries and cancellation | Implemented |
 | 8 | Bounded multistream traffic workload | Implemented |
-| 9 | Isolated dual-path Linux failure lab | Pending |
+| 9 | Isolated dual-path Linux failure lab | Verified on Linux |
 | 10 | Evidence checks and qualification decision | Pending |
 
 ## Address Contract
@@ -79,3 +79,27 @@ cancels one idle receive and the server rejects a 4 KiB probe using an
 eight-byte buffer, then receives the next complete record. The optional
 fault handshake holds exactly one response after the request reaches the
 server. No reconnect is enabled in this workload.
+
+## Isolated Path-Loss Run
+
+On a Linux host with kernel SCTP, lksctp, .NET 10, iproute2, util-linux,
+dumpcap and TShark, run:
+
+```bash
+SIGTRAN_ARTIFACT_ROOT="$HOME/sigtran-lab/artifacts" bash scripts/run-native-sctp-multihoming-lab.sh
+```
+
+Run as an unprivileged lab user with user and network namespaces enabled.
+The runner creates two private network namespaces connected by two veth
+pairs, with no default route. It sets shorter SCTP timers inside the
+endpoint namespaces only, then takes both ends of the primary link down
+while the client is waiting for sequence 16's echo. The alternate link
+stays up. Neither endpoint reconnects. The runner captures SCTP only on
+the private client namespace; it does not use host interfaces, routes,
+firewall rules or other services.
+
+The unique run directory holds a PCAP, SDK traces, kernel and runtime
+versions, topology, the UTC cut timestamp, and a TShark DATA table.
+Before returning success the runner checks bidirectional DATA on the
+primary before the cut and on the alternate after it. A run in two
+namespaces on one host does not qualify separate-host or operator peers.

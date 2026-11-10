@@ -72,6 +72,11 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/run-multi-host-qualification.sh
+          bash -n scripts/run-native-sctp-multihoming-lab.sh
+          if output=$(bash scripts/run-native-sctp-multihoming-lab.sh --isolated "$RUNNER_TEMP" unused "$(readlink /proc/self/ns/net)" 2>&1); then
+            exit 1
+          fi
+          [[ "$output" == "Refusing to run in the host network namespace" ]]
           bash -n scripts/provision-reference-peer.sh
           bash -n scripts/peer-outage-recovery.sh
           bash -n scripts/run-with-peer-ssh.sh
