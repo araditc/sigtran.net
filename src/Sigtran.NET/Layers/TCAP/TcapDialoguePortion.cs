@@ -19,7 +19,7 @@ public sealed class TcapObjectIdentifier
             throw new ArgumentOutOfRangeException(nameof(arcs), "Object identifier first arcs are invalid.");
         }
 
-        Arcs = arcs.ToArray();
+        Arcs = Array.AsReadOnly(arcs.ToArray());
     }
 
     /// <summary>The object identifier arcs.</summary>
@@ -29,7 +29,8 @@ public sealed class TcapObjectIdentifier
     /// <returns>The encoded object identifier value bytes.</returns>
     public byte[] EncodeValue()
     {
-        List<byte> result = [(byte)((Arcs[0] * 40) + Arcs[1])];
+        List<byte> result = [];
+        WriteBase128(result, (ulong)Arcs[0] * 40 + Arcs[1]);
         for (int i = 2; i < Arcs.Count; i++)
         {
             WriteBase128(result, Arcs[i]);
@@ -48,24 +49,14 @@ public sealed class TcapObjectIdentifier
             throw new ArgumentException("Object identifier value is empty.", nameof(value));
         }
 
-        List<uint> arcs = [];
-        byte first = value[0];
-        arcs.Add((uint)Math.Min(first / 40, 2));
-        arcs.Add((uint)(first - (arcs[0] * 40)));
-        uint current = 0;
-        for (int i = 1; i < value.Length; i++)
+        int offset = 0;
+        // The first subidentifier combines two arcs and can be larger than UInt32.
+        ulong first = ReadBase128(value, ref offset, (ulong)uint.MaxValue + 80);
+        uint root = (uint)Math.Min(first / 40, 2);
+        List<uint> arcs = [root, (uint)(first - root * 40)];
+        while (offset < value.Length)
         {
-            current = (current << 7) | (uint)(value[i] & 0x7F);
-            if ((value[i] & 0x80) == 0)
-            {
-                arcs.Add(current);
-                current = 0;
-            }
-        }
-
-        if (current != 0)
-        {
-            throw new ArgumentException("Object identifier base-128 value is truncated.", nameof(value));
+            arcs.Add((uint)ReadBase128(value, ref offset, uint.MaxValue));
         }
 
         return new(arcs.ToArray());
@@ -77,7 +68,33 @@ public sealed class TcapObjectIdentifier
         return string.Join(".", Arcs);
     }
 
-    private static void WriteBase128(List<byte> result, uint value)
+    private static ulong ReadBase128(ReadOnlySpan<byte> value, ref int offset, ulong max)
+    {
+        if (value[offset] == 0x80)
+        {
+            throw new ArgumentException("Object identifier arc has a leading zero group.", nameof(value));
+        }
+
+        ulong arc = 0;
+        while (offset < value.Length)
+        {
+            byte octet = value[offset++];
+            arc = (arc << 7) | (uint)(octet & 0x7F);
+            if (arc > max)
+            {
+                throw new ArgumentException("Object identifier arc is out of range.", nameof(value));
+            }
+
+            if ((octet & 0x80) == 0)
+            {
+                return arc;
+            }
+        }
+
+        throw new ArgumentException("Object identifier base-128 value is truncated.", nameof(value));
+    }
+
+    private static void WriteBase128(List<byte> result, ulong value)
     {
         Span<byte> stack = stackalloc byte[5];
         int count = 0;
@@ -155,7 +172,16 @@ public sealed class TcapDialoguePortion
             return false;
         }
 
-        TcapObjectIdentifier applicationContext = TcapObjectIdentifier.DecodeValue(oidElement.Value.Span);
+        TcapObjectIdentifier applicationContext;
+        try
+        {
+            applicationContext = TcapObjectIdentifier.DecodeValue(oidElement.Value.Span);
+        }
+        catch (ArgumentException exception)
+        {
+            error = exception.Message;
+            return false;
+        }
         ReadOnlyMemory<byte> userInformation = default;
         ReadOnlySpan<byte> remaining = data[oidElement.TotalLength..];
         if (!remaining.IsEmpty)
@@ -165,7 +191,7 @@ public sealed class TcapDialoguePortion
                 return false;
             }
 
-            if (userElement.Tag.Encode() != UserInformationTag.Encode())
+            if (userElement.Tag.Encode() != UserInformationTag.Encode() || userElement.TotalLength != remaining.Length)
             {
                 error = "TCAP dialogue portion user information tag is invalid";
                 return false;

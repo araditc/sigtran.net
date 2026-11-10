@@ -9,7 +9,7 @@ checks do not establish operator or release-candidate acceptance.
 | --- | --- | --- |
 | 1 | Q.773 transaction tag classes and opaque transaction IDs | Implemented |
 | 2 | Transaction field validation and abort encoding | Implemented |
-| 3 | Bounded BER and OID decoding | Pending |
+| 3 | Bounded BER and OID decoding | Implemented |
 | 4 | Invoke and linked ID | Pending |
 | 5 | Result, error and reject | Pending |
 | 6 | Structured dialogue APDUs | Pending |
@@ -34,3 +34,10 @@ correct primitive/constructed form, and 1-4 octets per ID. It rejects legacy
 context tags, extra fields and data after the package. The provider abort
 cause uses application tag `4A`; it cannot be combined with user abort
 dialogue data or a component portion. Example: `67064901FF4A0101`.
+
+## BER Bounds
+
+The bounded TCAP reader accepts short-form tags and definite lengths of
+at most two length octets (65,535 value octets). It rejects end-of-contents,
+high-tag-number form and truncated elements. OID decoding checks base-128
+termination and overflow, including a multibyte first subidentifier.

@@ -32,7 +32,7 @@ public readonly struct TcapBerTag
     /// <param name="number">The short-form tag number.</param>
     public TcapBerTag(TcapBerTagClass tagClass, bool constructed, byte number)
     {
-        if (number > NumberMask)
+        if (number >= NumberMask)
         {
             throw new ArgumentOutOfRangeException(nameof(number), "Only BER short-form tags are supported.");
         }
@@ -101,6 +101,8 @@ public readonly struct TcapBerElement
 /// </summary>
 public static class TcapBer
 {
+    private const int MaxValueLength = ushort.MaxValue;
+
     /// <summary>Writes a BER TLV element to the caller-provided buffer.</summary>
     /// <param name="destination">The destination buffer.</param>
     /// <param name="tag">The BER tag.</param>
@@ -117,6 +119,12 @@ public static class TcapBer
     {
         written = 0;
         error = null;
+        if (value.Length > MaxValueLength || (tag.TagClass == TcapBerTagClass.Universal && tag.Number == 0))
+        {
+            error = "Unsupported BER tag or value length";
+            return false;
+        }
+
         int lengthOctets = GetLengthOctetCount(value.Length);
         int required = 1 + lengthOctets + value.Length;
         if (destination.Length < required)
@@ -144,6 +152,13 @@ public static class TcapBer
         if (data.Length < 2)
         {
             error = "BER element is too short";
+            return false;
+        }
+
+        // This bounded reader supports one-octet tags and definite lengths only.
+        if ((data[0] & 0x1F) == 0x1F || (data[0] & 0xDF) == 0)
+        {
+            error = "Unsupported BER tag form";
             return false;
         }
 

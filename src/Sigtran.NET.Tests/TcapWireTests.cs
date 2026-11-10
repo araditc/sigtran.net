@@ -46,6 +46,35 @@ internal static class TcapWireTests
         }
     }
 
+    internal static void BerBoundaries()
+    {
+        AsnWriter reference = new(AsnEncodingRules.BER);
+        reference.WriteObjectIdentifier("2.4294967295.0.128");
+        var oid = new TcapObjectIdentifier(2, uint.MaxValue, 0, 128);
+        byte[] encoded = reference.Encode();
+        Require(encoded.AsSpan(2).SequenceEqual(oid.EncodeValue()), "OID bytes differ from independent BER");
+        Require(TcapObjectIdentifier.DecodeValue(encoded.AsSpan(2)).ToString() == "2.4294967295.0.128", "Large OID arc changed");
+
+        foreach (string hex in new[] { "1F0100", "30800000", "0080", "048201", "0483000001" })
+        {
+            Require(!TcapBer.TryReadElement(Convert.FromHexString(hex), out _, out _), $"Unsupported BER accepted: {hex}");
+        }
+
+        foreach (string hex in new[] { "0600", "060180", "06022A80", "06072A908080808000" })
+        {
+            Require(!TcapDialoguePortion.TryDecode(Convert.FromHexString(hex), out _, out _), $"Malformed OID accepted: {hex}");
+        }
+
+        var octetString = new TcapBerTag(TcapBerTagClass.Universal, false, 4);
+        byte[] maximum = new byte[ushort.MaxValue];
+        byte[] destination = new byte[maximum.Length + 4];
+        Require(TcapBer.TryWriteElement(destination, octetString, maximum, out int count, out _)
+            && count == destination.Length && destination.AsSpan(0, 4).SequenceEqual(new byte[] { 4, 0x82, 0xFF, 0xFF }),
+            "Maximum supported BER length did not encode");
+        Require(!TcapBer.TryWriteElement(new byte[65540], octetString, new byte[65536], out _, out _),
+            "Oversize BER value silently truncated");
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

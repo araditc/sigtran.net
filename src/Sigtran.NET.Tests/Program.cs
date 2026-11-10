@@ -385,6 +385,7 @@ Run("TCAP BER outcome components round-trip", TcapBerOutcomeComponentsRoundTrip)
 Run("TCAP transaction message wraps component portion", TcapTransactionMessageWrapsComponentPortion);
 Run("TCAP transaction tags match independently encoded Q.773 bytes", TcapWireTests.TransactionTags);
 Run("TCAP transaction fields and provider abort follow Q.773", TcapWireTests.TransactionFields);
+Run("TCAP BER and object identifier boundaries are deterministic", TcapWireTests.BerBoundaries);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
