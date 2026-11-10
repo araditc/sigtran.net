@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Net.Sockets;
 
 using Sigtran.NET.Core.Interfaces;
@@ -12,6 +13,10 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
     private readonly Socket _socket;
     private readonly SctpConnectionOptions _options;
     private readonly NativeSctpTransportOptions _transportOptions;
+    private readonly SemaphoreSlim _receiveGate = new(1, 1);
+    private readonly Queue<SctpKernelNotification> _kernelNotifications = new();
+    private const int MaximumKernelNotifications = 64;
+    private const int MinimumReceiveBuffer = 512;
     private long _sentMessages;
     private long _receivedMessages;
     private long _queuedSendMessages;
@@ -19,8 +24,8 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
     private long _pendingReceiveOperations;
     private long _backpressureRejectedMessages;
     private long _gracefulShutdowns;
-    private bool _disposed;
-    private SctpAssociationState _associationState;
+    private volatile bool _disposed;
+    private volatile SctpAssociationState _associationState;
     private readonly SctpAssociationJournal _associationJournal = new();
     private SctpBackpressureDecision? _lastBackpressureDecision;
     private SctpRecoveryDecision? _lastRecoveryDecision;
@@ -40,6 +45,11 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _transportOptions = transportOptions ?? new NativeSctpTransportOptions();
+        if (_transportOptions.RequireKernelMetadata && OperatingSystem.IsLinux())
+        {
+            // A notification or a readiness race must never leave lksctp blocked in recvmsg/sendmsg.
+            _socket.Blocking = false;
+        }
         _associationState = associationState;
         if (associationState == SctpAssociationState.Established)
         {
@@ -58,6 +68,16 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
 
     /// <summary>The recorded association lifecycle events.</summary>
     public IReadOnlyList<SctpAssociationJournalEntry> AssociationEvents => _associationJournal.Snapshot();
+
+    /// <summary>Snapshots up to 64 recent kernel notifications observed while receiving.</summary>
+    /// <returns>An ordered snapshot; reading it does not consume notifications.</returns>
+    public IReadOnlyList<SctpKernelNotification> SnapshotKernelNotifications()
+    {
+        lock (_kernelNotifications)
+        {
+            return _kernelNotifications.ToArray();
+        }
+    }
 
     /// <summary>The latest send backpressure decision.</summary>
     public SctpBackpressureDecision? LastBackpressureDecision => _lastBackpressureDecision;
@@ -258,8 +278,12 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         SctpOperationCancellationBudget budget = StartBudget(SctpOperationKind.Send, ct);
         try
         {
-            await WaitForSocketAsync(SelectMode.SelectWrite, budget, ct).ConfigureAwait(false);
-            int sent = NativeSctpInterop.SendMessage(_socket, message);
+            int sent;
+            do
+            {
+                await WaitForSocketAsync(SelectMode.SelectWrite, budget, ct).ConfigureAwait(false);
+            }
+            while (!NativeSctpInterop.TrySendMessage(_socket, message, out sent));
             if (sent != message.Payload.Length)
             {
                 throw new InvalidDataException($"Native SCTP send wrote {sent} bytes for a {message.Payload.Length} byte message.");
@@ -293,19 +317,57 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
 
         Interlocked.Increment(ref _pendingReceiveOperations);
         SctpOperationCancellationBudget budget = StartBudget(SctpOperationKind.Receive, ct);
+        bool acquired = false;
+        byte[]? rented = null;
         try
         {
+            acquired = await _receiveGate.WaitAsync(budget.Timeout, ct).ConfigureAwait(false);
+            if (!acquired)
+            {
+                throw new TimeoutException("Timed out waiting for the native SCTP receive reader.");
+            }
+
+            Memory<byte> receiveBuffer = buffer.Length >= MinimumReceiveBuffer
+                ? buffer
+                : (rented = ArrayPool<byte>.Shared.Rent(MinimumReceiveBuffer)).AsMemory(0, MinimumReceiveBuffer);
             while (true)
             {
                 await WaitForSocketAsync(SelectMode.SelectRead, budget, ct).ConfigureAwait(false);
-                SctpReceiveResult result = NativeSctpInterop.ReceiveMessage(_socket, buffer);
-                if (result.BytesReceived > 0)
+                if (!NativeSctpInterop.TryReceiveFrame(_socket, receiveBuffer, out NativeSctpReceiveFrame frame))
                 {
-                    Interlocked.Increment(ref _receivedMessages);
-                    return result;
+                    continue;
                 }
 
-                await Task.Delay(TimeSpan.FromMilliseconds(10), ct).ConfigureAwait(false);
+                if (frame.IsNotification)
+                {
+                    if (frame.Notification is { } notification)
+                    {
+                        RecordKernelNotification(notification);
+                    }
+
+                    continue;
+                }
+
+                if (frame.ByteCount == 0)
+                {
+                    CloseFromKernel();
+                    return default;
+                }
+
+                if (frame.IsTruncated || !frame.IsEndOfRecord || frame.ByteCount > buffer.Length)
+                {
+                    MarkFailed("Incomplete native SCTP user record");
+                    _socket.Dispose();
+                    throw new InvalidDataException("The receive buffer could not hold a complete SCTP user record.");
+                }
+
+                if (rented is not null)
+                {
+                    receiveBuffer[..frame.ByteCount].CopyTo(buffer);
+                }
+
+                Interlocked.Increment(ref _receivedMessages);
+                return new(frame.ByteCount, frame.Metadata);
             }
         }
         catch (Exception ex) when (ex is SocketException or TimeoutException or OperationCanceledException or DllNotFoundException or EntryPointNotFoundException)
@@ -315,11 +377,51 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         }
         finally
         {
+            if (rented is not null) ArrayPool<byte>.Shared.Return(rented);
+            if (acquired) _receiveGate.Release();
             Interlocked.Decrement(ref _pendingReceiveOperations);
             if (ReferenceEquals(_activeOperationBudget, budget))
             {
                 _activeOperationBudget = null;
             }
+        }
+    }
+
+    internal void RecordKernelNotification(SctpKernelNotification notification)
+    {
+        lock (_kernelNotifications)
+        {
+            if (_kernelNotifications.Count == MaximumKernelNotifications) _kernelNotifications.Dequeue();
+            _kernelNotifications.Enqueue(notification);
+        }
+
+        if (_disposed)
+        {
+            return;
+        }
+
+        // A path notification alone does not terminate an SCTP association.
+        switch (notification.Type)
+        {
+            case SctpKernelNotificationType.AssociationChange when notification.StateCode is 1 or 4:
+                MarkFailed($"SCTP kernel association state {notification.StateCode}, error {notification.ErrorCode}");
+                break;
+            case SctpKernelNotificationType.AssociationChange when notification.StateCode == 3:
+                CloseFromKernel();
+                break;
+            case SctpKernelNotificationType.Shutdown when _associationState == SctpAssociationState.Established:
+                _associationState = SctpAssociationState.ShuttingDown;
+                _associationJournal.Record(new(SctpAssociationEventType.ShutdownStarted, _associationState, "peer shutdown"));
+                break;
+        }
+    }
+
+    private void CloseFromKernel()
+    {
+        if (_associationState is not (SctpAssociationState.Closed or SctpAssociationState.Failed))
+        {
+            _associationState = SctpAssociationState.Closed;
+            _associationJournal.Record(new(SctpAssociationEventType.Closed, _associationState, "kernel closed association"));
         }
     }
 
@@ -340,12 +442,12 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
                 throw new TimeoutException($"{budget.OperationKind} timed out at {budget.DeadlineUtc:O}.");
             }
 
-            if (_socket.Poll(100_000, mode))
+            if (_socket.Poll(0, mode))
             {
                 return;
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(10), ct).ConfigureAwait(false);
+            await Task.Delay(2, ct).ConfigureAwait(false);
         }
     }
 

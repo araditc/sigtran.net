@@ -4,18 +4,48 @@ using System.Net;
 namespace Sigtran.NET.Layers.SCTP;
 
 /// <summary>Identifies the subscribed Linux SCTP notification records.</summary>
-internal enum SctpKernelNotificationType : ushort
+public enum SctpKernelNotificationType : ushort
 {
+    /// <summary>The association lifecycle changed.</summary>
     AssociationChange = 0x8001,
+    /// <summary>A peer path changed reachability or primary status.</summary>
     PeerAddressChange = 0x8002,
+    /// <summary>The peer initiated graceful shutdown.</summary>
     Shutdown = 0x8005,
+    /// <summary>The kernel reported a partial-delivery event.</summary>
     PartialDelivery = 0x8006
 }
 
 /// <summary>Contains decoded fields from a Linux SCTP kernel notification.</summary>
-internal sealed record SctpKernelNotification(
-    SctpKernelNotificationType Type, int AssociationId, int StateCode = 0, int ErrorCode = 0,
-    SctpEndpoint? PeerEndpoint = null, ushort OutboundStreams = 0, ushort InboundStreams = 0);
+public sealed class SctpKernelNotification
+{
+    internal SctpKernelNotification(SctpKernelNotificationType type, int associationId, int stateCode = 0,
+        int errorCode = 0, SctpEndpoint? peerEndpoint = null, ushort outboundStreams = 0, ushort inboundStreams = 0)
+    {
+        Type = type;
+        AssociationId = associationId;
+        StateCode = stateCode;
+        ErrorCode = errorCode;
+        PeerEndpoint = peerEndpoint;
+        OutboundStreams = outboundStreams;
+        InboundStreams = inboundStreams;
+    }
+
+    /// <summary>The Linux notification type.</summary>
+    public SctpKernelNotificationType Type { get; }
+    /// <summary>The association ID allocated by this host's kernel.</summary>
+    public int AssociationId { get; }
+    /// <summary>The native state or indication code for this notification type.</summary>
+    public int StateCode { get; }
+    /// <summary>The native error code, or zero when absent.</summary>
+    public int ErrorCode { get; }
+    /// <summary>The affected peer endpoint for a path notification.</summary>
+    public SctpEndpoint? PeerEndpoint { get; }
+    /// <summary>The negotiated outbound streams on an association-change notification.</summary>
+    public ushort OutboundStreams { get; }
+    /// <summary>The negotiated inbound streams on an association-change notification.</summary>
+    public ushort InboundStreams { get; }
+}
 
 /// <summary>Reads the Linux SCTP UAPI notification layout, never network wire data.</summary>
 internal static class NativeSctpNotification
@@ -34,8 +64,8 @@ internal static class NativeSctpNotification
             // Association records can carry extra information after the fixed fields.
             SctpKernelNotificationType.AssociationChange when data.Length >= 20 =>
                 new(type, BitConverter.ToInt32(data[16..]), BitConverter.ToUInt16(data[8..]),
-                    BitConverter.ToUInt16(data[10..]), OutboundStreams: BitConverter.ToUInt16(data[12..]),
-                    InboundStreams: BitConverter.ToUInt16(data[14..])),
+                    BitConverter.ToUInt16(data[10..]), outboundStreams: BitConverter.ToUInt16(data[12..]),
+                    inboundStreams: BitConverter.ToUInt16(data[14..])),
             // The packed Linux peer change structure embeds a 128-byte sockaddr_storage.
             SctpKernelNotificationType.PeerAddressChange when data.Length == 148 && BitConverter.ToUInt16(data[8..]) == 2 =>
                 ReadPeerChange(data),

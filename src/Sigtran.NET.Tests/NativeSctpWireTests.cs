@@ -121,6 +121,26 @@ internal static class NativeSctpWireTests
         Require(!NativeSctpNotification.TryDecode([0, 0, 0, 0, 8, 0, 0, 0], out _), "Unknown notification type was accepted.");
     }
 
+    internal static void KernelLifecycle()
+    {
+        using Socket socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        using NativeSctpSocketAdapter adapter = new(socket, new(new SctpEndpoint("127.0.0.1", 2906)),
+            SctpAssociationState.Established, new(requireKernelMetadata: false));
+        for (int index = 0; index < 70; index++)
+        {
+            adapter.RecordKernelNotification(new(SctpKernelNotificationType.PeerAddressChange, 42, 1, index));
+        }
+
+        IReadOnlyList<SctpKernelNotification> snapshot = adapter.SnapshotKernelNotifications();
+        Require(snapshot.Count == 64 && snapshot[0].ErrorCode == 6 && snapshot[^1].ErrorCode == 69,
+            "Kernel notification journal did not retain a bounded ordered window.");
+        Require(adapter.AssociationState == SctpAssociationState.Established, "A failed path terminated the association.");
+        adapter.RecordKernelNotification(new(SctpKernelNotificationType.AssociationChange, 42, 1));
+        Require(adapter.AssociationState == SctpAssociationState.Failed
+            && adapter.AssociationEvents[^1].AssociationEvent.EventType == SctpAssociationEventType.Failed,
+            "Kernel association loss was not recorded.");
+    }
+
     private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
     {
         public Socket CreateSocket() => throw new InvalidOperationException("Validation opened a socket.");

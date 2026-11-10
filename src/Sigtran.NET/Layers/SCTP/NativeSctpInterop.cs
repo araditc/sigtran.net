@@ -16,9 +16,9 @@ internal static class NativeSctpInterop
     private const int SctpEventsOption = 11;
     private const int SctpBindxAddAddress = 1;
     private const int Interrupted = 4;
+    private const int WouldBlock = 11;
     private const int ConnectAlreadyInProgress = 114;
     private const int ConnectInProgress = 115;
-    private const int MessageNotificationFlag = 0x8000;
     private const ushort SctpUnorderedFlag = 0x0001;
 
     internal static void BindAddresses(Socket socket, IReadOnlyList<IPEndPoint> addresses)
@@ -120,6 +120,10 @@ internal static class NativeSctpInterop
 
         byte[] events = new byte[13];
         events[0] = 1; // sctp_data_io_event: required for sctp_sndrcvinfo on receive.
+        events[1] = 1; // Association state and negotiated streams.
+        events[2] = 1; // Peer address reachability.
+        events[5] = 1; // Peer shutdown.
+        events[6] = 1; // Partial delivery aborted.
         SetSocketOption(socket, SctpEventsOption, events);
     }
 
@@ -129,7 +133,7 @@ internal static class NativeSctpInterop
         SetSocketOption(socket, SctpNoDelayOption, BitConverter.GetBytes(1));
     }
 
-    public static int SendMessage(Socket socket, SctpOutboundMessage message)
+    internal static bool TrySendMessage(Socket socket, SctpOutboundMessage message, out int byteCount)
     {
         ArgumentNullException.ThrowIfNull(socket);
         ArgumentNullException.ThrowIfNull(message);
@@ -152,11 +156,13 @@ internal static class NativeSctpInterop
 
         try
         {
+            byteCount = 0;
             uint networkPpid = HostToNetwork(
                 message.Metadata.PayloadProtocolIdentifier);
             uint flags = message.Metadata.Unordered ? SctpUnorderedFlag : 0u;
+            using NativeSctpHandle handle = new(socket);
             nint sent = SctpSendMsg(
-                ToFileDescriptor(socket),
+                handle.FileDescriptor,
                 payload,
                 (nuint)message.Payload.Length,
                 IntPtr.Zero,
@@ -169,10 +175,12 @@ internal static class NativeSctpInterop
 
             if (sent < 0)
             {
-                throw new SocketException(Marshal.GetLastPInvokeError());
+                int error = Marshal.GetLastPInvokeError();
+                return error is WouldBlock or Interrupted ? false : throw new SocketException(error);
             }
 
-            return checked((int)sent);
+            byteCount = checked((int)sent);
+            return true;
         }
         finally
         {
@@ -183,7 +191,7 @@ internal static class NativeSctpInterop
         }
     }
 
-    public static SctpReceiveResult ReceiveMessage(Socket socket, Memory<byte> buffer)
+    internal static bool TryReceiveFrame(Socket socket, Memory<byte> buffer, out NativeSctpReceiveFrame frame)
     {
         ArgumentNullException.ThrowIfNull(socket);
         if (buffer.IsEmpty)
@@ -209,41 +217,32 @@ internal static class NativeSctpInterop
 
         try
         {
-            while (true)
+            using NativeSctpHandle handle = new(socket);
+            nint received = SctpRecvMsg(
+                handle.FileDescriptor, payload, (nuint)buffer.Length, IntPtr.Zero, IntPtr.Zero,
+                out SctpSndRcvInfo info, out int messageFlags);
+            if (received < 0)
             {
-                SctpSndRcvInfo info = default;
-                int messageFlags = 0;
-                nint received = SctpRecvMsg(
-                    ToFileDescriptor(socket),
-                    payload,
-                    (nuint)buffer.Length,
-                    IntPtr.Zero,
-                    IntPtr.Zero,
-                    out info,
-                    out messageFlags);
-
-                if (received < 0)
-                {
-                    throw new SocketException(Marshal.GetLastPInvokeError());
-                }
-
-                if ((messageFlags & MessageNotificationFlag) != 0)
-                {
-                    continue;
-                }
-
-                int byteCount = checked((int)received);
-                if (rented is not null)
-                {
-                    payload.AsMemory(0, byteCount).CopyTo(buffer);
-                }
-
-                SctpPayloadMetadata metadata = new(
-                    info.Stream,
-                    NetworkToHost(info.PayloadProtocolIdentifier),
-                    (info.Flags & SctpUnorderedFlag) != 0);
-                return new(byteCount, metadata);
+                frame = default;
+                int error = Marshal.GetLastPInvokeError();
+                return error is WouldBlock or Interrupted ? false : throw new SocketException(error);
             }
+
+            int byteCount = checked((int)received);
+            SctpKernelNotification? notification = null;
+            if ((messageFlags & NativeSctpReceiveFrame.NotificationFlag) != 0)
+            {
+                NativeSctpNotification.TryDecode(payload.AsSpan(0, byteCount), out notification);
+            }
+            else if (rented is not null)
+            {
+                payload.AsMemory(0, byteCount).CopyTo(buffer);
+            }
+
+            SctpPayloadMetadata metadata = new(info.Stream, NetworkToHost(info.PayloadProtocolIdentifier),
+                (info.Flags & SctpUnorderedFlag) != 0);
+            frame = new(byteCount, metadata, messageFlags, notification);
+            return true;
         }
         finally
         {
@@ -254,15 +253,11 @@ internal static class NativeSctpInterop
         }
     }
 
-    private static int ToFileDescriptor(Socket socket)
-    {
-        return checked((int)socket.SafeHandle.DangerousGetHandle().ToInt64());
-    }
-
     private static void SetSocketOption(Socket socket, int optionName, byte[] optionValue)
     {
+        using NativeSctpHandle handle = new(socket);
         int result = SetSocketOptionNative(
-            ToFileDescriptor(socket),
+            handle.FileDescriptor,
             SolSctp,
             optionName,
             optionValue,
@@ -348,6 +343,16 @@ internal static class NativeSctpInterop
         public uint CumulativeTransmissionSequenceNumber;
         public int AssociationId;
     }
+}
+
+/// <summary>Represents one recvmsg return, which may be a notification or part of a user record.</summary>
+internal readonly record struct NativeSctpReceiveFrame(int ByteCount, SctpPayloadMetadata Metadata,
+    int Flags, SctpKernelNotification? Notification)
+{
+    internal const int NotificationFlag = 0x8000;
+    internal bool IsNotification => (Flags & NotificationFlag) != 0;
+    internal bool IsEndOfRecord => (Flags & 0x80) != 0; // Linux MSG_EOR.
+    internal bool IsTruncated => (Flags & 0x20) != 0; // Linux MSG_TRUNC.
 }
 
 /// <summary>Keeps an owning socket handle alive for the duration of a synchronous native call.</summary>

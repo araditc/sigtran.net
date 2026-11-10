@@ -11,7 +11,7 @@ to another address is not proof of failover within the same association.
 | 3 | Nonblocking multi-address connect | Implemented |
 | 4 | SDK connector and listener integration | Implemented |
 | 5 | Kernel notification decoding | Implemented |
-| 6 | Lifecycle and path notification exposure | Pending |
+| 6 | Lifecycle and path notification exposure | Implemented |
 | 7 | Receive record boundaries and cancellation | Pending |
 | 8 | Bounded multistream traffic workload | Pending |
 | 9 | Isolated dual-path Linux failure lab | Pending |
@@ -52,3 +52,10 @@ notification decoder checks the common length, the type-specific structure and
 IPv4 peer address fields. Association-change, peer-address-change, shutdown
 and partial-delivery notifications have distinct layouts. Native integer
 fields are host endian; peer port and IPv4 bytes remain network order.
+
+On a native adapter, `SnapshotKernelNotifications()` returns the latest
+64 decoded records in receive order. Notifications are read while the
+application receives and never returned as user payload. Linux path states
+0/1/4/5/6 indicate available/unreachable/made-primary/confirmed/potentially
+failed, respectively. A path change does not invalidate the association.
+Communication loss and shutdown are reflected in the lifecycle journal.

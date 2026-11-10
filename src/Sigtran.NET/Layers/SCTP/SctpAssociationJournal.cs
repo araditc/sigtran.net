@@ -36,19 +36,31 @@ public sealed class SctpAssociationJournal
     private readonly List<SctpAssociationJournalEntry> _entries = [];
 
     /// <summary>The recorded lifecycle event count.</summary>
-    public int Count => _entries.Count;
+    public int Count { get { lock (_entries) return _entries.Count; } }
 
     /// <summary>The current association state inferred from the latest journal entry.</summary>
-    public SctpAssociationState CurrentState => _entries.Count == 0 ? SctpAssociationState.Closed : _entries[^1].AssociationEvent.State;
+    public SctpAssociationState CurrentState
+    {
+        get { lock (_entries) return _entries.Count == 0 ? SctpAssociationState.Closed : _entries[^1].AssociationEvent.State; }
+    }
 
     /// <summary>Whether a failure event has been recorded.</summary>
-    public bool HasFailure => _entries.Any(static entry => entry.AssociationEvent.EventType == SctpAssociationEventType.Failed);
+    public bool HasFailure
+    {
+        get { lock (_entries) return _entries.Any(static entry => entry.AssociationEvent.EventType == SctpAssociationEventType.Failed); }
+    }
 
     /// <summary>The latest recorded failure reason.</summary>
-    public string? LastFailureReason => _entries
-        .Where(static entry => entry.AssociationEvent.EventType == SctpAssociationEventType.Failed)
-        .Select(static entry => entry.AssociationEvent.Reason)
-        .LastOrDefault();
+    public string? LastFailureReason
+    {
+        get
+        {
+            lock (_entries) return _entries
+                .Where(static entry => entry.AssociationEvent.EventType == SctpAssociationEventType.Failed)
+                .Select(static entry => entry.AssociationEvent.Reason)
+                .LastOrDefault();
+        }
+    }
 
     /// <summary>Records a lifecycle event with the current UTC timestamp.</summary>
     /// <param name="associationEvent">The association lifecycle event.</param>
@@ -62,20 +74,20 @@ public sealed class SctpAssociationJournal
     /// <param name="timestampUtc">The UTC timestamp for the lifecycle event.</param>
     public void Record(SctpAssociationEvent associationEvent, DateTimeOffset timestampUtc)
     {
-        _entries.Add(new(timestampUtc, associationEvent));
+        lock (_entries) _entries.Add(new(timestampUtc, associationEvent));
     }
 
     /// <summary>Returns a point-in-time snapshot of the journal entries.</summary>
     /// <returns>The journal entries.</returns>
     public IReadOnlyList<SctpAssociationJournalEntry> Snapshot()
     {
-        return _entries.ToArray();
+        lock (_entries) return _entries.ToArray();
     }
 
     /// <summary>Formats a compact lifecycle journal summary.</summary>
     /// <returns>The lifecycle journal summary.</returns>
     public string Describe()
     {
-        return $"events={_entries.Count} current={CurrentState} failed={HasFailure} reason={LastFailureReason ?? "-"}";
+        lock (_entries) return $"events={_entries.Count} current={CurrentState} failed={HasFailure} reason={LastFailureReason ?? "-"}";
     }
 }
