@@ -15,6 +15,9 @@ internal static class NativeSctpInterop
     private const int SctpNoDelayOption = 3;
     private const int SctpEventsOption = 11;
     private const int SctpBindxAddAddress = 1;
+    private const int Interrupted = 4;
+    private const int ConnectAlreadyInProgress = 114;
+    private const int ConnectInProgress = 115;
     private const int MessageNotificationFlag = 0x8000;
     private const ushort SctpUnorderedFlag = 0x0001;
 
@@ -26,6 +29,49 @@ internal static class NativeSctpInterop
         {
             throw new SocketException(Marshal.GetLastPInvokeError());
         }
+    }
+
+    internal static async Task ConnectAddressesAsync(Socket socket, IReadOnlyList<IPEndPoint> addresses, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        byte[] packed = NativeSctpAddressSet.PackLinuxIpv4(addresses);
+        socket.Blocking = false;
+        if (StartConnect(socket, packed, addresses.Count))
+        {
+            return;
+        }
+
+        // A writable nonblocking socket can indicate either success or failure.
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (socket.Poll(0, SelectMode.SelectWrite) || socket.Poll(0, SelectMode.SelectError))
+            {
+                int error = (int)socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Error)!;
+                if (error != 0)
+                {
+                    throw new SocketException(error);
+                }
+
+                return;
+            }
+
+            await Task.Delay(10, ct).ConfigureAwait(false);
+        }
+    }
+
+    private static bool StartConnect(Socket socket, byte[] packed, int addressCount)
+    {
+        using NativeSctpHandle handle = new(socket);
+        if (SctpConnectx(handle.FileDescriptor, packed, addressCount, IntPtr.Zero) == 0)
+        {
+            return true;
+        }
+
+        int error = Marshal.GetLastPInvokeError();
+        return error is Interrupted or ConnectAlreadyInProgress or ConnectInProgress
+            ? false
+            : throw new SocketException(error);
     }
 
     public static void ConfigureSocket(
@@ -230,6 +276,9 @@ internal static class NativeSctpInterop
 
     [DllImport("libsctp.so.1", EntryPoint = "sctp_bindx", SetLastError = true)]
     private static extern int SctpBindx(int socket, byte[] addresses, int addressCount, int flags);
+
+    [DllImport("libsctp.so.1", EntryPoint = "sctp_connectx", SetLastError = true)]
+    private static extern int SctpConnectx(int socket, byte[] addresses, int addressCount, IntPtr associationId);
 
     [DllImport("libsctp.so.1", EntryPoint = "sctp_sendmsg", SetLastError = true)]
     private static extern nint SctpSendMsg(

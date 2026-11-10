@@ -442,6 +442,7 @@ Run("SCTP operation timeout policy creates cancellation budgets", SctpOperationT
 Run("SCTP multi-homing readiness evaluates endpoint sets", SctpMultiHomingReadinessEvaluatesEndpointSets);
 Run("Native SCTP validates resolved IPv4 address sets", NativeSctpWireTests.AddressSets);
 Run("Native SCTP marshals two Linux sockaddr_in entries", NativeSctpWireTests.LinuxSocketAddresses);
+Run("Native SCTP connectx checks cancellation and completes on supported Linux", NativeSctpWireTests.NativeConnect);
 Run("SCTP fault recovery selects deterministic actions", SctpFaultRecoverySelectsDeterministicActions);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);

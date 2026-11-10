@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Sigtran.NET.Layers.SCTP;
 
 /// <summary>Tests platform-independent validation of the Linux SCTP wire and socket contracts.</summary>
@@ -41,6 +43,32 @@ internal static class NativeSctpWireTests
             .. family, 0x0B, 0x59, 198, 51, 100, 11, 0, 0, 0, 0, 0, 0, 0, 0
         ];
         Require(packed.AsSpan().SequenceEqual(expected), "Unexpected Linux sockaddr_in array layout.");
+    }
+
+    internal static void NativeConnect()
+    {
+        using (Socket unused = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+        {
+            Task cancelled = NativeSctpInterop.ConnectAddressesAsync(unused, [new(IPAddress.Loopback, 2905)], new(true));
+            try { cancelled.GetAwaiter().GetResult(); }
+            catch (OperationCanceledException) { }
+            Require(cancelled.IsCanceled && unused.Blocking, "Cancellation touched the socket before starting.");
+        }
+
+        if (!NativeSctpPlatform.Probe().CanCreateSocket || !NativeLibrary.TryLoad("libsctp.so.1", out nint library))
+        {
+            return;
+        }
+
+        NativeLibrary.Free(library);
+        using Socket listener = new NativeSctpSocketFactory().CreateSocket();
+        listener.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        listener.Listen(1);
+        using Socket client = new NativeSctpSocketFactory().CreateSocket();
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        NativeSctpInterop.ConnectAddressesAsync(client, [(IPEndPoint)listener.LocalEndPoint!], timeout.Token).GetAwaiter().GetResult();
+        using Socket accepted = listener.AcceptAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+        Require(accepted.Connected && !client.Blocking, "Native connectx did not establish a nonblocking socket.");
     }
 
     private static void Require(bool condition, string message)

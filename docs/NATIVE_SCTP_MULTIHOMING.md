@@ -8,7 +8,7 @@ to another address is not proof of failover within the same association.
 | --- | --- | --- |
 | 1 | Resolved IPv4 endpoint contract | Implemented |
 | 2 | Linux address layout and multi-address bind | Implemented |
-| 3 | Nonblocking multi-address connect | Pending |
+| 3 | Nonblocking multi-address connect | Implemented |
 | 4 | SDK connector and listener integration | Pending |
 | 5 | Kernel notification decoding | Pending |
 | 6 | Lifecycle and path notification exposure | Pending |
@@ -31,3 +31,8 @@ Linux multi-bind passes an ordered array of 16-byte `sockaddr_in` values
 to `sctp_bindx` with `SCTP_BINDX_ADD_ADDR`. The family is native endian;
 the port and address are network endian. A failed bind is surfaced and
 must not be converted to a wildcard or single-path bind.
+
+`sctp_connectx` submits the ordered peer list to one nonblocking socket.
+After a pending connect, readiness is followed by a `SO_ERROR` check.
+Cancellation is observed before the syscall and while polling for completion;
+the caller owns and closes the socket if the attempt fails or is cancelled.
