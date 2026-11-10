@@ -11,7 +11,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 1 | Opt-in ITU service configuration and validation | Implemented |
 | 2 | Single SCTP/M3UA/SCCP/TCAP/MAP composition | Implemented |
 | 3 | Bounded typed MAP operation execution | Implemented |
-| 4 | Loopback-only authenticated service entry point | Pending |
+| 4 | Loopback-only authenticated service entry point | Implemented |
 | 5 | Readiness, metrics and shutdown drain | Pending |
 | 6 | Explicit M3UA application-server routing context | Pending |
 | 7 | Independent peer positive and negative scenario matrix | Pending |
@@ -22,8 +22,7 @@ endpoint. Existing operations-only deployments remain the default.
 ## Service Configuration
 
 Set `SIGTRAN_REFERENCE_MODE=map-sms` to compose the ITU reference
-profile. Operation execution and the local HTTP entry point are
-delivered separately.
+profile and enable its local entry point.
 
 | Environment key | Reference mode |
 | --- | --- |
@@ -63,3 +62,18 @@ and does not queue requests beyond the configured in-flight limit.
 Results distinguish success, peer error, reject, malformed result,
 dialogue closure and timeout. Only the decoded routing fields of a
 successful SRI-SM result are returned; raw TCAP and MAP bytes are not.
+
+## Local HTTP Boundary
+
+Bind the lab host with `ASPNETCORE_URLS=http://127.0.0.1:8080`.
+Send JSON to `POST /v1/map-sms/{operation}` with the configured Bearer
+token. The route is not registered in operations-only mode. The real
+socket peer must be loopback; forwarded address headers are ignored.
+Do not expose or proxy this endpoint. The body is limited to 4 KiB
+even without a Content-Length, and unknown or duplicate properties
+are rejected. Responses use `Cache-Control: no-store`.
+
+The local API returns 200 for Result, 422 for MAP Error, 502 for
+Reject/malformed result/early dialogue closure, and 504 for timeout.
+Invalid requests return 400, disabled operations 403, busy 429,
+and a non-ready stack 503. The API does not retry an operation.

@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text;
+using Microsoft.AspNetCore.Http;
 using Sigtran.NET.Layers.MAP;
 using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.TCAP;
@@ -41,6 +43,52 @@ internal static partial class ReferenceServiceTests
 
     internal static void Composition() => ExerciseCompositionAsync().GetAwaiter().GetResult();
     internal static void Operations() => ExerciseOperationsAsync().GetAwaiter().GetResult();
+    internal static void LocalHttpBoundary() => ExerciseLocalHttpBoundaryAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseLocalHttpBoundaryAsync()
+    {
+        string token = new('x', 32);
+        SigtranNodeConfiguration node = new(IPAddress.Loopback, 2905, 1, 1, 2, 100, 2, 3, 16);
+        Require(ReferenceServiceOptions.TryParse(node, key => key switch
+        {
+            "SIGTRAN_REFERENCE_MODE" => "map-sms",
+            "SIGTRAN_MAP_SMS_OPERATIONS" => "sri-sm",
+            "SIGTRAN_MAP_SMS_TOKEN" => token,
+            _ => null
+        }, out var options, out _), "Valid local HTTP policy");
+        await using ReferenceMapStack stack = new(new SccpLoopbackMtp3Network(), node, options!);
+        ReferenceOperationExecutor executor = new(stack.Map, options!);
+
+        async Task Check(int expected, IPAddress ip, string? suppliedToken, string body, bool ready = true, string operation = "sri-sm")
+        {
+            DefaultHttpContext context = new();
+            context.Connection.RemoteIpAddress = ip;
+            context.Request.Headers["X-Forwarded-For"] = "127.0.0.1";
+            context.Request.ContentType = "application/json";
+            using MemoryStream input = new(Encoding.UTF8.GetBytes(body));
+            context.Request.Body = input;
+            if (suppliedToken is not null)
+            {
+                context.Request.Headers.Authorization = "Bearer " + suppliedToken;
+            }
+
+            IResult result = await ReferenceSmsEndpoint.HandleAsync(context, operation, executor, options!, () => ready);
+            Require((result as IStatusCodeHttpResult)?.StatusCode == expected && context.Response.Headers.CacheControl == "no-store",
+                $"Expected HTTP {expected} before MAP dispatch");
+            if (expected is 404 or 401 or 503)
+            {
+                Require(input.Position == 0, "The host must not read the body of rejected connections");
+            }
+        }
+
+        await Check(404, IPAddress.Parse("192.0.2.1"), token, "{}");
+        await Check(401, IPAddress.Loopback, new string('y', 32), "{}");
+        await Check(503, IPAddress.Loopback, token, "{}", ready: false);
+        await Check(413, IPAddress.Loopback, token, new string('x', 4097));
+        await Check(400, IPAddress.Loopback, token, "{\"routingContext\":100}");
+        await Check(400, IPAddress.Loopback, token, "{\"msisdn\":\"1\",\"msisdn\":\"2\"}");
+        await Check(403, IPAddress.IPv6Loopback, token, "{}", operation: "alert-service-centre");
+    }
 
     private static async Task ExerciseOperationsAsync()
     {

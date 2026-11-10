@@ -40,9 +40,12 @@ builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton(CreateRuntime);
 if (referenceOptions is not null)
 {
+    builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
     builder.Services.AddSingleton(referenceOptions);
     builder.Services.AddSingleton(services => new ReferenceMapStack(
         services.GetRequiredService<M3uaRuntime>(), configuration, referenceOptions));
+    builder.Services.AddSingleton(services => new ReferenceOperationExecutor(
+        services.GetRequiredService<ReferenceMapStack>().Map, referenceOptions));
 }
 builder.Services.AddSingleton<ISigtranEventSink>(
     _ => new JsonLineSigtranEventSink(Console.Out, leaveOpen: true));
@@ -58,6 +61,11 @@ builder.Services.AddSingleton(
 builder.Services.AddHostedService<SigtranRuntimeService>();
 
 WebApplication app = builder.Build();
+if (referenceOptions is not null)
+{
+    ReferenceSmsEndpoint.Map(app);
+}
+
 app.MapGet(
     "/health/live",
     () => Results.Json(new
