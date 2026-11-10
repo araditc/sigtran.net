@@ -119,3 +119,4 @@ M:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery.FreezeForChangeoverAsync`0(System.Th
 M:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery.TryRetrieveAfter`0(System.UInt32|optional=False|out=False,System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<System.Byte>>&|optional=False|out=True):System.Boolean|static=False|abstract=True
 T:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery|kind=interface|base=-|interfaces=Sigtran.NET.Layers.MTP2.IMtp2Link|abstract=True|sealed=False
 M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.IsLinkDiverted`0(System.UInt32|optional=False|out=False,System.Byte|optional=False|out=False):System.Boolean|static=False|abstract=False
+M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.ChangebackAsync`0(System.UInt32|optional=False|out=False,System.Byte|optional=False|out=False,System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask<System.Boolean>|static=False|abstract=False

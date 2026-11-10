@@ -74,7 +74,16 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
             Mtp3LinkBinding selected = _routing.Select(label.DestinationPointCode, label.SignallingLinkSelection, CanRoute)
                 ?? throw new InvalidOperationException($"No available route to MTP3 destination {label.DestinationPointCode}.");
             // A failed lower-layer send can have an uncertain delivery outcome.
-            await selected.Link.SendAsync(msu, operation.Token).ConfigureAwait(false);
+            using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(operation.Token);
+            deadline.CancelAfter(TimeSpan.FromSeconds(5));
+            try
+            {
+                await selected.Link.SendAsync(msu, deadline.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (deadline.IsCancellationRequested && !operation.IsCancellationRequested)
+            {
+                throw new TimeoutException("MTP2 send timed out; delivery may be uncertain.");
+            }
         }
         finally
         {
@@ -139,7 +148,7 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
                             && Mtp3ManagementMessage.TryDecode(message.UserPayload.Span, out Mtp3ManagementMessage management)
                             && (management.Kind != Mtp3ManagementKind.TransferRestricted || _networkIndicator >= 2))
                         {
-                            ObserveManagement(link, message, management);
+                            await ObserveManagementAsync(link, message, management, ct).ConfigureAwait(false);
                         }
                     }
                     else if (message.ServiceInformation.ServiceIndicator != Mtp3ServiceIndicator.SignallingNetworkTesting)

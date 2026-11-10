@@ -57,7 +57,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 5 | Network management framing and route state | Implemented |
 | 6 | 24-bit link retrieval and peer confirmation | Implemented |
 | 7 | Extended changeover and emergency handling | Implemented |
-| 8 | Acknowledged changeback and ordered traffic | Pending |
+| 8 | Acknowledged changeback and ordered traffic | Implemented |
 | 9 | SCCP traffic against an independent wire peer | Pending |
 | 10 | Live fault evidence and qualification decision | Pending |
 
@@ -116,3 +116,16 @@ replay is not blindly retried. `IsLinkDiverted` reports that diversion
 finished; it does not certify that all pre-fault transfers were delivered.
 The application must wait for diversion before replacing a failed
 association. Transient Busy is backpressure, not a changeover trigger.
+
+## Acknowledged Changeback
+
+After diversion and realignment, call `ChangebackAsync` for the recovered
+link. The network pauses new sends while it sends a Q.704 CBD on each
+operational alternate in the same linkset. A reader acknowledges a
+peer's CBD after it has queued the preceding traffic from that link.
+Each barrier uses a distinct eight-bit code and must receive its own
+CBA. On a timeout the network repeats unconfirmed barriers once and
+then keeps the link diverted if acknowledgements are still missing.
+It does not implement time-only promotion or a cross-adjacency
+ordering guarantee. An individual user send has a five-second
+lower-layer dispatch budget.

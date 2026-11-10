@@ -169,25 +169,6 @@ public sealed partial class Mtp3LinkNetwork
         }
     }
 
-    private void ObserveManagement(Mtp3LinkBinding carrier, Mtp3TransferMessage transfer, Mtp3ManagementMessage message)
-    {
-        _routing.UpdateRoute(carrier.AdjacentPointCode, message);
-        byte linkCode = transfer.RoutingLabel.SignallingLinkSelection;
-        LinkControl? affected = _controls.Values.FirstOrDefault(control =>
-            control.Binding.AdjacentPointCode == carrier.AdjacentPointCode && control.Binding.LinkCode == linkCode);
-        if (affected is not null && affected.Binding != carrier)
-        {
-            if (IsChangeoverOrder(message.Kind))
-            {
-                affected.ObserveOrder(new(carrier, message));
-            }
-            else if (message.Kind is Mtp3ManagementKind.ExtendedChangeoverAcknowledgement or Mtp3ManagementKind.EmergencyChangeoverAcknowledgement)
-            {
-                affected.ObserveAcknowledgement(new(carrier, message));
-            }
-        }
-    }
-
     private ValueTask SendManagementAsync(Mtp3LinkBinding carrier, Mtp3LinkBinding affected, Mtp3ManagementMessage body, CancellationToken ct)
         => carrier.Link.SendAsync(Mtp3Msu.Encode(new(
             new(Mtp3ServiceIndicator.SignallingNetworkManagement, _networkIndicator),

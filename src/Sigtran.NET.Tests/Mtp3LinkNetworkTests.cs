@@ -40,6 +40,43 @@ internal static class Mtp3LinkNetworkTests
     internal static void ManagementRoutes() => ExerciseManagementRoutesAsync().GetAwaiter().GetResult();
     internal static void RecoverySnapshot() => ExerciseRecoverySnapshotAsync().GetAwaiter().GetResult();
     internal static void LinkChangeover() => ExerciseLinkChangeoverAsync().GetAwaiter().GetResult();
+    internal static void LinkChangeback() => ExerciseLinkChangebackAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseLinkChangebackAsync()
+    {
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(8));
+        TestLink primary = new(), alternate = new();
+        await using Mtp3LinkNetwork network = new(1, 2, [new(2, 1, primary), new(2, 2, alternate)], [new(2, 2)]);
+        Mtp3TransferMessage transfer = new(new(Mtp3ServiceIndicator.Sccp, 2), new(2, 1, 0), new byte[] { 0x77 });
+        primary.State = Mtp2LinkState.Failed;
+        Task send = network.SendAsync(transfer, timeout.Token).AsTask();
+        Require((await NextSentAsync(alternate, timeout.Token))[^1] == 0x12, "No local BSNT sends emergency order");
+        alternate.Inject([0x80, 1, 0x80, 0, 0x10, 0x22]);
+        await send.WaitAsync(timeout.Token);
+        _ = await NextSentAsync(alternate, timeout.Token);
+
+        primary.State = Mtp2LinkState.InService;
+        await network.SendAsync(transfer, timeout.Token);
+        Require((await NextSentAsync(alternate, timeout.Token))[^1] == 0x77 && primary.Sent.IsEmpty,
+            "A newly aligned link remains diverted until changeback");
+
+        Task<bool> changeback = network.ChangebackAsync(2, 1, timeout.Token).AsTask();
+        byte[] declaration = await NextSentAsync(alternate, timeout.Token);
+        byte code = declaration[^1];
+        Require(declaration.AsSpan(0, 6).SequenceEqual(new byte[] { 0x80, 2, 0x40, 0, 0x10, 0x51 }),
+            "CBD travels on the old carrier and names the restored link");
+        alternate.Inject([0x80, 1, 0x80, 0, 0x10, 0x61, unchecked((byte)(code + 1))]);
+        alternate.Inject([0x80, 1, 0x80, 0, 0x10, 0x51, 0x90]);
+        Require((await NextSentAsync(alternate, timeout.Token)).SequenceEqual(new byte[] { 0x80, 2, 0x40, 0, 0x10, 0x61, 0x90 }),
+            "A concurrent peer declaration is acknowledged without deadlocking egress");
+        Task next = network.SendAsync(transfer, timeout.Token).AsTask();
+        Require(!changeback.IsCompleted && !next.IsCompleted && primary.Sent.IsEmpty, "Wrong code cannot release queued traffic");
+        alternate.Inject([0x80, 1, 0x80, 0, 0x10, 0x61, code]);
+        Require(await changeback.WaitAsync(timeout.Token), "Matching CBA completes the barrier");
+        await next.WaitAsync(timeout.Token);
+        Require((await NextSentAsync(primary, timeout.Token))[^1] == 0x77 && !network.IsLinkDiverted(2, 1),
+            "Only acknowledged changeback restores SLS routing");
+    }
 
     private static async Task ExerciseLinkChangeoverAsync()
     {

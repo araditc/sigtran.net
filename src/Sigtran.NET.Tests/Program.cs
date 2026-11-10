@@ -421,6 +421,7 @@ Run("MTP3 network transfers SCCP over exclusive bounded MTP2 readers", Mtp3LinkN
 Run("MTP3 validates SNMM bytes and scopes route changes to the neighbour", Mtp3LinkNetworkTests.ManagementRoutes);
 Run("M2PA freezes a 24-bit recovery window without replaying accepted MSUs", Mtp3LinkNetworkTests.RecoverySnapshot);
 Run("MTP3 extended changeover replays before new traffic and emergency never guesses", Mtp3LinkNetworkTests.LinkChangeover);
+Run("MTP3 changeback waits for the matching code and does not deadlock peer CBD", Mtp3LinkNetworkTests.LinkChangeback);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
 Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
