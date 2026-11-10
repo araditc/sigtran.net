@@ -1,4 +1,5 @@
 using System.Formats.Asn1;
+using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.TCAP;
 
 /// <summary>Checks Q.773 wire fields against an encoder independent of the SDK.</summary>
@@ -144,6 +145,61 @@ internal static class TcapWireTests
         Require(!TcapDialoguePortion.TryDecode([.. aare, 0], out _, out _), "Trailing dialogue data accepted");
         aarq[10] = 2;
         Require(!TcapDialoguePortion.TryDecode(aarq, out _, out _), "Wrong dialogue abstract syntax accepted");
+    }
+
+    internal static async Task DialogueNegotiationAsync()
+    {
+        (PairedMtp3Network left, PairedMtp3Network right) = PairedMtp3Network.CreatePair();
+        await using var firstSccp = new SccpConnectionlessService(left, new(2, 1, 1));
+        await using var secondSccp = new SccpConnectionlessService(right, new(1, 2, 1));
+        await using var first = new TcapDialogueManager(firstSccp);
+        await using var second = new TcapDialogueManager(secondSccp);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        CancellationToken ct = deadline.Token;
+        await first.StartAsync(ct);
+        await second.StartAsync(ct);
+        var firstParty = new SccpPartyAddress(SccpRoutingIndicator.RouteOnSubsystemNumber, SubsystemNumber.MAP, pointCode: 1);
+        var secondParty = new SccpPartyAddress(SccpRoutingIndicator.RouteOnSubsystemNumber, SubsystemNumber.MAP, pointCode: 2);
+        var context = new TcapObjectIdentifier(0, 4, 0, 0, 1, 0, 20, 3);
+        var request = new TcapBeginInvokeRequest(secondParty, firstParty, (TcapOperationCode)45, new byte[] { 0x30, 0 },
+            new TcapDialoguePortion(context).Encode());
+
+        foreach (string scenario in new[] { "accept", "refuse", "missing", "wrong-context" })
+        {
+            TcapInvokeHandle outbound = await first.BeginInvokeAsync(request, ct);
+            TcapDialogueEvent begin = await second.ReceiveAsync(ct);
+            TcapComponentIndication inbound = await second.ReceiveComponentAsync(ct);
+            Require(inbound.ApplicationContext?.ToString() == context.ToString(), "AARQ context not carried to the application");
+            if (scenario == "accept")
+            {
+                await second.SendResultAsync(inbound.Dialogue, inbound.InvokeId, inbound.OperationCode, default, true, ct);
+            }
+            else if (scenario == "refuse")
+            {
+                await second.RefuseAssociationAsync(inbound.Dialogue, ct);
+            }
+            else
+            {
+                byte[] response = scenario == "missing" ? []
+                    : TcapDialoguePortion.CreateResponse(new TcapObjectIdentifier(1, 2, 3), true).Encode();
+                var forgedEnd = new TcapTransactionMessage(TcapPackageType.End,
+                    destinationTransactionId: begin.Transaction.OriginatingTransactionId,
+                    componentPortion: new TcapBerReturnResultComponent(inbound.InvokeId, null, default).Encode(),
+                    dialoguePortion: response);
+                await secondSccp.SendAsync(new(new(0), firstParty, secondParty, forgedEnd.Encode()), ct);
+            }
+
+            TcapInvokeOutcome result = await first.WaitForInvokeAsync(outbound, ct);
+            Require(result.Kind == (scenario == "accept" ? TcapInvokeOutcomeKind.Result : TcapInvokeOutcomeKind.DialogueClosed),
+                $"Unexpected association outcome: {scenario} -> {result.Kind}");
+            if (scenario is "accept" or "refuse")
+            {
+                TcapDialogueEvent responseEvent = await first.ReceiveAsync(ct);
+                Require(responseEvent.Transaction.PackageType == (scenario == "accept" ? TcapPackageType.End : TcapPackageType.Abort)
+                    && TcapDialoguePortion.TryDecode(responseEvent.Transaction.DialoguePortion.Span, out var aare, out _)
+                    && aare?.Accepted == (scenario == "accept"), "Invalid association response APDU");
+            }
+        }
     }
 
     private static void Require(bool condition, string message)

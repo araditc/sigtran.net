@@ -389,6 +389,7 @@ Run("TCAP BER and object identifier boundaries are deterministic", TcapWireTests
 Run("TCAP Invoke uses an implicit linked ID and an ASN.1 open type", TcapWireTests.InvokeFields);
 Run("TCAP outcome components match X.880 result and reject fields", TcapWireTests.OutcomeFields);
 Run("TCAP structured dialogue encodes Q.773 AARQ and AARE", TcapWireTests.DialogueFields);
+Run("TCAP stateful dialogue validates acceptance and refusal", () => TcapWireTests.DialogueNegotiationAsync().GetAwaiter().GetResult());
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);

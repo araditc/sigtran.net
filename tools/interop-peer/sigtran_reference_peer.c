@@ -61,6 +61,8 @@ struct tcap_invoke_view {
     size_t originating_transaction_id_length;
     uint8_t invoke_id;
     uint8_t operation_code;
+    const uint8_t *application_context;
+    size_t application_context_length;
     const uint8_t *parameters;
     size_t parameters_length;
 };
@@ -311,6 +313,32 @@ static int parse_sccp_udt(
     return 0;
 }
 
+/* Q.773 structured dialogue abstract syntax, encoded as an OID TLV. */
+static const uint8_t dialogue_oid[] = {0x06U, 0x07U, 0x00U, 0x11U, 0x86U, 0x05U, 0x01U, 0x01U, 0x01U};
+
+static int parse_dialogue_context(const struct tlv_view *dialogue, struct tcap_invoke_view *result)
+{
+    struct tlv_view external, single, aarq, context, oid;
+    if (read_ber_tlv(dialogue->value, dialogue->value_length, &external) != 0
+        || external.tag != 0x28U || external.total_length != dialogue->value_length
+        || external.value_length <= sizeof(dialogue_oid)
+        || memcmp(external.value, dialogue_oid, sizeof(dialogue_oid)) != 0
+        || read_ber_tlv(external.value + sizeof(dialogue_oid), external.value_length - sizeof(dialogue_oid), &single) != 0
+        || single.tag != 0xA0U || single.total_length != external.value_length - sizeof(dialogue_oid)
+        || read_ber_tlv(single.value, single.value_length, &aarq) != 0
+        || aarq.tag != 0x60U || aarq.total_length != single.value_length
+        || read_ber_tlv(aarq.value, aarq.value_length, &context) != 0
+        || context.tag != 0xA1U || context.total_length != aarq.value_length
+        || read_ber_tlv(context.value, context.value_length, &oid) != 0
+        || oid.tag != 0x06U || oid.value_length == 0U || oid.total_length != context.value_length) {
+        return -1;
+    }
+
+    result->application_context = aarq.value;
+    result->application_context_length = context.total_length;
+    return 0;
+}
+
 static int parse_tcap_invoke(
     const uint8_t *message,
     size_t message_length,
@@ -343,6 +371,10 @@ static int parse_tcap_invoke(
         if (item.tag == 0x48U) {
             result->originating_transaction_id = item.value;
             result->originating_transaction_id_length = item.value_length;
+        } else if (item.tag == 0x6BU) {
+            if (result->application_context != NULL || parse_dialogue_context(&item, result) != 0) {
+                return -1;
+            }
         } else if (item.tag == 0x6CU) {
             component = item.value;
             component_length = item.value_length;
@@ -432,6 +464,31 @@ static int validate_map_parameters(const struct tcap_invoke_view *invoke)
     return (present_tags & required_tags) == required_tags ? 0 : -1;
 }
 
+static int append_dialogue_response(const struct tcap_invoke_view *invoke,
+    uint8_t *destination, size_t capacity, size_t *offset)
+{
+    uint8_t aare_content[128], aare[132], external_content[145], external[149];
+    const uint8_t accepted[] = {0xA2U, 3U, 2U, 1U, 0U, 0xA3U, 5U, 0xA1U, 3U, 2U, 1U, 0U};
+    size_t aare_length = 0U, external_content_length = sizeof(dialogue_oid), external_length = 0U;
+    size_t context_length = invoke->application_context_length;
+    if (context_length == 0U) {
+        return 0;
+    }
+    if (context_length > sizeof(aare_content) - sizeof(accepted)) {
+        return -1;
+    }
+    memcpy(aare_content, invoke->application_context, context_length);
+    memcpy(aare_content + context_length, accepted, sizeof(accepted));
+    memcpy(external_content, dialogue_oid, sizeof(dialogue_oid));
+    if (append_ber_tlv(aare, sizeof(aare), &aare_length, 0x61U, aare_content, context_length + sizeof(accepted)) != 0
+        || append_ber_tlv(external_content, sizeof(external_content), &external_content_length, 0xA0U, aare, aare_length) != 0
+        || append_ber_tlv(external, sizeof(external), &external_length, 0x28U, external_content, external_content_length) != 0) {
+        return -1;
+    }
+
+    return append_ber_tlv(destination, capacity, offset, 0x6BU, external, external_length);
+}
+
 static int build_tcap_result(
     const struct tcap_invoke_view *invoke,
     uint8_t *destination,
@@ -475,6 +532,7 @@ static int build_tcap_result(
             0x49U,
             invoke->originating_transaction_id,
             invoke->originating_transaction_id_length) != 0
+        || append_dialogue_response(invoke, transaction_content, sizeof(transaction_content), &transaction_content_length) != 0
         || append_ber_tlv(
             transaction_content,
             sizeof(transaction_content),

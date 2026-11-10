@@ -13,7 +13,7 @@ checks do not establish operator or release-candidate acceptance.
 | 4 | Invoke and linked ID | Implemented |
 | 5 | Result, error and reject | Implemented |
 | 6 | Structured dialogue APDUs | Implemented |
-| 7 | Dialogue negotiation at runtime | Pending |
+| 7 | Dialogue negotiation at runtime | Implemented |
 | 8 | Connectionless SCCP wire checks | Pending |
 | 9 | MAP SMS ASN.1 profile and vectors | Pending |
 | 10 | Integrated vectors, migration and exit report | Pending |
@@ -71,3 +71,11 @@ response result/diagnostic. The optional user-information field carries
 encoded EXTERNAL values rather than arbitrary bytes. Fixed AARQ/AARE
 vectors and malformed variants exercise the codec; runtime negotiation is
 verified separately in unit 7.
+
+The stateful dialogue manager sends one AARE on the first Continue or End
+of an inbound structured dialogue. An outbound dialogue that sent AARQ
+requires a matching AARE before components can complete invokes. Missing
+or mismatched responses fail closed; an explicit refusal uses Abort with
+rejected AARE per [Q.774](https://www.itu.int/rec/T-REC-Q.774/en). The MAP server checks the requested context against its operation
+profile and refuses mismatches. Bare TCAP dialogues remain available to
+callers who omit the dialogue portion.

@@ -210,7 +210,8 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             request.CallingParty,
             localId,
             request.Transaction.DestinationTransactionId,
-            TcapDialoguePhase.Open);
+            TcapDialoguePhase.Open,
+            ReadRequestedContext(request.Transaction.DialoguePortion));
         TcapTransactionMessage transaction = new(
             TcapPackageType.Begin,
             localId,
@@ -288,7 +289,8 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             request.CallingParty,
             localId,
             remoteTransactionId: null,
-            TcapDialoguePhase.Open);
+            TcapDialoguePhase.Open,
+            ReadRequestedContext(request.DialoguePortion));
         PendingInvoke pending = RegisterPendingInvoke(
             context,
             request.OperationCode,
@@ -297,14 +299,10 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             pending.Handle.InvokeId,
             request.OperationCode,
             request.Parameters);
-        TcapTransactionMessage transaction = new(
-            TcapPackageType.Begin,
-            localId,
-            destinationTransactionId: null,
-            component.Encode(),
-            request.DialoguePortion);
         try
         {
+            TcapTransactionMessage transaction = new(
+                TcapPackageType.Begin, localId, null, component.Encode(), request.DialoguePortion);
             await SendTransactionAsync(context, transaction, ct).ConfigureAwait(false);
             Interlocked.Increment(ref _sentComponents);
             return pending.Handle;
@@ -339,12 +337,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             request.OperationCode,
             request.Parameters,
             request.LinkedInvokeId);
-        TcapTransactionMessage transaction = CreateTransaction(
-            context,
-            TcapPackageType.Continue,
-            component.Encode());
         try
         {
+            TcapTransactionMessage transaction = CreateTransaction(context, TcapPackageType.Continue, component.Encode());
             await SendTransactionAsync(context, transaction, ct).ConfigureAwait(false);
             Interlocked.Increment(ref _sentComponents);
             return pending.Handle;
@@ -694,22 +689,37 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
         TcapDialogueHandle handle = context?.Handle ?? new(0);
         if (context is not null)
         {
+            bool valid;
             lock (context.Sync)
             {
-                if (transaction.OriginatingTransactionId.HasValue)
+                valid = ValidateDialogueResponse(context, transaction);
+                if (valid && transaction.OriginatingTransactionId is { } remoteId)
                 {
-                    context.RemoteTransactionId =
-                        transaction.OriginatingTransactionId;
+                    valid = context.RemoteTransactionId is not { } knownId || knownId.Bytes.SequenceEqual(remoteId.Bytes);
+                    if (valid)
+                    {
+                        context.RemoteTransactionId = remoteId;
+                    }
                 }
 
-                context.Phase = transaction.PackageType switch
+                if (valid)
                 {
-                    TcapPackageType.Begin => TcapDialoguePhase.Open,
-                    TcapPackageType.Continue => TcapDialoguePhase.Continuing,
-                    TcapPackageType.End => TcapDialoguePhase.Ended,
-                    TcapPackageType.Abort => TcapDialoguePhase.Aborted,
-                    _ => context.Phase
-                };
+                    context.Phase = transaction.PackageType switch
+                    {
+                        TcapPackageType.Begin => TcapDialoguePhase.Open,
+                        TcapPackageType.Continue => TcapDialoguePhase.Continuing,
+                        TcapPackageType.End => TcapDialoguePhase.Ended,
+                        TcapPackageType.Abort => TcapDialoguePhase.Aborted,
+                        _ => context.Phase
+                    };
+                }
+            }
+
+            if (!valid)
+            {
+                Interlocked.Increment(ref _malformedTransactions);
+                CloseDialogue(context, TcapInvokeOutcomeKind.DialogueClosed);
+                return;
             }
         }
 
@@ -825,7 +835,10 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             component.OperationCode,
             component.Parameters,
             errorCode: null,
-            problemCode: null);
+            problemCode: null)
+        {
+            ApplicationContext = context.ApplicationContext
+        };
     }
 
     private TcapComponentIndication? DecodeResult(
@@ -961,14 +974,127 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
         TcapTransactionMessage transaction,
         CancellationToken ct)
     {
-        await Sccp.SendAsync(
-            new(
-                ProtocolClass,
-                context.CalledParty,
-                context.CallingParty,
-                transaction.Encode()),
-            ct).ConfigureAwait(false);
+        // The first Continue/End on an inbound association owns the single AARE response.
+        if (context is { IsInbound: true, ApplicationContext: { } applicationContext }
+            && transaction.PackageType is TcapPackageType.Continue or TcapPackageType.End)
+        {
+            await context.ResponseGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                if (!context.AssociationEstablished)
+                {
+                    if (transaction.DialoguePortion.IsEmpty)
+                    {
+                        transaction = new(transaction.PackageType, transaction.OriginatingTransactionId,
+                            transaction.DestinationTransactionId, transaction.ComponentPortion,
+                            TcapDialoguePortion.CreateResponse(applicationContext, true).Encode());
+                    }
+
+                    if (!TcapDialoguePortion.TryDecode(transaction.DialoguePortion.Span, out var response, out _)
+                        || response?.Accepted is null || !SameContext(applicationContext, response.ApplicationContext)
+                        || response.Accepted != true)
+                    {
+                        throw new InvalidOperationException("Invalid TCAP association response.");
+                    }
+
+                    await SendEncodedTransactionAsync(context, transaction, ct).ConfigureAwait(false);
+                    context.AssociationEstablished = true;
+                    return;
+                }
+
+                if (!transaction.DialoguePortion.IsEmpty)
+                {
+                    throw new InvalidOperationException("TCAP association response was already sent.");
+                }
+            }
+            finally
+            {
+                context.ResponseGate.Release();
+            }
+        }
+
+        await SendEncodedTransactionAsync(context, transaction, ct).ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async ValueTask RefuseAssociationAsync(TcapDialogueHandle dialogue, CancellationToken ct = default)
+    {
+        DialogueContext context = GetDialogue(dialogue);
+        if (context is not { IsInbound: true, ApplicationContext: { } applicationContext })
+        {
+            throw new InvalidOperationException("No inbound TCAP association is awaiting a response.");
+        }
+
+        await context.ResponseGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (context.AssociationEstablished)
+            {
+                throw new InvalidOperationException("TCAP association response was already sent.");
+            }
+
+            byte[] refusal = TcapDialoguePortion.CreateResponse(applicationContext, false,
+                TcapDialogueDiagnosticSource.User, diagnostic: 2).Encode();
+            var abort = new TcapTransactionMessage(TcapPackageType.Abort,
+                destinationTransactionId: context.RemoteTransactionId, dialoguePortion: refusal);
+            try
+            {
+                await SendEncodedTransactionAsync(context, abort, ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                context.AssociationEstablished = true;
+                CloseDialogue(context, TcapInvokeOutcomeKind.DialogueClosed);
+            }
+        }
+        finally
+        {
+            context.ResponseGate.Release();
+        }
+    }
+
+    private ValueTask SendEncodedTransactionAsync(DialogueContext context, TcapTransactionMessage transaction, CancellationToken ct)
+        => Sccp.SendAsync(new(ProtocolClass, context.CalledParty, context.CallingParty, transaction.Encode()), ct);
+
+    private static TcapObjectIdentifier? ReadRequestedContext(ReadOnlyMemory<byte> encoded)
+    {
+        if (encoded.IsEmpty)
+        {
+            return null;
+        }
+
+        if (!TcapDialoguePortion.TryDecode(encoded.Span, out var request, out _) || request is not { Accepted: null })
+        {
+            throw new InvalidOperationException("TCAP Begin dialogue portion must contain AARQ.");
+        }
+
+        return request.ApplicationContext;
+    }
+
+    private static bool ValidateDialogueResponse(DialogueContext context, TcapTransactionMessage transaction)
+    {
+        if (transaction.PackageType is TcapPackageType.Begin or TcapPackageType.Abort)
+        {
+            return true;
+        }
+
+        if (context.ApplicationContext is null || context.IsInbound || context.AssociationEstablished)
+        {
+            return transaction.DialoguePortion.IsEmpty;
+        }
+
+        if (!TcapDialoguePortion.TryDecode(transaction.DialoguePortion.Span, out var response, out _)
+            || response?.Accepted != true || !SameContext(context.ApplicationContext, response.ApplicationContext))
+        {
+            return false;
+        }
+
+        context.AssociationEstablished = true;
+        return true;
+    }
+
+    private static bool SameContext(TcapObjectIdentifier first, TcapObjectIdentifier second)
+        => first.Arcs.SequenceEqual(second.Arcs);
 
     private TcapTransactionMessage NormalizeOutbound(
         DialogueContext context,
@@ -1013,7 +1139,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
         SccpPartyAddress callingParty,
         TcapTransactionId localTransactionId,
         TcapTransactionId? remoteTransactionId,
-        TcapDialoguePhase phase)
+        TcapDialoguePhase phase,
+        TcapObjectIdentifier? applicationContext = null,
+        bool isInbound = false)
     {
         TcapDialogueHandle handle =
             new(Interlocked.Increment(ref _nextDialogueId));
@@ -1023,7 +1151,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             callingParty,
             localTransactionId,
             remoteTransactionId,
-            phase);
+            phase,
+            applicationContext,
+            isInbound);
         lock (_sync)
         {
             if (_dialogues.Count >= _options.MaximumDialogues)
@@ -1061,7 +1191,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             callingParty: indication.CalledParty,
             AllocateTransactionId(),
             transaction.OriginatingTransactionId,
-            TcapDialoguePhase.Open);
+            TcapDialoguePhase.Open,
+            ReadRequestedContext(transaction.DialoguePortion),
+            isInbound: true);
     }
 
     private DialogueContext GetDialogue(TcapDialogueHandle handle)
@@ -1317,7 +1449,9 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             SccpPartyAddress callingParty,
             TcapTransactionId localTransactionId,
             TcapTransactionId? remoteTransactionId,
-            TcapDialoguePhase phase)
+            TcapDialoguePhase phase,
+            TcapObjectIdentifier? applicationContext,
+            bool isInbound)
         {
             Handle = handle;
             CalledParty = calledParty;
@@ -1325,9 +1459,19 @@ public sealed class TcapDialogueManager : ITcapComponentDialogues, IAsyncDisposa
             LocalTransactionId = localTransactionId;
             RemoteTransactionId = remoteTransactionId;
             Phase = phase;
+            ApplicationContext = applicationContext;
+            IsInbound = isInbound;
         }
 
         public object Sync { get; } = new();
+
+        public SemaphoreSlim ResponseGate { get; } = new(1, 1);
+
+        public TcapObjectIdentifier? ApplicationContext { get; }
+
+        public bool IsInbound { get; }
+
+        public bool AssociationEstablished { get; set; }
 
         public TcapDialogueHandle Handle { get; }
 

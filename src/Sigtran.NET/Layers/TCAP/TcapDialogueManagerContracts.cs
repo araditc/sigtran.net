@@ -309,6 +309,9 @@ public sealed class TcapComponentIndication
     /// <summary>The component parameters.</summary>
     public ReadOnlyMemory<byte> Parameters => _parameters;
 
+    /// <summary>The context requested for the containing dialogue, if present.</summary>
+    public TcapObjectIdentifier? ApplicationContext { get; internal init; }
+
     /// <summary>The ReturnError code, when present.</summary>
     public TcapReturnErrorCode? ErrorCode { get; }
 
@@ -423,6 +426,13 @@ public interface ITcapComponentDialogues : ITcapDialogues
     ValueTask AbortAsync(
         TcapDialogueHandle dialogue,
         CancellationToken ct = default);
+
+    /// <summary>Refuses the initial association because its application context is unsupported.</summary>
+    /// <param name="dialogue">The inbound dialogue awaiting association.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>A value task that completes when the refusal is sent.</returns>
+    ValueTask RefuseAssociationAsync(TcapDialogueHandle dialogue, CancellationToken ct = default)
+        => AbortAsync(dialogue, ct);
 }
 
 /// <summary>

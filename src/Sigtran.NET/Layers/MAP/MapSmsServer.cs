@@ -288,6 +288,14 @@ public sealed class MapSmsServer
             return;
         }
 
+        if (indication.ApplicationContext is { } requested
+            && !requested.Arcs.SequenceEqual(profile.ApplicationContext.Arcs))
+        {
+            Interlocked.Increment(ref _rejectedOperations);
+            await Dialogues.RefuseAssociationAsync(indication.Dialogue, ct).ConfigureAwait(false);
+            return;
+        }
+
         object? message;
         bool decoded;
         try
