@@ -8,7 +8,7 @@ checks do not establish operator or release-candidate acceptance.
 | Unit | Scope | State |
 | --- | --- | --- |
 | 1 | Q.773 transaction tag classes and opaque transaction IDs | Implemented |
-| 2 | Transaction field validation and abort encoding | Pending |
+| 2 | Transaction field validation and abort encoding | Implemented |
 | 3 | Bounded BER and OID decoding | Pending |
 | 4 | Invoke and linked ID | Pending |
 | 5 | Result, error and reject | Pending |
@@ -28,3 +28,9 @@ assigns application-class tags `48`/`49` to the opaque transaction IDs and
 The in-repository C peer follows the same tag change. Rebuild it from matching
 source before retesting. Old captures retain their original wire-profile
 identity; they are not evidence for the new encoding.
+
+Transaction decode requires one complete package, ordered and unique fields,
+correct primitive/constructed form, and 1-4 octets per ID. It rejects legacy
+context tags, extra fields and data after the package. The provider abort
+cause uses application tag `4A`; it cannot be combined with user abort
+dialogue data or a component portion. Example: `67064901FF4A0101`.

@@ -49,13 +49,13 @@ public readonly struct TcapTransactionId
     }
 
     /// <summary>The transaction identifier length.</summary>
-    public int Length => _bytes.Length;
+    public int Length => _bytes?.Length ?? 0;
 
     /// <summary>Returns the transaction identifier bytes.</summary>
     /// <returns>A copy of the transaction identifier bytes.</returns>
     public byte[] ToArray()
     {
-        return _bytes.ToArray();
+        return Bytes.ToArray();
     }
 
     /// <summary>Creates a transaction identifier from an unsigned integer.</summary>
@@ -85,8 +85,25 @@ public readonly struct TcapTransactionId
     /// <returns>A hexadecimal transaction identifier string.</returns>
     public override string ToString()
     {
-        return Convert.ToHexString(_bytes);
+        return Convert.ToHexString(Bytes);
     }
+
+    internal ReadOnlySpan<byte> Bytes => _bytes;
+}
+
+/// <summary>Provider abort reasons defined by ITU-T Q.773.</summary>
+public enum TcapProviderAbortCause : byte
+{
+    /// <summary>The transaction package type was not recognized.</summary>
+    UnrecognizedMessageType = 0,
+    /// <summary>The destination transaction ID was not recognized.</summary>
+    UnrecognizedTransactionId = 1,
+    /// <summary>The transaction portion could not be parsed.</summary>
+    BadlyFormattedTransactionPortion = 2,
+    /// <summary>The transaction portion had invalid contents.</summary>
+    IncorrectTransactionPortion = 3,
+    /// <summary>The provider could not allocate transaction resources.</summary>
+    ResourceLimitation = 4
 }
 
 /// <summary>
@@ -99,6 +116,9 @@ public static class TcapTransactionTags
 
     /// <summary>Destination transaction ID application tag number.</summary>
     public const byte DestinationTransactionId = 9;
+
+    /// <summary>Provider abort cause application tag number.</summary>
+    public const byte ProviderAbortCause = 10;
 
     /// <summary>Component portion application tag number.</summary>
     public const byte ComponentPortion = 12;

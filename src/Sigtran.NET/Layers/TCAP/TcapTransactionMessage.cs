@@ -17,12 +17,31 @@ public sealed class TcapTransactionMessage
         TcapTransactionId? destinationTransactionId = null,
         ReadOnlyMemory<byte> componentPortion = default,
         ReadOnlyMemory<byte> dialoguePortion = default)
+        : this(packageType, originatingTransactionId, destinationTransactionId, componentPortion, dialoguePortion, null)
+    {
+    }
+
+    /// <summary>Creates a TCAP transaction message with an optional provider abort cause.</summary>
+    /// <param name="packageType">The package type.</param>
+    /// <param name="originatingTransactionId">The optional originating transaction ID.</param>
+    /// <param name="destinationTransactionId">The optional destination transaction ID.</param>
+    /// <param name="componentPortion">The optional encoded component portion.</param>
+    /// <param name="dialoguePortion">The optional encoded dialogue portion.</param>
+    /// <param name="providerAbortCause">The provider cause, only for Abort without a dialogue portion.</param>
+    public TcapTransactionMessage(
+        TcapPackageType packageType,
+        TcapTransactionId? originatingTransactionId,
+        TcapTransactionId? destinationTransactionId,
+        ReadOnlyMemory<byte> componentPortion,
+        ReadOnlyMemory<byte> dialoguePortion,
+        TcapProviderAbortCause? providerAbortCause)
     {
         PackageType = packageType;
         OriginatingTransactionId = originatingTransactionId;
         DestinationTransactionId = destinationTransactionId;
         ComponentPortion = componentPortion;
         DialoguePortion = dialoguePortion;
+        ProviderAbortCause = providerAbortCause;
     }
 
     /// <summary>The package type.</summary>
@@ -40,20 +59,34 @@ public sealed class TcapTransactionMessage
     /// <summary>The optional encoded dialogue portion.</summary>
     public ReadOnlyMemory<byte> DialoguePortion { get; }
 
+    /// <summary>The optional transaction-provider abort cause.</summary>
+    public TcapProviderAbortCause? ProviderAbortCause { get; }
+
     /// <summary>Encodes this TCAP transaction message.</summary>
     /// <returns>The encoded transaction message.</returns>
     public byte[] Encode()
     {
+        if (!HasValidFields(PackageType, OriginatingTransactionId, DestinationTransactionId,
+                ComponentPortion, DialoguePortion, ProviderAbortCause))
+        {
+            throw new InvalidOperationException("Invalid TCAP transaction fields for the package type.");
+        }
+
         byte[] content = new byte[2048];
         int offset = 0;
         if (OriginatingTransactionId.HasValue)
         {
-            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: true), OriginatingTransactionId.Value.ToArray());
+            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: true), OriginatingTransactionId.Value.Bytes);
         }
 
         if (DestinationTransactionId.HasValue)
         {
-            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: false), DestinationTransactionId.Value.ToArray());
+            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: false), DestinationTransactionId.Value.Bytes);
+        }
+
+        if (ProviderAbortCause is { } cause)
+        {
+            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, false, TcapTransactionTags.ProviderAbortCause), [(byte)cause]);
         }
 
         if (!DialoguePortion.IsEmpty)
@@ -90,9 +123,10 @@ public sealed class TcapTransactionMessage
             return false;
         }
 
-        if (wrapper.Tag.TagClass != TcapBerTagClass.Application || !wrapper.Tag.Constructed)
+        if (wrapper.TotalLength != data.Length
+            || wrapper.Tag.TagClass != TcapBerTagClass.Application || !wrapper.Tag.Constructed)
         {
-            error = "TCAP transaction message must use a constructed application tag";
+            error = "Expected exactly one constructed TCAP application element.";
             return false;
         }
 
@@ -100,6 +134,8 @@ public sealed class TcapTransactionMessage
         TcapTransactionId? destination = null;
         ReadOnlyMemory<byte> dialogue = default;
         ReadOnlyMemory<byte> components = default;
+        TcapProviderAbortCause? cause = null;
+        int previousTag = 0;
         ReadOnlySpan<byte> content = wrapper.Value.Span;
         while (!content.IsEmpty)
         {
@@ -108,28 +144,69 @@ public sealed class TcapTransactionMessage
                 return false;
             }
 
-            if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.OriginatingTransactionId)
+            if (element.Tag.TagClass != TcapBerTagClass.Application || element.Tag.Number <= previousTag)
             {
-                originating = new TcapTransactionId(element.Value.Span);
-            }
-            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.DestinationTransactionId)
-            {
-                destination = new TcapTransactionId(element.Value.Span);
-            }
-            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.DialoguePortion)
-            {
-                dialogue = element.Value;
-            }
-            else if (element.Tag.TagClass == TcapBerTagClass.Application && element.Tag.Number == TcapTransactionTags.ComponentPortion)
-            {
-                components = element.Value;
+                error = "Invalid, duplicate, or out-of-order TCAP transaction field.";
+                return false;
             }
 
+            switch (element.Tag.Encode())
+            {
+                case 0x48 when element.Value.Length is >= 1 and <= TcapTransactionId.MaxLength:
+                    originating = new TcapTransactionId(element.Value.Span);
+                    break;
+                case 0x49 when element.Value.Length is >= 1 and <= TcapTransactionId.MaxLength:
+                    destination = new TcapTransactionId(element.Value.Span);
+                    break;
+                case 0x4A when element.Value.Length == 1 && element.Value.Span[0] <= (byte)TcapProviderAbortCause.ResourceLimitation:
+                    cause = (TcapProviderAbortCause)element.Value.Span[0];
+                    break;
+                case 0x6B when !element.Value.IsEmpty:
+                    dialogue = element.Value;
+                    break;
+                case 0x6C when !element.Value.IsEmpty:
+                    components = element.Value;
+                    break;
+                default:
+                    error = "Invalid TCAP transaction field tag or size.";
+                    return false;
+            }
+
+            previousTag = element.Tag.Number;
             content = content[element.TotalLength..];
         }
 
-        message = new((TcapPackageType)wrapper.Tag.Number, originating, destination, components, dialogue);
+        TcapPackageType packageType = (TcapPackageType)wrapper.Tag.Number;
+        if (!HasValidFields(packageType, originating, destination, components, dialogue, cause))
+        {
+            error = "Invalid TCAP transaction fields for the package type.";
+            return false;
+        }
+
+        message = new(packageType, originating, destination, components, dialogue, cause);
         return true;
+    }
+
+    private static bool HasValidFields(TcapPackageType packageType, TcapTransactionId? originating,
+        TcapTransactionId? destination, ReadOnlyMemory<byte> components, ReadOnlyMemory<byte> dialogue,
+        TcapProviderAbortCause? cause)
+    {
+        if (originating is { Length: 0 } || destination is { Length: 0 }
+            || cause > TcapProviderAbortCause.ResourceLimitation)
+        {
+            return false;
+        }
+
+        return packageType switch
+        {
+            TcapPackageType.Unidirectional => originating is null && destination is null && !components.IsEmpty && cause is null,
+            TcapPackageType.Begin => originating is not null && destination is null && cause is null,
+            TcapPackageType.Continue => originating is not null && destination is not null && cause is null,
+            TcapPackageType.End => originating is null && destination is not null && cause is null,
+            TcapPackageType.Abort => originating is null && destination is not null && components.IsEmpty
+                && (cause is null || dialogue.IsEmpty),
+            _ => false
+        };
     }
 
     private static void WriteElement(byte[] destination, ref int offset, TcapBerTag tag, ReadOnlySpan<byte> value)
