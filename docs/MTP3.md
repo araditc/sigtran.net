@@ -52,7 +52,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | --- | --- | --- |
 | 1 | ITU MSU byte layout and input validation | Implemented |
 | 2 | M2PA framing at the MTP2 service boundary | Implemented |
-| 3 | Linkset, routeset and stable SLS selection | Pending |
+| 3 | Linkset, routeset and stable SLS selection | Implemented |
 | 4 | MTP3 transfer network and bounded receive ownership | Pending |
 | 5 | Network management framing and route state | Pending |
 | 6 | 24-bit link retrieval and peer confirmation | Pending |
@@ -64,3 +64,13 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 Pass `M2paLink.CreateMtp2ServiceLink()` as the MTP2 service endpoint.
 It adds the RFC 4165 spare octet on send and removes it on receive. The
 application still owns the underlying M2PA link and its alignment lifecycle.
+
+## Linksets And Routesets
+
+Bind one MTP2 service endpoint per `Mtp3LinkBinding`. Links to the
+same adjacent point code form a linkset, with unique four-bit link
+codes. Each `Mtp3Route` connects a destination to a configured linkset;
+lower priority values are preferred and ties use ascending adjacent
+point code. Within a linkset, SLS starts at a bucket in sorted link-code
+order and walks forward only if that link is unavailable. A single
+unavailable link does not redistribute healthy buckets.

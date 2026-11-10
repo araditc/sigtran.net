@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Threading.Channels;
 using Sigtran.NET.Layers.MTP2;
 using Sigtran.NET.Layers.MTP3;
 
@@ -35,6 +37,27 @@ internal static class Mtp3LinkNetworkTests
 
     internal static void M2paServiceFraming() => ExerciseM2paServiceFramingAsync().GetAwaiter().GetResult();
 
+    internal static void LinkRouting()
+    {
+        TestLink low = new(), high = new(), alternate = new();
+        Mtp3LinkBinding a = new(2, 2, low), b = new(2, 7, high), c = new(3, 1, alternate);
+        Mtp3LinkBinding[] links = [b, c, a];
+        Mtp3Route[] routes = [new(9, 3, 1), new(9, 2, 0)];
+        Mtp3LinkRoutingTable table = new(1, links, routes);
+        bool Available(Mtp3LinkBinding binding) => binding.Link.State == Mtp2LinkState.InService;
+        Require(table.Select(9, 0, Available) == a && table.Select(9, 1, Available) == b, "Stable SLS buckets use sorted link codes");
+        low.State = Mtp2LinkState.Failed;
+        Require(table.Select(9, 0, Available) == b && table.Select(9, 1, Available) == b, "Only the failed bucket moves");
+        high.State = Mtp2LinkState.OutOfService;
+        Require(table.Select(9, 0, Available) == c && table.Select(8, 0, Available) is null, "Only configured alternate routes may carry traffic");
+
+        Reject(() => new Mtp3LinkRoutingTable(1, [a, new(2, 2, high)], routes));
+        Reject(() => new Mtp3LinkRoutingTable(1, [a, new(3, 2, low)], routes));
+        Reject(() => new Mtp3LinkRoutingTable(1, links, [new(9, 4)]));
+        Reject(() => new Mtp3LinkRoutingTable(1, links, [new(9, 2), new(9, 2)]));
+        Reject(() => new Mtp3LinkRoutingTable(1, links, [new(1, 2)]));
+    }
+
     private static async Task ExerciseM2paServiceFramingAsync()
     {
         using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
@@ -67,6 +90,45 @@ internal static class Mtp3LinkNetworkTests
         if (!condition)
         {
             throw new InvalidOperationException(description);
+        }
+    }
+
+    private static void Reject(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (ArgumentException)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException("Invalid link topology was accepted");
+    }
+
+    /// <summary>Supplies test MSUs without depending on the M2PA framing implementation.</summary>
+    private sealed class TestLink : IMtp2Link
+    {
+        private readonly Channel<byte[]> _inbound = Channel.CreateUnbounded<byte[]>();
+
+        public Mtp2LinkState State { get; set; } = Mtp2LinkState.InService;
+        internal ConcurrentQueue<byte[]> Sent { get; } = new();
+
+        internal void Inject(byte[] msu) => _inbound.Writer.TryWrite(msu);
+
+        public ValueTask SendAsync(ReadOnlyMemory<byte> payload, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Sent.Enqueue(payload.ToArray());
+            return ValueTask.CompletedTask;
+        }
+
+        public async ValueTask<int> ReceiveAsync(Memory<byte> buffer, CancellationToken ct = default)
+        {
+            byte[] msu = await _inbound.Reader.ReadAsync(ct);
+            msu.CopyTo(buffer);
+            return msu.Length;
         }
     }
 }

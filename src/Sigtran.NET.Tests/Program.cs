@@ -416,6 +416,7 @@ Run("MAP SMS service correlates client and server workflows", MapSmsServiceCorre
 Run("MTP3 routing label and SIO round-trip", Mtp3RoutingLabelAndSioRoundTrip);
 Run("ITU MTP3 MSU wire layout and adaptation boundary", Mtp3LinkNetworkTests.MsuWire);
 Run("M2PA adapts ITU MSUs without exposing its spare octet", Mtp3LinkNetworkTests.M2paServiceFraming);
+Run("MTP3 validates linksets and preserves healthy SLS assignments", Mtp3LinkNetworkTests.LinkRouting);
 Run("SCCP protocol constants expose connectionless classes", SccpProtocolConstantsExposeConnectionlessClasses);
 Run("SCCP party address encodes SSN and global title", SccpPartyAddressEncodesSsnAndGlobalTitle);
 Run("SCCP UDT codec uses variable parameter pointers", SccpUdtCodecUsesVariableParameterPointers);
