@@ -37,6 +37,46 @@ internal static class Mtp3LinkNetworkTests
 
     internal static void M2paServiceFraming() => ExerciseM2paServiceFramingAsync().GetAwaiter().GetResult();
     internal static void TransferNetwork() => ExerciseTransferNetworkAsync().GetAwaiter().GetResult();
+    internal static void ManagementRoutes() => ExerciseManagementRoutesAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseManagementRoutesAsync()
+    {
+        Require(new Mtp3ManagementMessage(Mtp3ManagementKind.ExtendedChangeoverOrder, 0x123456).Encode()
+            .SequenceEqual(new byte[] { 0x31, 0x56, 0x34, 0x12 }), "Q.2210 extended FSN octet order");
+        Require(Mtp3ManagementMessage.TryDecode([0x61, 0xB2], out Mtp3ManagementMessage acknowledgement)
+            && acknowledgement == new Mtp3ManagementMessage(Mtp3ManagementKind.ChangebackAcknowledgement, 0xB2),
+            "Q.704 changeback acknowledgement");
+        Require(!Mtp3ManagementMessage.TryDecode([0x14, 0x02, 0xC0], out _)
+            && !Mtp3ManagementMessage.TryDecode([0x41, 0x01, 0x02], out _)
+            && !Mtp3ManagementMessage.TryDecode([0x12, 0x01], out _)
+            && !Mtp3ManagementMessage.TryDecode([0x11, 0x01], out _), "Reject malformed and non-extended management bodies");
+
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        TestLink first = new(), alternate = new();
+        await using Mtp3LinkNetwork network = new(1, 2, [new(2, 1, first), new(3, 1, alternate)], [new(9, 2), new(9, 3, 1)]);
+        Mtp3TransferMessage transfer = new(new(Mtp3ServiceIndicator.Sccp, 2), new(9, 1, 0), new byte[] { 1 });
+
+        async Task Announce(byte heading, byte opcLow, byte pointCode)
+        {
+            first.Inject([0x80, 1, opcLow, 0, 0, heading, pointCode, 0]);
+            first.Inject([0x83, 1, 0x80, 0, 0, 0x12]);
+            Require((await network.ReceiveAsync(timeout.Token)).UserPayload.Span[0] == 0x12, "SNMM is consumed below SCCP");
+            await network.SendAsync(transfer, timeout.Token);
+        }
+
+        await Announce(0x14, 0xC0, 9);
+        await Announce(0x14, 0x80, 8);
+        Require(first.Sent.Count == 2 && alternate.Sent.IsEmpty, "Wrong neighbour and unconfigured destination cannot prohibit a route");
+        await Announce(0x14, 0x80, 9);
+        Require(alternate.Sent.Count == 1, "TFP diverts only the announced route");
+        await Announce(0x34, 0x80, 9);
+        Require(alternate.Sent.Count == 2, "A restricted route ranks behind any allowed route");
+        alternate.State = Mtp2LinkState.OutOfService;
+        await network.SendAsync(transfer, timeout.Token);
+        Require(first.Sent.Count == 3, "Restricted route is usable when no allowed route is available");
+        await Announce(0x54, 0x80, 9);
+        Require(first.Sent.Count == 4, "TFA restores the preferred route");
+    }
 
     private static async Task ExerciseTransferNetworkAsync()
     {

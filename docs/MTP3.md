@@ -54,7 +54,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 2 | M2PA framing at the MTP2 service boundary | Implemented |
 | 3 | Linkset, routeset and stable SLS selection | Implemented |
 | 4 | MTP3 transfer network and bounded receive ownership | Implemented |
-| 5 | Network management framing and route state | Pending |
+| 5 | Network management framing and route state | Implemented |
 | 6 | 24-bit link retrieval and peer confirmation | Pending |
 | 7 | Extended changeover and emergency handling | Pending |
 | 8 | Acknowledged changeback and ordered traffic | Pending |
@@ -81,3 +81,14 @@ backpressures a bounded receive queue. It delivers only local user-part
 traffic; it is not an STP and does not relay incoming traffic to other
 destinations. Dispose the network before disposing its links. A send
 that fails after dispatch is not automatically retried on another link.
+
+## Signalling Network Management
+
+The endpoint consumes Q.704 TFP and TFA and, for national NI values,
+TFR. It applies them only to the announced destination via the
+configured neighbour that supplied the message. Prohibited routes
+are excluded; restricted routes rank below available unrestricted
+routes. Wrong NI, DPC or neighbour, unknown route, unsupported heading,
+and malformed lengths or point-code spare bits cannot change routing.
+Management frames never reach SCCP. This is an endpoint route policy,
+not a complete STP routing or MTP restart implementation.

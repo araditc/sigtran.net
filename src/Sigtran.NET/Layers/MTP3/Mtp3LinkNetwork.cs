@@ -115,13 +115,24 @@ public sealed partial class Mtp3LinkNetwork : IMtp3Network, IAsyncDisposable
 
                 if (!Mtp3Msu.TryDecode(bytes.AsSpan(0, count), out Mtp3TransferMessage? message)
                     || message!.ServiceInformation.NetworkIndicator != _networkIndicator
-                    || message.RoutingLabel.DestinationPointCode != _localPointCode
-                    || (byte)message.ServiceInformation.ServiceIndicator < 2)
+                    || message.RoutingLabel.DestinationPointCode != _localPointCode)
                 {
                     continue;
                 }
 
-                await _inbound.Writer.WriteAsync(message, ct).ConfigureAwait(false);
+                if (message.ServiceInformation.ServiceIndicator == Mtp3ServiceIndicator.SignallingNetworkManagement)
+                {
+                    if (message.RoutingLabel.OriginatingPointCode == link.AdjacentPointCode
+                        && Mtp3ManagementMessage.TryDecode(message.UserPayload.Span, out Mtp3ManagementMessage management)
+                        && (management.Kind != Mtp3ManagementKind.TransferRestricted || _networkIndicator >= 2))
+                    {
+                        _routing.UpdateRoute(link.AdjacentPointCode, management);
+                    }
+                }
+                else if (message.ServiceInformation.ServiceIndicator != Mtp3ServiceIndicator.SignallingNetworkTesting)
+                {
+                    await _inbound.Writer.WriteAsync(message, ct).ConfigureAwait(false);
+                }
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)

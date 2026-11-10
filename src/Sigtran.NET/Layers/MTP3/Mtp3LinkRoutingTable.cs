@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Sigtran.NET.Layers.MTP2;
 
 namespace Sigtran.NET.Layers.MTP3;
@@ -59,6 +60,7 @@ internal sealed class Mtp3LinkRoutingTable
 {
     private readonly Dictionary<uint, Mtp3LinkBinding[]> _linksets;
     private readonly Dictionary<uint, Mtp3Route[]> _routesets;
+    private readonly ConcurrentDictionary<(uint Destination, uint Adjacent), Mtp3ManagementKind> _routeStates = new();
 
     internal Mtp3LinkRoutingTable(uint localPointCode, IReadOnlyList<Mtp3LinkBinding> links, IReadOnlyList<Mtp3Route> routes)
     {
@@ -99,15 +101,33 @@ internal sealed class Mtp3LinkRoutingTable
             return null;
         }
 
-        foreach (Mtp3Route route in routes)
+        for (int pass = 0; pass < 2; pass++)
         {
-            if (SelectLink(route.AdjacentPointCode, sls, available) is { } selected)
+            Mtp3ManagementKind preference = pass == 0 ? Mtp3ManagementKind.TransferAllowed : Mtp3ManagementKind.TransferRestricted;
+            foreach (Mtp3Route route in routes)
             {
-                return selected;
+                Mtp3ManagementKind state = _routeStates.GetValueOrDefault((destination, route.AdjacentPointCode),
+                    Mtp3ManagementKind.TransferAllowed);
+                if (state == preference && SelectLink(route.AdjacentPointCode, sls, available) is { } selected)
+                {
+                    return selected;
+                }
             }
         }
 
         return null;
+    }
+
+    /// <summary>Records only route status for a configured destination via the announcing neighbour.</summary>
+    internal void UpdateRoute(uint adjacent, Mtp3ManagementMessage management)
+    {
+        if (management.Kind is Mtp3ManagementKind.TransferAllowed or Mtp3ManagementKind.TransferProhibited
+                or Mtp3ManagementKind.TransferRestricted
+            && _routesets.TryGetValue(management.Value, out Mtp3Route[]? routes)
+            && routes.Any(route => route.AdjacentPointCode == adjacent))
+        {
+            _routeStates[(management.Value, adjacent)] = management.Kind;
+        }
     }
 
     /// <summary>Walks configured buckets without remapping SLS values on healthy links.</summary>
