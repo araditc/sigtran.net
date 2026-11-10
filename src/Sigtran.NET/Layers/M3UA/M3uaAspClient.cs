@@ -144,6 +144,15 @@ public sealed class M3uaAspClient
             options.MaxHandshakeMessages,
             ct).ConfigureAwait(false);
 
+        if (_session.OutboundProcessor.RoutingContext is uint expected
+            && (_session.InboundProcessor.AspSession.RoutingContexts.Length != 1
+                || !_session.InboundProcessor.AspSession.HasRoutingContext(expected)))
+        {
+            // RFC 4666 4.3.4.3 requires acknowledgement of an explicit Routing Context.
+            _session.InboundProcessor.AspSession.Reset();
+            throw new InvalidOperationException("ASP Active Ack did not confirm the requested Routing Context.");
+        }
+
         return new(upAck, activeAck);
     }
 

@@ -120,3 +120,4 @@ M:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery.TryRetrieveAfter`0(System.UInt32|opt
 T:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery|kind=interface|base=-|interfaces=Sigtran.NET.Layers.MTP2.IMtp2Link|abstract=True|sealed=False
 M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.IsLinkDiverted`0(System.UInt32|optional=False|out=False,System.Byte|optional=False|out=False):System.Boolean|static=False|abstract=False
 M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.ChangebackAsync`0(System.UInt32|optional=False|out=False,System.Byte|optional=False|out=False,System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask<System.Boolean>|static=False|abstract=False
+M:Sigtran.NET.Layers.M3UA.M3uaRuntime.SendOnActiveAssociationAsync`0(Sigtran.NET.Layers.MTP3.Mtp3TransferMessage|optional=False|out=False,System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask|static=False|abstract=False

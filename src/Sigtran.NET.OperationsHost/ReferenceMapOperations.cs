@@ -132,6 +132,10 @@ internal sealed partial class ReferenceOperationExecutor(IMapSmsService map, Ref
         {
             return new(stop.IsCancellationRequested ? "Stopped" : "TimedOut");
         }
+        catch (IOException)
+        {
+            return new("TransportFailure");
+        }
         finally
         {
             Complete();

@@ -13,7 +13,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 3 | Bounded typed MAP operation execution | Implemented |
 | 4 | Loopback-only authenticated service entry point | Implemented |
 | 5 | Readiness, metrics and shutdown drain | Implemented |
-| 6 | Explicit M3UA application-server routing context | Pending |
+| 6 | Explicit M3UA application-server routing context | Implemented |
 | 7 | Independent peer positive and negative scenario matrix | Pending |
 | 8 | Real host traffic and independent PCAP/trace comparison | Pending |
 | 9 | Separately maintained peer path | Pending |
@@ -32,6 +32,10 @@ profile and enable its local entry point.
 | `SIGTRAN_MAP_SMS_TOKEN` | Required 32-128 character base64url-form secret; use a randomly generated token. Diagnostics never include its value. |
 
 MAP SMS requires 14-bit ITU point codes and SCCP service indicator 3.
+Set a nonzero `SIGTRAN_ROUTING_CONTEXT` matching the peer's configured AS.
+For a peer with a fixed ASP endpoint, set both `SIGTRAN_LOCAL_SCTP_IP`
+(unicast IPv4) and `SIGTRAN_LOCAL_SCTP_PORT`; otherwise the kernel selects
+the local endpoint.
 Keep this host on authorized lab or operator endpoints. A repository-owned
 peer and an independently maintained signalling stack are distinct
 evidence classes. Neither qualifies production or stable release alone.
@@ -91,3 +95,14 @@ complete before the upper layers stop. The drain waits up to ten
 seconds within the host shutdown budget, cancels remaining work
 and allows up to two more seconds for cleanup. The host does not
 retry work that times out or gets canceled.
+
+## M3UA Route Binding
+
+The reference association sends the configured Routing Context in ASP
+Active, ASP Inactive and DATA. A missing or different ASP Active Ack
+context is a startup failure. The endpoint admits only SCCP DATA for
+its configured point codes, NI and context. The SDK's
+`SendOnActiveAssociationAsync` waits for the selected generation's
+local transport write. A queued transfer for a lost generation is
+not dispatched on its replacement. An uncertain write is a transport
+failure, not a reason to retry. See [RFC 4666 section 4.3.4.3](https://www.rfc-editor.org/rfc/rfc4666.html#section-4.3.4.3).

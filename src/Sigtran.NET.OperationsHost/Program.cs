@@ -42,8 +42,12 @@ if (referenceOptions is not null)
 {
     builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
     builder.Services.AddSingleton(referenceOptions);
-    builder.Services.AddSingleton(services => new ReferenceMapStack(
-        services.GetRequiredService<M3uaRuntime>(), configuration, referenceOptions));
+    builder.Services.AddSingleton(services =>
+    {
+        M3uaRuntime runtime = services.GetRequiredService<M3uaRuntime>();
+        return new ReferenceMapStack(new ReferenceMtp3Network(runtime, runtime.SendOnActiveAssociationAsync, configuration),
+            configuration, referenceOptions);
+    });
     builder.Services.AddSingleton(services => new ReferenceOperationExecutor(
         services.GetRequiredService<ReferenceMapStack>().Map, referenceOptions));
 }
@@ -128,6 +132,7 @@ static M3uaRuntime CreateRuntime(IServiceProvider services)
 {
     SigtranNodeConfiguration configuration =
         services.GetRequiredService<SigtranNodeConfiguration>();
+    ReferenceServiceOptions? reference = services.GetService<ReferenceServiceOptions>();
     M3uaDelegateRuntimeSessionFactory sessionFactory = new(
         async ct =>
         {
@@ -137,7 +142,7 @@ static M3uaRuntime CreateRuntime(IServiceProvider services)
                         new SctpEndpoint(
                             configuration.RemoteAddress.ToString(),
                             configuration.RemotePort),
-                        localEndpoint: null,
+                        localEndpoint: reference?.LocalEndpoint,
                         outboundStreams: 8,
                         inboundStreams: 8,
                         defaultPayloadProtocolIdentifier:
@@ -161,9 +166,12 @@ static M3uaRuntime CreateRuntime(IServiceProvider services)
                         enableNoDelay: true),
                     ct)
                 .ConfigureAwait(false);
+            M3uaAspSession asp = new();
             return new(
                 $"sg-{configuration.RemoteAddress}-{configuration.RemotePort}",
-                new M3uaTransportSession((ISctpTransport)transport));
+                reference is null ? new M3uaTransportSession((ISctpTransport)transport)
+                    : new M3uaTransportSession((ISctpTransport)transport, new(asp, requireActiveAspForPayload: true),
+                        new(asp, routingContext: configuration.RoutingContext, requireActiveAspForPayload: true)));
         });
 
     return new(

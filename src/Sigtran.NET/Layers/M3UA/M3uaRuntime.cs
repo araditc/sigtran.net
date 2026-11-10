@@ -172,6 +172,32 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     }
 
     /// <summary>
+    /// Sends a transfer on the current active transport generation without replaying it on reconnect.
+    /// </summary>
+    /// <param name="message">The transfer to dispatch.</param>
+    /// <param name="ct">Cancels admission before the active send loop owns the transfer.</param>
+    /// <returns>A value task that completes after the local transport write, not after peer delivery.</returns>
+    /// <exception cref="IOException">The active generation could not write the transfer or delivery is uncertain.</exception>
+    public async ValueTask SendOnActiveAssociationAsync(Mtp3TransferMessage message, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        M3uaRuntimeTrackedSendResult result = await SendTrackedAsync(null, message, ct).ConfigureAwait(false);
+        if (result.Disposition == M3uaRuntimeTrackedSendDisposition.TransportWriteCompleted)
+        {
+            return;
+        }
+
+        if (result.CallerCancellation)
+        {
+            throw new OperationCanceledException(ct);
+        }
+
+        throw new IOException(result.Disposition == M3uaRuntimeTrackedSendDisposition.Ambiguous
+            ? "The M3UA transport write outcome is uncertain."
+            : "No active M3UA transport generation dispatched the transfer.");
+    }
+
+    /// <summary>
     /// Enqueues one HA-owned transfer only while the named association has an
     /// active transport session and waits until that exact session either
     /// completes its local transport write or proves an ownership outcome.
@@ -183,12 +209,12 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
     /// captured for an older session generation.
     /// </remarks>
     internal async ValueTask<M3uaRuntimeTrackedSendResult> SendTrackedAsync(
-        string associationName,
+        string? associationName,
         Mtp3TransferMessage message,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(message);
-        if (string.IsNullOrWhiteSpace(associationName))
+        if (associationName is not null && string.IsNullOrWhiteSpace(associationName))
         {
             throw new ArgumentException(
                 "Association name is required.",
@@ -201,6 +227,7 @@ public sealed class M3uaRuntime : IMtp3Network, IAsyncDisposable
         CancellationToken sessionAdmissionToken;
         lock (_sync)
         {
+            associationName ??= _associationName;
             if (_runTask is null || _state != M3uaRuntimeState.Active)
             {
                 return M3uaRuntimeTrackedSendResult.KnownNotDispatched(

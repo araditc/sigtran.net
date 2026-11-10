@@ -1,8 +1,11 @@
 using System.Collections.Frozen;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using Sigtran.NET.Layers.MAP;
+using Sigtran.NET.Layers.SCTP;
 using Sigtran.NET.Operations;
 
 namespace Sigtran.NET.OperationsHost;
@@ -20,24 +23,21 @@ internal sealed class ReferenceServiceOptions
             ["alert-service-centre"] = MapSmsOperationCode.AlertServiceCentre
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
-    private ReferenceServiceOptions(FrozenSet<MapSmsOperationCode> operations, int maxInFlight, TimeSpan timeout, byte[] tokenDigest)
+    private ReferenceServiceOptions(FrozenSet<MapSmsOperationCode> operations, int maxInFlight, TimeSpan timeout, byte[] tokenDigest,
+        SctpEndpoint? localEndpoint)
     {
         Operations = operations;
         MaxInFlight = maxInFlight;
         Timeout = timeout;
         TokenDigest = tokenDigest;
+        LocalEndpoint = localEndpoint;
     }
-
-    internal static IReadOnlyList<string> ConfigurationKeys { get; } =
-    [
-        "SIGTRAN_REFERENCE_MODE", "SIGTRAN_MAP_SMS_OPERATIONS", "SIGTRAN_MAP_SMS_MAX_IN_FLIGHT",
-        "SIGTRAN_MAP_SMS_TIMEOUT_MS", "SIGTRAN_MAP_SMS_TOKEN"
-    ];
 
     internal FrozenSet<MapSmsOperationCode> Operations { get; }
     internal int MaxInFlight { get; }
     internal TimeSpan Timeout { get; }
     internal byte[] TokenDigest { get; }
+    internal SctpEndpoint? LocalEndpoint { get; }
 
     internal static bool TryGetOperation(string name, out MapSmsOperationCode operation) => Names.TryGetValue(name, out operation);
 
@@ -60,6 +60,20 @@ internal sealed class ReferenceServiceOptions
         if (node.LocalPointCode > 0x3FFF) return Invalid("SIGTRAN_LOCAL_POINT_CODE", out invalidKey);
         if (node.RemotePointCode > 0x3FFF) return Invalid("SIGTRAN_REMOTE_POINT_CODE", out invalidKey);
         if (node.ServiceIndicator != 3) return Invalid("SIGTRAN_SERVICE_INDICATOR", out invalidKey);
+        if (node.RoutingContext == 0) return Invalid("SIGTRAN_ROUTING_CONTEXT", out invalidKey);
+
+        SctpEndpoint? local = null;
+        string? localIp = read("SIGTRAN_LOCAL_SCTP_IP");
+        string? localPort = read("SIGTRAN_LOCAL_SCTP_PORT");
+        if (localIp is not null || localPort is not null)
+        {
+            if (!IPAddress.TryParse(localIp, out IPAddress? address) || address.AddressFamily != AddressFamily.InterNetwork
+                || address.GetAddressBytes()[0] is 0 or >= 224)
+                return Invalid("SIGTRAN_LOCAL_SCTP_IP", out invalidKey);
+            if (!ReadInt(localPort, 0, 1, 65535, out int port))
+                return Invalid("SIGTRAN_LOCAL_SCTP_PORT", out invalidKey);
+            local = new(address.ToString(), port);
+        }
 
         string[] names = (read("SIGTRAN_MAP_SMS_OPERATIONS") ?? "").Split(',', StringSplitOptions.TrimEntries);
         HashSet<MapSmsOperationCode> operations = [];
@@ -80,7 +94,7 @@ internal sealed class ReferenceServiceOptions
         string? token = read("SIGTRAN_MAP_SMS_TOKEN");
         if (!IsToken(token)) return Invalid("SIGTRAN_MAP_SMS_TOKEN", out invalidKey);
         options = new(operations.ToFrozenSet(), maxInFlight, TimeSpan.FromMilliseconds(timeout),
-            SHA256.HashData(Encoding.ASCII.GetBytes(token!)));
+            SHA256.HashData(Encoding.ASCII.GetBytes(token!)), local);
         return true;
     }
 

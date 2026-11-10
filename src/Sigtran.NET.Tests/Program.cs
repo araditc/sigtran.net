@@ -44,6 +44,7 @@ Run("Reference host validates opt-in ITU MAP SMS settings before startup", Refer
 Run("Reference host owns the MAP, TCAP and SCCP lifecycles over one MTP3 network", ReferenceServiceTests.Composition);
 Run("Reference operations validate input and bound admission before correlated MAP dispatch", ReferenceServiceTests.Operations);
 Run("Reference HTTP boundary rejects forwarded identity, bad credentials and invalid bodies", ReferenceServiceTests.LocalHttpBoundary);
+Run("Reference M3UA requires explicit context acknowledgement and an active dispatch generation", ReferenceServiceTests.RoutingContext);
 Run("SIGTRAN deployment profiles expose production and development gates", SigtranDeploymentProfilesExposeProductionAndDevelopmentGates);
 Run("SIGTRAN productionization status summarizes foundation", SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);

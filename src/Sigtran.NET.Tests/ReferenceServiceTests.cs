@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Sigtran.NET.Layers.M3UA;
 using Sigtran.NET.Layers.MAP;
+using Sigtran.NET.Layers.MTP3;
 using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.TCAP;
 using Sigtran.NET.Operations;
@@ -44,6 +46,54 @@ internal static partial class ReferenceServiceTests
     internal static void Composition() => ExerciseCompositionAsync().GetAwaiter().GetResult();
     internal static void Operations() => ExerciseOperationsAsync().GetAwaiter().GetResult();
     internal static void LocalHttpBoundary() => ExerciseLocalHttpBoundaryAsync().GetAwaiter().GetResult();
+    internal static void RoutingContext() => ExerciseRoutingContextAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseRoutingContextAsync()
+    {
+        foreach (uint[] contexts in new uint[][] { [], [99], [99, 100], [100] })
+        {
+            FakeSctpSocket socket = new();
+            byte[] packet = new byte[96];
+            Require(M3uaMessageBuilder.BuildAspUpAck(packet, 1, [], out int written, out _), "Build ASPUP ACK");
+            socket.QueueReceive(packet[..written]);
+            Require(M3uaMessageBuilder.BuildAspActiveAck(packet, M3uaTrafficModeType.Loadshare, contexts, [], out written, out _),
+                "Build ASPAC ACK");
+            socket.QueueReceive(packet[..written]);
+            M3uaAspSession session = new();
+            using M3uaTransportSession transport = new(socket, new(session), new(session, routingContext: 100));
+            bool expected = contexts.SequenceEqual(new uint[] { 100 });
+            try
+            {
+                await new M3uaAspClient(transport).StartAsync();
+                Require(expected && session.State == M3uaAspState.Active, "Only the requested Routing Context becomes active");
+            }
+            catch (InvalidOperationException error) when (error.Message.Contains("did not confirm", StringComparison.Ordinal))
+            {
+                Require(!expected && session.State == M3uaAspState.Down, "An incomplete or foreign ACK cannot leave the ASP active");
+            }
+        }
+
+        SigtranNodeConfiguration node = new(IPAddress.Loopback, 2905, 1, 1, 2, 100, 2, 3, 16);
+        FakeMtp3Network lower = new();
+        ReferenceMtp3Network route = new(lower, lower.SendAsync, node);
+        await route.SendAsync(new(new(Mtp3ServiceIndicator.Sccp, 2), new(2, 1, 1), new byte[] { 1 }));
+        Require(lower.SentTransfers.Single().RoutingContext == 100, "Outbound SCCP DATA carries the configured Routing Context");
+        lower.QueueReceive(new(new(Mtp3ServiceIndicator.Sccp, 2), new(1, 2, 1), new byte[] { 1 }, routingContext: 99));
+        lower.QueueReceive(new(new(Mtp3ServiceIndicator.Sccp, 2), new(1, 3, 1), new byte[] { 2 }, routingContext: 100));
+        lower.QueueReceive(new(new(Mtp3ServiceIndicator.Sccp, 2), new(1, 2, 1), new byte[] { 3 }, routingContext: 100));
+        Require((await route.ReceiveAsync()).UserPayload.Span[0] == 3, "Foreign Routing Context and OPC never reach SCCP");
+
+        await using M3uaRuntime runtime = new(new M3uaDelegateRuntimeSessionFactory(_ => throw new InvalidOperationException("Do not connect")));
+        try
+        {
+            await runtime.SendOnActiveAssociationAsync(lower.SentTransfers[0]);
+            throw new InvalidOperationException("Inactive runtime accepted a generation-bound transfer");
+        }
+        catch (IOException error)
+        {
+            Require(error.Message.Contains("No active", StringComparison.Ordinal), "No dispatch or cross-session queue on an inactive association");
+        }
+    }
 
     private static async Task ExerciseLocalHttpBoundaryAsync()
     {
