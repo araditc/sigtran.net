@@ -110,3 +110,8 @@ P:Sigtran.NET.Layers.MTP3.Mtp3Route.AdjacentPointCode():System.UInt32|get=True|s
 P:Sigtran.NET.Layers.MTP3.Mtp3Route.DestinationPointCode():System.UInt32|get=True|set=False|static=False
 P:Sigtran.NET.Layers.MTP3.Mtp3Route.Priority():System.UInt16|get=True|set=False|static=False
 T:Sigtran.NET.Layers.MTP3.Mtp3Route|kind=class|base=System.Object|interfaces=|abstract=False|sealed=True
+C:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork(System.UInt32|optional=False|out=False,System.Byte|optional=False|out=False,System.Collections.Generic.IReadOnlyList<Sigtran.NET.Layers.MTP3.Mtp3LinkBinding>|optional=False|out=False,System.Collections.Generic.IReadOnlyList<Sigtran.NET.Layers.MTP3.Mtp3Route>|optional=False|out=False,System.Int32|optional=True|out=False,System.Int32|optional=True|out=False)
+M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.DisposeAsync`0():System.Threading.Tasks.ValueTask|static=False|abstract=False
+M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.ReceiveAsync`0(System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask<Sigtran.NET.Layers.MTP3.Mtp3TransferMessage>|static=False|abstract=False
+M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.SendAsync`0(Sigtran.NET.Layers.MTP3.Mtp3TransferMessage|optional=False|out=False,System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask|static=False|abstract=False
+T:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork|kind=class|base=System.Object|interfaces=Sigtran.NET.Layers.MTP3.IMtp3Network,System.IAsyncDisposable|abstract=False|sealed=True

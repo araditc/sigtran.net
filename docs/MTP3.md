@@ -53,7 +53,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 1 | ITU MSU byte layout and input validation | Implemented |
 | 2 | M2PA framing at the MTP2 service boundary | Implemented |
 | 3 | Linkset, routeset and stable SLS selection | Implemented |
-| 4 | MTP3 transfer network and bounded receive ownership | Pending |
+| 4 | MTP3 transfer network and bounded receive ownership | Implemented |
 | 5 | Network management framing and route state | Pending |
 | 6 | 24-bit link retrieval and peer confirmation | Pending |
 | 7 | Extended changeover and emergency handling | Pending |
@@ -74,3 +74,10 @@ lower priority values are preferred and ties use ascending adjacent
 point code. Within a linkset, SLS starts at a bucket in sorted link-code
 order and walks forward only if that link is unavailable. A single
 unavailable link does not redistribute healthy buckets.
+
+`Mtp3LinkNetwork` implements `IMtp3Network` for one ITU point code
+and network indicator. It owns one reader per configured link and
+backpressures a bounded receive queue. It delivers only local user-part
+traffic; it is not an STP and does not relay incoming traffic to other
+destinations. Dispose the network before disposing its links. A send
+that fails after dispatch is not automatically retried on another link.

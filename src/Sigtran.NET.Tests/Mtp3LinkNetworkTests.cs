@@ -36,6 +36,41 @@ internal static class Mtp3LinkNetworkTests
     }
 
     internal static void M2paServiceFraming() => ExerciseM2paServiceFramingAsync().GetAwaiter().GetResult();
+    internal static void TransferNetwork() => ExerciseTransferNetworkAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseTransferNetworkAsync()
+    {
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        TestLink first = new(), second = new();
+        await using Mtp3LinkNetwork network = new(1, 2, [new(2, 1, first), new(2, 2, second)], [new(2, 2)], inboundCapacity: 1);
+        IMtp3Network service = network;
+        await service.SendAsync(new(new(Mtp3ServiceIndicator.Sccp, 2), new(2, 1, 1), new byte[] { 9, 2 }), timeout.Token);
+        Require(first.Sent.IsEmpty && second.Sent.TryDequeue(out byte[]? sent)
+            && sent.SequenceEqual(new byte[] { 0x83, 0x02, 0x40, 0x00, 0x10, 9, 2 }),
+            "SCCP transfer uses the selected MTP2 link and preserves the routing label");
+
+        first.Inject([0x43, 0x01, 0x80, 0, 0, 0x77]);
+        first.Inject([0x83, 0x03, 0x80, 0, 0, 0x77]);
+        first.Inject([0x80, 0x01, 0x80, 0, 0, 0xFF]);
+        first.Inject([0x83, 0x01, 0x80, 0, 0, 0x12]);
+        first.Inject([0x83, 0x01, 0x80, 0, 0, 0x34]);
+        Mtp3TransferMessage received = await service.ReceiveAsync(timeout.Token);
+        Require(received.UserPayload.Span[0] == 0x12, "Only local user-part traffic is delivered");
+        Require((await service.ReceiveAsync(timeout.Token)).UserPayload.Span[0] == 0x34,
+            "Bounded receive buffering retains the next record in order");
+        using CancellationTokenSource cancelled = new();
+        await cancelled.CancelAsync();
+        try
+        {
+            _ = await service.ReceiveAsync(cancelled.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException("An empty receive did not respect cancellation");
+    }
 
     internal static void LinkRouting()
     {

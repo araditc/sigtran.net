@@ -69,6 +69,7 @@ This is single-kernel lab evidence, not separate-host or operator qualification.
 from M2PA framing and rejects M3UA-only adaptation parameters on that path.
 `M2paLink.CreateMtp2ServiceLink()` exposes that ITU service boundary without changing the raw M2PA API.
 Linksets and routesets are explicit, and SLS assignments on healthy links remain stable when another link is unavailable.
+`Mtp3LinkNetwork` lets SCCP use that path through the same `IMtp3Network` contract as M3UA.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
