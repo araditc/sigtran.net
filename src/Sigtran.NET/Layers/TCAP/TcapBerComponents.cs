@@ -1,3 +1,5 @@
+using System.Formats.Asn1;
+
 namespace Sigtran.NET.Layers.TCAP;
 
 /// <summary>
@@ -49,10 +51,13 @@ public static class TcapComponentTags
 /// </summary>
 public sealed class TcapBerInvokeComponent
 {
+    private static readonly Asn1Tag InvokeTag = new(TagClass.ContextSpecific, 1, isConstructed: true);
+    private static readonly Asn1Tag LinkedIdTag = new(TagClass.ContextSpecific, 0);
+
     /// <summary>Creates a BER TCAP Invoke component.</summary>
     /// <param name="invokeId">The invoke id.</param>
     /// <param name="operationCode">The operation code.</param>
-    /// <param name="parameters">The operation parameters.</param>
+    /// <param name="parameters">One complete encoded ASN.1 argument, or empty if absent.</param>
     /// <param name="linkedInvokeId">The optional linked invoke id.</param>
     public TcapBerInvokeComponent(byte invokeId, TcapOperationCode operationCode, ReadOnlyMemory<byte> parameters, byte? linkedInvokeId = null)
     {
@@ -71,32 +76,30 @@ public sealed class TcapBerInvokeComponent
     /// <summary>The operation code.</summary>
     public TcapOperationCode OperationCode { get; }
 
-    /// <summary>The operation parameters.</summary>
+    /// <summary>The encoded ASN.1 argument including its tag and length, if present.</summary>
     public ReadOnlyMemory<byte> Parameters { get; }
 
     /// <summary>Encodes this component as BER bytes.</summary>
     /// <returns>The encoded component.</returns>
     public byte[] Encode()
     {
-        Span<byte> content = stackalloc byte[512];
-        int offset = 0;
-        WriteRequiredInteger(content, ref offset, InvokeId);
-        if (LinkedInvokeId.HasValue)
+        AsnWriter writer = new(AsnEncodingRules.BER);
+        using (writer.PushSequence(InvokeTag))
         {
-            WriteRequiredInteger(content, ref offset, LinkedInvokeId.Value);
+            writer.WriteInteger(unchecked((sbyte)InvokeId));
+            if (LinkedInvokeId is { } linkedId)
+            {
+                writer.WriteInteger(unchecked((sbyte)linkedId), LinkedIdTag);
+            }
+
+            writer.WriteInteger((byte)OperationCode);
+            if (!Parameters.IsEmpty)
+            {
+                writer.WriteEncodedValue(Parameters.Span);
+            }
         }
 
-        WriteRequiredInteger(content, ref offset, (byte)OperationCode);
-        WriteRequiredElement(content, ref offset, TcapComponentTags.Parameter, Parameters.Span);
-
-        byte[] result = new byte[offset + 4];
-        if (!TcapBer.TryWriteElement(result, TcapComponentTags.Component(TcapComponentType.Invoke), content.Slice(0, offset), out int written, out string? error))
-        {
-            throw new InvalidOperationException(error);
-        }
-
-        Array.Resize(ref result, written);
-        return result;
+        return writer.Encode();
     }
 
     /// <summary>Attempts to decode a BER TCAP Invoke component.</summary>
@@ -108,90 +111,41 @@ public sealed class TcapBerInvokeComponent
     {
         component = null;
         error = null;
-        if (!TcapBer.TryReadElement(data, out TcapBerElement wrapper, out error))
+        try
         {
-            return false;
-        }
-
-        if (wrapper.Tag.TagClass != TcapBerTagClass.ContextSpecific || wrapper.Tag.Number != (byte)TcapComponentType.Invoke)
-        {
-            error = "BER component is not a TCAP Invoke";
-            return false;
-        }
-
-        ReadOnlySpan<byte> content = wrapper.Value.Span;
-        if (!TryReadInteger(content, out byte invokeId, out int consumed, out error))
-        {
-            return false;
-        }
-
-        content = content[consumed..];
-        if (!TryReadInteger(content, out byte secondInteger, out consumed, out error))
-        {
-            return false;
-        }
-
-        content = content[consumed..];
-        byte? linkedInvokeId = null;
-        byte operationCodeValue = secondInteger;
-        if (content.Length > 0 && content[0] == TcapComponentTags.Integer.Encode())
-        {
-            linkedInvokeId = secondInteger;
-            if (!TryReadInteger(content, out operationCodeValue, out consumed, out error))
+            AsnReader wrapper = new(data.ToArray(), AsnEncodingRules.BER);
+            AsnReader fields = wrapper.ReadSequence(InvokeTag);
+            wrapper.ThrowIfNotEmpty();
+            byte invokeId = ReadInvokeId(fields);
+            byte? linkedId = fields.HasData && fields.PeekTag().HasSameClassAndValue(LinkedIdTag)
+                ? ReadInvokeId(fields, LinkedIdTag)
+                : null;
+            if (!fields.TryReadInt32(out int operation) || operation is < 0 or > byte.MaxValue)
             {
-                return false;
+                throw new AsnContentException("TCAP requires a supported local operation code.");
             }
 
-            content = content[consumed..];
+            ReadOnlyMemory<byte> argument = fields.HasData ? fields.ReadEncodedValue() : default;
+            fields.ThrowIfNotEmpty();
+            component = new(invokeId, (TcapOperationCode)operation, argument, linkedId);
+            error = null;
+            return true;
         }
-
-        if (!TcapBer.TryReadElement(content, out TcapBerElement parameters, out error))
+        catch (AsnContentException exception)
         {
+            error = exception.Message;
             return false;
         }
-
-        if (parameters.Tag.Encode() != TcapComponentTags.Parameter.Encode())
-        {
-            error = "TCAP Invoke parameter field is missing";
-            return false;
-        }
-
-        component = new(invokeId, (TcapOperationCode)operationCodeValue, parameters.Value, linkedInvokeId);
-        return true;
     }
 
-    private static void WriteRequiredInteger(Span<byte> destination, ref int offset, byte value)
+    internal static byte ReadInvokeId(AsnReader fields, Asn1Tag? tag = null)
     {
-        WriteRequiredElement(destination, ref offset, TcapComponentTags.Integer, [value]);
-    }
-
-    private static void WriteRequiredElement(Span<byte> destination, ref int offset, TcapBerTag tag, ReadOnlySpan<byte> value)
-    {
-        if (!TcapBer.TryWriteElement(destination[offset..], tag, value, out int written, out string? error))
+        // Public IDs preserve the octet; Q.773 interprets that octet as a signed INTEGER.
+        if (!fields.TryReadInt32(out int value, tag) || value is < sbyte.MinValue or > sbyte.MaxValue)
         {
-            throw new InvalidOperationException(error);
+            throw new AsnContentException("TCAP invoke ID must be in -128..127.");
         }
 
-        offset += written;
-    }
-
-    private static bool TryReadInteger(ReadOnlySpan<byte> data, out byte value, out int consumed, out string? error)
-    {
-        value = 0;
-        consumed = 0;
-        if (!TcapBer.TryReadElement(data, out TcapBerElement element, out error))
-        {
-            return false;
-        }
-
-        if (element.Tag.Encode() != TcapComponentTags.Integer.Encode() || element.Value.Length != 1)
-        {
-            error = "TCAP integer field is malformed";
-            return false;
-        }
-
-        value = element.Value.Span[0];
-        consumed = element.TotalLength;
-        return true;
+        return unchecked((byte)value);
     }
 }

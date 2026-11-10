@@ -383,7 +383,8 @@ static int parse_tcap_invoke(
             invoke.value + offset,
             invoke.value_length - offset,
             &field) != 0
-        || field.tag != 0x04U) {
+        || field.tag != 0x30U
+        || field.total_length != invoke.value_length - offset) {
         return -1;
     }
     result->parameters = field.value;

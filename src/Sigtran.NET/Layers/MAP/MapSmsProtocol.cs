@@ -121,6 +121,7 @@ public readonly struct MapSmsParameter
 /// </summary>
 public sealed class MapSmsParameterSet
 {
+    private static readonly TcapBerTag SequenceTag = new(TcapBerTagClass.Universal, constructed: true, 16);
     private readonly List<MapSmsParameter> _parameters = [];
 
     /// <summary>Adds a parameter to the set.</summary>
@@ -138,7 +139,7 @@ public sealed class MapSmsParameterSet
         return _parameters.ToArray();
     }
 
-    /// <summary>Encodes the parameter set as BER context-specific TLVs.</summary>
+    /// <summary>Encodes the profile parameters in a BER SEQUENCE.</summary>
     /// <returns>The encoded parameter bytes.</returns>
     public byte[] Encode()
     {
@@ -155,8 +156,14 @@ public sealed class MapSmsParameterSet
             offset += written;
         }
 
-        Array.Resize(ref result, offset);
-        return result;
+        byte[] sequence = new byte[offset + 4];
+        if (!TcapBer.TryWriteElement(sequence, SequenceTag, result.AsSpan(0, offset), out int length, out string? sequenceError))
+        {
+            throw new InvalidOperationException(sequenceError);
+        }
+
+        Array.Resize(ref sequence, length);
+        return sequence;
     }
 
     /// <summary>Attempts to decode a parameter set.</summary>
@@ -166,8 +173,16 @@ public sealed class MapSmsParameterSet
     /// <returns>True if decoding succeeded; otherwise false.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out MapSmsParameterSet? parameters, out string? error)
     {
+        parameters = null;
+        if (!TcapBer.TryReadElement(data, out TcapBerElement sequence, out error)
+            || sequence.Tag.Encode() != SequenceTag.Encode() || sequence.TotalLength != data.Length)
+        {
+            error ??= "Expected one complete MAP parameter SEQUENCE.";
+            return false;
+        }
+
         parameters = new();
-        error = null;
+        data = sequence.Value.Span;
         while (!data.IsEmpty)
         {
             if (!TcapBer.TryReadElement(data, out TcapBerElement element, out error))

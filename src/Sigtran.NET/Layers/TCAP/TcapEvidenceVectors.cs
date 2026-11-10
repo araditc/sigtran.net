@@ -65,7 +65,7 @@ internal static class TcapEvidenceVectors
     private static TcapTransactionMessage CreateBeginInvoke()
     {
         TcapDialoguePortion dialogue = new(new TcapObjectIdentifier(1, 2, 3));
-        TcapBerInvokeComponent invoke = new(2, TcapOperationCode.MoForwardShortMessage, new byte[] { 0xAA, 0xBB });
+        TcapBerInvokeComponent invoke = new(2, TcapOperationCode.MoForwardShortMessage, new byte[] { 0x04, 0x02, 0xAA, 0xBB });
         return new(
             TcapPackageType.Begin,
             originatingTransactionId: new TcapTransactionId([0x01]),

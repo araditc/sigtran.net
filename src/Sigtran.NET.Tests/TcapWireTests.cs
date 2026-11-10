@@ -75,6 +75,23 @@ internal static class TcapWireTests
             "Oversize BER value silently truncated");
     }
 
+    internal static void InvokeFields()
+    {
+        byte[] vector = Convert.FromHexString("A10C0201FF800180020200803000");
+        var invoke = new TcapBerInvokeComponent(255, (TcapOperationCode)128, new byte[] { 0x30, 0 }, linkedInvokeId: 128);
+        Require(invoke.Encode().AsSpan().SequenceEqual(vector), "Invoke wire bytes differ");
+        Require(TcapBerInvokeComponent.TryDecode(vector, out var decoded, out var error)
+            && decoded?.LinkedInvokeId == 128 && decoded.InvokeId == 255 && (byte)decoded.OperationCode == 128,
+            error ?? "Invoke IDs or local code changed");
+        byte[] noArgument = Convert.FromHexString("A10602010102012D");
+        Require(TcapBerInvokeComponent.TryDecode(noArgument, out var absent, out error) && absent!.Parameters.IsEmpty,
+            error ?? "Optional argument rejected");
+        foreach (string hex in new[] { "810602010102012D", "A10B02010102010202012D3000", "A107020200FF02012D", "A1060201010201FF", "A10602010102012D00" })
+        {
+            Require(!TcapBerInvokeComponent.TryDecode(Convert.FromHexString(hex), out _, out _), $"Malformed Invoke accepted: {hex}");
+        }
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

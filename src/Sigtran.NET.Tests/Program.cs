@@ -386,6 +386,7 @@ Run("TCAP transaction message wraps component portion", TcapTransactionMessageWr
 Run("TCAP transaction tags match independently encoded Q.773 bytes", TcapWireTests.TransactionTags);
 Run("TCAP transaction fields and provider abort follow Q.773", TcapWireTests.TransactionFields);
 Run("TCAP BER and object identifier boundaries are deterministic", TcapWireTests.BerBoundaries);
+Run("TCAP Invoke uses an implicit linked ID and an ASN.1 open type", TcapWireTests.InvokeFields);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
@@ -7594,16 +7595,16 @@ static void TcapBerInvokeComponentRoundTrips()
     TcapBerInvokeComponent invoke = new(
         invokeId: 7,
         TcapOperationCode.MoForwardShortMessage,
-        new byte[] { 0xAA, 0xBB },
+        new byte[] { 0x04, 0x02, 0xAA, 0xBB },
         linkedInvokeId: 3);
 
     byte[] encoded = invoke.Encode();
-    AssertSequence([0xA1, 0x0D, 0x02, 0x01, 0x07, 0x02, 0x01, 0x03, 0x02, 0x01, 0x01, 0x04, 0x02, 0xAA, 0xBB], encoded, "TCAP BER Invoke bytes");
+    AssertSequence([0xA1, 0x0D, 0x02, 0x01, 0x07, 0x80, 0x01, 0x03, 0x02, 0x01, 0x01, 0x04, 0x02, 0xAA, 0xBB], encoded, "TCAP BER Invoke bytes");
     Assert(TcapBerInvokeComponent.TryDecode(encoded, out TcapBerInvokeComponent? decoded, out string? error), error ?? "TCAP BER Invoke decode failed");
     AssertEqual((byte)7, decoded!.InvokeId, "TCAP decoded Invoke ID");
     AssertEqual((byte)3, decoded.LinkedInvokeId, "TCAP decoded linked Invoke ID");
     AssertEqual(TcapOperationCode.MoForwardShortMessage, decoded.OperationCode, "TCAP decoded operation code");
-    AssertSequence([0xAA, 0xBB], decoded.Parameters.Span, "TCAP decoded Invoke parameters");
+    AssertSequence([0x04, 0x02, 0xAA, 0xBB], decoded.Parameters.Span, "TCAP decoded Invoke parameters");
 }
 
 static void TcapBerOutcomeComponentsRoundTrip()
@@ -7631,7 +7632,7 @@ static void TcapBerOutcomeComponentsRoundTrip()
 
 static void TcapTransactionMessageWrapsComponentPortion()
 {
-    TcapBerInvokeComponent invoke = new(1, TcapOperationCode.MtForwardShortMessage, new byte[] { 0xAA });
+    TcapBerInvokeComponent invoke = new(1, TcapOperationCode.MtForwardShortMessage, new byte[] { 0x04, 0x01, 0xAA });
     TcapTransactionMessage begin = new(
         TcapPackageType.Begin,
         originatingTransactionId: TcapTransactionId.FromUInt32(0x0102),
@@ -7708,7 +7709,7 @@ static void TcapAllocatorsIssueTransactionAndInvokeIdentifiers()
 static void TcapSessionBuilderCreatesBeginAndEndMessages()
 {
     TcapSessionBuilder builder = new(new TcapTransactionIdAllocator(firstValue: 3), new TcapInvokeRegistry());
-    TcapBuiltInvoke built = builder.BeginInvoke(new TcapObjectIdentifier(0, 0, 17, 773, 1, 1, 1), TcapOperationCode.MoForwardShortMessage, new byte[] { 0xCA });
+    TcapBuiltInvoke built = builder.BeginInvoke(new TcapObjectIdentifier(0, 0, 17, 773, 1, 1, 1), TcapOperationCode.MoForwardShortMessage, new byte[] { 0x04, 0x01, 0xCA });
     AssertEqual("03", built.OriginatingTransactionId.ToString(), "TCAP built transaction id");
     AssertEqual((byte)1, built.InvokeId, "TCAP built invoke id");
     Assert(TcapTransactionMessage.TryDecode(built.EncodedMessage, out TcapTransactionMessage? decodedBegin, out string? error), error ?? "TCAP built Begin decode failed");
@@ -7793,7 +7794,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
                         secondParty,
                         firstParty,
                         TcapOperationCode.MoForwardShortMessage,
-                        new byte[] { (byte)index }),
+                        new byte[] { 0x04, 0x01, (byte)index }),
                     timeout.Token)
                 .AsTask()
                 .GetAwaiter()
@@ -7812,7 +7813,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
             .GetAwaiter()
             .GetResult();
         AssertEqual(TcapComponentType.Invoke, invoke.ComponentType, "TCAP concurrent Invoke component");
-        AssertSequence([(byte)index], invoke.Parameters.Span, "TCAP concurrent Invoke parameters");
+        AssertSequence([0x04, 0x01, (byte)index], invoke.Parameters.Span, "TCAP concurrent Invoke parameters");
         inbound.Add(invoke);
     }
 
@@ -7822,7 +7823,7 @@ static void TcapDialogueManagerCorrelatesConcurrentInvokes()
                 invoke.Dialogue,
                 invoke.InvokeId,
                 invoke.OperationCode,
-                new byte[] { (byte)(invoke.Parameters.Span[0] + 10) },
+                new byte[] { (byte)(invoke.Parameters.Span[2] + 10) },
                 endDialogue: true,
                 timeout.Token)
             .AsTask()
@@ -7896,7 +7897,7 @@ static void TcapDialogueManagerCompletesTerminalOutcomes()
                 secondParty,
                 firstParty,
                 TcapOperationCode.MtForwardShortMessage,
-                new byte[] { 0x01 }),
+                new byte[] { 0x04, 0x01, 0x01 }),
             timeout.Token)
         .AsTask()
         .GetAwaiter()
@@ -7928,7 +7929,7 @@ static void TcapDialogueManagerCompletesTerminalOutcomes()
                 secondParty,
                 firstParty,
                 TcapOperationCode.AlertServiceCentre,
-                new byte[] { 0x02 }),
+                new byte[] { 0x04, 0x01, 0x02 }),
             timeout.Token)
         .AsTask()
         .GetAwaiter()
@@ -7959,7 +7960,7 @@ static void TcapDialogueManagerCompletesTerminalOutcomes()
                 secondParty,
                 firstParty,
                 TcapOperationCode.ReportSmDeliveryStatus,
-                new byte[] { 0x03 },
+                new byte[] { 0x04, 0x01, 0x03 },
                 timeout: TimeSpan.FromMilliseconds(80)),
             timeout.Token)
         .AsTask()
@@ -8031,7 +8032,7 @@ static void MapSmsOperationCatalogAndParameterSetEncodeBer()
     parameters.Add(0, [0x01, 0x02]);
     parameters.Add(1, [0xAA]);
     byte[] encoded = parameters.Encode();
-    AssertSequence([0x80, 0x02, 0x01, 0x02, 0x81, 0x01, 0xAA], encoded, "MAP SMS parameter set BER");
+    AssertSequence([0x30, 0x07, 0x80, 0x02, 0x01, 0x02, 0x81, 0x01, 0xAA], encoded, "MAP SMS parameter set BER");
 
     Assert(MapSmsParameterSet.TryDecode(encoded, out MapSmsParameterSet? decoded, out string? error), error ?? "MAP parameter decode failed");
     AssertEqual(2, decoded!.Snapshot().Count, "MAP decoded parameter count");
@@ -8061,7 +8062,7 @@ static void MapMoForwardSmModelEncodesRequiredParameters()
         new byte[] { 0x11, 0x22 });
 
     byte[] encoded = mo.Encode();
-    Assert(encoded[0] == 0x80 && encoded.Contains((byte)0x82), "MAP MO encoded parameter tags should be present");
+    Assert(encoded[0] == 0x30 && encoded[2] == 0x80 && encoded.Contains((byte)0x82), "MAP MO encoded parameter tags should be present");
     Assert(MapMoForwardShortMessage.TryDecode(encoded, out MapMoForwardShortMessage? decoded, out string? error), error ?? "MAP MO decode failed");
     AssertEqual(MapSmsAddressKind.ServiceCentre, decoded!.SmRpDa.Kind, "MAP MO decoded DA kind");
     AssertEqual("989121234567", decoded.SmRpOa.Digits, "MAP MO decoded OA digits");
@@ -8137,7 +8138,7 @@ static void MapSmsErrorMapperAndExtensionContainerEncodeValues()
     MapSmsExtensionContainer extensions = new();
     extensions.Add(5, [0xCA, 0xFE]);
     byte[] encoded = extensions.Encode();
-    AssertSequence([0x85, 0x02, 0xCA, 0xFE], encoded, "MAP extension container bytes");
+    AssertSequence([0x30, 0x04, 0x85, 0x02, 0xCA, 0xFE], encoded, "MAP extension container bytes");
     Assert(MapSmsExtensionContainer.TryDecode(encoded, out MapSmsExtensionContainer? decoded, out string? error), error ?? "MAP extension decode failed");
     AssertEqual(1, decoded!.Snapshot().Count, "MAP extension count");
 }
@@ -8164,7 +8165,7 @@ static void MapSmsEvidenceVectorsValidateOperationBytes()
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = MapSmsEvidenceVectors.GetVectors();
     AssertEqual(5, vectors.Count, "MAP SMS evidence vector count");
     Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.MapSms), "all MAP SMS vectors should use MAP SMS surface");
-    AssertEqual("8006030401442143810901040189191232547682021122", vectors[0].ToHex(), "MAP MO evidence hex");
+    AssertEqual("30178006030401442143810901040189191232547682021122", vectors[0].ToHex(), "MAP MO evidence hex");
 
     IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = MapSmsEvidenceVectors.ValidateEncoders();
     AssertEqual(vectors.Count, reports.Count, "MAP SMS evidence report count");
@@ -8364,7 +8365,7 @@ static void MapSmsServiceCorrelatesClientAndServerWorkflows()
                 secondParty,
                 firstParty,
                 (TcapOperationCode)MapSmsOperationCode.SendRoutingInfoForShortMessage,
-                new byte[] { 0xFF }),
+                new byte[] { 0x30, 0x00 }),
             timeout.Token)
         .AsTask()
         .GetAwaiter()

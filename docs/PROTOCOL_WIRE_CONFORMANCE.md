@@ -10,7 +10,7 @@ checks do not establish operator or release-candidate acceptance.
 | 1 | Q.773 transaction tag classes and opaque transaction IDs | Implemented |
 | 2 | Transaction field validation and abort encoding | Implemented |
 | 3 | Bounded BER and OID decoding | Implemented |
-| 4 | Invoke and linked ID | Pending |
+| 4 | Invoke and linked ID | Implemented |
 | 5 | Result, error and reject | Pending |
 | 6 | Structured dialogue APDUs | Pending |
 | 7 | Dialogue negotiation at runtime | Pending |
@@ -41,3 +41,13 @@ The bounded TCAP reader accepts short-form tags and definite lengths of
 at most two length octets (65,535 value octets). It rejects end-of-contents,
 high-tag-number form and truncated elements. OID decoding checks base-128
 termination and overflow, including a multibyte first subidentifier.
+
+## Invoke Component
+
+The [remote operations ASN.1](https://www.itu.int/ITU-T/formal-language/itu-t/x/x880/1994-tc1/Remote-Operations-Generic-ROS-PDUs.html)
+uses implicit context tag `80` for a linked invoke ID. The byte-valued API
+retains the octet of a signed -128..127 invoke ID. Local operation codes in
+the supported byte range are encoded as non-negative INTEGERs. The optional
+argument is a single, complete ASN.1 value. The MAP repository-profile
+parameter set now supplies a SEQUENCE, with field-level mapping tracked
+separately in unit 9.
