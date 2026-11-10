@@ -55,6 +55,7 @@ jobs:
         run: |
           bash -n scripts/run-reference-service-lab.sh
           python3 scripts/tests/test_reference_service_evidence.py
+          python3 scripts/tests/test_reference_service_collection.py
 
       - name: Test legacy flag promotion rejection
         shell: pwsh

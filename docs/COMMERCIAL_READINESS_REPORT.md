@@ -161,6 +161,13 @@ run between SDK endpoints. This validates selective replay and acknowledged
 restoration for the declared isolated ITU endpoint profile, not vendor
 changeover, STP transit, multi-host resilience or stable publication.
 
+The [ITU MAP SMS reference service](REFERENCE_SERVICE.md) passed all
+five positive operation types and the declared negative matrix on the
+real OperationsHost. The maintained STP run verified M3UA transit and
+an Invalid Routing Context response; the independent C MAP endpoint
+is not a vendor HLR/SMSC. These isolated runs do not change the stable
+decision or the separate operator, capacity and deployment requirements.
+
 Do not publish this SDK as stable commercially production-ready yet.
 
 The SDK has enough retained evidence for public RC consumption and controlled

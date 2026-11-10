@@ -63,8 +63,16 @@ if [[ ${1:-} == --isolated ]]; then
     export SIGTRAN_NETWORK_INDICATOR=2 SIGTRAN_SERVICE_INDICATOR=3 SIGTRAN_QUEUE_CAPACITY=32
     export SIGTRAN_REFERENCE_MODE=map-sms SIGTRAN_MAP_SMS_MAX_IN_FLIGHT=4 SIGTRAN_MAP_SMS_TIMEOUT_MS=650
     export SIGTRAN_MAP_SMS_OPERATIONS=sri-sm,mo-forward-sm,mt-forward-sm,report-sm-delivery-status,alert-service-centre
+    export ASPNETCORE_URLS=http://127.0.0.1:33080
+    # Retain only explicit, synthetic configuration. The API token never enters artifacts.
+    for key in SIGTRAN_REMOTE_IP SIGTRAN_REMOTE_PORT SIGTRAN_ASP_IDENTIFIER SIGTRAN_LOCAL_SCTP_IP \
+        SIGTRAN_LOCAL_SCTP_PORT SIGTRAN_LOCAL_POINT_CODE SIGTRAN_REMOTE_POINT_CODE SIGTRAN_ROUTING_CONTEXT \
+        SIGTRAN_NETWORK_INDICATOR SIGTRAN_SERVICE_INDICATOR SIGTRAN_QUEUE_CAPACITY SIGTRAN_REFERENCE_MODE \
+        SIGTRAN_MAP_SMS_MAX_IN_FLIGHT SIGTRAN_MAP_SMS_TIMEOUT_MS SIGTRAN_MAP_SMS_OPERATIONS ASPNETCORE_URLS; do
+        printf '%s=%s\n' "$key" "${!key-}"
+    done >"$root/reference-host.env"
     SIGTRAN_MAP_SMS_TOKEN=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')
-    export SIGTRAN_MAP_SMS_TOKEN ASPNETCORE_URLS=http://127.0.0.1:33080
+    export SIGTRAN_MAP_SMS_TOKEN
     dotnet "$root/app/Sigtran.NET.OperationsHost.dll" >"$root/host.log" 2>&1 &
     host=$!
     if [[ "$profile" == wrong-context ]]; then

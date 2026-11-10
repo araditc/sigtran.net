@@ -72,16 +72,14 @@ The Linux labs verified SCCP UDTs with an independent C/lksctp peer and
 selective replay after native SCTP association loss between SDK endpoints.
 These are isolated endpoint tests, not operator or cross-host qualification.
 
-The [ITU MAP SMS reference service](docs/REFERENCE_SERVICE.md) builds on
-the OperationsHost with opt-in, validated settings and an explicit operation allowlist.
-Its host composes MAP, TCAP and SCCP over a single M3UA runtime.
-Five typed MAP operations share a bounded admission limit and correlated results.
-The optional local HTTP endpoint requires loopback and a Bearer token.
-Readiness includes the upper-layer readers, and shutdown closes admission before draining active requests.
-Reference M3UA activation confirms the configured Routing Context and never replays queued work across association generations.
-The independent C peer includes MAP error, reject, malformed-result, timeout and wrong-context cases.
-The rootless reference-host lab compares actual local API outcomes with the native SCTP PCAP and independent peer logs.
-Its maintained STP profile checks context translation and byte-preserving transit across two SCTP associations.
+The [ITU MAP SMS reference service](docs/REFERENCE_SERVICE.md) composes
+SCTP, M3UA, SCCP, TCAP and MAP in OperationsHost. It provides five typed
+operations through an opt-in authenticated loopback API, bounded admission,
+readiness and shutdown drain. The Linux labs verified the positive and
+negative matrix with an independent C MAP endpoint, and M3UA context
+translation through a separately maintained STP. See the
+[captured evidence](docs/evidence/REFERENCE_SERVICE_20261110.json) for scope
+and limits; this is not operator acceptance or stable qualification.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

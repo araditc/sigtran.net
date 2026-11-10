@@ -125,3 +125,10 @@ trace, field export, comparison, report, and digests are retained under
 See [Phase 52](PHASE52_END_TO_END_SS7_TRAFFIC_LAB.md) for execution and evidence
 boundaries. This proves the repository profile across independent
 implementations; it does not replace operator/vendor interoperability.
+
+The [reference service](REFERENCE_SERVICE.md) now runs the same complete
+stack in OperationsHost. Its [retained Phase 60 evidence](evidence/REFERENCE_SERVICE_20261110.json)
+includes a direct C/lksctp run, a rejected activation with no DATA, and
+an independently maintained STP transit run with both SCTP legs compared.
+The MAP application endpoint is the independent repository C fixture;
+operator acceptance and an external M2PA changeover test remain separate.

@@ -15,9 +15,9 @@ endpoint. Existing operations-only deployments remain the default.
 | 5 | Readiness, metrics and shutdown drain | Implemented |
 | 6 | Explicit M3UA application-server routing context | Implemented |
 | 7 | Independent peer positive and negative scenario matrix | Implemented; C wire fixtures verified |
-| 8 | Real host traffic and independent PCAP/trace comparison | Implemented; Linux host matrix executed |
+| 8 | Real host traffic and independent PCAP/trace comparison | Verified on Linux |
 | 9 | Separately maintained peer path | Verified on Linux |
-| 10 | Reproducible evidence, limitations and phase decision | Pending |
+| 10 | Reproducible evidence, limitations and phase decision | Three source-bound lab profiles verified |
 
 ## Service Configuration
 
@@ -82,6 +82,21 @@ Reject/malformed result/early dialogue closure, and 504 for timeout.
 Invalid requests return 400, disabled operations 403, busy 429,
 and a non-ready stack 503. The API does not retry an operation.
 
+For a manual isolated run, load the [synthetic host settings](../eng/interop/reference-host.example.env)
+and supply the token separately. With the authorized lab peer listening:
+
+```bash
+set -a
+source eng/interop/reference-host.example.env
+set +a
+export SIGTRAN_MAP_SMS_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+dotnet run --project src/Sigtran.NET.OperationsHost --configuration Release
+```
+
+The existing OperationsHost image can use the same profile. Do not
+expose the operation endpoint via ingress or an HTTP proxy. Cluster
+SCTP, network policy and failover qualification are separate work.
+
 ## Health And Shutdown
 
 `/health/live` only describes the HTTP process. Reference-mode
@@ -130,7 +145,7 @@ peer, creates a private loopback network namespace and generates an
 ephemeral local API token. It does not install services or change host
 interfaces. Raw captures, host/peer logs, HTTP outcome summaries and
 subscriber-free metric snapshots stay under the unique private run
-directory. The verifier checks explicit activation, PPID 3, ordered
+directory. The verifier checks explicit activation, PPID 3,
 nonzero DATA streams, point codes, TCAP transaction/invoke correlation,
 dialogue acceptance and the declared negative outcomes. A missing or
 contradictory observation prevents `report.json` from being published.
@@ -143,7 +158,7 @@ with a regression test. Configure at least two SCTP streams.
 
 Use an extracted Ubuntu/Debian amd64 OsmoSTP bundle with its runtime
 libraries. The runner does not install packages or change a system
-service. It starts the supplied executable only inside the private
+service. It runs the supplied STP for traffic only inside the private
 loopback namespace, using [the fixed lab configuration](../eng/interop/reference-stp.cfg).
 
 ```bash
@@ -163,3 +178,28 @@ See the [upstream STP manual](https://downloads.osmocom.org/docs/osmo-stp/1.2.1/
 The STP is separately maintained; the MAP endpoint is a repository-owned
 independent implementation. This is neither a maintained MAP server
 qualification nor operator acceptance.
+
+## Qualification Result
+
+The [retained summary](evidence/REFERENCE_SERVICE_20261110.json) records
+three passing runs from the same runtime source commit. The direct and
+maintained-STP profiles each completed ten admitted HTTP operations:
+five distinct positive MAP SMS operations, four negative MAP/TCAP
+outcomes, and a successful operation after a foreign-context probe.
+The separate wrong-activation profile stayed non-ready and sent no DATA.
+The maintained STP forwarded ten invokes and nine responses across two
+SCTP legs and returned Invalid Routing Context for the extra probe.
+
+Re-decode the private PCAPs and verify their saved hashes together:
+
+```bash
+python3 scripts/collect-reference-service-evidence.py \
+  --source-commit <full-tested-runtime-commit> \
+  --reference /path/to/direct-run --wrong-context /path/to/rejected-run \
+  --maintained /path/to/stp-run
+```
+
+Phase 60 completes the outbound ITU MAP SMS reference profile over
+M3UA. It does not qualify a MAP responder product, M2PA changeover with
+an external stack, cross-host capacity/endurance, production deployment,
+or stable release of the exact candidate package.

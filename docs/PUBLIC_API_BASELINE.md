@@ -66,6 +66,11 @@ The MTP3 endpoint additions are `Mtp3LinkNetwork`, topology bindings,
 `IMtp2LinkRecovery` contract. The raw M2PA and M3UA entry points are
 retained. See [MTP3 over MTP2](MTP3.md#mtp2-service-data).
 
+The reference service uses the admitted additive
+`M3uaRuntime.SendOnActiveAssociationAsync` method to prevent transfer
+replay across association generations. The original queued
+`IMtp3Network.SendAsync` contract remains available.
+
 ## Comparison
 
 ```powershell

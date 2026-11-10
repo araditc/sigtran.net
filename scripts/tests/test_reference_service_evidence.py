@@ -80,11 +80,20 @@ class ReferenceEvidenceTests(unittest.TestCase):
 
     def test_forged_http_success_does_not_pass(self):
         report = {"result": "pass", "profile": "reference", "observations":
-                  [dict(case=i, status=s, outcome=o) for i, (s, o) in enumerate(zip(wire.STATUSES, wire.OUTCOMES), 1)]}
+                  [dict(case=i, operation=name, status=s, outcome=o)
+                   for i, (name, s, o) in enumerate(zip(wire.OPERATIONS, wire.STATUSES, wire.OUTCOMES), 1)]}
         wire.verify_http(report, "reference")
         report["observations"][5]["outcome"] = "Result"
         with self.assertRaisesRegex(ValueError, "terminal outcomes"):
             wire.verify_http(report, "reference")
+
+    def test_terminal_metrics_reject_missing_or_duplicate_observations(self):
+        wire.check_metrics("sigtran_map_sms_terminal_total 10\n", {"sigtran_map_sms_terminal_total": 10})
+        with self.assertRaisesRegex(ValueError, "terminal_total"):
+            wire.check_metrics("sigtran_map_sms_terminal_total 9\n", {"sigtran_map_sms_terminal_total": 10})
+        with self.assertRaisesRegex(ValueError, "terminal_total"):
+            wire.check_metrics("sigtran_map_sms_terminal_total 10\nsigtran_map_sms_terminal_total 10\n",
+                               {"sigtran_map_sms_terminal_total": 10})
 
     def test_external_stp_must_relay_the_same_payload_and_reject_foreign_context(self):
         host = [row for row in conversation() if row[5].get(6) != (101).to_bytes(4, "big")]

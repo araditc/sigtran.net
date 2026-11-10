@@ -105,6 +105,7 @@ def main():
         status, metrics = request("/metrics")
         require(status == 200 and b"sigtran_map_sms_accepted_total 0\n" in metrics
                 and b"sigtran_m3ua_transfers_sent_total 0\n" in metrics, "Wrong-context ASP dispatched DATA")
+        (args.output.parent / "metrics-after.txt").write_bytes(metrics)
         observations.append({"status": 503, "outcome": "Unavailable", "accepted": 0})
 
     args.output.write_text(json.dumps({"result": "pass", "profile": args.profile, "observations": observations}, indent=2),

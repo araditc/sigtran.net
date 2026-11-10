@@ -64,6 +64,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 57 | Protocol wire conformance | [Wire Conformance](PROTOCOL_WIRE_CONFORMANCE.md), [Historical Roadmap Execution](ROADMAP_EXECUTION.md) | Ten implementation units and bounded wire smoke verified; exact-candidate gate remains open |
 | 58 | Native SCTP multihoming and live path failover | [Native SCTP Multihoming](NATIVE_SCTP_MULTIHOMING.md), [Retained Evidence](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json) | Ten units complete; isolated Linux same-association path loss verified; separate-host and stable qualification remain open |
 | 59 | MTP3 and M2PA runtime | [MTP3](MTP3.md), [Retained Evidence](evidence/MTP3_M2PA_20261110.json) | Ten units complete for the ITU endpoint profile; independent SCCP wire traffic and SDK-to-SDK native changeover/changeback verified |
+| 60 | End-to-end reference service and external interoperability | [Reference Service](REFERENCE_SERVICE.md), [Retained Evidence](evidence/REFERENCE_SERVICE_20261110.json) | Ten units complete for the isolated M3UA ITU MAP SMS profile; independent C MAP endpoint and maintained STP transit verified |
 
 ## Current Production Gate
 

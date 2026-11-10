@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "itu-map-sms-reference-service",
+  "testedRuntimeCommit": "d8d722f6b8a2d815fee4c504c1ad4c2962c724ec",
+  "result": "pass",
+  "runs": [
+    {
+      "result": "pass",
+      "profile": "reference",
+      "sourceCommit": "d8d722f6b8a2d815fee4c504c1ad4c2962c724ec",
+      "environment": {
+        "kernel": "Linux 5.15.0-191-generic",
+        "dotnetSdk": "10.0.401",
+        "topology": "Reference host and independent C/lksctp peer in a private Linux loopback namespace"
+      },
+      "observations": {
+        "capturePackets": 36,
+        "captureDrops": 0,
+        "terminalHttpOperations": 10,
+        "invokes": 10,
+        "correlatedTerminalResponses": 9,
+        "intentionallyUnanswered": 1,
+        "foreignContextResponses": 1,
+        "dataMessages": 20,
+        "positiveOperations": 5,
+        "negativeCases": 5
+      },
+      "privateArtifactSha256": {
+        "traffic.pcap": "7cdb88495b650fee8bc7cc41d4206282d2f0edfabefecef8595868f996dac408",
+        "wire-m3ua.tsv": "69ac00b611ce963bfb8efe6f157896e7211bafa235fc288ef9fc8478f0dbb4c8",
+        "http-result.json": "60bd7d4867617c9ec789e09d955c472ec88025cb8493f6ae46a67b5e3a7d8be0",
+        "peer.log": "e0a1154da13942d296c78f9e3d9985dc60e8e35a80c847c224d70f50f45d29bc",
+        "host.log": "ba25e6dffbf7c888cb3f30062ba59e5eda7d220fa723cce8ae4c752f2c913b06",
+        "capture.log": "83da8ff10c4c51d327fdc77c1be333cb60b168e3af98aa40921b4f3b50f5a677",
+        "reference-host.env": "18cece8a609b93ce4e92de1647e5e7dccbaf504868c7ce37f932d012aeda53ca",
+        "metrics-after.txt": "07d1a21a40d70d7d4c4b3868ecf1b9dc31d82f12ce490e6fd540a362b3e7a32c",
+        "metrics-before.txt": "b5f6707bb3f716424597cecab3ae8e8559b064eca676594f2373d1fdabeff3d3"
+      },
+      "limitations": [
+        "The MAP endpoint is a repository-owned C peer, not operator or vendor acceptance.",
+        "Synthetic loopback workload, not load, long-run or exact-candidate qualification."
+      ]
+    },
+    {
+      "result": "pass",
+      "profile": "wrong-context",
+      "sourceCommit": "d8d722f6b8a2d815fee4c504c1ad4c2962c724ec",
+      "environment": {
+        "kernel": "Linux 5.15.0-191-generic",
+        "dotnetSdk": "10.0.401",
+        "topology": "Reference host and independent C/lksctp peer in a private Linux loopback namespace"
+      },
+      "observations": {
+        "capturePackets": 18,
+        "captureDrops": 0,
+        "terminalHttpOperations": 0,
+        "dataMessages": 0,
+        "activationRejected": true
+      },
+      "privateArtifactSha256": {
+        "traffic.pcap": "3fd5cc8d7d15c540954b48a89dbf7165a66ee166bb0fab4286b6596d40886a15",
+        "wire-m3ua.tsv": "6e88a5c0c78c736ae10e40b5b392cb19829ca34af3540e79e1373fccb5396cff",
+        "http-result.json": "cadcd74c2d5a309391deb04f67067126458de4b51577d8c49fd3e414b69ddd50",
+        "peer.log": "a6b8d096b7caed43bc01e055a9ed99e8639075588fa5e4bd5fa22e9bc3bc0fab",
+        "host.log": "8bdaf810bb704b1d9f54cb03e05588ab3ba161bc97337a2c6807ffb27a8e75ca",
+        "capture.log": "e7c1cfd43e7269f71dbdbffb85f50953ec2e6cc48749c1e2a4a00653c223323b",
+        "reference-host.env": "18cece8a609b93ce4e92de1647e5e7dccbaf504868c7ce37f932d012aeda53ca",
+        "metrics-after.txt": "078108b16e607c12f16a1f103198a552d1bc4c9067bbc80df5fa158881fec042"
+      },
+      "limitations": [
+        "The MAP endpoint is a repository-owned C peer, not operator or vendor acceptance.",
+        "Synthetic loopback workload, not load, long-run or exact-candidate qualification."
+      ]
+    },
+    {
+      "result": "pass",
+      "profile": "maintained",
+      "sourceCommit": "d8d722f6b8a2d815fee4c504c1ad4c2962c724ec",
+      "environment": {
+        "kernel": "Linux 5.15.0-191-generic",
+        "dotnetSdk": "10.0.401",
+        "topology": "Reference host and C/lksctp endpoint connected through an external STP over two native SCTP associations",
+        "maintainedStp": "OsmoSTP version 1.3.0",
+        "stpExecutableSha256": "77419bb0b4a9310661a2d8b70749b851028428bb0ff83e8ae6858712600a4b88",
+        "stpLibrarySha256": "63fc8506d214803247bffd09f3c317bfaf0e3b306ec5f53ff206ff3991db0f2e"
+      },
+      "observations": {
+        "capturePackets": 75,
+        "captureDrops": 0,
+        "terminalHttpOperations": 10,
+        "invokes": 10,
+        "correlatedTerminalResponses": 9,
+        "intentionallyUnanswered": 1,
+        "foreignContextResponses": 0,
+        "dataMessages": 19,
+        "positiveOperations": 5,
+        "negativeCases": 5,
+        "stpForwardedInvokes": 10,
+        "stpForwardedResponses": 9,
+        "stpRejectedForeignContext": 1,
+        "stpApplicationServerContexts": [
+          100,
+          200
+        ]
+      },
+      "privateArtifactSha256": {
+        "traffic.pcap": "8b9539e16c66bd1140f95810e2cd4cf4393c733b973110105c5f0da278913511",
+        "wire-m3ua.tsv": "4168536d8320cbe260a41542eb8cb9aa0d0d2074164abbd767d5a31f4fe86be4",
+        "http-result.json": "60bd7d4867617c9ec789e09d955c472ec88025cb8493f6ae46a67b5e3a7d8be0",
+        "peer.log": "4c043f97dfcafcb47ef753387339af01e98781a3fac28fcefcc9f2fd23d5216c",
+        "host.log": "d6979ed3181faa16495c4db67f727cfb424377246ab741a06ad8cbdc4c6982cf",
+        "capture.log": "f7bd65980c6f51198e610fd9226812fb1b7a75e7f0a7d86fd4bcac0ae5ff07ac",
+        "reference-host.env": "45c85dc2c3064b8493e4af2d8434b3167b235865cb1273e05a04279c53c935e4",
+        "metrics-after.txt": "cb409f730665e2ed149c83803664d6c1ad11fa20c00ed51a650ba88564078bc8",
+        "metrics-before.txt": "b5f6707bb3f716424597cecab3ae8e8559b064eca676594f2373d1fdabeff3d3",
+        "stp.log": "0e06ce88900ef402f59160f6fb79c4f89e4ab5146c3421ea9c5c06d1744945d1",
+        "stp.cfg": "19334481bfc246c49047a5966a3ea85b09f803e00d29d4e812263f8ed1035578",
+        "stp-version.txt": "26f22497d5a467a03e9007510ffeacbc280f90737af50ef2550b5f0659c26cea",
+        "stp-binaries.sha256": "b6ed20d173c21aa54c201f00a6d74c33a70e8493a06b884d770eb7a57095a24c"
+      },
+      "limitations": [
+        "The MAP endpoint is a repository-owned C peer, not operator or vendor acceptance.",
+        "Synthetic loopback workload, not load, long-run or exact-candidate qualification."
+      ]
+    }
+  ],
+  "qualificationBoundary": "Isolated interoperability evidence, not stable candidate attestation or operator acceptance."
+}

@@ -15,6 +15,8 @@ FIELDS = ("frame.number", "sctp.srcport", "sctp.dstport", "sctp.data_tsn",
 CODES = (45, 46, 44, 47, 64, 44, 64, 45, 47, 64)
 OUTCOMES = ("Result",) * 5 + ("Error", "Reject", "MalformedResult", "TimedOut", "Result")
 STATUSES = (200,) * 5 + (422, 502, 502, 504, 200)
+OPERATIONS = ("sri-sm", "mo-forward-sm", "mt-forward-sm", "report-sm-delivery-status", "alert-service-centre",
+              "mt-forward-sm", "alert-service-centre", "sri-sm", "report-sm-delivery-status", "alert-service-centre")
 CONTEXTS = {44: 25, 45: 20, 46: 21, 47: 20, 64: 23}
 
 
@@ -209,8 +211,15 @@ def verify_http(report, profile):
     if profile == "wrong-context":
         require(observations == [{"status": 503, "outcome": "Unavailable", "accepted": 0}], "Rejected activation dispatched work")
     else:
-        require([(entry["case"], entry["status"], entry["outcome"]) for entry in observations]
-                == list(zip(range(1, 11), STATUSES, OUTCOMES)), "HTTP terminal outcomes differ from the matrix")
+        require([(entry["case"], entry["operation"], entry["status"], entry["outcome"]) for entry in observations]
+                == list(zip(range(1, 11), OPERATIONS, STATUSES, OUTCOMES)), "HTTP terminal outcomes differ from the matrix")
+
+
+def check_metrics(text, expected):
+    """Validate each expected counter exactly once from the real host's metric snapshot."""
+    for name, value in expected.items():
+        require(re.findall(rf"^{re.escape(name)} ([0-9]+)$", text, re.MULTILINE) == [str(value)],
+                f"Missing or incorrect host metric {name}")
 
 
 def verify(root, profile):
@@ -229,7 +238,18 @@ def verify(root, profile):
     table = subprocess.run(command, capture_output=True, text=True, check=True, timeout=20).stdout
     host = messages(table, 33060, 33061 if profile == "maintained" else None)
     result = verify_wire(host, profile)
-    files = ["traffic.pcap", "wire-m3ua.tsv", "http-result.json", "peer.log", "host.log", "capture.log"]
+    files = ["traffic.pcap", "wire-m3ua.tsv", "http-result.json", "peer.log", "host.log", "capture.log",
+             "reference-host.env", "metrics-after.txt"]
+    configuration = read("reference-host.env")
+    require("SIGTRAN_MAP_SMS_TOKEN" not in configuration and "SIGTRAN_ROUTING_CONTEXT=100" in configuration,
+            "Host configuration lacks the expected route or contains credentials")
+    count = 0 if profile == "wrong-context" else 10
+    check_metrics(read("metrics-after.txt"), {"sigtran_map_sms_accepted_total": count,
+                  "sigtran_map_sms_terminal_total": count, "sigtran_map_sms_in_flight": 0,
+                  "sigtran_m3ua_transfers_sent_total": count})
+    if profile != "wrong-context":
+        check_metrics(read("metrics-before.txt"), {"sigtran_map_sms_accepted_total": 0})
+        files.append("metrics-before.txt")
     environment = {"kernel": read("kernel.txt"), "dotnetSdk": read("dotnet.txt"),
                    "topology": "Reference host and independent C/lksctp peer in a private Linux loopback namespace"}
     if profile == "maintained":
@@ -237,6 +257,10 @@ def verify(root, profile):
         files.extend(("stp.log", "stp.cfg", "stp-version.txt", "stp-binaries.sha256"))
         environment["maintainedStp"] = read("stp-version.txt").splitlines()[0]
         environment["topology"] = "Reference host and C/lksctp endpoint connected through an external STP over two native SCTP associations"
+        binary_hashes = [line.split()[0] for line in read("stp-binaries.sha256").splitlines()]
+        require(len(binary_hashes) == 2 and all(re.fullmatch(r"[a-f0-9]{64}", digest) for digest in binary_hashes),
+                "External STP binary hashes are missing")
+        environment["stpExecutableSha256"], environment["stpLibrarySha256"] = binary_hashes
     (root / "wire-m3ua.tsv").write_text(table, encoding="utf-8")
     peer = read("peer.log")
     require("event=validation-failed" not in peer, "Independent peer rejected a request")
@@ -244,7 +268,7 @@ def verify(root, profile):
             else "event=wrong-activation-context" in peer, "Missing peer completion")
     return {"result": "pass", "profile": profile, "sourceCommit": sha,
             "environment": environment,
-            "observations": {"capturePackets": int(counters[1]), "captureDrops": 0, **result},
+            "observations": {"capturePackets": int(counters[1]), "captureDrops": 0, "terminalHttpOperations": count, **result},
             "privateArtifactSha256": {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
                                      for name in files},
             "limitations": ["The MAP endpoint is a repository-owned C peer, not operator or vendor acceptance.",
