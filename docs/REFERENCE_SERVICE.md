@@ -10,7 +10,7 @@ endpoint. Existing operations-only deployments remain the default.
 | --- | --- | --- |
 | 1 | Opt-in ITU service configuration and validation | Implemented |
 | 2 | Single SCTP/M3UA/SCCP/TCAP/MAP composition | Implemented |
-| 3 | Bounded typed MAP operation execution | Pending |
+| 3 | Bounded typed MAP operation execution | Implemented |
 | 4 | Loopback-only authenticated service entry point | Pending |
 | 5 | Readiness, metrics and shutdown drain | Pending |
 | 6 | Explicit M3UA application-server routing context | Pending |
@@ -45,3 +45,21 @@ contracts. The reference host initiates MAP dialogues; it is not an
 HLR or SMSC and refuses unsolicited inbound invokes. It drains TCAP
 events and SCCP returns without logging subscriber data. Shutdown stops
 the upper readers before stopping the M3UA transport.
+
+## Operation Inputs
+
+| Operation | Required inputs | Optional inputs |
+| --- | --- | --- |
+| `sri-sm` | `msisdn`, `serviceCentre` | `gprsSupport` |
+| `mo-forward-sm` | `msisdn`, `serviceCentre`, `tpduHex` | None |
+| `mt-forward-sm` | `imsi`, `serviceCentre`, `tpduHex` | None |
+| `report-sm-delivery-status` | `msisdn`, `serviceCentre`, `deliveryStatus` | None |
+| `alert-service-centre` | `msisdn`, `serviceCentre` | None |
+
+Digit strings are ASCII and at most 15 digits. TPDU inputs are 1-200
+hex-encoded bytes. Delivery status is `delivered`, `absent-subscriber`
+or `memory-capacity-exceeded`. The executor rejects irrelevant fields
+and does not queue requests beyond the configured in-flight limit.
+Results distinguish success, peer error, reject, malformed result,
+dialogue closure and timeout. Only the decoded routing fields of a
+successful SRI-SM result are returned; raw TCAP and MAP bytes are not.

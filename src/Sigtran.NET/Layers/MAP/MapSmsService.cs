@@ -217,9 +217,10 @@ public sealed class MapSmsService : IMapSmsService
         ITcapComponentDialogues dialogues,
         TcapDialogueHandle dialogue)
     {
+        using CancellationTokenSource cleanup = new(TimeSpan.FromSeconds(1));
         try
         {
-            await dialogues.AbortAsync(dialogue, CancellationToken.None)
+            await dialogues.AbortAsync(dialogue, cleanup.Token)
                 .ConfigureAwait(false);
         }
         catch
