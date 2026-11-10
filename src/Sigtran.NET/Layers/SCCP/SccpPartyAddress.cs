@@ -51,7 +51,7 @@ public sealed class SccpGlobalTitle
         }
 
         string normalized = digits.Trim().TrimStart('+');
-        if (!normalized.All(char.IsDigit))
+        if (normalized.Length == 0 || !normalized.All(c => c is >= '0' and <= '9'))
         {
             throw new ArgumentException("Global title digits must be numeric.", nameof(digits));
         }
@@ -205,6 +205,12 @@ public sealed class SccpPartyAddress
             }
 
             pointCode = (ushort)(data[offset] | (data[offset + 1] << 8));
+            if (pointCode > 0x3FFF)
+            {
+                error = "SCCP point code exceeds the ITU 14-bit range.";
+                return false;
+            }
+
             offset += 2;
         }
 
@@ -232,7 +238,14 @@ public sealed class SccpPartyAddress
             byte translationType = data[offset++];
             byte numberingPlanAndEncoding = data[offset++];
             byte natureOfAddress = data[offset++];
-            string digits = TbcdDecode(data[offset..], oddDigitCount: (numberingPlanAndEncoding & 0x0F) == 0x01);
+            int encodingScheme = numberingPlanAndEncoding & 0x0F;
+            if (encodingScheme is not (1 or 2)
+                || !TryDecodeDigits(data[offset..], encodingScheme == 1, out string digits))
+            {
+                error = "Invalid SCCP global title digit encoding.";
+                return false;
+            }
+
             globalTitle = new(digits, translationType, (byte)(numberingPlanAndEncoding >> 4), natureOfAddress);
             offset = data.Length;
         }
@@ -258,33 +271,41 @@ public sealed class SccpPartyAddress
         for (int i = 0; i < digits.Length; i += 2)
         {
             byte low = (byte)(digits[i] - '0');
-            byte high = i + 1 < digits.Length ? (byte)(digits[i + 1] - '0') : (byte)0x0F;
+            // Q.713 uses a zero high nibble for an odd SCCP GT, unlike MAP TBCD.
+            byte high = i + 1 < digits.Length ? (byte)(digits[i + 1] - '0') : (byte)0;
             result[i / 2] = (byte)(low | (high << 4));
         }
 
         return result;
     }
 
-    private static string TbcdDecode(ReadOnlySpan<byte> data, bool oddDigitCount)
+    private static bool TryDecodeDigits(ReadOnlySpan<byte> data, bool oddDigitCount, out string digits)
     {
-        char[] chars = new char[data.Length * 2];
-        int length = 0;
+        digits = string.Empty;
+        if (data.IsEmpty || data.Length > byte.MaxValue)
+        {
+            return false;
+        }
+
+        Span<char> chars = stackalloc char[data.Length * 2 - (oddDigitCount ? 1 : 0)];
         for (int i = 0; i < data.Length; i++)
         {
             byte low = (byte)(data[i] & 0x0F);
             byte high = (byte)((data[i] >> 4) & 0x0F);
-            chars[length++] = (char)('0' + low);
-            if (high != 0x0F)
+            bool finalOdd = oddDigitCount && i == data.Length - 1;
+            if (low > 9 || high > 9 || (finalOdd && high != 0))
             {
-                chars[length++] = (char)('0' + high);
+                return false;
+            }
+
+            chars[2 * i] = (char)('0' + low);
+            if (!finalOdd)
+            {
+                chars[2 * i + 1] = (char)('0' + high);
             }
         }
 
-        if (!oddDigitCount && length > 0 && length % 2 != 0)
-        {
-            length--;
-        }
-
-        return new string(chars, 0, length);
+        digits = new string(chars);
+        return true;
     }
 }

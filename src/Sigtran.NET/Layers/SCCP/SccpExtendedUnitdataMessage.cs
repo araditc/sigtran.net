@@ -1,7 +1,7 @@
 namespace Sigtran.NET.Layers.SCCP;
 
 /// <summary>
-/// Represents an SCCP Extended Unitdata message without optional parameters.
+/// Represents an SCCP Extended Unitdata message with optional segmentation.
 /// </summary>
 public sealed class SccpExtendedUnitdataMessage
 {
@@ -20,9 +20,9 @@ public sealed class SccpExtendedUnitdataMessage
         ReadOnlyMemory<byte> userData,
         SccpSegmentationParameter? segmentation = null)
     {
-        if (hopCounter == 0)
+        if (hopCounter is 0 or > 15)
         {
-            throw new ArgumentOutOfRangeException(nameof(hopCounter), "SCCP XUDT hop counter must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(hopCounter), "SCCP XUDT hop counter must be 1..15.");
         }
 
         if (userData.Length > byte.MaxValue)
@@ -122,15 +122,15 @@ public sealed class SccpExtendedUnitdataMessage
             return false;
         }
 
-        if (data[2] == 0)
+        if (data[2] is 0 or > 15)
         {
-            error = "SCCP XUDT hop counter is zero";
+            error = "SCCP XUDT hop counter must be 1..15.";
             return false;
         }
 
-        if (!TryReadVariable(data, pointerIndex: 3, out ReadOnlySpan<byte> calledBytes, out error)
-            || !TryReadVariable(data, pointerIndex: 4, out ReadOnlySpan<byte> callingBytes, out error)
-            || !TryReadVariable(data, pointerIndex: 5, out ReadOnlySpan<byte> userData, out error))
+        if (!SccpProtocolClass.TryDecodeConnectionless(data[1], out var protocolClass, out error)
+            || !SccpConnectionlessLayout.TryRead(data, 7, 3, false, out var calledBytes, out var callingBytes,
+                out var userData, out var optional, out error))
         {
             return false;
         }
@@ -142,13 +142,13 @@ public sealed class SccpExtendedUnitdataMessage
         }
 
         SccpSegmentationParameter? segmentation = null;
-        if (data[6] != 0 && !TryReadOptionalParameters(data, pointerIndex: 6, out segmentation, out error))
+        if (!optional.IsEmpty && !TryReadOptionalParameters(optional, out segmentation, out error))
         {
             return false;
         }
 
         message = new(
-            SccpProtocolClass.Decode(data[1]),
+            protocolClass,
             data[2],
             calledParty!,
             callingParty!,
@@ -164,49 +164,27 @@ public sealed class SccpExtendedUnitdataMessage
         offset += value.Length;
     }
 
-    private static bool TryReadVariable(ReadOnlySpan<byte> data, int pointerIndex, out ReadOnlySpan<byte> value, out string? error)
-    {
-        value = default;
-        error = null;
-        int start = pointerIndex + data[pointerIndex];
-        if (start >= data.Length)
-        {
-            error = "SCCP XUDT variable parameter pointer is outside the message";
-            return false;
-        }
-
-        int length = data[start];
-        if (start + 1 + length > data.Length)
-        {
-            error = "SCCP XUDT variable parameter length exceeds the message";
-            return false;
-        }
-
-        value = data.Slice(start + 1, length);
-        return true;
-    }
-
     private static bool TryReadOptionalParameters(
         ReadOnlySpan<byte> data,
-        int pointerIndex,
         out SccpSegmentationParameter? segmentation,
         out string? error)
     {
         segmentation = null;
         error = null;
-        int offset = pointerIndex + data[pointerIndex];
-        if (offset <= pointerIndex || offset >= data.Length)
-        {
-            error = "SCCP XUDT optional parameter pointer is outside the message";
-            return false;
-        }
+        int offset = 0;
 
         while (offset < data.Length)
         {
             SccpOptionalParameterName name = (SccpOptionalParameterName)data[offset++];
             if (name == SccpOptionalParameterName.EndOfOptionalParameters)
             {
-                return true;
+                if (offset == data.Length && offset > 1)
+                {
+                    return true;
+                }
+
+                error = "Invalid SCCP XUDT optional parameter terminator.";
+                return false;
             }
 
             if (offset >= data.Length)
@@ -224,6 +202,12 @@ public sealed class SccpExtendedUnitdataMessage
 
             if (name == SccpOptionalParameterName.Segmentation)
             {
+                if (segmentation.HasValue || length != SccpSegmentationParameter.EncodedLength)
+                {
+                    error = "Invalid or duplicate SCCP segmentation parameter.";
+                    return false;
+                }
+
                 segmentation = SccpSegmentationParameter.Decode(data.Slice(offset, length));
             }
 

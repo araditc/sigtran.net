@@ -121,9 +121,8 @@ public sealed class SccpUnitdataServiceMessage
             return false;
         }
 
-        if (!TryReadVariable(data, pointerIndex: 2, out ReadOnlySpan<byte> calledBytes, out error)
-            || !TryReadVariable(data, pointerIndex: 3, out ReadOnlySpan<byte> callingBytes, out error)
-            || !TryReadVariable(data, pointerIndex: 4, out ReadOnlySpan<byte> userData, out error))
+        if (!SccpConnectionlessLayout.TryRead(data, 5, 2, false, out var calledBytes, out var callingBytes,
+                out var userData, out _, out error))
         {
             return false;
         }
@@ -149,25 +148,4 @@ public sealed class SccpUnitdataServiceMessage
         offset += value.Length;
     }
 
-    private static bool TryReadVariable(ReadOnlySpan<byte> data, int pointerIndex, out ReadOnlySpan<byte> value, out string? error)
-    {
-        value = default;
-        error = null;
-        int start = pointerIndex + data[pointerIndex];
-        if (start >= data.Length)
-        {
-            error = "SCCP UDTS variable parameter pointer is outside the message";
-            return false;
-        }
-
-        int length = data[start];
-        if (start + 1 + length > data.Length)
-        {
-            error = "SCCP UDTS variable parameter length exceeds the message";
-            return false;
-        }
-
-        value = data.Slice(start + 1, length);
-        return true;
-    }
 }

@@ -87,6 +87,20 @@ public readonly struct SccpProtocolClass
             returnMessageOnError: (value & ReturnMessageOnErrorMask) != 0);
     }
 
+    internal static bool TryDecodeConnectionless(byte value, out SccpProtocolClass protocol, out string? error)
+    {
+        if (value is not (0x00 or 0x01 or 0x80 or 0x81))
+        {
+            protocol = default;
+            error = "Unsupported SCCP connectionless protocol class or handling option.";
+            return false;
+        }
+
+        protocol = Decode(value);
+        error = null;
+        return true;
+    }
+
     /// <inheritdoc />
     public override string ToString()
     {

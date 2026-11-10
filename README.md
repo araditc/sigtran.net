@@ -46,6 +46,7 @@ TCAP Invoke carries a complete ASN.1 argument without an extra OCTET STRING wrap
 TCAP results use the optional result SEQUENCE; Reject encodes the problem family.
 Structured dialogue portions encode Q.773 AARQ and AARE inside EXTERNAL.
 The dialogue manager requires a matching AARE before accepting a structured result.
+SCCP validates variable-part bounds and uses the Q.713 LUDT pointer/length format.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

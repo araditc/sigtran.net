@@ -14,7 +14,7 @@ checks do not establish operator or release-candidate acceptance.
 | 5 | Result, error and reject | Implemented |
 | 6 | Structured dialogue APDUs | Implemented |
 | 7 | Dialogue negotiation at runtime | Implemented |
-| 8 | Connectionless SCCP wire checks | Pending |
+| 8 | Connectionless SCCP wire checks | Implemented |
 | 9 | MAP SMS ASN.1 profile and vectors | Pending |
 | 10 | Integrated vectors, migration and exit report | Pending |
 
@@ -79,3 +79,14 @@ or mismatched responses fail closed; an explicit refusal uses Abort with
 rejected AARE per [Q.774](https://www.itu.int/rec/T-REC-Q.774/en). The MAP server checks the requested context against its operation
 profile and refuses mismatches. Bare TCAP dialogues remain available to
 callers who omit the dialogue portion.
+
+## Connectionless SCCP
+
+[Q.713](https://www.itu.int/rec/T-REC-Q.713-200103-I/en) sections 1.4, 2.3
+and 4.20 define little-endian LUDT pointers relative to their second octet,
+one-octet address lengths and a little-endian long-data length. UDT, UDTS,
+XUDT and LUDT validate bounds, overlaps and unclaimed bytes while allowing
+legal mandatory parameter reordering. Invalid XUDT segmentation lengths and
+non-ITU point codes are rejected by the TryDecode APIs. Odd SCCP BCD global
+titles use zero filler, unlike MAP TBCD. The LUDT codec remains scoped to
+messages without optional parameters.

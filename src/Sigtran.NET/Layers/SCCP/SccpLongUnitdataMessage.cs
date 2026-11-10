@@ -1,10 +1,13 @@
+using System.Buffers.Binary;
+
 namespace Sigtran.NET.Layers.SCCP;
 
 /// <summary>
-/// Represents an SCCP Long Unitdata message with 16-bit pointers and variable lengths.
+/// Represents an SCCP Long Unitdata message with 16-bit pointers and a 16-bit data length.
 /// </summary>
 public sealed class SccpLongUnitdataMessage
 {
+    private const int MaximumUserData = 3952;
     /// <summary>Creates an SCCP LUDT message.</summary>
     /// <param name="protocolClass">The SCCP protocol class.</param>
     /// <param name="hopCounter">The hop counter.</param>
@@ -18,14 +21,14 @@ public sealed class SccpLongUnitdataMessage
         SccpPartyAddress callingParty,
         ReadOnlyMemory<byte> userData)
     {
-        if (hopCounter == 0)
+        if (hopCounter is 0 or > 15)
         {
-            throw new ArgumentOutOfRangeException(nameof(hopCounter), "SCCP LUDT hop counter must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(hopCounter), "SCCP LUDT hop counter must be 1..15.");
         }
 
-        if (userData.Length > ushort.MaxValue)
+        if (userData.IsEmpty || userData.Length > MaximumUserData)
         {
-            throw new ArgumentOutOfRangeException(nameof(userData), "SCCP LUDT user data must fit in two length octets.");
+            throw new ArgumentOutOfRangeException(nameof(userData), "SCCP LUDT user data must be 1..3952 octets.");
         }
 
         ProtocolClass = protocolClass;
@@ -56,20 +59,24 @@ public sealed class SccpLongUnitdataMessage
     {
         byte[] called = CalledParty.Encode();
         byte[] calling = CallingParty.Encode();
-        int totalLength = 11 + 2 + called.Length + 2 + calling.Length + 2 + UserData.Length;
+        int totalLength = 11 + 1 + called.Length + 1 + calling.Length + 2 + UserData.Length;
         byte[] result = new byte[totalLength];
         result[0] = (byte)SccpMessageType.LongUnitdata;
         result[1] = ProtocolClass.Encode();
         result[2] = HopCounter;
-        WriteUInt16(result.AsSpan(3), 8);
-        WriteUInt16(result.AsSpan(5), 8 + called.Length);
-        WriteUInt16(result.AsSpan(7), 8 + called.Length + calling.Length);
-        WriteUInt16(result.AsSpan(9), 0);
+        BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(3), 7);
+        BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(5), checked((ushort)(6 + called.Length)));
+        BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(7), checked((ushort)(5 + called.Length + calling.Length)));
 
         int offset = 11;
-        WriteLongVariable(result, ref offset, called);
-        WriteLongVariable(result, ref offset, calling);
-        WriteLongVariable(result, ref offset, UserData.Span);
+        result[offset++] = checked((byte)called.Length);
+        called.CopyTo(result.AsSpan(offset));
+        offset += called.Length;
+        result[offset++] = checked((byte)calling.Length);
+        calling.CopyTo(result.AsSpan(offset));
+        offset += calling.Length;
+        BinaryPrimitives.WriteUInt16LittleEndian(result.AsSpan(offset), (ushort)UserData.Length);
+        UserData.Span.CopyTo(result.AsSpan(offset + 2));
         return result;
     }
 
@@ -94,22 +101,28 @@ public sealed class SccpLongUnitdataMessage
             return false;
         }
 
-        if (data[2] == 0)
+        if (data[2] is 0 or > 15)
         {
-            error = "SCCP LUDT hop counter is zero";
+            error = "SCCP LUDT hop counter must be 1..15.";
             return false;
         }
 
-        if (ReadUInt16(data.Slice(9, 2)) != 0)
+        if (BinaryPrimitives.ReadUInt16LittleEndian(data[9..]) != 0)
         {
             error = "SCCP LUDT optional parameters are not supported by this decoder";
             return false;
         }
 
-        if (!TryReadLongVariable(data, pointerIndex: 3, out ReadOnlySpan<byte> calledBytes, out error)
-            || !TryReadLongVariable(data, pointerIndex: 5, out ReadOnlySpan<byte> callingBytes, out error)
-            || !TryReadLongVariable(data, pointerIndex: 7, out ReadOnlySpan<byte> userData, out error))
+        if (!SccpProtocolClass.TryDecodeConnectionless(data[1], out var protocolClass, out error)
+            || !SccpConnectionlessLayout.TryRead(data, 11, 3, true, out var calledBytes, out var callingBytes,
+                out var userData, out _, out error))
         {
+            return false;
+        }
+
+        if (userData.Length > MaximumUserData)
+        {
+            error = "SCCP LUDT payload exceeds 3952 octets.";
             return false;
         }
 
@@ -120,7 +133,7 @@ public sealed class SccpLongUnitdataMessage
         }
 
         message = new(
-            SccpProtocolClass.Decode(data[1]),
+            protocolClass,
             data[2],
             calledParty!,
             callingParty!,
@@ -128,44 +141,4 @@ public sealed class SccpLongUnitdataMessage
         return true;
     }
 
-    private static void WriteLongVariable(byte[] destination, ref int offset, ReadOnlySpan<byte> value)
-    {
-        WriteUInt16(destination.AsSpan(offset), checked((ushort)value.Length));
-        offset += 2;
-        value.CopyTo(destination.AsSpan(offset));
-        offset += value.Length;
-    }
-
-    private static bool TryReadLongVariable(ReadOnlySpan<byte> data, int pointerIndex, out ReadOnlySpan<byte> value, out string? error)
-    {
-        value = default;
-        error = null;
-        int start = pointerIndex + ReadUInt16(data.Slice(pointerIndex, 2));
-        if (start >= data.Length)
-        {
-            error = "SCCP LUDT variable parameter pointer is outside the message";
-            return false;
-        }
-
-        int length = ReadUInt16(data.Slice(start, 2));
-        if (start + 2 + length > data.Length)
-        {
-            error = "SCCP LUDT variable parameter length exceeds the message";
-            return false;
-        }
-
-        value = data.Slice(start + 2, length);
-        return true;
-    }
-
-    private static ushort ReadUInt16(ReadOnlySpan<byte> source)
-    {
-        return (ushort)((source[0] << 8) | source[1]);
-    }
-
-    private static void WriteUInt16(Span<byte> destination, int value)
-    {
-        destination[0] = (byte)(value >> 8);
-        destination[1] = (byte)value;
-    }
 }

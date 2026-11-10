@@ -419,6 +419,7 @@ Run("SCCP XUDT codec preserves hop counter", SccpXudtCodecPreservesHopCounter);
 Run("SCCP segmentation parameter round-trips", SccpSegmentationParameterRoundTrips);
 Run("SCCP XUDT carries segmentation optional parameter", SccpXudtCarriesSegmentationOptionalParameter);
 Run("SCCP LUDT codec carries long user data", SccpLudtCodecCarriesLongUserData);
+Run("SCCP connectionless wire pointers reject overlap and retain legal reordering", SccpWireTests.ConnectionlessLayout);
 Run("SCCP UDTS codec carries return cause", SccpUdtsCodecCarriesReturnCause);
 Run("SCCP route table resolves SSN and global title routes", SccpRouteTableResolvesSsnAndGlobalTitleRoutes);
 Run("SCCP global-title translation uses longest prefix", SccpGlobalTitleTranslationUsesLongestPrefix);
@@ -8459,7 +8460,7 @@ static void SccpPartyAddressEncodesSsnAndGlobalTitle()
 
     byte[] encoded = address.Encode();
     AssertEqual((byte)0x13, encoded[0], "SCCP party address indicator");
-    AssertSequence([0x13, 0x34, 0x12, 0x06, 0x00, 0x11, 0x04, 0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], encoded, "SCCP party address bytes");
+    AssertSequence([0x13, 0x34, 0x12, 0x06, 0x00, 0x11, 0x04, 0x44, 0x21, 0x43, 0x65, 0x87, 0x09], encoded, "SCCP party address bytes");
 
     Assert(SccpPartyAddress.TryDecode(encoded, out SccpPartyAddress? decoded, out string? error), error ?? "SCCP party address decode failed");
     AssertEqual(SccpRoutingIndicator.RouteOnGlobalTitle, decoded!.RoutingIndicator, "SCCP decoded routing indicator");
@@ -8593,10 +8594,10 @@ static void SccpLudtCodecCarriesLongUserData()
 
     byte[] encoded = message.Encode();
     AssertEqual((byte)SccpMessageType.LongUnitdata, encoded[0], "SCCP LUDT message type");
-    AssertSequence([0x00, 0x08], encoded.AsSpan(3, 2), "SCCP LUDT called pointer");
-    AssertSequence([0x00, 0x0C], encoded.AsSpan(5, 2), "SCCP LUDT calling pointer");
-    AssertSequence([0x00, 0x10], encoded.AsSpan(7, 2), "SCCP LUDT data pointer");
-    AssertSequence([0x01, 0x2C], encoded.AsSpan(23, 2), "SCCP LUDT data length");
+    AssertSequence([0x07, 0x00], encoded.AsSpan(3, 2), "SCCP LUDT called pointer");
+    AssertSequence([0x0A, 0x00], encoded.AsSpan(5, 2), "SCCP LUDT calling pointer");
+    AssertSequence([0x0D, 0x00], encoded.AsSpan(7, 2), "SCCP LUDT data pointer");
+    AssertSequence([0x2C, 0x01], encoded.AsSpan(21, 2), "SCCP LUDT data length");
 
     Assert(SccpLongUnitdataMessage.TryDecode(encoded, out SccpLongUnitdataMessage? decoded, out string? error), error ?? "SCCP LUDT decode failed");
     AssertEqual((byte)9, decoded!.HopCounter, "SCCP decoded LUDT hop counter");
