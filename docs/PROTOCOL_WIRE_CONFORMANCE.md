@@ -12,7 +12,7 @@ checks do not establish operator or release-candidate acceptance.
 | 3 | Bounded BER and OID decoding | Implemented |
 | 4 | Invoke and linked ID | Implemented |
 | 5 | Result, error and reject | Implemented |
-| 6 | Structured dialogue APDUs | Pending |
+| 6 | Structured dialogue APDUs | Implemented |
 | 7 | Dialogue negotiation at runtime | Pending |
 | 8 | Connectionless SCCP wire checks | Pending |
 | 9 | MAP SMS ASN.1 profile and vectors | Pending |
@@ -61,3 +61,13 @@ problem families and supports NULL for an uncorrelatable invoke ID.
 The manager does not complete an invoke with a mismatched result opcode.
 Global operation/error codes and fragmented ReturnResultNotLast are outside
 the declared MAP SMS profile.
+
+## Structured Dialogue
+
+The [Q.773 DialoguePDUs module](https://www.itu.int/ITU-T/formal-language/itu-t/q/q773/1997/DialoguePDUs.html)
+defines AARQ and AARE. The SDK encodes the EXTERNAL direct-reference OID
+`0.0.17.773.1.1.1`, single-ASN.1-type envelope, application context and
+response result/diagnostic. The optional user-information field carries
+encoded EXTERNAL values rather than arbitrary bytes. Fixed AARQ/AARE
+vectors and malformed variants exercise the codec; runtime negotiation is
+verified separately in unit 7.

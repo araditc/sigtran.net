@@ -388,6 +388,7 @@ Run("TCAP transaction fields and provider abort follow Q.773", TcapWireTests.Tra
 Run("TCAP BER and object identifier boundaries are deterministic", TcapWireTests.BerBoundaries);
 Run("TCAP Invoke uses an implicit linked ID and an ASN.1 open type", TcapWireTests.InvokeFields);
 Run("TCAP outcome components match X.880 result and reject fields", TcapWireTests.OutcomeFields);
+Run("TCAP structured dialogue encodes Q.773 AARQ and AARE", TcapWireTests.DialogueFields);
 Run("TCAP dialogue portion carries application context", TcapDialoguePortionCarriesApplicationContext);
 Run("TCAP dialogue controller tracks state and invoke timeouts", TcapDialogueControllerTracksStateAndInvokeTimeouts);
 Run("TCAP allocators issue transaction and invoke identifiers", TcapAllocatorsIssueTransactionAndInvokeIdentifiers);
@@ -7652,12 +7653,13 @@ static void TcapTransactionMessageWrapsComponentPortion()
 static void TcapDialoguePortionCarriesApplicationContext()
 {
     TcapObjectIdentifier oid = new(0, 0, 17, 773, 1, 1, 1);
-    TcapDialoguePortion dialogue = new(oid, new byte[] { 0x55, 0x66 });
+    byte[] userInformation = [0x28, 0x05, 0xA0, 0x03, 0x04, 0x01, 0x55];
+    TcapDialoguePortion dialogue = new(oid, userInformation);
     byte[] encoded = dialogue.Encode();
-    AssertEqual((byte)0x06, encoded[0], "TCAP dialogue OID tag");
+    AssertEqual((byte)0x28, encoded[0], "TCAP dialogue EXTERNAL tag");
     Assert(TcapDialoguePortion.TryDecode(encoded, out TcapDialoguePortion? decoded, out string? error), error ?? "TCAP dialogue decode failed");
     AssertEqual("0.0.17.773.1.1.1", decoded!.ApplicationContext.ToString(), "TCAP decoded application context");
-    AssertSequence([0x55, 0x66], decoded.UserInformation.Span, "TCAP decoded dialogue user information");
+    AssertSequence(userInformation, decoded.UserInformation.Span, "TCAP decoded dialogue user information");
 
     TcapTransactionMessage begin = new(
         TcapPackageType.Begin,
@@ -7727,7 +7729,7 @@ static void TcapEvidenceVectorsValidateTransactionBytes()
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = TcapEvidenceVectors.GetVectors();
     AssertEqual(2, vectors.Count, "TCAP evidence vector count");
     Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.Tcap), "all TCAP vectors should use TCAP surface");
-    AssertEqual("62174801016B0406022A036C0CA10A0201020201010402AABB", vectors[0].ToHex(), "TCAP Begin evidence hex");
+    AssertEqual("62284801016B152813060700118605010101A0086006A10406022A036C0CA10A0201020201010402AABB", vectors[0].ToHex(), "TCAP Begin evidence hex");
 
     IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = TcapEvidenceVectors.ValidateEncoders();
     AssertEqual(vectors.Count, reports.Count, "TCAP evidence report count");

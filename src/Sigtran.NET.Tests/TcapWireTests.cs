@@ -63,6 +63,15 @@ internal static class TcapWireTests
         foreach (string hex in new[] { "0600", "060180", "06022A80", "06072A908080808000" })
         {
             Require(!TcapDialoguePortion.TryDecode(Convert.FromHexString(hex), out _, out _), $"Malformed OID accepted: {hex}");
+            try
+            {
+                _ = TcapObjectIdentifier.DecodeValue(Convert.FromHexString(hex).AsSpan(2));
+                throw new InvalidOperationException($"Malformed OID arc accepted: {hex}");
+            }
+            catch (ArgumentException)
+            {
+                // The direct value API reports malformed input with an argument error.
+            }
         }
 
         var octetString = new TcapBerTag(TcapBerTagClass.Universal, false, 4);
@@ -114,6 +123,27 @@ internal static class TcapWireTests
             "Flattened result accepted");
         Require(!TcapBerRejectComponent.TryDecode(Convert.FromHexString("A406020101810108"), out _, out _),
             "Unknown problem code accepted");
+    }
+
+    internal static void DialogueFields()
+    {
+        var context = new TcapObjectIdentifier(0, 4, 0, 0, 1, 0, 20, 3);
+        byte[] aarq = Convert.FromHexString("2818060700118605010101A00D600BA109060704000001001403");
+        byte[] aare = Convert.FromHexString("2824060700118605010101A0196117A109060704000001001403A203020100A305A103020100");
+        Require(new TcapDialoguePortion(context).Encode().AsSpan().SequenceEqual(aarq), "Q.773 AARQ bytes differ");
+        Require(TcapDialoguePortion.CreateResponse(context, true).Encode().AsSpan().SequenceEqual(aare), "Q.773 AARE bytes differ");
+        Require(TcapDialoguePortion.TryDecode(aarq, out var request, out _) && request is { Accepted: null }, "AARQ rejected");
+        Require(TcapDialoguePortion.TryDecode(aare, out var response, out _) && response is { Accepted: true }
+            && response.ApplicationContext.ToString() == context.ToString(), "AARE rejected");
+
+        byte[] rejected = TcapDialoguePortion.CreateResponse(context, false,
+            TcapDialogueDiagnosticSource.User, diagnostic: 2).Encode();
+        Require(TcapDialoguePortion.TryDecode(rejected, out var refusal, out _)
+            && refusal is { Accepted: false, Diagnostic: 2 }, "AARE refusal lost");
+        Require(!TcapDialoguePortion.TryDecode(aarq[..^1], out _, out _), "Truncated dialogue accepted");
+        Require(!TcapDialoguePortion.TryDecode([.. aare, 0], out _, out _), "Trailing dialogue data accepted");
+        aarq[10] = 2;
+        Require(!TcapDialoguePortion.TryDecode(aarq, out _, out _), "Wrong dialogue abstract syntax accepted");
     }
 
     private static void Require(bool condition, string message)

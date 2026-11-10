@@ -1,3 +1,5 @@
+using System.Formats.Asn1;
+
 namespace Sigtran.NET.Layers.TCAP;
 
 /// <summary>
@@ -113,104 +115,250 @@ public sealed class TcapObjectIdentifier
     }
 }
 
+/// <summary>Identifies the source of an association response diagnostic.</summary>
+public enum TcapDialogueDiagnosticSource : byte
+{
+    /// <summary>The dialogue service user.</summary>
+    User = 1,
+    /// <summary>The dialogue service provider.</summary>
+    Provider = 2
+}
+
 /// <summary>
-/// Represents a TCAP dialogue portion foundation model.
+/// Represents a Q.773 structured dialogue request (AARQ) or response (AARE).
 /// </summary>
 public sealed class TcapDialoguePortion
 {
-    private static readonly TcapBerTag ObjectIdentifierTag = new(TcapBerTagClass.Universal, constructed: false, number: 6);
-    private static readonly TcapBerTag UserInformationTag = new(TcapBerTagClass.Universal, constructed: false, number: 4);
+    private const string StructuredDialogueOid = "0.0.17.773.1.1.1";
+    private static readonly TcapBerTag External = new(TcapBerTagClass.Universal, true, 8);
+    private static readonly Asn1Tag SingleAsn1 = Context(0);
+    private static readonly Asn1Tag ApplicationContextTag = Context(1);
+    private static readonly Asn1Tag ResultTag = Context(2);
+    private static readonly Asn1Tag DiagnosticTag = Context(3);
+    private static readonly Asn1Tag UserInformationTag = Context(30);
+    private static readonly Asn1Tag ProtocolVersionTag = new(TagClass.ContextSpecific, 0);
 
-    /// <summary>Creates a dialogue portion.</summary>
-    /// <param name="applicationContext">The application context object identifier.</param>
-    /// <param name="userInformation">The optional user information bytes.</param>
+    /// <summary>Creates a structured dialogue request.</summary>
+    /// <param name="applicationContext">The requested application context.</param>
+    /// <param name="userInformation">Optional concatenated, encoded EXTERNAL values.</param>
     public TcapDialoguePortion(TcapObjectIdentifier applicationContext, ReadOnlyMemory<byte> userInformation = default)
+        : this(applicationContext, userInformation, null, TcapDialogueDiagnosticSource.User, 0)
+    {
+    }
+
+    private TcapDialoguePortion(TcapObjectIdentifier applicationContext, ReadOnlyMemory<byte> userInformation,
+        bool? accepted, TcapDialogueDiagnosticSource source, byte diagnostic)
     {
         ApplicationContext = applicationContext ?? throw new ArgumentNullException(nameof(applicationContext));
         UserInformation = userInformation;
+        Accepted = accepted;
+        DiagnosticSource = source;
+        Diagnostic = diagnostic;
     }
 
-    /// <summary>The application context object identifier.</summary>
+    /// <summary>The requested or negotiated application context.</summary>
     public TcapObjectIdentifier ApplicationContext { get; }
 
-    /// <summary>The optional user information bytes.</summary>
+    /// <summary>The concatenated EXTERNAL values in user-information, if present.</summary>
     public ReadOnlyMemory<byte> UserInformation { get; }
 
-    /// <summary>Encodes the dialogue portion value bytes.</summary>
-    /// <returns>The encoded dialogue portion value bytes.</returns>
+    /// <summary>Null for AARQ, true for accepted AARE, or false for rejected AARE.</summary>
+    public bool? Accepted { get; }
+
+    /// <summary>The response diagnostic source.</summary>
+    public TcapDialogueDiagnosticSource DiagnosticSource { get; }
+
+    /// <summary>The source-specific response diagnostic code.</summary>
+    public byte Diagnostic { get; }
+
+    /// <summary>Creates a structured dialogue response.</summary>
+    /// <param name="applicationContext">The application context in the response.</param>
+    /// <param name="accepted">Whether the association is accepted.</param>
+    /// <param name="source">The response diagnostic source.</param>
+    /// <param name="diagnostic">The source-specific diagnostic (0..2, zero when accepted).</param>
+    /// <param name="userInformation">Optional concatenated, encoded EXTERNAL values.</param>
+    /// <returns>The dialogue response.</returns>
+    public static TcapDialoguePortion CreateResponse(TcapObjectIdentifier applicationContext, bool accepted,
+        TcapDialogueDiagnosticSource source = TcapDialogueDiagnosticSource.User, byte diagnostic = 0,
+        ReadOnlyMemory<byte> userInformation = default)
+    {
+        if (source is not (TcapDialogueDiagnosticSource.User or TcapDialogueDiagnosticSource.Provider))
+        {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
+        if (diagnostic > 2 || (accepted && diagnostic != 0))
+        {
+            throw new ArgumentOutOfRangeException(nameof(diagnostic));
+        }
+
+        return new(applicationContext, userInformation, accepted, source, diagnostic);
+    }
+
+    /// <summary>Encodes the EXTERNAL value inside the transaction dialogue portion.</summary>
+    /// <returns>The complete EXTERNAL TLV.</returns>
     public byte[] Encode()
     {
-        byte[] result = new byte[512];
-        int offset = 0;
-        WriteElement(result, ref offset, ObjectIdentifierTag, ApplicationContext.EncodeValue());
-        if (!UserInformation.IsEmpty)
+        AsnWriter fields = new(AsnEncodingRules.BER);
+        fields.WriteObjectIdentifier(StructuredDialogueOid);
+        using (fields.PushSequence(SingleAsn1))
+        using (fields.PushSequence(new Asn1Tag(TagClass.Application, Accepted.HasValue ? 1 : 0, true)))
         {
-            WriteElement(result, ref offset, UserInformationTag, UserInformation.Span);
-        }
-
-        Array.Resize(ref result, offset);
-        return result;
-    }
-
-    /// <summary>Attempts to decode a dialogue portion.</summary>
-    /// <param name="data">The encoded dialogue portion value bytes.</param>
-    /// <param name="dialoguePortion">The decoded dialogue portion on success.</param>
-    /// <param name="error">An error message on failure.</param>
-    /// <returns>True if decoding succeeded; otherwise false.</returns>
-    public static bool TryDecode(ReadOnlySpan<byte> data, out TcapDialoguePortion? dialoguePortion, out string? error)
-    {
-        dialoguePortion = null;
-        error = null;
-        if (!TcapBer.TryReadElement(data, out TcapBerElement oidElement, out error))
-        {
-            return false;
-        }
-
-        if (oidElement.Tag.Encode() != ObjectIdentifierTag.Encode())
-        {
-            error = "TCAP dialogue portion is missing application context";
-            return false;
-        }
-
-        TcapObjectIdentifier applicationContext;
-        try
-        {
-            applicationContext = TcapObjectIdentifier.DecodeValue(oidElement.Value.Span);
-        }
-        catch (ArgumentException exception)
-        {
-            error = exception.Message;
-            return false;
-        }
-        ReadOnlyMemory<byte> userInformation = default;
-        ReadOnlySpan<byte> remaining = data[oidElement.TotalLength..];
-        if (!remaining.IsEmpty)
-        {
-            if (!TcapBer.TryReadElement(remaining, out TcapBerElement userElement, out error))
+            using (fields.PushSequence(ApplicationContextTag))
             {
-                return false;
+                fields.WriteObjectIdentifier(ApplicationContext.ToString());
             }
 
-            if (userElement.Tag.Encode() != UserInformationTag.Encode() || userElement.TotalLength != remaining.Length)
+            if (Accepted is { } accepted)
             {
-                error = "TCAP dialogue portion user information tag is invalid";
-                return false;
+                using (fields.PushSequence(ResultTag))
+                {
+                    fields.WriteInteger(accepted ? 0 : 1);
+                }
+
+                using (fields.PushSequence(DiagnosticTag))
+                using (fields.PushSequence(Context((byte)DiagnosticSource)))
+                {
+                    fields.WriteInteger(Diagnostic);
+                }
             }
 
-            userInformation = userElement.Value;
+            if (!UserInformation.IsEmpty)
+            {
+                using (fields.PushSequence(UserInformationTag))
+                {
+                    AsnReader values = new(UserInformation, AsnEncodingRules.BER);
+                    while (values.HasData)
+                    {
+                        fields.WriteEncodedValue(ReadExternalValue(values));
+                    }
+                }
+            }
         }
 
-        dialoguePortion = new(applicationContext, userInformation);
-        return true;
-    }
-
-    private static void WriteElement(byte[] destination, ref int offset, TcapBerTag tag, ReadOnlySpan<byte> value)
-    {
-        if (!TcapBer.TryWriteElement(destination.AsSpan(offset), tag, value, out int written, out string? error))
+        byte[] encodedFields = fields.Encode();
+        byte[] external = new byte[encodedFields.Length + 4];
+        if (!TcapBer.TryWriteElement(external, External, encodedFields, out int written, out string? error))
         {
             throw new InvalidOperationException(error);
         }
 
-        offset += written;
+        Array.Resize(ref external, written);
+        return external;
     }
+
+    /// <summary>Attempts to decode one structured AARQ or AARE EXTERNAL value.</summary>
+    /// <param name="data">The encoded dialogue portion value.</param>
+    /// <param name="dialoguePortion">The decoded portion on success.</param>
+    /// <param name="error">The decoding error, if any.</param>
+    /// <returns>True when the portion is supported and well-formed.</returns>
+    public static bool TryDecode(ReadOnlySpan<byte> data, out TcapDialoguePortion? dialoguePortion, out string? error)
+    {
+        dialoguePortion = null;
+        if (!TcapBer.TryReadElement(data, out TcapBerElement external, out error)
+            || external.Tag.Encode() != External.Encode() || external.TotalLength != data.Length)
+        {
+            error ??= "Expected one TCAP EXTERNAL value.";
+            return false;
+        }
+
+        try
+        {
+            AsnReader fields = new(external.Value, AsnEncodingRules.BER);
+            if (fields.ReadObjectIdentifier() != StructuredDialogueOid)
+            {
+                throw new AsnContentException("Unsupported TCAP dialogue abstract syntax.");
+            }
+
+            AsnReader single = fields.ReadSequence(SingleAsn1);
+            fields.ThrowIfNotEmpty();
+            Asn1Tag tag = single.PeekTag();
+            if (tag.TagClass != TagClass.Application || tag.TagValue is not (0 or 1))
+            {
+                throw new AsnContentException("Expected TCAP AARQ or AARE.");
+            }
+
+            AsnReader apdu = single.ReadSequence(tag);
+            single.ThrowIfNotEmpty();
+            if (apdu.HasData && apdu.PeekTag().HasSameClassAndValue(ProtocolVersionTag))
+            {
+                byte[] version = apdu.ReadBitString(out _, ProtocolVersionTag);
+                if (version.Length == 0 || (version[0] & 0x80) == 0)
+                {
+                    throw new AsnContentException("TCAP dialogue protocol version 1 is required.");
+                }
+            }
+
+            AsnReader contextField = apdu.ReadSequence(ApplicationContextTag);
+            string context = contextField.ReadObjectIdentifier();
+            contextField.ThrowIfNotEmpty();
+            var oid = new TcapObjectIdentifier(context.Split('.').Select(uint.Parse).ToArray());
+            bool? accepted = null;
+            byte diagnostic = 0;
+            TcapDialogueDiagnosticSource source = TcapDialogueDiagnosticSource.User;
+            if (tag.TagValue == 1)
+            {
+                AsnReader result = apdu.ReadSequence(ResultTag);
+                if (!result.TryReadInt32(out int resultValue) || resultValue is not (0 or 1))
+                {
+                    throw new AsnContentException("Invalid TCAP association result.");
+                }
+
+                result.ThrowIfNotEmpty();
+                accepted = resultValue == 0;
+                AsnReader diagnostics = apdu.ReadSequence(DiagnosticTag);
+                Asn1Tag sourceTag = diagnostics.PeekTag();
+                if (sourceTag.TagClass != TagClass.ContextSpecific || sourceTag.TagValue is not (1 or 2))
+                {
+                    throw new AsnContentException("Invalid TCAP association diagnostic source.");
+                }
+
+                AsnReader code = diagnostics.ReadSequence(sourceTag);
+                if (!code.TryReadInt32(out int value) || value is < 0 or > 2 || (accepted == true && value != 0))
+                {
+                    throw new AsnContentException("Invalid TCAP association diagnostic.");
+                }
+
+                code.ThrowIfNotEmpty();
+                diagnostics.ThrowIfNotEmpty();
+                source = (TcapDialogueDiagnosticSource)sourceTag.TagValue;
+                diagnostic = (byte)value;
+            }
+
+            ReadOnlyMemory<byte> userInformation = default;
+            if (apdu.HasData)
+            {
+                AsnReader values = apdu.ReadSequence(UserInformationTag);
+                using MemoryStream content = new();
+                while (values.HasData)
+                {
+                    content.Write(ReadExternalValue(values));
+                }
+
+                userInformation = content.ToArray();
+            }
+
+            apdu.ThrowIfNotEmpty();
+            dialoguePortion = new(oid, userInformation, accepted, source, diagnostic);
+            error = null;
+            return true;
+        }
+        catch (Exception exception) when (exception is AsnContentException or OverflowException or ArgumentException)
+        {
+            error = exception.Message;
+            return false;
+        }
+    }
+
+    private static ReadOnlySpan<byte> ReadExternalValue(AsnReader reader)
+    {
+        if (reader.PeekTag() != new Asn1Tag(TagClass.Universal, 8, true))
+        {
+            throw new AsnContentException("TCAP user-information must contain only EXTERNAL values.");
+        }
+
+        return reader.ReadEncodedValue().Span;
+    }
+
+    private static Asn1Tag Context(int value) => new(TagClass.ContextSpecific, value, true);
 }
