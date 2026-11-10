@@ -115,3 +115,6 @@ M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.DisposeAsync`0():System.Threading.Task
 M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.ReceiveAsync`0(System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask<Sigtran.NET.Layers.MTP3.Mtp3TransferMessage>|static=False|abstract=False
 M:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork.SendAsync`0(Sigtran.NET.Layers.MTP3.Mtp3TransferMessage|optional=False|out=False,System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask|static=False|abstract=False
 T:Sigtran.NET.Layers.MTP3.Mtp3LinkNetwork|kind=class|base=System.Object|interfaces=Sigtran.NET.Layers.MTP3.IMtp3Network,System.IAsyncDisposable|abstract=False|sealed=True
+M:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery.FreezeForChangeoverAsync`0(System.Threading.CancellationToken|optional=True|out=False):System.Threading.Tasks.ValueTask<System.ValueTuple<System.Nullable<System.UInt32>,System.Int64>>|static=False|abstract=True
+M:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery.TryRetrieveAfter`0(System.UInt32|optional=False|out=False,System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<System.Byte>>&|optional=False|out=True):System.Boolean|static=False|abstract=True
+T:Sigtran.NET.Layers.MTP2.IMtp2LinkRecovery|kind=interface|base=-|interfaces=Sigtran.NET.Layers.MTP2.IMtp2Link|abstract=True|sealed=False

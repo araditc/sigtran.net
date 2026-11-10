@@ -71,6 +71,7 @@ from M2PA framing and rejects M3UA-only adaptation parameters on that path.
 Linksets and routesets are explicit, and SLS assignments on healthy links remain stable when another link is unavailable.
 `Mtp3LinkNetwork` lets SCCP use that path through the same `IMtp3Network` contract as M3UA.
 It consumes neighbour-scoped TFP/TFA and national TFR below SCCP.
+The M2PA service view freezes a 24-bit retrieval window for peer-confirmed changeover.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

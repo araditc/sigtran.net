@@ -54,6 +54,12 @@ the additional M2PA spare octet. The existing low-level
 `M2paLink.SendAsync` and `ReceiveAsync` still operate on the raw User Data
 body. Do not read both views concurrently.
 
+The ITU service view also implements `IMtp2LinkRecovery`. Freezing
+stops the failed generation before reading its accepted sequence and
+retained data. The send path records each attempted transmission
+before the peer can acknowledge it; a replacement association
+starts with an empty retransmission window.
+
 ## Congestion And Processor Outage
 
 `SetLocalBusyAsync` sends Busy or Busy Ended. A peer Busy status pauses

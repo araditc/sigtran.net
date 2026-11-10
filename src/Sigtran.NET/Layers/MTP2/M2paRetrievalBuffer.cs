@@ -51,6 +51,7 @@ public sealed class M2paRetrievalBuffer
 {
     private readonly object _sync = new();
     private readonly LinkedList<M2paRetrievalEntry> _entries = [];
+    private uint _lastAcknowledged = M2paProtocol.MaximumSequenceNumber;
 
     /// <summary>Creates a bounded retrieval buffer.</summary>
     /// <param name="capacity">The maximum unacknowledged User Data messages.</param>
@@ -138,6 +139,7 @@ public sealed class M2paRetrievalBuffer
                 }
             }
 
+            _lastAcknowledged = backwardSequenceNumber;
             return removed;
         }
     }
@@ -149,6 +151,25 @@ public sealed class M2paRetrievalBuffer
         lock (_sync)
         {
             return _entries.ToArray();
+        }
+    }
+
+    /// <summary>Captures the acknowledgement boundary and retained entries atomically.</summary>
+    internal (uint Acknowledged, M2paRetrievalEntry[] Entries) Capture()
+    {
+        lock (_sync)
+        {
+            return (_lastAcknowledged, _entries.ToArray());
+        }
+    }
+
+    /// <summary>Starts a new sequence space without carrying forward old retransmissions.</summary>
+    internal void Reset()
+    {
+        lock (_sync)
+        {
+            _entries.Clear();
+            _lastAcknowledged = M2paProtocol.MaximumSequenceNumber;
         }
     }
 }

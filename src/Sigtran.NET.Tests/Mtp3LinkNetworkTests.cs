@@ -38,6 +38,31 @@ internal static class Mtp3LinkNetworkTests
     internal static void M2paServiceFraming() => ExerciseM2paServiceFramingAsync().GetAwaiter().GetResult();
     internal static void TransferNetwork() => ExerciseTransferNetworkAsync().GetAwaiter().GetResult();
     internal static void ManagementRoutes() => ExerciseManagementRoutesAsync().GetAwaiter().GetResult();
+    internal static void RecoverySnapshot() => ExerciseRecoverySnapshotAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseRecoverySnapshotAsync()
+    {
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        await using M2paLink raw = new(new M2paLoopbackTransport { SuppressUserDataResponses = true },
+            new(normalProvingDuration: TimeSpan.Zero));
+        await raw.StartAsync(timeout.Token);
+        IMtp2LinkRecovery recovery = (IMtp2LinkRecovery)raw.CreateMtp2ServiceLink();
+        byte[] first = [0x83, 2, 0x40, 0, 0, 1], second = [0x83, 2, 0x40, 0, 0, 2];
+        await recovery.SendAsync(first, timeout.Token);
+        await recovery.SendAsync(second, timeout.Token);
+        var (lastAccepted, count) = await recovery.FreezeForChangeoverAsync(timeout.Token);
+        Require(lastAccepted == 0xFF_FFFF && count == 0 && raw.State == Mtp2LinkState.OutOfService,
+            "Freeze quiesces M2PA and keeps the initial 24-bit boundary");
+        Require(recovery.TryRetrieveAfter(0xFF_FFFF, out var all) && all.Count == 2
+            && all[0].Span.SequenceEqual(first) && all[1].Span.SequenceEqual(second), "Retrieve the wrapped window in send order");
+        Require(recovery.TryRetrieveAfter(0, out var after) && after.Count == 1 && after[0].Span.SequenceEqual(second),
+            "Peer confirmation excludes already accepted messages");
+        Require(!recovery.TryRetrieveAfter(2, out var invalid) && invalid.Count == 0, "An unproven boundary never replays data");
+
+        await raw.RecoverAsync(new M2paLoopbackTransport(), ct: timeout.Token);
+        Require(raw.RetrieveUnacknowledged().Count == 0 && raw.State == Mtp2LinkState.InService,
+            "Replacement transport starts with a clean retransmission window");
+    }
 
     private static async Task ExerciseManagementRoutesAsync()
     {

@@ -55,7 +55,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 3 | Linkset, routeset and stable SLS selection | Implemented |
 | 4 | MTP3 transfer network and bounded receive ownership | Implemented |
 | 5 | Network management framing and route state | Implemented |
-| 6 | 24-bit link retrieval and peer confirmation | Pending |
+| 6 | 24-bit link retrieval and peer confirmation | Implemented |
 | 7 | Extended changeover and emergency handling | Pending |
 | 8 | Acknowledged changeback and ordered traffic | Pending |
 | 9 | SCCP traffic against an independent wire peer | Pending |
@@ -92,3 +92,9 @@ routes. Wrong NI, DPC or neighbour, unknown route, unsupported heading,
 and malformed lengths or point-code spare bits cannot change routing.
 Management frames never reach SCCP. This is an endpoint route policy,
 not a complete STP routing or MTP restart implementation.
+
+`IMtp2LinkRecovery` optionally adds a frozen receive boundary and
+peer-confirmed retrieval to the ordinary MTP2 contract. Retrieval
+accepts only the last acknowledged boundary or a sequence in the
+frozen window, including wrap from `0xFFFFFF` to zero. It returns only
+subsequent MSUs in send order. Unknown sequences never trigger replay.

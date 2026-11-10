@@ -27,6 +27,7 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
     private Mtp2LinkState _state = Mtp2LinkState.OutOfService;
     private uint _lastSentSequence = M2paProtocol.MaximumSequenceNumber;
     private uint _lastReceivedSequence = M2paProtocol.MaximumSequenceNumber;
+    private bool _hasSequenceState;
     private bool _localBusy;
     private bool _remoteBusy;
     private bool _localProcessorOutage;
@@ -193,6 +194,7 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
                     ct).ConfigureAwait(false);
                 await _peerReady.Task.WaitAsync(_options.AlignmentTimeout, ct)
                     .ConfigureAwait(false);
+                _hasSequenceState = true;
                 SetState(Mtp2LinkState.InService, "alignment-ready");
             }
             catch
@@ -247,6 +249,10 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
                     throw new InvalidOperationException(error);
                 }
 
+                ct.ThrowIfCancellationRequested();
+                // A peer can acknowledge before the transport send completes.
+                _retrievalBuffer.Add(new(fsn, payload, DateTimeOffset.UtcNow));
+                _lastSentSequence = fsn;
                 await _transport.SendAsync(
                     new(
                         rented.AsMemory(0, written).ToArray(),
@@ -263,8 +269,6 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
                 ArrayPool<byte>.Shared.Return(rented);
             }
 
-            _lastSentSequence = fsn;
-            _retrievalBuffer.Add(new(fsn, payload, DateTimeOffset.UtcNow));
             Interlocked.Increment(ref _sentUserData);
         }
         finally
@@ -393,6 +397,32 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
         return _retrievalBuffer.Snapshot();
     }
 
+    /// <summary>Stops the link without resetting its sequence space and captures the frozen generation.</summary>
+    internal async ValueTask<M2paChangeoverSnapshot> FreezeForChangeoverAsync(CancellationToken ct)
+    {
+        ThrowIfDisposed();
+        await _lifecycleGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await StopCoreAsync(sendOutOfService: false, ct).ConfigureAwait(false);
+            await _sendGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                var (acknowledged, entries) = _retrievalBuffer.Capture();
+                return new(_hasSequenceState ? _lastReceivedSequence : null,
+                    Interlocked.Read(ref _receivedUserData), acknowledged, entries);
+            }
+            finally
+            {
+                _sendGate.Release();
+            }
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
+    }
+
     /// <summary>Returns a point-in-time M2PA metrics snapshot.</summary>
     /// <returns>The current M2PA link metrics.</returns>
     public M2paLinkMetrics GetMetrics()
@@ -443,14 +473,22 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
         try
         {
             await StopCoreAsync(sendOutOfService: false, ct).ConfigureAwait(false);
-            if (_ownsTransport)
+            await _sendGate.WaitAsync(ct).ConfigureAwait(false);
+            try
             {
-                await _transport.DisposeAsync().ConfigureAwait(false);
-            }
+                if (_ownsTransport)
+                {
+                    await _transport.DisposeAsync().ConfigureAwait(false);
+                }
 
-            _transport = replacement;
-            _ownsTransport = ownsTransport;
-            ResetSequenceState();
+                _transport = replacement;
+                _ownsTransport = ownsTransport;
+                ResetSequenceState();
+            }
+            finally
+            {
+                _sendGate.Release();
+            }
         }
         finally
         {
@@ -765,6 +803,7 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
         }
 
         SetState(Mtp2LinkState.ShuttingDown, "shutdown-started");
+        EndRemoteBusy();
         if (sendOutOfService)
         {
             try
@@ -805,7 +844,7 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
         catch (OperationCanceledException)
         {
         }
-        catch when (State == Mtp2LinkState.Failed)
+        catch when (State is Mtp2LinkState.Failed or Mtp2LinkState.ShuttingDown)
         {
         }
     }
@@ -824,6 +863,8 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
     {
         _lastSentSequence = M2paProtocol.MaximumSequenceNumber;
         _lastReceivedSequence = M2paProtocol.MaximumSequenceNumber;
+        _hasSequenceState = false;
+        _retrievalBuffer.Reset();
         lock (_sync)
         {
             _localBusy = false;
