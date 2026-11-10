@@ -93,6 +93,34 @@ internal static class NativeSctpWireTests
         }
     }
 
+    internal static void KernelNotificationLayout()
+    {
+        byte[] peer = new byte[148];
+        BitConverter.TryWriteBytes(peer, (ushort)0x8002);
+        BitConverter.TryWriteBytes(peer.AsSpan(4), 148u);
+        NativeSctpAddressSet.PackLinuxIpv4([new(IPAddress.Parse("198.51.100.10"), 2905)]).CopyTo(peer, 8);
+        BitConverter.TryWriteBytes(peer.AsSpan(136), 1);
+        BitConverter.TryWriteBytes(peer.AsSpan(140), 110);
+        BitConverter.TryWriteBytes(peer.AsSpan(144), 1234);
+        Require(NativeSctpNotification.TryDecode(peer, out var path) && path is
+            { Type: SctpKernelNotificationType.PeerAddressChange, StateCode: 1, ErrorCode: 110, AssociationId: 1234 }
+            && path.PeerEndpoint?.ToString() == "198.51.100.10:2905", "Peer notification fields differ.");
+        Require(!NativeSctpNotification.TryDecode(peer.AsSpan(0, 147), out _), "Truncated peer notification was accepted.");
+        peer[10] = peer[11] = 0;
+        Require(!NativeSctpNotification.TryDecode(peer, out _), "Invalid peer port was accepted.");
+
+        byte[] assoc = new byte[20];
+        BitConverter.TryWriteBytes(assoc, (ushort)0x8001);
+        BitConverter.TryWriteBytes(assoc.AsSpan(4), 20u);
+        BitConverter.TryWriteBytes(assoc.AsSpan(12), (ushort)8);
+        BitConverter.TryWriteBytes(assoc.AsSpan(14), (ushort)4);
+        BitConverter.TryWriteBytes(assoc.AsSpan(16), 1234);
+        Require(NativeSctpNotification.TryDecode(assoc, out var up) && up is
+            { Type: SctpKernelNotificationType.AssociationChange, StateCode: 0, OutboundStreams: 8, InboundStreams: 4, AssociationId: 1234 },
+            "Association notification fields differ.");
+        Require(!NativeSctpNotification.TryDecode([0, 0, 0, 0, 8, 0, 0, 0], out _), "Unknown notification type was accepted.");
+    }
+
     private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
     {
         public Socket CreateSocket() => throw new InvalidOperationException("Validation opened a socket.");

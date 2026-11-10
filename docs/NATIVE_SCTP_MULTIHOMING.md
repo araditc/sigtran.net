@@ -10,7 +10,7 @@ to another address is not proof of failover within the same association.
 | 2 | Linux address layout and multi-address bind | Implemented |
 | 3 | Nonblocking multi-address connect | Implemented |
 | 4 | SDK connector and listener integration | Implemented |
-| 5 | Kernel notification decoding | Pending |
+| 5 | Kernel notification decoding | Implemented |
 | 6 | Lifecycle and path notification exposure | Pending |
 | 7 | Receive record boundaries and cancellation | Pending |
 | 8 | Bounded multistream traffic workload | Pending |
@@ -44,3 +44,11 @@ primary in the existing options. The first local address uses managed bind
 so accepted sockets retain normal .NET behavior; the rest use `sctp_bindx`.
 Both APIs require Linux kernel metadata and reject invalid lists before
 opening a socket. Existing single-address calls are unchanged.
+
+## Kernel Notifications
+
+The [Linux SCTP UAPI](https://github.com/torvalds/linux/blob/master/include/uapi/linux/sctp.h)
+notification decoder checks the common length, the type-specific structure and
+IPv4 peer address fields. Association-change, peer-address-change, shutdown
+and partial-delivery notifications have distinct layouts. Native integer
+fields are host endian; peer port and IPv4 bytes remain network order.
