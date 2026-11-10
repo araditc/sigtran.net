@@ -74,6 +74,7 @@ These are isolated endpoint tests, not operator or cross-host qualification.
 
 The [ITU MAP SMS reference service](docs/REFERENCE_SERVICE.md) builds on
 the OperationsHost with opt-in, validated settings and an explicit operation allowlist.
+Its host composes MAP, TCAP and SCCP over a single M3UA runtime.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

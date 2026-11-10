@@ -41,6 +41,7 @@ Run("SIGTRAN telemetry emits standard activities and metrics", SigtranTelemetryE
 Run("SIGTRAN structured event sink writes JSON Lines", SigtranStructuredEventSinkWritesJsonLines);
 Run("SIGTRAN node configuration validates environment settings", SigtranNodeConfigurationValidatesEnvironmentSettings);
 Run("Reference host validates opt-in ITU MAP SMS settings before startup", ReferenceServiceTests.Configuration);
+Run("Reference host owns the MAP, TCAP and SCCP lifecycles over one MTP3 network", ReferenceServiceTests.Composition);
 Run("SIGTRAN deployment profiles expose production and development gates", SigtranDeploymentProfilesExposeProductionAndDevelopmentGates);
 Run("SIGTRAN productionization status summarizes foundation", SigtranProductionReadinessStatusSummarizesProductionReadinessFoundation);
 Run("SIGTRAN interoperability lab scenario catalog exposes required scenarios", SigtranInteropLabScenarioCatalogExposesRequiredScenarios);

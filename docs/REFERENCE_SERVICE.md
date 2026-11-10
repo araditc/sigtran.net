@@ -9,7 +9,7 @@ endpoint. Existing operations-only deployments remain the default.
 | Unit | Output | State |
 | --- | --- | --- |
 | 1 | Opt-in ITU service configuration and validation | Implemented |
-| 2 | Single SCTP/M3UA/SCCP/TCAP/MAP composition | Pending |
+| 2 | Single SCTP/M3UA/SCCP/TCAP/MAP composition | Implemented |
 | 3 | Bounded typed MAP operation execution | Pending |
 | 4 | Loopback-only authenticated service entry point | Pending |
 | 5 | Readiness, metrics and shutdown drain | Pending |
@@ -21,9 +21,9 @@ endpoint. Existing operations-only deployments remain the default.
 
 ## Service Configuration
 
-Set `SIGTRAN_REFERENCE_MODE=map-sms` to validate the ITU reference
-profile. This unit validates configuration only; operation execution
-and the local HTTP entry point are delivered separately.
+Set `SIGTRAN_REFERENCE_MODE=map-sms` to compose the ITU reference
+profile. Operation execution and the local HTTP entry point are
+delivered separately.
 
 | Environment key | Reference mode |
 | --- | --- |
@@ -36,3 +36,12 @@ MAP SMS requires 14-bit ITU point codes and SCCP service indicator 3.
 Keep this host on authorized lab or operator endpoints. A repository-owned
 peer and an independently maintained signalling stack are distinct
 evidence classes. Neither qualifies production or stable release alone.
+
+## Runtime Ownership
+
+The hosted runtime starts SCTP/M3UA and waits for ASP activation, then
+starts TCAP, which owns the SCCP receive loop. MAP uses those same
+contracts. The reference host initiates MAP dialogues; it is not an
+HLR or SMSC and refuses unsolicited inbound invokes. It drains TCAP
+events and SCCP returns without logging subscriber data. Shutdown stops
+the upper readers before stopping the M3UA transport.

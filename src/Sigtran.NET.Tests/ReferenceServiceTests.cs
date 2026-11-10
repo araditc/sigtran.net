@@ -37,6 +37,30 @@ internal static partial class ReferenceServiceTests
         }
     }
 
+    internal static void Composition() => ExerciseCompositionAsync().GetAwaiter().GetResult();
+
+    private static async Task ExerciseCompositionAsync()
+    {
+        using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(4));
+        SigtranNodeConfiguration node = new(IPAddress.Loopback, 2905, 1, 1, 2, 100, 2, 3, 16);
+        Require(ReferenceServiceOptions.TryParse(node, key => key switch
+        {
+            "SIGTRAN_REFERENCE_MODE" => "map-sms",
+            "SIGTRAN_MAP_SMS_OPERATIONS" => "sri-sm",
+            "SIGTRAN_MAP_SMS_TOKEN" => new string('a', 32),
+            _ => null
+        }, out var options, out _), "Valid reference settings");
+        SccpLoopbackMtp3Network network = new();
+        await using ReferenceMapStack stack = new(network, node, options!);
+        Require(!stack.IsRunning && ReferenceEquals(stack.Map.Dialogues.Sccp.Network, network),
+            "MAP and TCAP compose over the supplied MTP3 network");
+        await stack.StartAsync(deadline.Token);
+        await stack.StartAsync(deadline.Token);
+        Require(stack.IsRunning && network.SentTransfers.Count == 0, "Starting the reference stack does not initiate subscriber traffic");
+        await stack.StopAsync(deadline.Token);
+        Require(!stack.IsRunning, "Stopping releases the upper readers");
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition)

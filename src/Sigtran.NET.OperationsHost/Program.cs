@@ -28,7 +28,8 @@ if (!configurationResult.IsValid)
 }
 
 SigtranNodeConfiguration configuration = configurationResult.Configuration!;
-if (!ReferenceServiceOptions.TryParse(configuration, Environment.GetEnvironmentVariable, out _, out string? invalidReferenceKey))
+if (!ReferenceServiceOptions.TryParse(configuration, Environment.GetEnvironmentVariable,
+        out ReferenceServiceOptions? referenceOptions, out string? invalidReferenceKey))
 {
     Console.Error.WriteLine($"configuration.invalid key={invalidReferenceKey}");
     return 2;
@@ -37,6 +38,12 @@ if (!ReferenceServiceOptions.TryParse(configuration, Environment.GetEnvironmentV
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(configuration);
 builder.Services.AddSingleton(CreateRuntime);
+if (referenceOptions is not null)
+{
+    builder.Services.AddSingleton(referenceOptions);
+    builder.Services.AddSingleton(services => new ReferenceMapStack(
+        services.GetRequiredService<M3uaRuntime>(), configuration, referenceOptions));
+}
 builder.Services.AddSingleton<ISigtranEventSink>(
     _ => new JsonLineSigtranEventSink(Console.Out, leaveOpen: true));
 builder.Services.AddSingleton<M3uaRuntimeObserver>();
@@ -170,28 +177,44 @@ internal sealed class SigtranRuntimeService : BackgroundService
 {
     private readonly M3uaRuntime _runtime;
     private readonly M3uaRuntimeObserver _observer;
+    private readonly ReferenceMapStack? _reference;
 
     public SigtranRuntimeService(
         M3uaRuntime runtime,
-        M3uaRuntimeObserver observer)
+        M3uaRuntimeObserver observer,
+        IServiceProvider services)
     {
         _runtime = runtime;
         _observer = observer;
+        _reference = services.GetService<ReferenceMapStack>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await _runtime.StartAsync(stoppingToken).ConfigureAwait(false);
+        if (_reference is not null)
+        {
+            await _reference.StartAsync(stoppingToken).ConfigureAwait(false);
+        }
         await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken)
             .ConfigureAwait(false);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _runtime.StopAsync(cancellationToken).ConfigureAwait(false);
-        _observer.Dispose();
-        await _runtime.DisposeAsync().ConfigureAwait(false);
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_reference is not null)
+            {
+                await _reference.StopAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            await _runtime.StopAsync(cancellationToken).ConfigureAwait(false);
+            _observer.Dispose();
+        }
     }
 }
 
