@@ -5,11 +5,11 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public sealed class MapAlertServiceCentre
 {
-    /// <summary>MSISDN parameter tag.</summary>
-    public const byte MsisdnTag = 0;
+    /// <summary>MSISDN universal OCTET STRING tag.</summary>
+    public const byte MsisdnTag = 4;
 
-    /// <summary>Service Centre address parameter tag.</summary>
-    public const byte ServiceCentreAddressTag = 1;
+    /// <summary>Service centre address universal OCTET STRING tag.</summary>
+    public const byte ServiceCentreAddressTag = 4;
 
     /// <summary>Creates AlertServiceCentre parameters.</summary>
     /// <param name="msisdn">The subscriber MSISDN.</param>
@@ -30,10 +30,11 @@ public sealed class MapAlertServiceCentre
     /// <returns>The encoded parameters.</returns>
     public byte[] Encode()
     {
-        MapSmsParameterSet set = new();
-        set.Add(MsisdnTag, Msisdn.Encode());
-        set.Add(ServiceCentreAddressTag, ServiceCentreAddress.Encode());
-        return set.Encode();
+        return MapSmsAsn1.Encode(fields =>
+        {
+            MapSmsAsn1.WriteAddress(fields, Msisdn, MapSmsAddressKind.Msisdn);
+            MapSmsAsn1.WriteAddress(fields, ServiceCentreAddress, MapSmsAddressKind.ServiceCentre);
+        });
     }
 
     /// <summary>Attempts to decode AlertServiceCentre parameters.</summary>
@@ -43,34 +44,8 @@ public sealed class MapAlertServiceCentre
     /// <returns>True when decoding succeeded; otherwise false.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out MapAlertServiceCentre? message, out string? error)
     {
-        message = null;
-        if (!MapSmsParameterSet.TryDecode(data, out MapSmsParameterSet? set, out error))
-        {
-            return false;
-        }
-
-        MapSmsAddress? msisdn = null;
-        MapSmsAddress? serviceCentreAddress = null;
-        foreach (MapSmsParameter parameter in set!.Snapshot())
-        {
-            if (parameter.TagNumber == MsisdnTag)
-            {
-                msisdn = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-            else if (parameter.TagNumber == ServiceCentreAddressTag)
-            {
-                serviceCentreAddress = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-        }
-
-        if (msisdn is null || serviceCentreAddress is null)
-        {
-            error = "AlertServiceCentre requires MSISDN and Service Centre address.";
-            return false;
-        }
-
-        message = new(msisdn, serviceCentreAddress);
-        error = null;
-        return true;
+        return MapSmsAsn1.TryDecode(data, static fields => new MapAlertServiceCentre(
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn),
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre)), out message, out error);
     }
 }

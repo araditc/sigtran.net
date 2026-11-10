@@ -1,3 +1,5 @@
+using System.Formats.Asn1;
+
 namespace Sigtran.NET.Layers.MAP;
 
 /// <summary>
@@ -26,14 +28,14 @@ public enum MapSmsDeliveryStatus : byte
 /// </summary>
 public sealed class MapReportShortMessageDeliveryStatus
 {
-    /// <summary>MSISDN parameter tag.</summary>
-    public const byte MsisdnTag = 0;
+    /// <summary>MSISDN universal OCTET STRING tag.</summary>
+    public const byte MsisdnTag = 4;
 
-    /// <summary>Service Centre address parameter tag.</summary>
-    public const byte ServiceCentreAddressTag = 1;
+    /// <summary>Service centre address universal OCTET STRING tag.</summary>
+    public const byte ServiceCentreAddressTag = 4;
 
-    /// <summary>Delivery status parameter tag.</summary>
-    public const byte DeliveryStatusTag = 2;
+    /// <summary>Delivery outcome universal ENUMERATED tag.</summary>
+    public const byte DeliveryStatusTag = 10;
 
     /// <summary>Creates ReportSM-DeliveryStatus parameters.</summary>
     /// <param name="msisdn">The MSISDN.</param>
@@ -59,11 +61,18 @@ public sealed class MapReportShortMessageDeliveryStatus
     /// <returns>The encoded parameters.</returns>
     public byte[] Encode()
     {
-        MapSmsParameterSet set = new();
-        set.Add(MsisdnTag, Msisdn.Encode());
-        set.Add(ServiceCentreAddressTag, ServiceCentreAddress.Encode());
-        set.Add(DeliveryStatusTag, [(byte)DeliveryStatus]);
-        return set.Encode();
+        return MapSmsAsn1.Encode(fields =>
+        {
+            MapSmsAsn1.WriteAddress(fields, Msisdn, MapSmsAddressKind.Msisdn);
+            MapSmsAsn1.WriteAddress(fields, ServiceCentreAddress, MapSmsAddressKind.ServiceCentre);
+            fields.WriteEnumeratedValue(DeliveryStatus switch
+            {
+                MapSmsDeliveryStatus.MemoryCapacityExceeded => DeliveryOutcome.MemoryCapacityExceeded,
+                MapSmsDeliveryStatus.AbsentSubscriber => DeliveryOutcome.AbsentSubscriber,
+                MapSmsDeliveryStatus.Delivered => DeliveryOutcome.SuccessfulTransfer,
+                _ => throw new InvalidOperationException("The status has no MAP SM-DeliveryOutcome encoding.")
+            });
+        });
     }
 
     /// <summary>Attempts to decode ReportSM-DeliveryStatus parameters.</summary>
@@ -73,39 +82,25 @@ public sealed class MapReportShortMessageDeliveryStatus
     /// <returns>True when decoding succeeded; otherwise false.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out MapReportShortMessageDeliveryStatus? message, out string? error)
     {
-        message = null;
-        if (!MapSmsParameterSet.TryDecode(data, out MapSmsParameterSet? set, out error))
+        return MapSmsAsn1.TryDecode(data, static fields =>
         {
-            return false;
-        }
-
-        MapSmsAddress? msisdn = null;
-        MapSmsAddress? serviceCentreAddress = null;
-        MapSmsDeliveryStatus? status = null;
-        foreach (MapSmsParameter parameter in set!.Snapshot())
-        {
-            if (parameter.TagNumber == MsisdnTag)
+            MapSmsAddress msisdn = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn);
+            MapSmsAddress serviceCentre = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre);
+            MapSmsDeliveryStatus status = fields.ReadEnumeratedValue<DeliveryOutcome>() switch
             {
-                msisdn = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-            else if (parameter.TagNumber == ServiceCentreAddressTag)
-            {
-                serviceCentreAddress = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-            else if (parameter.TagNumber == DeliveryStatusTag && !parameter.Value.IsEmpty)
-            {
-                status = (MapSmsDeliveryStatus)parameter.Value.Span[0];
-            }
-        }
+                DeliveryOutcome.MemoryCapacityExceeded => MapSmsDeliveryStatus.MemoryCapacityExceeded,
+                DeliveryOutcome.AbsentSubscriber => MapSmsDeliveryStatus.AbsentSubscriber,
+                DeliveryOutcome.SuccessfulTransfer => MapSmsDeliveryStatus.Delivered,
+                _ => throw new AsnContentException("Unrecognized MAP SM-DeliveryOutcome.")
+            };
+            return new MapReportShortMessageDeliveryStatus(msisdn, serviceCentre, status);
+        }, out message, out error);
+    }
 
-        if (msisdn is null || serviceCentreAddress is null || status is null)
-        {
-            error = "ReportSM-DeliveryStatus requires MSISDN, Service Centre address, and delivery status.";
-            return false;
-        }
-
-        message = new(msisdn, serviceCentreAddress, status.Value);
-        error = null;
-        return true;
+    private enum DeliveryOutcome : byte
+    {
+        MemoryCapacityExceeded = 0,
+        AbsentSubscriber = 1,
+        SuccessfulTransfer = 2
     }
 }

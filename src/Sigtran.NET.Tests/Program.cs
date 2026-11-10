@@ -408,6 +408,7 @@ Run("MAP AlertServiceCentre model encodes alert parameters", MapAlertServiceCent
 Run("MAP SMS error mapper and extension container encode values", MapSmsErrorMapperAndExtensionContainerEncodeValues);
 Run("MAP SMS TCAP client builds Begin Invoke transactions", MapSmsTcapClientBuildsBeginInvokeTransactions);
 Run("MAP SMS evidence vectors validate operation bytes", MapSmsEvidenceVectorsValidateOperationBytes);
+Run("MAP SMS ASN.1 validates supported argument and result fields", MapSmsWireTests.Fields);
 Run("MAP SMS readiness reports foundation status", MapSmsReadinessSnapshotsFoundationStatus);
 Run("MAP SMS operation profiles expose standardized codes and contexts", MapSmsOperationProfilesExposeStandardizedCodesAndContexts);
 Run("MAP SMS service correlates client and server workflows", MapSmsServiceCorrelatesClientAndServerWorkflows);
@@ -8052,7 +8053,7 @@ static void MapSmsAddressPrimitivesEncodeTbcdDigits()
 
     MapSmsAddress msisdn = new(MapSmsAddressKind.Msisdn, "+44123456789");
     byte[] encoded = msisdn.Encode();
-    AssertSequence([0x01, 0x04, 0x01, 0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], encoded, "MAP MSISDN address bytes");
+    AssertSequence([0x01, 0x01, 0x01, 0x44, 0x21, 0x43, 0x65, 0x87, 0xF9], encoded, "MAP MSISDN standalone address bytes");
     MapSmsAddress decoded = MapSmsAddress.Decode(encoded, oddDigitCount: true);
     AssertEqual(MapSmsAddressKind.Msisdn, decoded.Kind, "MAP decoded address kind");
     AssertEqual("44123456789", decoded.Digits, "MAP decoded address digits");
@@ -8067,7 +8068,7 @@ static void MapMoForwardSmModelEncodesRequiredParameters()
         new byte[] { 0x11, 0x22 });
 
     byte[] encoded = mo.Encode();
-    Assert(encoded[0] == 0x30 && encoded[2] == 0x80 && encoded.Contains((byte)0x82), "MAP MO encoded parameter tags should be present");
+    Assert(encoded[0] == 0x30 && encoded[2] == 0x84 && encoded.Contains((byte)0x82), "MAP MO encoded parameter tags should be present");
     Assert(MapMoForwardShortMessage.TryDecode(encoded, out MapMoForwardShortMessage? decoded, out string? error), error ?? "MAP MO decode failed");
     AssertEqual(MapSmsAddressKind.ServiceCentre, decoded!.SmRpDa.Kind, "MAP MO decoded DA kind");
     AssertEqual("989121234567", decoded.SmRpOa.Digits, "MAP MO decoded OA digits");
@@ -8170,7 +8171,7 @@ static void MapSmsEvidenceVectorsValidateOperationBytes()
     IReadOnlyList<SigtranProtocolEvidenceVector> vectors = MapSmsEvidenceVectors.GetVectors();
     AssertEqual(5, vectors.Count, "MAP SMS evidence vector count");
     Assert(vectors.All(vector => vector.Surface == SigtranProtocolInteropSurface.MapSms), "all MAP SMS vectors should use MAP SMS surface");
-    AssertEqual("30178006030401442143810901040189191232547682021122", vectors[0].ToHex(), "MAP MO evidence hex");
+    AssertEqual("301384049144214382079189191232547604021122", vectors[0].ToHex(), "MAP MO evidence hex");
 
     IReadOnlyList<SigtranProtocolEvidenceValidationReport> reports = MapSmsEvidenceVectors.ValidateEncoders();
     AssertEqual(vectors.Count, reports.Count, "MAP SMS evidence report count");
@@ -8274,7 +8275,8 @@ static void MapSmsServiceCorrelatesClientAndServerWorkflows()
             MapSendRoutingInfoForShortMessage message =
                 request.GetMessage<MapSendRoutingInfoForShortMessage>();
             AssertEqual(subscriber.Digits, message.Msisdn.Digits, "MAP server decoded SRI-SM MSISDN");
-            return ValueTask.FromResult(MapSmsOperationResponse.Result(new byte[] { 0x30, 0x00 }));
+            return ValueTask.FromResult(MapSmsOperationResponse.Result(
+                new MapSmsRoutingInfo(imsi, subscriber).Encode()));
         });
     server.RegisterHandler(
         MapSmsOperationCode.MoForwardShortMessage,
@@ -8327,7 +8329,8 @@ static void MapSmsServiceCorrelatesClientAndServerWorkflows()
         .GetAwaiter()
         .GetResult();
     Assert(sri.IsSuccess, "MAP SRI-SM should return a correlated result");
-    AssertSequence([0x30, 0x00], sri.Parameters.Span, "MAP SRI-SM result parameters");
+    AssertEqual(imsi.Digits, sri.RoutingInfo!.Imsi.Digits, "MAP SRI-SM result IMSI");
+    AssertEqual(subscriber.Digits, sri.RoutingInfo.NetworkNodeNumber.Digits, "MAP SRI-SM network node");
 
     MapSmsOperationResult mo = service.InvokeMoForwardShortMessageAsync(
             new(serviceCentre, subscriber, new byte[] { 0x01, 0x02 }),

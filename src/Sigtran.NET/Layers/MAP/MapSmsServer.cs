@@ -353,6 +353,11 @@ public sealed class MapSmsServer
             response = await handler(request, ct).ConfigureAwait(false)
                 ?? throw new InvalidOperationException(
                     "A MAP SMS handler returned a null response.");
+            if (response.Kind == MapSmsOperationResponseKind.Result
+                && !MapSmsOperationResult.TryReadSupportedResult(request.OperationCode, response.Parameters.Span, out _))
+            {
+                throw new InvalidOperationException("A MAP SMS handler returned invalid result data for the operation.");
+            }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

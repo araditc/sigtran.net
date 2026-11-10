@@ -427,41 +427,55 @@ static int parse_tcap_invoke(
 static int validate_map_parameters(const struct tcap_invoke_view *invoke)
 {
     size_t offset = 0U;
-    unsigned int present_tags = 0U;
-    unsigned int required_tags;
+    uint8_t tags[3];
+    size_t required_count = 3U;
 
+    /* Each supported TS 29.002 argument has an ordered mandatory field list. */
     switch (invoke->operation_code) {
     case 44U:
+        tags[0] = 0x80U; tags[1] = 0x84U; tags[2] = 0x04U;
+        break;
     case 46U:
-        required_tags = 0x07U;
+        tags[0] = 0x84U; tags[1] = 0x82U; tags[2] = 0x04U;
         break;
     case 45U:
+        tags[0] = 0x80U; tags[1] = 0x81U; tags[2] = 0x82U;
+        break;
     case 47U:
-        required_tags = 0x03U;
+        tags[0] = 0x04U; tags[1] = 0x04U; tags[2] = 0x0AU;
         break;
     case 64U:
-        required_tags = 0x03U;
+        tags[0] = 0x04U; tags[1] = 0x04U; required_count = 2U;
         break;
     default:
         return -1;
     }
 
-    while (offset < invoke->parameters_length) {
+    for (size_t index = 0U; index < required_count; index++) {
         struct tlv_view parameter;
         if (read_ber_tlv(
                 invoke->parameters + offset,
                 invoke->parameters_length - offset,
                 &parameter) != 0
-            || (parameter.tag & 0xE0U) != 0x80U
-            || (parameter.tag & 0x1FU) > 2U) {
+            || parameter.tag != tags[index] || parameter.value_length == 0U) {
             return -1;
         }
 
-        present_tags |= 1U << (parameter.tag & 0x1FU);
+        if ((invoke->operation_code == 45U && index == 1U && parameter.value_length != 1U)
+            || (invoke->operation_code == 47U && index == 2U
+                && (parameter.value_length != 1U || parameter.value[0] > 2U))
+            || ((invoke->operation_code == 44U || invoke->operation_code == 46U)
+                && index == 2U && parameter.value_length > 200U)) {
+            return -1;
+        }
         offset += parameter.total_length;
     }
 
-    return (present_tags & required_tags) == required_tags ? 0 : -1;
+    if (invoke->operation_code == 45U && invoke->parameters_length - offset == 2U
+        && invoke->parameters[offset] == 0x87U && invoke->parameters[offset + 1U] == 0U) {
+        offset += 2U;
+    }
+    return offset == invoke->parameters_length ? 0 : -1;
 }
 
 static int append_dialogue_response(const struct tcap_invoke_view *invoke,
@@ -502,7 +516,11 @@ static int build_tcap_result(
     size_t component_length = 0U;
     size_t transaction_content_length = 0U;
     /* The optional result SEQUENCE contains the local opcode and the encoded result. */
-    const uint8_t routing_result[] = {0x02U, 0x01U, 45U, 0x30U, 0x00U};
+    const uint8_t routing_result[] = {
+        0x02U, 0x01U, 45U, 0x30U, 0x12U,
+        0x04U, 0x08U, 0x34U, 0x12U, 0x90U, 0x78U, 0x56U, 0x34U, 0x12U, 0xF0U,
+        0xA0U, 0x06U, 0x81U, 0x04U, 0x91U, 0x44U, 0x21U, 0x43U
+    };
 
     if (append_ber_tlv(
             component_content,

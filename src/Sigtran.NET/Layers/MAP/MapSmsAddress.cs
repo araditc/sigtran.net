@@ -23,9 +23,9 @@ public sealed class MapSmsAddress
     /// <summary>Creates a MAP SMS address.</summary>
     /// <param name="kind">The address kind.</param>
     /// <param name="digits">The numeric digits.</param>
-    /// <param name="natureOfAddress">The nature of address value.</param>
+    /// <param name="natureOfAddress">The MAP nature of address (1 for international).</param>
     /// <param name="numberingPlan">The numbering plan value.</param>
-    public MapSmsAddress(MapSmsAddressKind kind, string digits, byte natureOfAddress = 4, byte numberingPlan = 1)
+    public MapSmsAddress(MapSmsAddressKind kind, string digits, byte natureOfAddress = 1, byte numberingPlan = 1)
     {
         if (string.IsNullOrWhiteSpace(digits))
         {
@@ -33,7 +33,7 @@ public sealed class MapSmsAddress
         }
 
         string normalized = digits.Trim().TrimStart('+');
-        if (!normalized.All(char.IsDigit))
+        if (normalized.Length == 0 || !normalized.All(c => c is >= '0' and <= '9'))
         {
             throw new ArgumentException("MAP SMS address digits must be numeric.", nameof(digits));
         }
@@ -56,7 +56,7 @@ public sealed class MapSmsAddress
     /// <summary>The numbering plan value.</summary>
     public byte NumberingPlan { get; }
 
-    /// <summary>Encodes the address as kind, address metadata, and TBCD digits.</summary>
+    /// <summary>Encodes the standalone SDK address representation, not a MAP wire AddressString.</summary>
     /// <returns>The encoded address bytes.</returns>
     public byte[] Encode()
     {
@@ -93,7 +93,7 @@ public sealed class MapSmsAddress
     public static byte[] EncodeTbcd(string digits)
     {
         string normalized = digits.Trim().TrimStart('+');
-        if (!normalized.All(char.IsDigit))
+        if (normalized.Length == 0 || !normalized.All(c => c is >= '0' and <= '9'))
         {
             throw new ArgumentException("TBCD digits must be numeric.", nameof(digits));
         }
@@ -115,24 +115,29 @@ public sealed class MapSmsAddress
     /// <returns>The decoded digits.</returns>
     public static string DecodeTbcd(ReadOnlySpan<byte> data, bool oddDigitCount)
     {
-        char[] chars = new char[data.Length * 2];
-        int length = 0;
-        foreach (byte value in data)
+        if (data.IsEmpty)
         {
-            byte low = (byte)(value & 0x0F);
-            byte high = (byte)((value >> 4) & 0x0F);
-            chars[length++] = (char)('0' + low);
-            if (high != 0x0F)
+            throw new ArgumentException("TBCD digits are missing.", nameof(data));
+        }
+
+        char[] chars = new char[checked(data.Length * 2 - (oddDigitCount ? 1 : 0))];
+        for (int i = 0; i < data.Length; i++)
+        {
+            int low = data[i] & 0x0F;
+            int high = data[i] >> 4;
+            bool filler = oddDigitCount && i == data.Length - 1;
+            if (low > 9 || (filler ? high != 0x0F : high > 9))
             {
-                chars[length++] = (char)('0' + high);
+                throw new ArgumentException("Invalid TBCD digit or filler.", nameof(data));
+            }
+
+            chars[2 * i] = (char)('0' + low);
+            if (!filler)
+            {
+                chars[2 * i + 1] = (char)('0' + high);
             }
         }
 
-        if (oddDigitCount && length > 0 && chars[length - 1] == (char)('0' + 0x0F))
-        {
-            length--;
-        }
-
-        return new string(chars, 0, length);
+        return new string(chars);
     }
 }

@@ -5,14 +5,14 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public sealed class MapMtForwardShortMessage
 {
-    /// <summary>SM-RP-DA parameter tag.</summary>
+    /// <summary>SM-RP-DA IMSI choice tag.</summary>
     public const byte SmRpDaTag = 0;
 
-    /// <summary>SM-RP-OA parameter tag.</summary>
-    public const byte SmRpOaTag = 1;
+    /// <summary>SM-RP-OA service-centre choice tag.</summary>
+    public const byte SmRpOaTag = 4;
 
-    /// <summary>SM-RP-UI parameter tag.</summary>
-    public const byte SmRpUiTag = 2;
+    /// <summary>SM-RP-UI universal OCTET STRING tag.</summary>
+    public const byte SmRpUiTag = 4;
 
     /// <summary>Creates MAP MT-ForwardSM parameters.</summary>
     /// <param name="smRpDa">The destination address.</param>
@@ -22,7 +22,9 @@ public sealed class MapMtForwardShortMessage
     {
         SmRpDa = smRpDa ?? throw new ArgumentNullException(nameof(smRpDa));
         SmRpOa = smRpOa ?? throw new ArgumentNullException(nameof(smRpOa));
-        SmRpUi = smRpUi.IsEmpty ? throw new ArgumentException("MT-ForwardSM user information is required.", nameof(smRpUi)) : smRpUi;
+        SmRpUi = smRpUi.Length is 0 or > MapSmsAsn1.MaxSignalInfoBytes
+            ? throw new ArgumentOutOfRangeException(nameof(smRpUi), "MAP SignalInfo must be 1..200 octets.")
+            : smRpUi;
     }
 
     /// <summary>The destination address.</summary>
@@ -38,11 +40,12 @@ public sealed class MapMtForwardShortMessage
     /// <returns>The encoded operation parameters.</returns>
     public byte[] Encode()
     {
-        MapSmsParameterSet set = new();
-        set.Add(SmRpDaTag, SmRpDa.Encode());
-        set.Add(SmRpOaTag, SmRpOa.Encode());
-        set.Add(SmRpUiTag, SmRpUi.Span);
-        return set.Encode();
+        return MapSmsAsn1.Encode(fields =>
+        {
+            MapSmsAsn1.WriteAddress(fields, SmRpDa, MapSmsAddressKind.Imsi, MapSmsAsn1.Context(SmRpDaTag));
+            MapSmsAsn1.WriteAddress(fields, SmRpOa, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(SmRpOaTag));
+            fields.WriteOctetString(SmRpUi.Span);
+        });
     }
 
     /// <summary>Attempts to decode MT-ForwardSM parameters.</summary>
@@ -52,39 +55,9 @@ public sealed class MapMtForwardShortMessage
     /// <returns>True when decoding succeeded; otherwise false.</returns>
     public static bool TryDecode(ReadOnlySpan<byte> data, out MapMtForwardShortMessage? message, out string? error)
     {
-        message = null;
-        if (!MapSmsParameterSet.TryDecode(data, out MapSmsParameterSet? set, out error))
-        {
-            return false;
-        }
-
-        MapSmsAddress? smRpDa = null;
-        MapSmsAddress? smRpOa = null;
-        ReadOnlyMemory<byte> smRpUi = default;
-        foreach (MapSmsParameter parameter in set!.Snapshot())
-        {
-            if (parameter.TagNumber == SmRpDaTag)
-            {
-                smRpDa = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-            else if (parameter.TagNumber == SmRpOaTag)
-            {
-                smRpOa = MapSmsAddress.Decode(parameter.Value.Span, oddDigitCount: true);
-            }
-            else if (parameter.TagNumber == SmRpUiTag)
-            {
-                smRpUi = parameter.Value;
-            }
-        }
-
-        if (smRpDa is null || smRpOa is null || smRpUi.IsEmpty)
-        {
-            error = "MT-ForwardSM requires SM-RP-DA, SM-RP-OA, and SM-RP-UI.";
-            return false;
-        }
-
-        message = new(smRpDa, smRpOa, smRpUi);
-        error = null;
-        return true;
+        return MapSmsAsn1.TryDecode(data, static fields => new MapMtForwardShortMessage(
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Imsi, MapSmsAsn1.Context(SmRpDaTag)),
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(SmRpOaTag)),
+            MapSmsAsn1.ReadSignalInfo(fields)), out message, out error);
     }
 }

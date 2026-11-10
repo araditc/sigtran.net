@@ -47,6 +47,8 @@ TCAP results use the optional result SEQUENCE; Reject encodes the problem family
 Structured dialogue portions encode Q.773 AARQ and AARE inside EXTERNAL.
 The dialogue manager requires a matching AARE before accepting a structured result.
 SCCP validates variable-part bounds and uses the Q.713 LUDT pointer/length format.
+The five MAP SMS operations encode TS 29.002 ASN.1 fields for the supported
+profile; SRI-SM validates and exposes the returned IMSI and network node.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

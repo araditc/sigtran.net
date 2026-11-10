@@ -20,7 +20,10 @@ public enum MapSmsOperationOutcomeKind
     TimedOut,
 
     /// <summary>The TCAP dialogue closed before a result arrived.</summary>
-    DialogueClosed
+    DialogueClosed,
+
+    /// <summary>The peer's successful TCAP result contained invalid MAP result data.</summary>
+    MalformedResult
 }
 
 /// <summary>
@@ -46,6 +49,15 @@ public sealed class MapSmsOperationResult
             _ => MapSmsOperationOutcomeKind.DialogueClosed
         };
         _parameters = outcome.Parameters.ToArray();
+        if (Outcome == MapSmsOperationOutcomeKind.Result)
+        {
+            if (!TryReadSupportedResult(operationCode, _parameters, out var routingInfo))
+            {
+                Outcome = MapSmsOperationOutcomeKind.MalformedResult;
+            }
+
+            RoutingInfo = routingInfo;
+        }
         ErrorCode = outcome.ErrorCode.HasValue
             ? (MapSmsErrorCode?)(byte)outcome.ErrorCode.Value
             : null;
@@ -67,6 +79,9 @@ public sealed class MapSmsOperationResult
     /// <summary>The returned result or error parameters.</summary>
     public ReadOnlyMemory<byte> Parameters => _parameters;
 
+    /// <summary>The decoded single-node routing result, when a valid SRI-SM result was returned.</summary>
+    public MapSmsRoutingInfo? RoutingInfo { get; }
+
     /// <summary>The MAP user error code, when a ReturnError was received.</summary>
     public MapSmsErrorCode? ErrorCode { get; }
 
@@ -75,4 +90,33 @@ public sealed class MapSmsOperationResult
 
     /// <summary>Whether the peer returned a successful result.</summary>
     public bool IsSuccess => Outcome == MapSmsOperationOutcomeKind.Result;
+
+    internal static bool TryReadSupportedResult(MapSmsOperationCode operation, ReadOnlySpan<byte> parameters,
+        out MapSmsRoutingInfo? routingInfo)
+    {
+        routingInfo = null;
+        if (operation == MapSmsOperationCode.SendRoutingInfoForShortMessage)
+        {
+            return MapSmsRoutingInfo.TryDecode(parameters, out routingInfo, out _);
+        }
+
+        if (parameters.IsEmpty)
+        {
+            return true;
+        }
+
+        return operation switch
+        {
+            MapSmsOperationCode.MoForwardShortMessage or MapSmsOperationCode.MtForwardShortMessage =>
+                MapSmsAsn1.TryDecode(parameters, static fields => fields.HasData ? MapSmsAsn1.ReadSignalInfo(fields) : [],
+                    out byte[]? _, out _),
+            MapSmsOperationCode.ReportShortMessageDeliveryStatus =>
+                MapSmsAsn1.TryDecode(parameters, static fields =>
+                {
+                    if (fields.HasData) _ = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn);
+                    return Array.Empty<byte>();
+                }, out _, out _),
+            _ => false
+        };
+    }
 }

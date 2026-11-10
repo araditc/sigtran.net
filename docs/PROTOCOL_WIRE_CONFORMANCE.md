@@ -15,7 +15,7 @@ checks do not establish operator or release-candidate acceptance.
 | 6 | Structured dialogue APDUs | Implemented |
 | 7 | Dialogue negotiation at runtime | Implemented |
 | 8 | Connectionless SCCP wire checks | Implemented |
-| 9 | MAP SMS ASN.1 profile and vectors | Pending |
+| 9 | MAP SMS ASN.1 profile and vectors | Implemented |
 | 10 | Integrated vectors, migration and exit report | Pending |
 
 ## Transaction Tags
@@ -90,3 +90,21 @@ legal mandatory parameter reordering. Invalid XUDT segmentation lengths and
 non-ITU point codes are rejected by the TryDecode APIs. Odd SCCP BCD global
 titles use zero filler, unlike MAP TBCD. The LUDT codec remains scoped to
 messages without optional parameters.
+
+## MAP SMS Profile
+
+The supported mandatory fields follow [3GPP TS 29.002 / ETSI TS 129 002](https://www.etsi.org/deliver/etsi_ts/129000_129099/129002/18.00.00_60/ts_129002v180000p.pdf)
+and its [MAP-SM-DataTypes ASN.1 module](https://raw.githubusercontent.com/wireshark/wireshark/master/epan/dissectors/asn1/gsm_map/MAP-SM-DataTypes.asn).
+AddressString combines MAP nature and numbering plan in one octet before TBCD;
+IMSI has digits only. MO uses service-centre DA and MSISDN OA; MT uses IMSI
+DA and service-centre OA. SignalInfo is 1..200 bytes. SRI-SM includes the
+mandatory priority BOOLEAN and optional GPRS NULL, and requires an IMSI and
+network-node number in its result. ReportSM maps the three ASN.1 delivery
+outcomes without changing the SDK enum's existing numeric values.
+AlertServiceCentre carries two AddressStrings and an ID-only success.
+
+This is a bounded single-node profile. LMSI, alternate routing numbers,
+additional delivery outcomes and extension negotiation are not implemented.
+Unmodeled fields are rejected rather than silently dropped. Direct
+`MapSmsAddress.Encode()` is a standalone SDK format; pass the address to an
+operation model for wire encoding. The default MAP nature is 1 (international).
