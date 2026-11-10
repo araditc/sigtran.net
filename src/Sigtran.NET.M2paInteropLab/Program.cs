@@ -2,6 +2,8 @@ using System.Text;
 using System.Text.Json;
 
 using Sigtran.NET.Layers.MTP2;
+using Sigtran.NET.Layers.MTP3;
+using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.SCTP;
 
 LabOptions options = LabOptions.Parse(args);
@@ -105,15 +107,33 @@ try
 
     await TraceAsync("alignment-complete", new { state = link.State.ToString() });
 
-    byte[] firstPayload = Encoding.ASCII.GetBytes("sigtran.net-m2pa-cross-implementation-1");
-    await link.SendAsync(firstPayload, timeout.Token);
+    await using Mtp3LinkNetwork? network = options.ItuSccp ? new(1, 2, [new(2, 1, link.CreateMtp2ServiceLink())], [new(2, 2)]) : null;
+    await using SccpConnectionlessService? sccp = network is null ? null : Mtp3LabTraffic.CreateService(network, 1, 2, 10);
     byte[] receiveBuffer = new byte[4096];
-    int firstReceived = await link.ReceiveAsync(receiveBuffer, timeout.Token);
-    if (!receiveBuffer.AsSpan(0, firstReceived).SequenceEqual(firstPayload))
+    async Task RoundTripAsync(byte sequence)
     {
-        throw new InvalidOperationException("First M2PA echoed payload did not match.");
+        if (sccp is not null)
+        {
+            await sccp.SendUnitdataAsync(Mtp3LabTraffic.CreateUnitdata(1, 2, 0xA5, sequence), timeout.Token);
+            SccpUnitdataMessage reply = await sccp.ReceiveUnitdataAsync(timeout.Token);
+            Mtp3LabTraffic.ValidateUnitdata(reply, 1, 2, 0x5A, sequence);
+            await TraceAsync("sccp-unitdata-roundtrip", new { sequence, calledPointCode = 1, callingPointCode = 2 });
+        }
+        else
+        {
+            byte[] payload = Encoding.ASCII.GetBytes($"sigtran.net-m2pa-cross-implementation-{sequence}");
+            await link.SendAsync(payload, timeout.Token);
+            int received = await link.ReceiveAsync(receiveBuffer, timeout.Token);
+            if (!receiveBuffer.AsSpan(0, received).SequenceEqual(payload))
+            {
+                throw new InvalidOperationException($"M2PA echoed payload did not match at sequence {sequence}.");
+            }
+
+            await TraceAsync("user-data-roundtrip", new { sequence, bytes = received });
+        }
     }
-    await TraceAsync("user-data-roundtrip", new { sequence = 1, bytes = firstReceived });
+
+    await RoundTripAsync(1);
 
     await link.SetLocalBusyAsync(true, timeout.Token);
     await Task.Delay(50, timeout.Token);
@@ -129,14 +149,7 @@ try
     }
     await TraceAsync("processor-recovery-complete", new { state = link.State.ToString() });
 
-    byte[] secondPayload = Encoding.ASCII.GetBytes("sigtran.net-m2pa-cross-implementation-2");
-    await link.SendAsync(secondPayload, timeout.Token);
-    int secondReceived = await link.ReceiveAsync(receiveBuffer, timeout.Token);
-    if (!receiveBuffer.AsSpan(0, secondReceived).SequenceEqual(secondPayload))
-    {
-        throw new InvalidOperationException("Second M2PA echoed payload did not match.");
-    }
-    await TraceAsync("user-data-roundtrip", new { sequence = 2, bytes = secondReceived });
+    await RoundTripAsync(2);
 
     await Task.Delay(100, timeout.Token);
 
@@ -164,6 +177,7 @@ try
         schemaVersion = 1,
         runId = options.RunId,
         passed = true,
+        profile = options.ItuSccp ? "itu-sccp" : "raw-m2pa",
         remote = new { options.RemoteIp, options.RemotePort },
         source = "Sigtran.NET.M2paInteropLab",
         protocol = new
@@ -225,7 +239,8 @@ internal sealed record LabOptions(
     string TracePath,
     string ResultPath,
     string RunId,
-    TimeSpan Timeout)
+    TimeSpan Timeout,
+    bool ItuSccp)
 {
     public static LabOptions Parse(string[] args)
     {
@@ -252,7 +267,8 @@ internal sealed record LabOptions(
             Get(values, "trace", $"artifacts/m2pa/{runId}/sdk-trace.jsonl"),
             Get(values, "result", $"artifacts/m2pa/{runId}/sdk-result.json"),
             runId,
-            TimeSpan.FromSeconds(int.Parse(Get(values, "timeout-seconds", "30"))));
+            TimeSpan.FromSeconds(int.Parse(Get(values, "timeout-seconds", "30"))),
+            bool.Parse(Get(values, "itu-sccp", "false")));
     }
 
     private static string Get(

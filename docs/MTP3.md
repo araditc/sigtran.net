@@ -58,7 +58,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 6 | 24-bit link retrieval and peer confirmation | Implemented |
 | 7 | Extended changeover and emergency handling | Implemented |
 | 8 | Acknowledged changeback and ordered traffic | Implemented |
-| 9 | SCCP traffic against an independent wire peer | Pending |
+| 9 | SCCP traffic against an independent wire peer | Verified on Linux |
 | 10 | Live fault evidence and qualification decision | Pending |
 
 Pass `M2paLink.CreateMtp2ServiceLink()` as the MTP2 service endpoint.
@@ -129,3 +129,21 @@ then keeps the link diverted if acknowledgements are still missing.
 It does not implement time-only promotion or a cross-adjacency
 ordering guarantee. An individual user send has a five-second
 lower-layer dispatch budget.
+
+## Independent SCCP Traffic Lab
+
+On Linux with kernel SCTP, lksctp development headers, .NET 10, gcc,
+iproute2, util-linux, dumpcap and TShark, run:
+
+```bash
+bash scripts/run-mtp3-m2pa-lab.sh
+```
+
+The runner starts a C/lksctp peer and the SDK in a private loopback-only
+network namespace without sudo. The peer independently validates the
+M2PA spare octet, ITU routing label and SCCP class-0 UDT bytes with PC/SSN
+addresses. It constructs a reversed routing label and a distinct reply,
+not a raw echo. The SDK validates both responses, and the capture check
+requires two UDTs in each direction with PPID 5, stream 1 and SLS 10.
+The run is bounded to the declared synthetic fixture and does not
+represent operator STP interoperation.

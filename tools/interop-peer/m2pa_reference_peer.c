@@ -199,12 +199,40 @@ static int send_user_data(
     return send_message(socket_fd, message, written, M2PA_STREAM_DATA);
 }
 
+/* Independent fixture: M2PA spare, ITU SIO/label, SCCP class-0 UDT with PC+SSN addresses. */
+static int make_itu_sccp_reply(const uint8_t *body, size_t length, unsigned int sequence, uint8_t *reply)
+{
+    static const uint8_t request[] = {
+        0x00, 0x83, 0x02, 0x40, 0x00, 0xa0,
+        0x09, 0x00, 0x03, 0x07, 0x0b, 0x04, 0x43, 0x02, 0x00, 0x06,
+        0x04, 0x43, 0x01, 0x00, 0x07, 0x02, 0xa5
+    };
+    static const uint8_t response[] = {
+        0x00, 0x83, 0x01, 0x80, 0x00, 0xa0,
+        0x09, 0x00, 0x03, 0x07, 0x0b, 0x04, 0x43, 0x01, 0x00, 0x07,
+        0x04, 0x43, 0x02, 0x00, 0x06, 0x02, 0x5a
+    };
+    if (length != sizeof(request) + 1U || sequence > UINT8_MAX
+        || memcmp(body, request, sizeof(request)) != 0 || body[sizeof(request)] != sequence) {
+        return -1;
+    }
+
+    memcpy(reply, response, sizeof(response));
+    reply[sizeof(response)] = (uint8_t)sequence;
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *bind_ip = argc > 1 ? argv[1] : "127.0.0.1";
     int bind_port = argc > 2 ? atoi(argv[2]) : 2907;
     unsigned int expected_data =
         argc > 3 ? (unsigned int)strtoul(argv[3], NULL, 10) : 2U;
+    int itu_sccp = argc == 5 && strcmp(argv[4], "itu-sccp") == 0;
+    if (argc > 4 && !itu_sccp) {
+        fprintf(stderr, "Unsupported M2PA reference peer profile.\n");
+        return 2;
+    }
 
     int listener_fd;
     int connection_fd;
@@ -512,6 +540,18 @@ int main(int argc, char **argv)
             return 1;
         }
 
+        const uint8_t *reply = message + M2PA_HEADER_LENGTH;
+        uint8_t sccp_reply[24];
+        if (itu_sccp) {
+            if (make_itu_sccp_reply(reply, payload_length, data_count + 1U, sccp_reply) != 0) {
+                log_event("validation-failed", "reason=unexpected-itu-sccp-fixture");
+                close(connection_fd);
+                return 1;
+            }
+
+            reply = sccp_reply;
+        }
+
         last_received = fsn;
         if (send_user_data(
                 connection_fd,
@@ -530,7 +570,7 @@ int main(int argc, char **argv)
                 connection_fd,
                 last_received,
                 last_sent,
-                message + M2PA_HEADER_LENGTH,
+                reply,
                 payload_length) != 0) {
             log_event("send-failed", "type=echo");
             close(connection_fd);
@@ -546,7 +586,7 @@ int main(int argc, char **argv)
             last_sent,
             last_received,
             payload_length);
-        log_event("user-data-echo", detail);
+        log_event(itu_sccp ? "itu-sccp-roundtrip" : "user-data-echo", detail);
     }
 
     {
