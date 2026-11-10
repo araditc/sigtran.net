@@ -99,3 +99,4 @@ P:Sigtran.NET.Layers.SCTP.SctpKernelNotification.OutboundStreams():System.UInt16
 P:Sigtran.NET.Layers.SCTP.SctpKernelNotification.InboundStreams():System.UInt16|get=True|set=False|static=False
 T:Sigtran.NET.Layers.SCTP.SctpKernelNotification|kind=class|base=System.Object|interfaces=|abstract=False|sealed=True
 T:Sigtran.NET.Layers.SCTP.SctpKernelNotificationType|kind=enum|base=System.Enum|interfaces=System.IComparable,System.IConvertible,System.IFormattable,System.ISpanFormattable|abstract=False|sealed=True
+M:Sigtran.NET.Layers.MTP2.M2paLink.CreateMtp2ServiceLink`0():Sigtran.NET.Layers.MTP2.IMtp2Link|static=False|abstract=False

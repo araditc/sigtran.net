@@ -49,6 +49,11 @@ M2PA relies on SCTP reliability while an association remains available. The
 retrieval buffer exists for MTP3 changeover retrieval after link failure; it is
 not used to retransmit messages on the same link.
 
+`CreateMtp2ServiceLink()` exposes ITU MSUs starting at SIO and handles
+the additional M2PA spare octet. The existing low-level
+`M2paLink.SendAsync` and `ReceiveAsync` still operate on the raw User Data
+body. Do not read both views concurrently.
+
 ## Congestion And Processor Outage
 
 `SetLocalBusyAsync` sends Busy or Busy Ended. A peer Busy status pauses

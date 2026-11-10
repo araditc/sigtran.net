@@ -20,6 +20,8 @@ internal sealed class M2paLoopbackTransport : ISctpTransport
 
     public List<SctpPayloadMetadata> SentMetadata { get; } = [];
 
+    public byte[]? LastUserData { get; private set; }
+
     public ValueTask SendAsync(
         SctpOutboundMessage message,
         CancellationToken ct = default)
@@ -91,6 +93,7 @@ internal sealed class M2paLoopbackTransport : ISctpTransport
                 return null;
             }
 
+            LastUserData = message.Payload.ToArray();
             _peerForwardSequenceNumber =
                 M2paProtocol.NextSequenceNumber(_peerForwardSequenceNumber);
             byte[] encoded = new byte[

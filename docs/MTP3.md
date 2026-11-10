@@ -51,7 +51,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | Unit | Runtime acceptance | Status |
 | --- | --- | --- |
 | 1 | ITU MSU byte layout and input validation | Implemented |
-| 2 | M2PA framing at the MTP2 service boundary | Pending |
+| 2 | M2PA framing at the MTP2 service boundary | Implemented |
 | 3 | Linkset, routeset and stable SLS selection | Pending |
 | 4 | MTP3 transfer network and bounded receive ownership | Pending |
 | 5 | Network management framing and route state | Pending |
@@ -60,3 +60,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 8 | Acknowledged changeback and ordered traffic | Pending |
 | 9 | SCCP traffic against an independent wire peer | Pending |
 | 10 | Live fault evidence and qualification decision | Pending |
+
+Pass `M2paLink.CreateMtp2ServiceLink()` as the MTP2 service endpoint.
+It adds the RFC 4165 spare octet on send and removes it on receive. The
+application still owns the underlying M2PA link and its alignment lifecycle.

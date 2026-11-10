@@ -67,6 +67,7 @@ This is single-kernel lab evidence, not separate-host or operator qualification.
 
 [MTP3 over MTP2](docs/MTP3.md#mtp2-service-data) separates the ITU MSU
 from M2PA framing and rejects M3UA-only adaptation parameters on that path.
+`M2paLink.CreateMtp2ServiceLink()` exposes that ITU service boundary without changing the raw M2PA API.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

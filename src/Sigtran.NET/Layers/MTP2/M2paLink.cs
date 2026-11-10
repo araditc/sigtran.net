@@ -66,6 +66,11 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
     /// <summary>Raised when the M2PA operational link state changes.</summary>
     public event EventHandler<M2paLinkStateChangedEventArgs>? StateChanged;
 
+    /// <summary>Creates a non-owning ITU MTP2 service view that adds and removes the M2PA spare octet.</summary>
+    /// <returns>A link for transferring complete MSUs beginning with the service information octet.</returns>
+    /// <remarks>Use one receive owner. Do not read the raw link and the service view concurrently.</remarks>
+    public IMtp2Link CreateMtp2ServiceLink() => new M2paMtp2ServiceLink(this, _options.MaximumMessageSize);
+
     /// <inheritdoc />
     public Mtp2LinkState State
     {
