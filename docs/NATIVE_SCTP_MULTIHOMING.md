@@ -13,7 +13,7 @@ to another address is not proof of failover within the same association.
 | 5 | Kernel notification decoding | Implemented |
 | 6 | Lifecycle and path notification exposure | Implemented |
 | 7 | Receive record boundaries and cancellation | Implemented |
-| 8 | Bounded multistream traffic workload | Pending |
+| 8 | Bounded multistream traffic workload | Implemented |
 | 9 | Isolated dual-path Linux failure lab | Pending |
 | 10 | Evidence checks and qualification decision | Pending |
 
@@ -69,3 +69,13 @@ If cancellation or an error interrupts an unfinished record, the adapter
 fails and closes its socket so a later receive cannot return the tail as
 a new message. A cancellation before reading any fragment leaves the
 association available.
+
+## Traffic Workload
+
+The native lab's `multihoming-client` and `multihoming-server` modes use
+one association, four streams, three synthetic PPIDs and 48 ordered
+request/reply checks with mixed record sizes up to 8 KiB. The client
+cancels one idle receive and the server rejects a 4 KiB probe using an
+eight-byte buffer, then receives the next complete record. The optional
+fault handshake holds exactly one response after the request reaches the
+server. No reconnect is enabled in this workload.

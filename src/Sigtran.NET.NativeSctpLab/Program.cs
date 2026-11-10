@@ -26,6 +26,10 @@ try
     {
         await NativeSctpM3uaLab.RunLoopbackAsync(options, trace, timeout.Token);
     }
+    else if (options.Mode is "multihoming-client" or "multihoming-server")
+    {
+        await NativeSctpMultihomingLab.RunAsync(options, trace, timeout.Token);
+    }
     else
     {
         throw new ArgumentException($"Unsupported mode '{options.Mode}'.");
@@ -58,6 +62,10 @@ internal sealed record LabOptions(
     int ServerStartDelayMilliseconds)
 {
     public SctpPayloadMetadata Metadata => new(StreamId, PayloadProtocolIdentifier, Unordered);
+    public string? LocalAlternateIp { get; init; }
+    public string? RemoteAlternateIp { get; init; }
+    public string? CoordinationDirectory { get; init; }
+    public bool ExercisePathLoss { get; init; }
 
     public static LabOptions Parse(string[] args)
     {
@@ -91,7 +99,13 @@ internal sealed record LabOptions(
         bool validateReconnect = IsEnabled(Get(values, "validate-reconnect", "false"));
         int serverStartDelayMilliseconds = int.Parse(Get(values, "server-start-delay-ms", validateReconnect ? "750" : "0"));
 
-        return new(mode, localIp, localPort, remoteIp, remotePort, tracePath, runId, timeout, streamId, ppid, unordered, validateReconnect, serverStartDelayMilliseconds);
+        return new(mode, localIp, localPort, remoteIp, remotePort, tracePath, runId, timeout, streamId, ppid, unordered, validateReconnect, serverStartDelayMilliseconds)
+        {
+            LocalAlternateIp = values.GetValueOrDefault("local-alternate-ip"),
+            RemoteAlternateIp = values.GetValueOrDefault("remote-alternate-ip"),
+            CoordinationDirectory = values.GetValueOrDefault("coordination-dir"),
+            ExercisePathLoss = IsEnabled(Get(values, "exercise-path-loss", "false"))
+        };
     }
 
     private static string Get(IReadOnlyDictionary<string, string> values, string key, string fallback)
@@ -467,7 +481,7 @@ internal sealed class TraceWriter : IAsyncDisposable
         _gate.Dispose();
     }
 
-    private async Task WriteAsync<T>(T record, CancellationToken ct)
+    internal async Task WriteAsync<T>(T record, CancellationToken ct)
     {
         byte[] line = JsonSerializer.SerializeToUtf8Bytes(record);
         await _gate.WaitAsync(ct);

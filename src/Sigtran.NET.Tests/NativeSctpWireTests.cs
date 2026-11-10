@@ -55,12 +55,11 @@ internal static class NativeSctpWireTests
             Require(cancelled.IsCanceled && unused.Blocking, "Cancellation touched the socket before starting.");
         }
 
-        if (!NativeSctpPlatform.Probe().CanCreateSocket || !NativeLibrary.TryLoad("libsctp.so.1", out nint library))
+        if (!CanRunNative())
         {
             return;
         }
 
-        NativeLibrary.Free(library);
         using Socket listener = new NativeSctpSocketFactory().CreateSocket();
         listener.Bind(new IPEndPoint(IPAddress.Loopback, 0));
         listener.Listen(1);
@@ -158,6 +157,50 @@ internal static class NativeSctpWireTests
         record = default;
         Require(!record.Observe(new(1, metadata, 0xA0, null), 8) && record.Discarded,
             "A truncated end of record was accepted.");
+    }
+
+    internal static void NativeRecordIo()
+    {
+        if (!CanRunNative())
+        {
+            return;
+        }
+
+        NativeSctpSocketFactory factory = new();
+        using Socket listener = factory.CreateSocket();
+        NativeSctpInterop.ConfigureSocket(listener, 4, 4, true);
+        listener.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        listener.Listen(1);
+        IPEndPoint local = (IPEndPoint)listener.LocalEndPoint!;
+        SctpConnectionOptions options = new(new(local.Address.ToString(), local.Port), outboundStreams: 4, inboundStreams: 4);
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(6));
+        using NativeSctpSocketAdapter client = new NativeSctpConnector().ConnectAsync(options, ct: timeout.Token).GetAwaiter().GetResult();
+        using Socket accepted = listener.AcceptAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+        using NativeSctpSocketAdapter server = new(accepted, options, SctpAssociationState.Established);
+        ISctpTransport sender = client, receiver = server;
+        SctpPayloadMetadata metadata = new(2, 0x12345678, true);
+        sender.SendAsync(new(new byte[4096], metadata), timeout.Token).AsTask().GetAwaiter().GetResult();
+        bool rejected = false;
+        try { _ = receiver.ReceiveAsync(new byte[3], timeout.Token).AsTask().GetAwaiter().GetResult(); }
+        catch (InvalidDataException) { rejected = true; }
+        Require(rejected, "The Linux kernel record was delivered into a short buffer.");
+        sender.SendAsync(new(new byte[] { 1, 2, 3 }, metadata), timeout.Token).AsTask().GetAwaiter().GetResult();
+        byte[] buffer = new byte[3];
+        SctpReceiveResult result = receiver.ReceiveAsync(buffer, timeout.Token).AsTask().GetAwaiter().GetResult();
+        Require(buffer.AsSpan().SequenceEqual(new byte[] { 1, 2, 3 }) && result.BytesReceived == 3
+            && result.Metadata.StreamId == 2 && result.Metadata.PayloadProtocolIdentifier == 0x12345678 && result.Metadata.Unordered,
+            "The kernel record after the discarded record changed payload or metadata.");
+    }
+
+    private static bool CanRunNative()
+    {
+        if (!NativeSctpPlatform.Probe().CanCreateSocket || !NativeLibrary.TryLoad("libsctp.so.1", out nint library))
+        {
+            return false;
+        }
+
+        NativeLibrary.Free(library);
+        return true;
     }
 
     private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
