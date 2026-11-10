@@ -14,8 +14,19 @@ internal static class NativeSctpInterop
     private const int SctpInitMsgOption = 2;
     private const int SctpNoDelayOption = 3;
     private const int SctpEventsOption = 11;
+    private const int SctpBindxAddAddress = 1;
     private const int MessageNotificationFlag = 0x8000;
     private const ushort SctpUnorderedFlag = 0x0001;
+
+    internal static void BindAddresses(Socket socket, IReadOnlyList<IPEndPoint> addresses)
+    {
+        byte[] packed = NativeSctpAddressSet.PackLinuxIpv4(addresses);
+        using NativeSctpHandle handle = new(socket);
+        if (SctpBindx(handle.FileDescriptor, packed, addresses.Count, SctpBindxAddAddress) != 0)
+        {
+            throw new SocketException(Marshal.GetLastPInvokeError());
+        }
+    }
 
     public static void ConfigureSocket(
         Socket socket,
@@ -217,6 +228,9 @@ internal static class NativeSctpInterop
         return unchecked((uint)IPAddress.NetworkToHostOrder(unchecked((int)value)));
     }
 
+    [DllImport("libsctp.so.1", EntryPoint = "sctp_bindx", SetLastError = true)]
+    private static extern int SctpBindx(int socket, byte[] addresses, int addressCount, int flags);
+
     [DllImport("libsctp.so.1", EntryPoint = "sctp_sendmsg", SetLastError = true)]
     private static extern nint SctpSendMsg(
         int socket,
@@ -270,4 +284,21 @@ internal static class NativeSctpInterop
         public uint CumulativeTransmissionSequenceNumber;
         public int AssociationId;
     }
+}
+
+/// <summary>Keeps an owning socket handle alive for the duration of a synchronous native call.</summary>
+internal readonly ref struct NativeSctpHandle
+{
+    private readonly SafeSocketHandle _handle;
+
+    internal NativeSctpHandle(Socket socket)
+    {
+        _handle = socket.SafeHandle;
+        bool referenced = false;
+        _handle.DangerousAddRef(ref referenced);
+    }
+
+    internal int FileDescriptor => _handle.DangerousGetHandle().ToInt32();
+
+    public void Dispose() => _handle.DangerousRelease();
 }

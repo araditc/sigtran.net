@@ -7,7 +7,7 @@ to another address is not proof of failover within the same association.
 | Unit | Scope | State |
 | --- | --- | --- |
 | 1 | Resolved IPv4 endpoint contract | Implemented |
-| 2 | Linux address layout and multi-address bind | Pending |
+| 2 | Linux address layout and multi-address bind | Implemented |
 | 3 | Nonblocking multi-address connect | Pending |
 | 4 | SDK connector and listener integration | Pending |
 | 5 | Kernel notification decoding | Pending |
@@ -26,3 +26,8 @@ sets support up to 16 unicast IPv4 addresses per side. An omitted local set
 permits automatic binding; a wildcard is not a path in an explicit set.
 See [RFC 6458](https://www.rfc-editor.org/rfc/rfc6458.html) and
 [RFC 9260](https://www.rfc-editor.org/rfc/rfc9260.html).
+
+Linux multi-bind passes an ordered array of 16-byte `sockaddr_in` values
+to `sctp_bindx` with `SCTP_BINDX_ADD_ADDR`. The family is native endian;
+the port and address are network endian. A failed bind is surfaced and
+must not be converted to a wildcard or single-path bind.

@@ -30,6 +30,19 @@ internal static class NativeSctpWireTests
         }
     }
 
+    internal static void LinuxSocketAddresses()
+    {
+        byte[] family = BitConverter.GetBytes((ushort)2);
+        byte[] packed = NativeSctpAddressSet.PackLinuxIpv4(
+            [new(IPAddress.Parse("192.0.2.7"), 2905), new(IPAddress.Parse("198.51.100.11"), 2905)]);
+        byte[] expected =
+        [
+            .. family, 0x0B, 0x59, 192, 0, 2, 7, 0, 0, 0, 0, 0, 0, 0, 0,
+            .. family, 0x0B, 0x59, 198, 51, 100, 11, 0, 0, 0, 0, 0, 0, 0, 0
+        ];
+        Require(packed.AsSpan().SequenceEqual(expected), "Unexpected Linux sockaddr_in array layout.");
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);
