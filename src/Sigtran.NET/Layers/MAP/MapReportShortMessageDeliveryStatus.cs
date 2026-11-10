@@ -28,14 +28,14 @@ public enum MapSmsDeliveryStatus : byte
 /// </summary>
 public sealed class MapReportShortMessageDeliveryStatus
 {
-    /// <summary>MSISDN universal OCTET STRING tag.</summary>
-    public const byte MsisdnTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte MsisdnTag = 0;
 
-    /// <summary>Service centre address universal OCTET STRING tag.</summary>
-    public const byte ServiceCentreAddressTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte ServiceCentreAddressTag = 1;
 
-    /// <summary>Delivery outcome universal ENUMERATED tag.</summary>
-    public const byte DeliveryStatusTag = 10;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte DeliveryStatusTag = 2;
 
     /// <summary>Creates ReportSM-DeliveryStatus parameters.</summary>
     /// <param name="msisdn">The MSISDN.</param>

@@ -5,11 +5,11 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public sealed class MapAlertServiceCentre
 {
-    /// <summary>MSISDN universal OCTET STRING tag.</summary>
-    public const byte MsisdnTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte MsisdnTag = 0;
 
-    /// <summary>Service centre address universal OCTET STRING tag.</summary>
-    public const byte ServiceCentreAddressTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte ServiceCentreAddressTag = 1;
 
     /// <summary>Creates AlertServiceCentre parameters.</summary>
     /// <param name="msisdn">The subscriber MSISDN.</param>

@@ -49,6 +49,14 @@ as a public API.
 
 New public members are never admitted merely by generation. A proposed addition must be reviewed and then listed explicitly in `eng/api/Sigtran.NET.1.0.accepted-additions.txt` while the 1.0 surface remains pre-stable.
 
+The wire-profile changes retain all baseline members and the original MAP
+parameter identifier literals. Explicit additions cover TCAP provider abort,
+dialogue and component metadata, and the typed MAP routing result/priority.
+This API comparison does not guarantee wire compatibility with older peers;
+see [migration notes](PROTOCOL_WIRE_CONFORMANCE.md#migration-and-exit).
+The per-unit verifier runs the same strict API comparison before packing for
+Phase 57 and later.
+
 ## Comparison
 
 ```powershell

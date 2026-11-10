@@ -5,14 +5,14 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public sealed class MapMoForwardShortMessage
 {
-    /// <summary>SM-RP-DA service-centre choice tag.</summary>
-    public const byte SmRpDaTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte SmRpDaTag = 0;
 
-    /// <summary>SM-RP-OA MSISDN choice tag.</summary>
-    public const byte SmRpOaTag = 2;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte SmRpOaTag = 1;
 
-    /// <summary>SM-RP-UI universal OCTET STRING tag.</summary>
-    public const byte SmRpUiTag = 4;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte SmRpUiTag = 2;
 
     /// <summary>Creates MAP MO-ForwardSM parameters.</summary>
     /// <param name="smRpDa">The destination address.</param>
@@ -42,8 +42,8 @@ public sealed class MapMoForwardShortMessage
     {
         return MapSmsAsn1.Encode(fields =>
         {
-            MapSmsAsn1.WriteAddress(fields, SmRpDa, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(SmRpDaTag));
-            MapSmsAsn1.WriteAddress(fields, SmRpOa, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(SmRpOaTag));
+            MapSmsAsn1.WriteAddress(fields, SmRpDa, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(4));
+            MapSmsAsn1.WriteAddress(fields, SmRpOa, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(2));
             fields.WriteOctetString(SmRpUi.Span);
         });
     }
@@ -56,8 +56,8 @@ public sealed class MapMoForwardShortMessage
     public static bool TryDecode(ReadOnlySpan<byte> data, out MapMoForwardShortMessage? message, out string? error)
     {
         return MapSmsAsn1.TryDecode(data, static fields => new MapMoForwardShortMessage(
-            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(SmRpDaTag)),
-            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(SmRpOaTag)),
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre, MapSmsAsn1.Context(4)),
+            MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(2)),
             MapSmsAsn1.ReadSignalInfo(fields)), out message, out error);
     }
 }

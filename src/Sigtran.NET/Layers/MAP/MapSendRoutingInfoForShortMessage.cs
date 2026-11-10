@@ -7,16 +7,19 @@ namespace Sigtran.NET.Layers.MAP;
 /// </summary>
 public sealed class MapSendRoutingInfoForShortMessage
 {
-    /// <summary>MSISDN context-specific tag.</summary>
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
     public const byte MsisdnTag = 0;
 
-    /// <summary>Service centre address context-specific tag.</summary>
-    public const byte ServiceCentreAddressTag = 2;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte ServiceCentreAddressTag = 1;
 
-    /// <summary>GPRS support indicator context-specific tag.</summary>
-    public const byte GprsSupportIndicatorTag = 7;
+    /// <summary>Legacy standalone parameter identifier; not an ASN.1 wire tag.</summary>
+    public const byte GprsSupportIndicatorTag = 2;
 
+    private static readonly Asn1Tag MsisdnWireTag = MapSmsAsn1.Context(0);
     private static readonly Asn1Tag PriorityTag = MapSmsAsn1.Context(1);
+    private static readonly Asn1Tag ServiceCentreWireTag = MapSmsAsn1.Context(2);
+    private static readonly Asn1Tag GprsSupportWireTag = MapSmsAsn1.Context(7);
 
     /// <summary>Creates SendRoutingInfoForSM parameters.</summary>
     /// <param name="msisdn">The destination MSISDN.</param>
@@ -59,13 +62,13 @@ public sealed class MapSendRoutingInfoForShortMessage
     {
         return MapSmsAsn1.Encode(fields =>
         {
-            MapSmsAsn1.WriteAddress(fields, Msisdn, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(MsisdnTag));
+            MapSmsAsn1.WriteAddress(fields, Msisdn, MapSmsAddressKind.Msisdn, MsisdnWireTag);
             fields.WriteBoolean(SmRpPriority, PriorityTag);
             MapSmsAsn1.WriteAddress(fields, ServiceCentreAddress, MapSmsAddressKind.ServiceCentre,
-                MapSmsAsn1.Context(ServiceCentreAddressTag));
+                ServiceCentreWireTag);
             if (GprsSupportIndicator)
             {
-                fields.WriteNull(MapSmsAsn1.Context(GprsSupportIndicatorTag));
+                fields.WriteNull(GprsSupportWireTag);
             }
         });
     }
@@ -79,13 +82,12 @@ public sealed class MapSendRoutingInfoForShortMessage
     {
         return MapSmsAsn1.TryDecode(data, static fields =>
         {
-            MapSmsAddress msisdn = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn, MapSmsAsn1.Context(MsisdnTag));
+            MapSmsAddress msisdn = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.Msisdn, MsisdnWireTag);
             bool priority = fields.ReadBoolean(PriorityTag);
             MapSmsAddress serviceCentre = MapSmsAsn1.ReadAddress(fields, MapSmsAddressKind.ServiceCentre,
-                MapSmsAsn1.Context(ServiceCentreAddressTag));
-            Asn1Tag supportTag = MapSmsAsn1.Context(GprsSupportIndicatorTag);
-            bool gprs = MapSmsAsn1.HasTag(fields, supportTag);
-            if (gprs) fields.ReadNull(supportTag);
+                ServiceCentreWireTag);
+            bool gprs = MapSmsAsn1.HasTag(fields, GprsSupportWireTag);
+            if (gprs) fields.ReadNull(GprsSupportWireTag);
             return new MapSendRoutingInfoForShortMessage(msisdn, serviceCentre, gprs, priority);
         }, out message, out error);
     }

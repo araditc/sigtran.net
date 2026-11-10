@@ -18,6 +18,12 @@ try {
         @('pack', @('pack','src/Sigtran.NET/Sigtran.NET.csproj','-c','Release','--no-build','-o',"$output/package"))
     )
     foreach ($command in $commands) {
+        if ($Phase -ge 57 -and $command[0] -eq 'pack') {
+            # Match the CI API freeze before creating or committing a package.
+            $snapshot = "$output/current-public-api.txt"
+            & "$PSScriptRoot/generate-public-api-baseline.ps1" -OutputPath $snapshot *> "$output/api-snapshot.log"
+            & "$PSScriptRoot/compare-public-api.ps1" -CurrentPath $snapshot -OutputPath "$output/api-diff.md" -FailOnAnyChange *> "$output/api-check.log"
+        }
         & dotnet @($command[1]) *> "$output/$($command[0]).log"
         if ($LASTEXITCODE -ne 0) { Get-Content "$output/$($command[0]).log" -Tail 25; throw "$($command[0]) failed" }
     }

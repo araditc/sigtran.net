@@ -136,8 +136,9 @@ Neither the shared peer VM nor Kafka was used.
 
 Rebuild the peer before using this wire profile. Do not mix historical and
 new wire encoders in the same dialogue. Pass complete argument, result and
-error TLVs to TCAP; use an empty value to omit optional parameters. Recompile
-callers that use MAP tag constants or the old address default. Replace
+error TLVs to TCAP; use an empty value to omit optional parameters. The
+historical MAP tag constants keep their public values but do not describe
+TS 29.002 wire fields. Recompile callers using the old address default. Replace
 placeholder SRI-SM success payloads with a `MapSmsRoutingInfo` result.
 
 All ten Phase 57 implementation units have local build/test/pack logs in
