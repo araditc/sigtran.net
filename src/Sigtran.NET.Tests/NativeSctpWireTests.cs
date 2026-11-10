@@ -71,6 +71,33 @@ internal static class NativeSctpWireTests
         Require(accepted.Connected && !client.Blocking, "Native connectx did not establish a nonblocking socket.");
     }
 
+    internal static void MultiHomedConfiguration()
+    {
+        var factory = new UnexpectedSocketFactory();
+        SctpEndpoint primary = new("127.0.0.1", 2906);
+        SctpEndpoint secondary = new("127.0.0.2", 2906);
+        NativeSctpConnector connector = new(factory);
+        using NativeSctpListener listener = new(factory);
+        Reject(connector.ConnectMultiHomedAsync(new(primary), new([primary])));
+        Reject(connector.ConnectMultiHomedAsync(new(primary), new([secondary, primary])));
+        Reject(connector.ConnectMultiHomedAsync(new(primary), new([primary, secondary]), new(requireKernelMetadata: false)));
+        Reject(listener.StartMultiHomedAsync(new(primary), [primary, null!]));
+        Reject(listener.StartMultiHomedAsync(new(primary), [primary, new("127.0.0.2", 2907)]));
+        Reject(listener.StartMultiHomedAsync(new(primary), [primary, secondary], new(requireKernelMetadata: false)));
+
+        static void Reject(Task operation)
+        {
+            try { operation.GetAwaiter().GetResult(); }
+            catch (ArgumentException) { return; }
+            throw new InvalidOperationException("Invalid native SCTP configuration was accepted.");
+        }
+    }
+
+    private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
+    {
+        public Socket CreateSocket() => throw new InvalidOperationException("Validation opened a socket.");
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

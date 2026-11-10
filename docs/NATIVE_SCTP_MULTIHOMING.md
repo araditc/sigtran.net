@@ -9,7 +9,7 @@ to another address is not proof of failover within the same association.
 | 1 | Resolved IPv4 endpoint contract | Implemented |
 | 2 | Linux address layout and multi-address bind | Implemented |
 | 3 | Nonblocking multi-address connect | Implemented |
-| 4 | SDK connector and listener integration | Pending |
+| 4 | SDK connector and listener integration | Implemented |
 | 5 | Kernel notification decoding | Pending |
 | 6 | Lifecycle and path notification exposure | Pending |
 | 7 | Receive record boundaries and cancellation | Pending |
@@ -36,3 +36,11 @@ must not be converted to a wildcard or single-path bind.
 After a pending connect, readiness is followed by a `SO_ERROR` check.
 Cancellation is observed before the syscall and while polling for completion;
 the caller owns and closes the socket if the attempt fails or is cancelled.
+
+`NativeSctpConnector.ConnectMultiHomedAsync` accepts
+`SctpMultiHomingEndpointSet`; `NativeSctpListener.StartMultiHomedAsync`
+accepts an ordered local list. Match the first endpoint to the corresponding
+primary in the existing options. The first local address uses managed bind
+so accepted sockets retain normal .NET behavior; the rest use `sctp_bindx`.
+Both APIs require Linux kernel metadata and reject invalid lists before
+opening a socket. Existing single-address calls are unchanged.

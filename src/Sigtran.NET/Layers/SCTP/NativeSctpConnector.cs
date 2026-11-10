@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 
 namespace Sigtran.NET.Layers.SCTP;
@@ -90,54 +91,98 @@ public sealed class NativeSctpConnector
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        NativeSctpTransportOptions effectiveTransportOptions = transportOptions ?? new NativeSctpTransportOptions();
         NativeSctpConnectionPlan plan = await _planner.BuildAsync(options, ct).ConfigureAwait(false);
-        int attempt = 0;
-        Exception? lastException = null;
-        _attempts.Clear();
+        return await ConnectCoreAsync(options, plan.LocalEndpoint is { } local ? [local] : [], [plan.RemoteEndpoint],
+            transportOptions ?? new(), multiHomed: false, ct).ConfigureAwait(false);
+    }
 
-        while (attempt <= effectiveTransportOptions.ReconnectPolicy.MaxAttempts)
+    /// <summary>Connects one Linux SCTP association using the supplied local and remote address sets.</summary>
+    /// <param name="options">Stream, timeout and primary endpoint settings.</param>
+    /// <param name="endpoints">Ordered address sets; the primary entries must match configured primaries.</param>
+    /// <param name="transportOptions">The optional native transport behavior.</param>
+    /// <param name="ct">A token that cancels connection establishment and retries.</param>
+    /// <returns>The connected association, without a single-address fallback.</returns>
+    public async Task<NativeSctpSocketAdapter> ConnectMultiHomedAsync(
+        SctpConnectionOptions options, SctpMultiHomingEndpointSet endpoints,
+        NativeSctpTransportOptions? transportOptions = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(endpoints);
+        IReadOnlyList<SctpEndpoint> remote = endpoints.RemoteEndpoints;
+        IReadOnlyList<SctpEndpoint> local = endpoints.LocalEndpoints;
+        if (local.Count == 0 && options.LocalEndpoint is { } configuredLocal)
         {
-            attempt++;
-            Socket socket = _socketFactory.CreateSocket();
-            NativeSctpSocketAdapter? adapter = null;
+            local = [configuredLocal];
+        }
 
+        if ((local.Count < 2 && remote.Count < 2)
+            || !NativeSctpAddressSet.Matches(options.RemoteEndpoint, remote[0])
+            || (options.LocalEndpoint is { } primaryLocal && !NativeSctpAddressSet.Matches(primaryLocal, local[0])))
+        {
+            throw new ArgumentException("Multihoming requires matching primary endpoints and at least two addresses on one side.", nameof(endpoints));
+        }
+
+        NativeSctpTransportOptions effective = transportOptions ?? new();
+        if (!effective.RequireKernelMetadata)
+        {
+            throw new ArgumentException("Multihoming requires the native SCTP metadata transport.", nameof(transportOptions));
+        }
+
+        IPEndPoint[] resolvedRemote = await _planner.ResolveAddressesAsync(remote, false, ct).ConfigureAwait(false);
+        IPEndPoint[] resolvedLocal = await _planner.ResolveAddressesAsync(local, true, ct).ConfigureAwait(false);
+        SctpConnectionOptions effectiveOptions = new(options.RemoteEndpoint, local.Count == 0 ? null : local[0],
+            options.OutboundStreams, options.InboundStreams, options.DefaultPayloadProtocolIdentifier, options.ConnectTimeout);
+        return await ConnectCoreAsync(effectiveOptions, resolvedLocal, resolvedRemote, effective,
+            multiHomed: true, ct).ConfigureAwait(false);
+    }
+
+    private async Task<NativeSctpSocketAdapter> ConnectCoreAsync(SctpConnectionOptions options, IPEndPoint[] local,
+        IPEndPoint[] remote, NativeSctpTransportOptions transportOptions, bool multiHomed, CancellationToken ct)
+    {
+        _attempts.Clear();
+        for (int attempt = 1; ; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+            Socket socket = _socketFactory.CreateSocket();
             try
             {
-                if (effectiveTransportOptions.RequireKernelMetadata)
+                if (transportOptions.RequireKernelMetadata)
                 {
                     NativeSctpInterop.ConfigureSocket(
                         socket,
                         options.OutboundStreams,
                         options.InboundStreams,
-                        effectiveTransportOptions.EnableNoDelay);
-                }
-                if (plan.LocalEndpoint is not null)
-                {
-                    socket.Bind(plan.LocalEndpoint);
+                        transportOptions.EnableNoDelay);
                 }
 
+                NativeSctpInterop.BindLocal(socket, local);
                 using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 timeout.CancelAfter(options.ConnectTimeout);
-                await socket.ConnectAsync(plan.RemoteEndpoint, timeout.Token).ConfigureAwait(false);
+                if (multiHomed)
+                {
+                    await NativeSctpInterop.ConnectAddressesAsync(socket, remote, timeout.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    await socket.ConnectAsync(remote[0], timeout.Token).ConfigureAwait(false);
+                }
 
-                adapter = new NativeSctpSocketAdapter(socket, options, SctpAssociationState.Established, effectiveTransportOptions);
+                NativeSctpSocketAdapter adapter = new(socket, options, SctpAssociationState.Established, transportOptions);
                 _attempts.Add(new(attempt, DateTimeOffset.UtcNow, successful: true, "connected"));
                 return adapter;
             }
-            catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+            catch (Exception ex)
             {
-                lastException = ex;
-                adapter?.MarkFailed(ex.Message);
                 socket.Dispose();
 
-                if (!effectiveTransportOptions.ReconnectPolicy.IsEnabled || attempt > effectiveTransportOptions.ReconnectPolicy.MaxAttempts)
+                if (ex is not (SocketException or OperationCanceledException)
+                    || ct.IsCancellationRequested || attempt > transportOptions.ReconnectPolicy.MaxAttempts)
                 {
                     _attempts.Add(new(attempt, DateTimeOffset.UtcNow, successful: false, ex.Message));
                     throw;
                 }
 
-                TimeSpan delay = effectiveTransportOptions.ReconnectPolicy.GetDelay(attempt);
+                TimeSpan delay = transportOptions.ReconnectPolicy.GetDelay(attempt);
                 _attempts.Add(new(attempt, DateTimeOffset.UtcNow, successful: false, ex.Message, delay));
                 if (delay > TimeSpan.Zero)
                 {
@@ -146,11 +191,5 @@ public sealed class NativeSctpConnector
             }
         }
 
-        if (lastException is not null)
-        {
-            throw lastException;
-        }
-
-        throw new InvalidOperationException("Native SCTP connect did not produce an association.");
     }
 }

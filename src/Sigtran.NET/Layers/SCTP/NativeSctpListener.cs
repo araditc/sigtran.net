@@ -91,22 +91,61 @@ public sealed class NativeSctpListener : IDisposable
             throw new InvalidOperationException("Native SCTP listener has already started.");
         }
 
-        _transportOptions = transportOptions ?? new NativeSctpTransportOptions();
         IPEndPoint local = await _resolver.ResolveAsync(options.LocalEndpoint, ct).ConfigureAwait(false);
+        StartResolved(options, [local], transportOptions ?? new(), ct);
+    }
+
+    /// <summary>Starts one Linux SCTP listener bound to multiple explicit IPv4 addresses.</summary>
+    /// <param name="options">Listener options whose endpoint matches the first address.</param>
+    /// <param name="localEndpoints">The ordered local address list, with one shared port.</param>
+    /// <param name="transportOptions">The optional native transport behavior.</param>
+    /// <param name="ct">A token that cancels startup before listening.</param>
+    /// <returns>A task that completes after all addresses are bound and listening.</returns>
+    public async Task StartMultiHomedAsync(NativeSctpListenerOptions options, IReadOnlyList<SctpEndpoint> localEndpoints,
+        NativeSctpTransportOptions? transportOptions = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(localEndpoints);
+        SctpEndpoint[] snapshot = localEndpoints.ToArray();
+        if (snapshot.Length < 2 || snapshot[0] is not { } primary || !NativeSctpAddressSet.Matches(options.LocalEndpoint, primary))
+        {
+            throw new ArgumentException("The listener requires at least two addresses and a matching primary endpoint.", nameof(localEndpoints));
+        }
+
+        NativeSctpTransportOptions effective = transportOptions ?? new();
+        if (!effective.RequireKernelMetadata)
+        {
+            throw new ArgumentException("Multihoming requires the native SCTP metadata transport.", nameof(transportOptions));
+        }
+
+        IPEndPoint[] addresses = await NativeSctpAddressSet.ResolveAsync(snapshot, _resolver, false, ct).ConfigureAwait(false);
+        StartResolved(options, addresses, effective, ct);
+    }
+
+    private void StartResolved(NativeSctpListenerOptions options, IPEndPoint[] addresses,
+        NativeSctpTransportOptions transportOptions, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (_listenSocket is not null)
+        {
+            throw new InvalidOperationException("Native SCTP listener has already started.");
+        }
+
         Socket socket = _socketFactory.CreateSocket();
         try
         {
-            if (_transportOptions.RequireKernelMetadata)
+            if (transportOptions.RequireKernelMetadata)
             {
                 NativeSctpInterop.ConfigureSocket(
                     socket,
                     options.OutboundStreams,
                     options.InboundStreams,
-                    _transportOptions.EnableNoDelay);
+                    transportOptions.EnableNoDelay);
             }
 
-            socket.Bind(local);
+            NativeSctpInterop.BindLocal(socket, addresses);
             socket.Listen(options.Backlog);
+            _transportOptions = transportOptions;
             _listenSocket = socket;
         }
         catch
@@ -125,24 +164,32 @@ public sealed class NativeSctpListener : IDisposable
         ArgumentNullException.ThrowIfNull(options);
         Socket listenSocket = _listenSocket ?? throw new InvalidOperationException("Native SCTP listener has not started.");
         Socket accepted = await listenSocket.AcceptAsync(ct).ConfigureAwait(false);
-        if (_transportOptions.RequireKernelMetadata)
+        try
         {
-            NativeSctpInterop.EnableReceiveMetadata(accepted);
-            if (_transportOptions.EnableNoDelay)
+            if (_transportOptions.RequireKernelMetadata)
             {
-                NativeSctpInterop.EnableNoDelay(accepted);
+                NativeSctpInterop.EnableReceiveMetadata(accepted);
+                if (_transportOptions.EnableNoDelay)
+                {
+                    NativeSctpInterop.EnableNoDelay(accepted);
+                }
             }
+
+            SctpEndpoint remote = ToSctpEndpoint(accepted.RemoteEndPoint, "remote");
+            SctpConnectionOptions connectionOptions = new(
+                remote,
+                options.LocalEndpoint,
+                options.OutboundStreams,
+                options.InboundStreams,
+                options.DefaultPayloadProtocolIdentifier);
+
+            return new NativeSctpSocketAdapter(accepted, connectionOptions, SctpAssociationState.Established, _transportOptions);
         }
-
-        SctpEndpoint remote = ToSctpEndpoint(accepted.RemoteEndPoint, "remote");
-        SctpConnectionOptions connectionOptions = new(
-            remote,
-            options.LocalEndpoint,
-            options.OutboundStreams,
-            options.InboundStreams,
-            options.DefaultPayloadProtocolIdentifier);
-
-        return new NativeSctpSocketAdapter(accepted, connectionOptions, SctpAssociationState.Established, _transportOptions);
+        catch
+        {
+            accepted.Dispose();
+            throw;
+        }
     }
 
     /// <inheritdoc />

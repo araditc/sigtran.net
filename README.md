@@ -61,6 +61,7 @@ codecs use separate TS 29.002 wire tags.
 address-set, kernel notification and path-failover qualification work.
 The multihoming bind primitive uses explicit Linux SCTP address lists.
 Native connectx submits the peer list as one cancellable association attempt.
+Use `ConnectMultiHomedAsync` and `StartMultiHomedAsync` for explicit Linux address sets.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

@@ -28,8 +28,8 @@ internal static class NativeSctpAddressSet
             return [];
         }
 
-        int port = endpoints[0].Port;
-        if (endpoints.Any(endpoint => endpoint.Port != port))
+        int port = endpoints[0]?.Port ?? 0;
+        if (port == 0 || endpoints.Any(endpoint => endpoint is null || endpoint.Port != port))
         {
             throw new ArgumentException("All SCTP addresses on one side must use the same port.", nameof(endpoints));
         }
@@ -54,6 +54,9 @@ internal static class NativeSctpAddressSet
 
     internal static bool IsExplicitIpv4(IPAddress address)
         => address.AddressFamily == AddressFamily.InterNetwork && address.GetAddressBytes()[0] is > 0 and < 224;
+
+    internal static bool Matches(SctpEndpoint first, SctpEndpoint second)
+        => first.Port == second.Port && string.Equals(first.Host, second.Host, StringComparison.OrdinalIgnoreCase);
 
     internal static byte[] PackLinuxIpv4(IReadOnlyList<IPEndPoint> endpoints)
     {

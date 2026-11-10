@@ -31,6 +31,21 @@ internal static class NativeSctpInterop
         }
     }
 
+    internal static void BindLocal(Socket socket, IPEndPoint[] addresses)
+    {
+        if (addresses.Length == 0)
+        {
+            return;
+        }
+
+        // Managed bind establishes the endpoint type required by Socket.AcceptAsync.
+        socket.Bind(addresses[0]);
+        if (addresses.Length > 1)
+        {
+            BindAddresses(socket, addresses[1..]);
+        }
+    }
+
     internal static async Task ConnectAddressesAsync(Socket socket, IReadOnlyList<IPEndPoint> addresses, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

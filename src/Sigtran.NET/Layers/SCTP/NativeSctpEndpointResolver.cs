@@ -87,6 +87,9 @@ public sealed class NativeSctpConnectionPlanner
         _resolver = resolver ?? new NativeSctpEndpointResolver();
     }
 
+    internal Task<IPEndPoint[]> ResolveAddressesAsync(IReadOnlyList<SctpEndpoint> endpoints, bool allowEmpty, CancellationToken ct)
+        => NativeSctpAddressSet.ResolveAsync(endpoints, _resolver, allowEmpty, ct);
+
     /// <summary>Builds a connection plan from SCTP connection options.</summary>
     /// <param name="options">The SCTP connection options.</param>
     /// <param name="ct">A cancellation token.</param>
