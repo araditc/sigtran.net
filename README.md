@@ -65,6 +65,9 @@ The isolated Linux lab verified 48 round trips across four streams, including
 primary path loss during an outstanding reply, without reconnecting.
 This is single-kernel lab evidence, not separate-host or operator qualification.
 
+[MTP3 over MTP2](docs/MTP3.md#mtp2-service-data) separates the ITU MSU
+from M2PA framing and rejects M3UA-only adaptation parameters on that path.
+
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 
 ---
