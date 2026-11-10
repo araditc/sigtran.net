@@ -79,6 +79,7 @@ Five typed MAP operations share a bounded admission limit and correlated results
 The optional local HTTP endpoint requires loopback and a Bearer token.
 Readiness includes the upper-layer readers, and shutdown closes admission before draining active requests.
 Reference M3UA activation confirms the configured Routing Context and never replays queued work across association generations.
+The independent C peer includes MAP error, reject, malformed-result, timeout and wrong-context cases.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

@@ -14,7 +14,7 @@ endpoint. Existing operations-only deployments remain the default.
 | 4 | Loopback-only authenticated service entry point | Implemented |
 | 5 | Readiness, metrics and shutdown drain | Implemented |
 | 6 | Explicit M3UA application-server routing context | Implemented |
-| 7 | Independent peer positive and negative scenario matrix | Pending |
+| 7 | Independent peer positive and negative scenario matrix | Implemented; C wire fixtures verified |
 | 8 | Real host traffic and independent PCAP/trace comparison | Pending |
 | 9 | Separately maintained peer path | Pending |
 | 10 | Reproducible evidence, limitations and phase decision | Pending |
@@ -106,3 +106,14 @@ its configured point codes, NI and context. The SDK's
 local transport write. A queued transfer for a lost generation is
 not dispatched on its replacement. An uncertain write is a transport
 failure, not a reason to retry. See [RFC 4666 section 4.3.4.3](https://www.rfc-editor.org/rfc/rfc4666.html#section-4.3.4.3).
+
+## Independent Peer Matrix
+
+The repository-owned C/lksctp peer does not link to the SDK. Its
+reference profile decodes five successful MAP SMS operations, then
+returns a MAP user error, a TCAP Reject and an invalid SRI-SM result,
+and withholds a response to one invoke. A final successful operation
+is preceded by a foreign-context ReturnError that must not reach the
+application. A separate activation run sends the wrong ASP Active Ack
+context and must not admit any DATA. The C `--self-test` command checks
+the negative BER fixtures and M3UA Routing Context encoding offline.

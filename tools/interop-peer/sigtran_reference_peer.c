@@ -26,7 +26,9 @@
 #define M3UA_CLASS_ASPSM 3U
 #define M3UA_CLASS_ASPTM 4U
 #define M3UA_TYPE_DATA 1U
+#define M3UA_TAG_ROUTING_CONTEXT 0x0006U
 #define M3UA_TAG_PROTOCOL_DATA 0x0210U
+#define REFERENCE_CONTEXT 100U
 
 struct tlv_view {
     uint8_t tag;
@@ -36,6 +38,8 @@ struct tlv_view {
 };
 
 struct protocol_data_view {
+    uint32_t routing_context;
+    int has_context;
     uint32_t opc;
     uint32_t dpc;
     uint8_t service_indicator;
@@ -69,6 +73,16 @@ struct tcap_invoke_view {
 
 static volatile sig_atomic_t stop_requested = 0;
 static int quiet_traffic = 0;
+static int reference_profile = 0;
+static int wrong_activation_context = 0;
+
+enum map_reply { REPLY_RESULT, REPLY_ERROR, REPLY_REJECT, REPLY_MALFORMED, REPLY_SILENCE };
+
+/* Fixed synthetic cases, in the order exercised by the local host driver. */
+static const struct { uint8_t code; enum map_reply reply; } reference_cases[] = {
+    {45U, REPLY_RESULT}, {46U, REPLY_RESULT}, {44U, REPLY_RESULT}, {47U, REPLY_RESULT}, {64U, REPLY_RESULT},
+    {44U, REPLY_ERROR}, {64U, REPLY_REJECT}, {45U, REPLY_MALFORMED}, {47U, REPLY_SILENCE}, {64U, REPLY_RESULT}
+};
 
 static void handle_signal(int signal_number)
 {
@@ -211,6 +225,8 @@ static int parse_m3ua_protocol_data(
     struct protocol_data_view *result)
 {
     size_t offset = 8U;
+    int found_data = 0;
+    memset(result, 0, sizeof(*result));
 
     if (message_length < 8U || message[0] != 1U
         || message[2] != M3UA_CLASS_TRANSFER
@@ -233,8 +249,14 @@ static int parse_m3ua_protocol_data(
 
         value = message + offset + 4U;
         value_length = parameter_length - 4U;
-        if (tag == M3UA_TAG_PROTOCOL_DATA) {
-            if (value_length < 12U) {
+        if (tag == M3UA_TAG_ROUTING_CONTEXT) {
+            if (value_length != 4U || result->has_context) {
+                return -1;
+            }
+            result->routing_context = read_u32_be(value);
+            result->has_context = 1;
+        } else if (tag == M3UA_TAG_PROTOCOL_DATA) {
+            if (value_length < 12U || found_data) {
                 return -1;
             }
 
@@ -246,14 +268,14 @@ static int parse_m3ua_protocol_data(
             result->signalling_link_selection = value[11];
             result->payload = value + 12U;
             result->payload_length = value_length - 12U;
-            return 0;
+            found_data = 1;
         }
 
         padded_length = (parameter_length + 3U) & ~3U;
         offset += padded_length;
     }
 
-    return -1;
+    return found_data && offset == message_length ? 0 : -1;
 }
 
 static int read_sccp_variable(
@@ -505,6 +527,7 @@ static int append_dialogue_response(const struct tcap_invoke_view *invoke,
 
 static int build_tcap_result(
     const struct tcap_invoke_view *invoke,
+    enum map_reply reply,
     uint8_t *destination,
     size_t capacity,
     size_t *written)
@@ -515,6 +538,9 @@ static int build_tcap_result(
     size_t component_content_length = 0U;
     size_t component_length = 0U;
     size_t transaction_content_length = 0U;
+    uint8_t component_tag = reply == REPLY_ERROR ? 0xA3U : reply == REPLY_REJECT ? 0xA4U : 0xA2U;
+    const uint8_t absent_subscriber[] = {0x02U, 1U, 6U};
+    const uint8_t unrecognized_operation[] = {0x81U, 1U, 1U};
     /* The optional result SEQUENCE contains the local opcode and the encoded result. */
     const uint8_t routing_result[] = {
         0x02U, 0x01U, 45U, 0x30U, 0x12U,
@@ -529,18 +555,29 @@ static int build_tcap_result(
             0x02U,
             &invoke->invoke_id,
             1U) != 0
-        || (invoke->operation_code == 45U && append_ber_tlv(
+        || (reply == REPLY_RESULT && invoke->operation_code == 45U && append_ber_tlv(
             component_content,
             sizeof(component_content),
             &component_content_length,
             0x30U,
             routing_result,
-            sizeof(routing_result)) != 0)
-        || append_ber_tlv(
+            sizeof(routing_result)) != 0)) {
+        return -1;
+    }
+
+    if (reply == REPLY_ERROR) {
+        memcpy(component_content + component_content_length, absent_subscriber, sizeof(absent_subscriber));
+        component_content_length += sizeof(absent_subscriber);
+    } else if (reply == REPLY_REJECT) {
+        memcpy(component_content + component_content_length, unrecognized_operation, sizeof(unrecognized_operation));
+        component_content_length += sizeof(unrecognized_operation);
+    }
+
+    if (append_ber_tlv(
             component,
             sizeof(component),
             &component_length,
-            0xA2U,
+            component_tag,
             component_content,
             component_content_length) != 0
         || append_ber_tlv(
@@ -630,7 +667,8 @@ static int build_m3ua_data_response(
     size_t parameter_value_length = 12U + payload_length;
     size_t parameter_length = 4U + parameter_value_length;
     size_t padded_parameter_length = (parameter_length + 3U) & ~3U;
-    size_t message_length = 8U + padded_parameter_length;
+    size_t protocol_offset = request->has_context ? 16U : 8U;
+    size_t message_length = protocol_offset + padded_parameter_length;
     uint8_t *value;
 
     if (message_length > capacity || parameter_length > 0xFFFFU) {
@@ -642,9 +680,14 @@ static int build_m3ua_data_response(
     destination[2] = M3UA_CLASS_TRANSFER;
     destination[3] = M3UA_TYPE_DATA;
     write_u32_be(destination + 4U, (uint32_t)message_length);
-    write_u16_be(destination + 8U, M3UA_TAG_PROTOCOL_DATA);
-    write_u16_be(destination + 10U, (uint16_t)parameter_length);
-    value = destination + 12U;
+    if (request->has_context) {
+        write_u16_be(destination + 8U, M3UA_TAG_ROUTING_CONTEXT);
+        write_u16_be(destination + 10U, 8U);
+        write_u32_be(destination + 12U, request->routing_context);
+    }
+    write_u16_be(destination + protocol_offset, M3UA_TAG_PROTOCOL_DATA);
+    write_u16_be(destination + protocol_offset + 2U, (uint16_t)parameter_length);
+    value = destination + protocol_offset + 4U;
     write_u32_be(value, request->dpc);
     write_u32_be(value + 4U, request->opc);
     value[8] = request->service_indicator;
@@ -693,65 +736,64 @@ static int send_ack(
     return send_m3ua(socket_fd, response, request_length, stream_id);
 }
 
-static int handle_data(
-    int socket_fd,
-    const uint8_t *message,
-    size_t message_length,
-    uint16_t stream_id,
-    unsigned int *operation_count)
+/* Respond with an explicit RC, optionally mismatched for the activation rejection run. */
+static int send_reference_activation_ack(int socket_fd, const uint8_t *request, size_t length)
 {
-    struct protocol_data_view protocol_data;
-    struct sccp_udt_view sccp;
-    struct tcap_invoke_view invoke;
+    uint8_t response[] = {1U, 0U, 4U, 3U, 0U, 0U, 0U, 24U, 0U, 0x0BU, 0U, 8U, 0U, 0U, 0U, 2U,
+        0U, 6U, 0U, 8U, 0U, 0U, 0U, 0U};
+    size_t offset = 8U;
+    int valid = 0;
+    while (offset + 4U <= length) {
+        uint16_t tag = read_u16_be(request + offset);
+        uint16_t size = read_u16_be(request + offset + 2U);
+        if (size < 4U || offset + size > length) {
+            return -1;
+        }
+        if (tag == M3UA_TAG_ROUTING_CONTEXT) {
+            if (valid || size != 8U || read_u32_be(request + offset + 4U) != REFERENCE_CONTEXT) {
+                return -1;
+            }
+            valid = 1;
+        }
+        offset += (size + 3U) & ~3U;
+    }
+
+    if (!valid || offset != length) {
+        return -1;
+    }
+    write_u32_be(response + 20U, REFERENCE_CONTEXT + (wrong_activation_context ? 1U : 0U));
+    return send_m3ua(socket_fd, response, sizeof(response), 0U);
+}
+
+static int send_map_reply(
+    int socket_fd,
+    const struct protocol_data_view *protocol_data,
+    const struct sccp_udt_view *sccp,
+    const struct tcap_invoke_view *invoke,
+    enum map_reply reply,
+    uint16_t stream_id)
+{
     uint8_t tcap_response[2048];
     uint8_t sccp_response[4096];
     uint8_t m3ua_response[8192];
     size_t tcap_response_length;
     size_t sccp_response_length;
     size_t m3ua_response_length;
-    char detail[256];
-
-    if (parse_m3ua_protocol_data(message, message_length, &protocol_data) != 0
-        || protocol_data.service_indicator != 3U
-        || parse_sccp_udt(
-            protocol_data.payload,
-            protocol_data.payload_length,
-            &sccp) != 0
-        || parse_tcap_invoke(
-            sccp.user_data,
-            sccp.user_data_length,
-            &invoke) != 0
-        || validate_map_parameters(&invoke) != 0) {
-        log_event("validation-failed", "layer=M3UA/SCCP/TCAP/MAP");
-        return -1;
-    }
-
-    snprintf(
-        detail,
-        sizeof(detail),
-        "operationCode=%u invokeId=%u opc=%u dpc=%u sccpBytes=%zu mapBytes=%zu",
-        invoke.operation_code,
-        invoke.invoke_id,
-        protocol_data.opc,
-        protocol_data.dpc,
-        protocol_data.payload_length,
-        invoke.parameters_length);
-    log_event("map-invoke", detail);
-
     if (build_tcap_result(
-            &invoke,
+            invoke,
+            reply,
             tcap_response,
             sizeof(tcap_response),
             &tcap_response_length) != 0
         || build_sccp_udt_response(
-            &sccp,
+            sccp,
             tcap_response,
             tcap_response_length,
             sccp_response,
             sizeof(sccp_response),
             &sccp_response_length) != 0
         || build_m3ua_data_response(
-            &protocol_data,
+            protocol_data,
             sccp_response,
             sccp_response_length,
             m3ua_response,
@@ -765,13 +807,91 @@ static int handle_data(
         return -1;
     }
 
+    return 0;
+}
+
+static int handle_data(int socket_fd, const uint8_t *message, size_t message_length,
+    uint16_t stream_id, unsigned int *operation_count)
+{
+    struct protocol_data_view protocol_data;
+    struct sccp_udt_view sccp;
+    struct tcap_invoke_view invoke;
+    enum map_reply reply = REPLY_RESULT;
+    const char *events[] = {"map-result", "map-error", "map-reject", "map-malformed-result", "map-no-reply"};
+    char detail[256];
+
+    if (parse_m3ua_protocol_data(message, message_length, &protocol_data) != 0
+        || protocol_data.service_indicator != 3U || stream_id == 0U
+        || (reference_profile && (!protocol_data.has_context || protocol_data.routing_context != REFERENCE_CONTEXT))
+        || parse_sccp_udt(protocol_data.payload, protocol_data.payload_length, &sccp) != 0
+        || parse_tcap_invoke(sccp.user_data, sccp.user_data_length, &invoke) != 0
+        || validate_map_parameters(&invoke) != 0) {
+        log_event("validation-failed", "layer=M3UA/SCCP/TCAP/MAP");
+        return -1;
+    }
+
+    if (reference_profile) {
+        if (*operation_count >= sizeof(reference_cases) / sizeof(reference_cases[0])
+            || reference_cases[*operation_count].code != invoke.operation_code) {
+            log_event("validation-failed", "reason=unexpected-reference-case");
+            return -1;
+        }
+        reply = reference_cases[*operation_count].reply;
+    }
+
+    snprintf(detail, sizeof(detail), "case=%u operationCode=%u invokeId=%u opc=%u dpc=%u sccpBytes=%zu mapBytes=%zu",
+        *operation_count + 1U, invoke.operation_code, invoke.invoke_id, protocol_data.opc, protocol_data.dpc,
+        protocol_data.payload_length, invoke.parameters_length);
+    log_event("map-invoke", detail);
+    if (reference_profile && *operation_count == 9U) {
+        struct protocol_data_view foreign = protocol_data;
+        foreign.routing_context++;
+        if (send_map_reply(socket_fd, &foreign, &sccp, &invoke, REPLY_ERROR, stream_id) != 0) {
+            return -1;
+        }
+        log_event("foreign-context-response", detail);
+    }
+    if (reply != REPLY_SILENCE && send_map_reply(socket_fd, &protocol_data, &sccp, &invoke, reply, stream_id) != 0) {
+        return -1;
+    }
     (*operation_count)++;
-    log_event("map-result", detail);
+    log_event(events[reply], detail);
+    return 0;
+}
+
+static int self_test(void)
+{
+    struct tcap_invoke_view invoke = {.originating_transaction_id = (const uint8_t[]){0xA0U},
+        .originating_transaction_id_length = 1U, .invoke_id = 1U, .operation_code = 45U};
+    static const uint8_t error[] = {0x64U, 13U, 0x49U, 1U, 0xA0U, 0x6CU, 8U, 0xA3U, 6U, 2U, 1U, 1U, 2U, 1U, 6U};
+    static const uint8_t reject[] = {0x64U, 13U, 0x49U, 1U, 0xA0U, 0x6CU, 8U, 0xA4U, 6U, 2U, 1U, 1U, 0x81U, 1U, 1U};
+    static const uint8_t malformed[] = {0x64U, 10U, 0x49U, 1U, 0xA0U, 0x6CU, 5U, 0xA2U, 3U, 2U, 1U, 1U};
+    uint8_t bytes[128], wire[256];
+    size_t written, encoded;
+    struct protocol_data_view request = {.opc = 1U, .dpc = 2U, .service_indicator = 3U,
+        .routing_context = REFERENCE_CONTEXT, .has_context = 1};
+    struct protocol_data_view decoded;
+
+    if (build_tcap_result(&invoke, REPLY_ERROR, bytes, sizeof(bytes), &written) != 0
+        || written != sizeof(error) || memcmp(bytes, error, written) != 0
+        || build_tcap_result(&invoke, REPLY_REJECT, bytes, sizeof(bytes), &written) != 0
+        || written != sizeof(reject) || memcmp(bytes, reject, written) != 0
+        || build_tcap_result(&invoke, REPLY_MALFORMED, bytes, sizeof(bytes), &written) != 0
+        || written != sizeof(malformed) || memcmp(bytes, malformed, written) != 0
+        || build_m3ua_data_response(&request, bytes, written, wire, sizeof(wire), &encoded) != 0
+        || parse_m3ua_protocol_data(wire, encoded, &decoded) != 0 || !decoded.has_context
+        || decoded.routing_context != REFERENCE_CONTEXT || decoded.opc != 2U || decoded.dpc != 1U) {
+        return 1;
+    }
+    puts("Reference peer fixtures passed.");
     return 0;
 }
 
 int main(int argc, char **argv)
 {
+    if (argc == 2 && strcmp(argv[1], "--self-test") == 0) {
+        return self_test();
+    }
     const char *bind_ip = argc > 1 ? argv[1] : "127.0.0.1";
     int bind_port = argc > 2 ? atoi(argv[2]) : 2906;
     unsigned int expected_operations =
@@ -791,6 +911,10 @@ int main(int argc, char **argv)
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
     quiet_traffic = argc > 4 && strcmp(argv[4], "quiet") == 0;
+    reference_profile = argc > 4 && strcmp(argv[4], "reference") == 0;
+    wrong_activation_context = argc > 4 && strcmp(argv[4], "wrong-context") == 0;
+    if (reference_profile) expected_operations = sizeof(reference_cases) / sizeof(reference_cases[0]);
+    if (wrong_activation_context) expected_operations = 0U;
 
     listener_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP);
     if (listener_fd < 0) {
@@ -965,15 +1089,22 @@ int main(int argc, char **argv)
             }
             log_event("asp-up-ack", detail);
         } else if (message_class == M3UA_CLASS_ASPTM && message_type == 1U) {
-            if (send_ack(
+            if ((reference_profile || wrong_activation_context
+                    ? send_reference_activation_ack(connection_fd, message, (size_t)received)
+                    : send_ack(
                     connection_fd,
                     message,
                     (size_t)received,
                     3U,
-                    receive_info.sinfo_stream) != 0) {
+                    receive_info.sinfo_stream)) != 0) {
                 break;
             }
             log_event("asp-active-ack", detail);
+            if (wrong_activation_context) {
+                log_event("wrong-activation-context", "sent=101 expected=100");
+                close(connection_fd);
+                return 0;
+            }
         } else if (message_class == M3UA_CLASS_ASPSM && message_type == 3U) {
             if (send_ack(
                     connection_fd,

@@ -112,6 +112,7 @@ gcc \
     -lsctp \
     -o "${PEER_BINARY}" \
     2>&1 | tee "${LOG_DIR}/${RUN_ID}-peer-build.log"
+"${PEER_BINARY}" --self-test
 
 dotnet build \
     "${REPOSITORY_ROOT}/src/Sigtran.NET.EndToEndLab/Sigtran.NET.EndToEndLab.csproj" \
