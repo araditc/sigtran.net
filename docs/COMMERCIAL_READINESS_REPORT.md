@@ -155,6 +155,12 @@ live cut in two private Linux network namespaces with one SCTP association,
 the isolated path-loss test, not the separate-host soak, operator-profile
 or exact-candidate gates.
 
+[MTP3 over M2PA](MTP3.md) passed two independent C/lksctp SCCP UDT
+round trips and a separate six-round-trip native SCTP changeover/changeback
+run between SDK endpoints. This validates selective replay and acknowledged
+restoration for the declared isolated ITU endpoint profile, not vendor
+changeover, STP transit, multi-host resilience or stable publication.
+
 Do not publish this SDK as stable commercially production-ready yet.
 
 The SDK has enough retained evidence for public RC consumption and controlled

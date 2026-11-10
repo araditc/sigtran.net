@@ -61,6 +61,11 @@ The native SCTP additions include explicit multi-address connect/listen
 and typed kernel-notification snapshots. Their exact declarations are
 listed in the accepted additions; see [native SCTP multihoming](NATIVE_SCTP_MULTIHOMING.md).
 
+The MTP3 endpoint additions are `Mtp3LinkNetwork`, topology bindings,
+`M2paLink.CreateMtp2ServiceLink()`, and the optional
+`IMtp2LinkRecovery` contract. The raw M2PA and M3UA entry points are
+retained. See [MTP3 over MTP2](MTP3.md#mtp2-service-data).
+
 ## Comparison
 
 ```powershell

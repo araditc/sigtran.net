@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "bounded-itu-mtp3-over-m2pa",
+  "runs": [
+    {
+      "result": "pass",
+      "profile": "itu-sccp",
+      "sdkSourceCommit": "615e5ed2e02a7548911c8c4853974bbd5f01cb42",
+      "runId": "m2pa-20261110T213849Z",
+      "environment": {
+        "kernel": "Linux 5.15.0-191-generic",
+        "dotnetSdk": "10.0.401",
+        "topology": "One private Linux loopback network namespace"
+      },
+      "observations": {
+        "capturePackets": 34,
+        "captureDrops": 0,
+        "roundTrips": 2,
+        "sls": 10,
+        "independentPeer": "C/lksctp reference peer"
+      },
+      "privateArtifactSha256": {
+        "traffic.pcap": "336e94a2473855a658247a03d256fe79355cc183128da3ff45c98f0fa1f088b1",
+        "sdk.jsonl": "a5093aeb29fb82f6ae5cf6403b84f1edc31a61a9610c7ee7f0cfc7bb9e8c3e16",
+        "sdk-result.json": "aa8f5a766104468ff2216e9539c7965c00d7d2806fd6a18eee59614e31b23961",
+        "capture.log": "dc2aa25866f16d36376e332891f511ac5759d3fb16f41a937bd18f9d641ab313",
+        "wire-m2pa.tsv": "ef77397f53fa00f44873519d984f901b145e9665174f54653661e8a12cb5a849",
+        "peer.log": "c59b581146c2e78318eb3f2612e761b9f55527453764602e33aa0f46479c663e"
+      },
+      "limitations": [
+        "Synthetic traffic; no operator peer, cross-host or stable candidate qualification.",
+        "The changeover profile uses two SDK endpoints; the independent C peer verifies the separate ITU SCCP profile."
+      ]
+    },
+    {
+      "result": "pass",
+      "profile": "changeover",
+      "sdkSourceCommit": "7603db6907d7c498c2d6583308fbe448b5c41d05",
+      "runId": "m2pa-20261110T214305Z",
+      "environment": {
+        "kernel": "Linux 5.15.0-191-generic",
+        "dotnetSdk": "10.0.401",
+        "topology": "One private Linux loopback network namespace"
+      },
+      "observations": {
+        "capturePackets": 103,
+        "captureDrops": 0,
+        "roundTrips": 6,
+        "sctpAssociations": 3,
+        "replayedSequences": [
+          3
+        ],
+        "notReplayedSequences": [
+          2
+        ],
+        "newTrafficAfterReplay": [
+          4
+        ],
+        "alternateBeforeChangeback": [
+          5
+        ],
+        "restoredAfterChangeback": [
+          6
+        ],
+        "extendedChangeoverOrders": 1,
+        "extendedChangeoverAcknowledgements": 1,
+        "changebackBarriersAcknowledged": 2
+      },
+      "privateArtifactSha256": {
+        "traffic.pcap": "97e1f307f7642da4b8bad50423443b4b8a0680c199a8940ba75a04456b42b7e8",
+        "sdk.jsonl": "37d6d849b89b765ed818ed371473887458355de4f167fca126c2db08289f4db2",
+        "sdk-result.json": "b804c3dc162232d32a33fb0a2441af6c1142bc72748a6035c7c1940fd4ac0a2f",
+        "capture.log": "6fba87ac15271da9503524be193ec5b61e712f1bd9ec5dc7181ec2a5112bc3c4",
+        "wire-m2pa.tsv": "b6573f66664627f1b1fe242560c15472bee5b71bb5584f15795d23c5e4f62aaf",
+        "wire-associations.tsv": "6885ea5f3b558f263bcfb71f2c776eb25f0ede2a781a9ebaf85965c4f59037ea"
+      },
+      "limitations": [
+        "Synthetic traffic; no operator peer, cross-host or stable candidate qualification.",
+        "The changeover profile uses two SDK endpoints; the independent C peer verifies the separate ITU SCCP profile."
+      ]
+    }
+  ]
+}

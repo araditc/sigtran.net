@@ -65,16 +65,12 @@ The isolated Linux lab verified 48 round trips across four streams, including
 primary path loss during an outstanding reply, without reconnecting.
 This is single-kernel lab evidence, not separate-host or operator qualification.
 
-[MTP3 over MTP2](docs/MTP3.md#mtp2-service-data) separates the ITU MSU
-from M2PA framing and rejects M3UA-only adaptation parameters on that path.
-`M2paLink.CreateMtp2ServiceLink()` exposes that ITU service boundary without changing the raw M2PA API.
-Linksets and routesets are explicit, and SLS assignments on healthy links remain stable when another link is unavailable.
-`Mtp3LinkNetwork` lets SCCP use that path through the same `IMtp3Network` contract as M3UA.
-It consumes neighbour-scoped TFP/TFA and national TFR below SCCP.
-The M2PA service view freezes a 24-bit retrieval window for peer-confirmed changeover.
-Extended XCO/XCA changeover replays only peer-confirmed outstanding MSUs before new traffic.
-Changeback restores a link's SLS buckets only after matching CBD/CBA barriers.
-The [Linux lab](docs/MTP3.md#independent-sccp-traffic-lab) exchanges SCCP UDTs with an independent C/lksctp M2PA peer.
+[MTP3 over M2PA](docs/MTP3.md) connects SCCP through `IMtp3Network` with
+explicit ITU linksets/routesets, stable SLS assignment, neighbour-scoped route
+management, 24-bit XCO/XCA retrieval and acknowledged CBD/CBA changeback.
+The Linux labs verified SCCP UDTs with an independent C/lksctp peer and
+selective replay after native SCTP association loss between SDK endpoints.
+These are isolated endpoint tests, not operator or cross-host qualification.
 
 The project is designed for telecom engineers, protocol specialists, .NET infrastructure developers, and teams working with signaling gateways, SS7/SIGTRAN interop, GSM/MAP SMS flows, M3UA, SCTP, SCCP, TCAP, or MAP.
 

@@ -90,6 +90,9 @@ acknowledgement, SCTP PPID/stream/ordering policy, alignment, proving, Ready,
 payload delivery, Busy backpressure, processor-outage recovery, metrics, and
 graceful stop through an independent in-process peer implementation.
 
-The runtime foundation is complete. Independent external M2PA peer PCAP and
-long-running failure evidence remain part of the end-to-end lab gate; this
-document does not claim that external evidence has already been retained.
+The [independent SCCP traffic lab](MTP3.md#independent-sccp-traffic-lab)
+retains C/lksctp peer and PCAP observations for ITU traffic. The
+[native link fault lab](MTP3.md#native-link-fault-and-qualification)
+separately verifies selective retrieval, XCO/XCA and CBD/CBA between two
+SDK endpoints. Long-running, cross-host and operator-profile evidence
+remain separate gates.

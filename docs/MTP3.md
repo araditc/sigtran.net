@@ -59,7 +59,7 @@ and [RFC 4165 section 2.3.1](https://www.rfc-editor.org/rfc/rfc4165.html#section
 | 7 | Extended changeover and emergency handling | Implemented |
 | 8 | Acknowledged changeback and ordered traffic | Implemented |
 | 9 | SCCP traffic against an independent wire peer | Verified on Linux |
-| 10 | Live fault evidence and qualification decision | Pending |
+| 10 | Live fault evidence and qualification decision | Verified for the isolated Linux profile |
 
 Pass `M2paLink.CreateMtp2ServiceLink()` as the MTP2 service endpoint.
 It adds the RFC 4165 spare octet on send and removes it on receive. The
@@ -81,6 +81,16 @@ backpressures a bounded receive queue. It delivers only local user-part
 traffic; it is not an STP and does not relay incoming traffic to other
 destinations. Dispose the network before disposing its links. A send
 that fails after dispatch is not automatically retried on another link.
+
+After aligning two `M2paLink` instances for the same adjacent point,
+compose them with the SCCP service:
+
+```csharp
+await using Mtp3LinkNetwork network = new(1, 2,
+    [new(2, 1, primary.CreateMtp2ServiceLink()), new(2, 2, alternate.CreateMtp2ServiceLink())],
+    [new(2, 2)]);
+await using SccpConnectionlessService sccp = new(network, new(2, 1, 0), networkIndicator: 2);
+```
 
 ## Signalling Network Management
 
@@ -133,7 +143,7 @@ lower-layer dispatch budget.
 ## Independent SCCP Traffic Lab
 
 On Linux with kernel SCTP, lksctp development headers, .NET 10, gcc,
-iproute2, util-linux, dumpcap and TShark, run:
+iproute2, util-linux, dumpcap, TShark and Python 3.10 or later, run:
 
 ```bash
 bash scripts/run-mtp3-m2pa-lab.sh
@@ -147,3 +157,29 @@ not a raw echo. The SDK validates both responses, and the capture check
 requires two UDTs in each direction with PPID 5, stream 1 and SLS 10.
 The run is bounded to the declared synthetic fixture and does not
 represent operator STP interoperation.
+
+## Native Link Fault And Qualification
+
+```bash
+bash scripts/run-mtp3-m2pa-lab.sh changeover
+python3 scripts/verify-mtp3-m2pa-evidence.py changeover /path/to/mtp3-m2pa.RUN
+```
+
+The second profile runs two SDK endpoints on separate native SCTP
+associations in the same isolated Linux namespace. It withholds the ACK
+for accepted sequence 2 and stages sequence 3 in the retrieval window
+without putting it on the wire. It then shuts down the primary SCTP
+association while the alternate stays up. The verifier decodes the PCAP
+and checks that XCO/XCA name the failed link and exchange the expected
+24-bit boundaries, sequence 2 is not duplicated, and sequence 3 replays
+on the alternate before new sequence 4. After realignment, sequence 5
+still uses the alternate. Two acknowledged CBD/CBA barriers precede
+sequence 6 on the replacement SCTP association.
+
+Both profiles passed; see the [retained observations and artifact digests](evidence/MTP3_M2PA_20261110.json).
+Raw PCAPs and traces stay private. The independent C peer run verifies
+SCCP traffic, not an independently implemented changeover. The fault run
+uses two SDK endpoints and a controlled primary association shutdown, not
+an uncontrolled network partition. Phase 59 is complete for this ITU
+endpoint profile. Cross-host, STP transit, operator and exact release
+candidate qualification are not implied.

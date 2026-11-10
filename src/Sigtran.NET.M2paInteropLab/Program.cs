@@ -29,6 +29,17 @@ async Task TraceAsync(string eventName, object payload)
 
 try
 {
+    if (options.LiveChangeover)
+    {
+        await Mtp3ChangeoverLab.RunAsync(TraceAsync, timeout.Token);
+        await File.WriteAllTextAsync(options.ResultPath, JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1, runId = options.RunId, passed = true, profile = "changeover"
+        }), timeout.Token);
+        await TraceAsync("complete", new { passed = true });
+        return 0;
+    }
+
     SctpConnectionOptions connectionOptions = new(
         new SctpEndpoint(options.RemoteIp, options.RemotePort),
         localEndpoint: null,
@@ -240,7 +251,8 @@ internal sealed record LabOptions(
     string ResultPath,
     string RunId,
     TimeSpan Timeout,
-    bool ItuSccp)
+    bool ItuSccp,
+    bool LiveChangeover)
 {
     public static LabOptions Parse(string[] args)
     {
@@ -268,7 +280,8 @@ internal sealed record LabOptions(
             Get(values, "result", $"artifacts/m2pa/{runId}/sdk-result.json"),
             runId,
             TimeSpan.FromSeconds(int.Parse(Get(values, "timeout-seconds", "30"))),
-            bool.Parse(Get(values, "itu-sccp", "false")));
+            bool.Parse(Get(values, "itu-sccp", "false")),
+            bool.Parse(Get(values, "live-changeover", "false")));
     }
 
     private static string Get(
