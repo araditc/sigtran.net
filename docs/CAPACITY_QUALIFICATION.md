@@ -17,7 +17,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 2 | Measured completion ledger and per-second windows | Implemented; boundary and reconciliation tests |
 | 3 | Fixed workers, warmup exclusion and complete drain accounting | Implemented; drain/cancel/failure tests |
 | 4 | Bounded latency and resource observations | Implemented; quantile and overflow tests |
-| 5 | Native full-stack session with generation-fenced sends | Pending |
+| 5 | Native full-stack session with generation-fenced sends | Implemented; MAP outcome classification tests |
 | 6 | Independent C peer counters and machine-readable summary | Pending |
 | 7 | Two-host inventory, execution and shared-host safety | Pending |
 | 8 | Source-bound report verification and tamper tests | Pending |
@@ -61,3 +61,16 @@ Only successful results inside measurement enter latency. CPU is process CPU
 normalized to available logical processors; memory is sampled working set.
 Process-wide allocations and GC counts include the bounded drain, and are not
 presented as isolated codec allocations or a managed-heap-only measurement.
+
+## Native Workload
+
+`Sigtran.NET.PerformanceLab capacity` opens one native association: ordered
+M3UA DATA stream 1, PPID 3, eight negotiated streams, ITU PCs 1/2, NI 2,
+SCCP SI 3 and Routing Context 100. It invokes public `IMapSmsService`
+correlated operations directly, not the HTTP ingress or a hand-built TCAP
+loop. All TCAP events, unsolicited invokes and SCCP returns have owned readers.
+Unexpected work, malformed input, event drops, reconnects and faults prevent
+execution PASS. The final stack totals must match every admitted dialogue.
+`sdk.json` is created once and retains warmup and measurement separately.
+Numeric target and protocol execution are distinct; this file alone cannot
+prove dedicated topology, peer counts, wire validity or release qualification.

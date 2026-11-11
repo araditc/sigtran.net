@@ -62,6 +62,14 @@ internal static partial class CapacityTests
         Require(overflow.Snapshot().P99Milliseconds == 12000, "Overflow must not under-report tail latency");
     }
 
+    internal static void MapOutcomes()
+    {
+        foreach (Sigtran.NET.Layers.MAP.MapSmsOperationOutcomeKind outcome in Enum.GetValues<Sigtran.NET.Layers.MAP.MapSmsOperationOutcomeKind>())
+            Require((CapacitySession.Classify(outcome) == CapacityOutcome.Success)
+                == (outcome == Sigtran.NET.Layers.MAP.MapSmsOperationOutcomeKind.Result),
+                "Only a validated MAP result can count as success");
+    }
+
     private static async Task WorkersAsync()
     {
         var result = await CapacityRunner.RunAsync(TimeSpan.FromMilliseconds(200), 4, async (_, ct) =>

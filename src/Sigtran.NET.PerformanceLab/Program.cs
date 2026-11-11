@@ -11,6 +11,9 @@ using Sigtran.NET.Layers.SCCP;
 using Sigtran.NET.Layers.SCTP;
 using Sigtran.NET.Layers.TCAP;
 
+if (args.Length > 0 && args[0] == "capacity")
+    return await CapacityApplication.RunAsync(args[1..]);
+
 PerformanceLabOptions options = PerformanceLabOptions.Parse(args);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.MetricsPath))!);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.ReportPath))!);
@@ -766,16 +769,21 @@ internal sealed record PerformanceMessages(
     MapAlertServiceCentre Alert)
 {
     public static PerformanceMessages Create(PerformanceLabOptions options)
+        => Create(options.SubscriberMsisdn, options.ServiceCentreAddress, options.SubscriberImsi);
+
+    internal static PerformanceMessages CreateSynthetic() => Create("441234567890", "441234", "432109876543210");
+
+    private static PerformanceMessages Create(string msisdn, string centre, string identity)
     {
         MapSmsAddress subscriber = new(
             MapSmsAddressKind.Msisdn,
-            options.SubscriberMsisdn);
+            msisdn);
         MapSmsAddress serviceCentre = new(
             MapSmsAddressKind.ServiceCentre,
-            options.ServiceCentreAddress);
+            centre);
         MapSmsAddress imsi = new(
             MapSmsAddressKind.Imsi,
-            options.SubscriberImsi);
+            identity);
         return new(
             new(subscriber, serviceCentre, gprsSupportIndicator: true),
             new(
