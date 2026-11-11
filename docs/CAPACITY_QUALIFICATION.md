@@ -15,7 +15,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | --- | --- | --- |
 | 1 | Fixed target, bounded options and diagnostic separation | Implemented; unit verification retained locally |
 | 2 | Measured completion ledger and per-second windows | Implemented; boundary and reconciliation tests |
-| 3 | Fixed workers, warmup exclusion and complete drain accounting | Pending |
+| 3 | Fixed workers, warmup exclusion and complete drain accounting | Implemented; drain/cancel/failure tests |
 | 4 | Bounded latency and resource observations | Pending |
 | 5 | Native full-stack session with generation-fenced sends | Pending |
 | 6 | Independent C peer counters and machine-readable summary | Pending |
@@ -44,3 +44,13 @@ The measured interval is half-open: a result at exactly 1,800 seconds belongs
 to drain. Accounting arrays are fixed by the five operations, eight terminal
 outcomes and measured seconds, independent of the number of transactions.
 The stable evaluator and release policy are not automatically promoted.
+
+## Execution Model
+
+The new capacity path is separate from historical PerformanceLab stages.
+It uses bounded closed-loop concurrency: one Task per worker, one outstanding
+MAP invoke per worker, and no retry. This measures saturation capacity rather
+than an open-loop arrival SLA; it must not claim coordinated-omission-free
+latency under overload. Warmup uses a separate ledger. Admission stops using
+the monotonic clock, while the in-flight set drains for at most ten seconds.
+External cancellation and drain cancellation remain counted failures.

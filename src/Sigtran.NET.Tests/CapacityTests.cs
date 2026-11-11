@@ -44,4 +44,31 @@ internal static partial class CapacityTests
         Require(!ledger.Snapshot().Reconciled && ledger.Snapshot().Unresolved == 1,
             "Admitted but uncompleted work must invalidate reconciliation");
     }
+
+    internal static void Workers() => WorkersAsync().GetAwaiter().GetResult();
+
+    private static async Task WorkersAsync()
+    {
+        var result = await CapacityRunner.RunAsync(TimeSpan.FromMilliseconds(200), 4, async (_, ct) =>
+        {
+            await Task.Delay(300, ct);
+            return CapacityOutcome.Success;
+        }, CancellationToken.None);
+        Require(result.Counts.Reconciled && result.Counts.Failed == 0 && result.Counts.Measured == 0
+            && result.Counts.Late > 0 && !result.Aborted, "Deadline must drain rather than cancel active work");
+        using CancellationTokenSource cancel = new();
+        var cancelled = CapacityRunner.RunAsync(TimeSpan.FromSeconds(3), 2, async (_, ct) =>
+        {
+            cancel.Cancel();
+            await Task.Delay(1000, ct);
+            return CapacityOutcome.Success;
+        }, cancel.Token);
+        var stopped = await cancelled;
+        Require(stopped.Aborted && stopped.Counts.Reconciled && stopped.Counts.Failed > 0,
+            "External cancellation must preserve terminal accounting");
+        var failed = await CapacityRunner.RunAsync(TimeSpan.FromMilliseconds(10), 1,
+            (_, _) => throw new IOException("Injected"), CancellationToken.None);
+        Require(failed.Counts.Reconciled && failed.Counts.Failed > 0 && failed.Counts.Measured == 0,
+            "Transport exceptions must not be successful completions");
+    }
 }

@@ -18,6 +18,8 @@ keeps the 20K TPS / 30-minute / two-dedicated-host target separate from
 historical benchmarks and explicitly non-qualifying diagnostic runs.
 Its completion ledger retains per-second successes, late results, cancellations
 and unresolved work rather than counting queued sends as transactions.
+Fixed closed-loop workers stop admission at the measured deadline and drain
+in-flight requests without silently removing cancelled transactions.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records

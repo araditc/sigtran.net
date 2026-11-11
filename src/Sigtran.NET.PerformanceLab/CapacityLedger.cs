@@ -2,7 +2,7 @@
 internal enum CapacityOutcome { Success, Error, Reject, Timeout, Cancelled, TransportFailure, MalformedResult, DialogueClosed }
 
 /// <summary>Bounds accounting memory by duration and operation kinds, never transaction volume.</summary>
-internal sealed class CapacityLedger(int seconds, long frequency)
+internal sealed class CapacityLedger(int seconds, long frequency, long? endTicks = null)
 {
     private readonly long[] _windows = new long[seconds > 0 ? seconds : throw new ArgumentOutOfRangeException(nameof(seconds))];
     private readonly long[] _started = new long[5];
@@ -10,6 +10,7 @@ internal sealed class CapacityLedger(int seconds, long frequency)
     private readonly long[] _late = new long[5];
     private readonly long[] _outcomes = new long[8];
     private readonly long _frequency = frequency > 0 ? frequency : throw new ArgumentOutOfRangeException(nameof(frequency));
+    private readonly long _endTicks = endTicks ?? checked(seconds * frequency);
 
     internal void Admit(int operation)
     {
@@ -26,7 +27,7 @@ internal sealed class CapacityLedger(int seconds, long frequency)
         Interlocked.Increment(ref _outcomes[(int)outcome]);
         if (outcome != CapacityOutcome.Success) return;
         long second = completedTicks / _frequency;
-        if (second < _windows.Length)
+        if (completedTicks < _endTicks && second < _windows.Length)
         {
             Interlocked.Increment(ref _successes[operation]);
             Interlocked.Increment(ref _windows[(int)second]);
