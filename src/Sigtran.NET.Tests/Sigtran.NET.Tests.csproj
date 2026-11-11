@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sigtran.NET\Sigtran.NET.csproj" />
     <ProjectReference Include="..\Sigtran.NET.OperationsHost\Sigtran.NET.OperationsHost.csproj" />
+    <ProjectReference Include="..\Sigtran.NET.PerformanceLab\Sigtran.NET.PerformanceLab.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

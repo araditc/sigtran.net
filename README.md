@@ -13,6 +13,9 @@ Repository: <https://github.com/araditc/sigtran.net>
 SIGTRAN.NET is a standards-oriented C#/.NET SDK for building and testing SS7-over-IP and SIGTRAN signaling applications.
 
 The approved continuation is [phases 56-65](docs/RELEASE_QUALIFICATION_ROADMAP.md).
+The [completed MAP capacity qualification](docs/CAPACITY_QUALIFICATION.md)
+keeps the 20K TPS / 30-minute / two-dedicated-host target separate from
+historical benchmarks and explicitly non-qualifying diagnostic runs.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
