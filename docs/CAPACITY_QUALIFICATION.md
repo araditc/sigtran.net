@@ -16,7 +16,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 1 | Fixed target, bounded options and diagnostic separation | Implemented; unit verification retained locally |
 | 2 | Measured completion ledger and per-second windows | Implemented; boundary and reconciliation tests |
 | 3 | Fixed workers, warmup exclusion and complete drain accounting | Implemented; drain/cancel/failure tests |
-| 4 | Bounded latency and resource observations | Pending |
+| 4 | Bounded latency and resource observations | Implemented; quantile and overflow tests |
 | 5 | Native full-stack session with generation-fenced sends | Pending |
 | 6 | Independent C peer counters and machine-readable summary | Pending |
 | 7 | Two-host inventory, execution and shared-host safety | Pending |
@@ -54,3 +54,10 @@ than an open-loop arrival SLA; it must not claim coordinated-omission-free
 latency under overload. Warmup uses a separate ledger. Admission stops using
 the monotonic clock, while the in-flight set drains for at most ten seconds.
 External cancellation and drain cancellation remain counted failures.
+The capacity path uses 100,001 latency counters, not one retained sample per
+transaction. P50/P95/P99 are bucket upper bounds at 0.1 ms resolution up to
+10 seconds; overflow quantiles conservatively use the observed maximum.
+Only successful results inside measurement enter latency. CPU is process CPU
+normalized to available logical processors; memory is sampled working set.
+Process-wide allocations and GC counts include the bounded drain, and are not
+presented as isolated codec allocations or a managed-heap-only measurement.

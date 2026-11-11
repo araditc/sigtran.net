@@ -47,6 +47,21 @@ internal static partial class CapacityTests
 
     internal static void Workers() => WorkersAsync().GetAwaiter().GetResult();
 
+    internal static void Histogram()
+    {
+        CapacityHistogram histogram = new();
+        Require(histogram.Snapshot().Count == 0, "An empty histogram must not invent observations");
+        for (int i = 0; i < 99; i++) histogram.Record(System.Diagnostics.Stopwatch.Frequency / 1000);
+        histogram.Record(System.Diagnostics.Stopwatch.Frequency * 12);
+        var latency = histogram.Snapshot();
+        Require(latency.Count == 100 && latency.P95Milliseconds is >= 1 and <= 1.1
+            && latency.P99Milliseconds <= 1.1 && latency.MaximumMilliseconds == 12000,
+            "Quantiles must retain the outlier in maximum without storing individual transactions");
+        CapacityHistogram overflow = new();
+        overflow.Record(System.Diagnostics.Stopwatch.Frequency * 12);
+        Require(overflow.Snapshot().P99Milliseconds == 12000, "Overflow must not under-report tail latency");
+    }
+
     private static async Task WorkersAsync()
     {
         var result = await CapacityRunner.RunAsync(TimeSpan.FromMilliseconds(200), 4, async (_, ct) =>

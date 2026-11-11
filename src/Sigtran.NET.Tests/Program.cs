@@ -44,6 +44,7 @@ Run("Reference host validates opt-in ITU MAP SMS settings before startup", Refer
 Run("Capacity options preserve the fixed target and fence diagnostics", CapacityTests.Options);
 Run("Capacity ledger reconciles late results, cancellations and missing completions", CapacityTests.Ledger);
 Run("Capacity workers drain deadlines and account cancelled or failed invokes", CapacityTests.Workers);
+Run("Capacity histogram bounds memory and declares tail-latency resolution", CapacityTests.Histogram);
 Run("Reference host owns the MAP, TCAP and SCCP lifecycles over one MTP3 network", ReferenceServiceTests.Composition);
 Run("Reference operations validate input and bound admission before correlated MAP dispatch", ReferenceServiceTests.Operations);
 Run("Reference HTTP boundary rejects forwarded identity, bad credentials and invalid bodies", ReferenceServiceTests.LocalHttpBoundary);
