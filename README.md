@@ -30,6 +30,8 @@ Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining
 pre-I/O cancellation, timeout and record-boundary validation.
+The lksctp message imports preserve C `int` return widths, including signed
+would-block errors on 64-bit Linux.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records

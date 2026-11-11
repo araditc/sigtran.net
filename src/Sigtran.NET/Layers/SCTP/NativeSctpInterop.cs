@@ -161,7 +161,7 @@ internal static class NativeSctpInterop
                 message.Metadata.PayloadProtocolIdentifier);
             uint flags = message.Metadata.Unordered ? SctpUnorderedFlag : 0u;
             using NativeSctpHandle handle = new(socket);
-            nint sent = SctpSendMsg(
+            int sent = SctpSendMsg(
                 handle.FileDescriptor,
                 payload,
                 (nuint)message.Payload.Length,
@@ -179,7 +179,7 @@ internal static class NativeSctpInterop
                 return error is WouldBlock or Interrupted ? false : throw new SocketException(error);
             }
 
-            byteCount = checked((int)sent);
+            byteCount = sent;
             return true;
         }
         finally
@@ -218,7 +218,7 @@ internal static class NativeSctpInterop
         try
         {
             using NativeSctpHandle handle = new(socket);
-            nint received = SctpRecvMsg(
+            int received = SctpRecvMsg(
                 handle.FileDescriptor, payload, (nuint)buffer.Length, IntPtr.Zero, IntPtr.Zero,
                 out SctpSndRcvInfo info, out int messageFlags);
             if (received < 0)
@@ -228,7 +228,7 @@ internal static class NativeSctpInterop
                 return error is WouldBlock or Interrupted ? false : throw new SocketException(error);
             }
 
-            int byteCount = checked((int)received);
+            int byteCount = received;
             SctpKernelNotification? notification = null;
             if ((messageFlags & NativeSctpReceiveFrame.NotificationFlag) != 0)
             {
@@ -291,7 +291,7 @@ internal static class NativeSctpInterop
     private static extern int SctpConnectx(int socket, byte[] addresses, int addressCount, IntPtr associationId);
 
     [DllImport("libsctp.so.1", EntryPoint = "sctp_sendmsg", SetLastError = true)]
-    private static extern nint SctpSendMsg(
+    private static extern int SctpSendMsg(
         int socket,
         byte[] message,
         nuint length,
@@ -304,7 +304,7 @@ internal static class NativeSctpInterop
         uint context);
 
     [DllImport("libsctp.so.1", EntryPoint = "sctp_recvmsg", SetLastError = true)]
-    private static extern nint SctpRecvMsg(
+    private static extern int SctpRecvMsg(
         int socket,
         byte[] message,
         nuint length,

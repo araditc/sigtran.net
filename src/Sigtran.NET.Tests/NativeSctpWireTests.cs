@@ -6,6 +6,13 @@ using Sigtran.NET.Layers.SCTP;
 /// <summary>Tests platform-independent validation of the Linux SCTP wire and socket contracts.</summary>
 internal static class NativeSctpWireTests
 {
+    internal static void NativeReturnWidths()
+    {
+        foreach (string name in new[] { "SctpSendMsg", "SctpRecvMsg" })
+            Require(typeof(NativeSctpInterop).GetMethod(name,
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!.ReturnType == typeof(int),
+                "lksctp message APIs return C int; pointer-sized returns lose signed EAGAIN on x64.");
+    }
     internal static void AddressSets()
     {
         var resolver = new TestResolver();
@@ -216,7 +223,7 @@ internal static class NativeSctpWireTests
         using NativeSctpSocketAdapter client = new NativeSctpConnector().ConnectAsync(options, ct: timeout.Token).GetAwaiter().GetResult();
         using Socket accepted = listener.AcceptAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
         using NativeSctpSocketAdapter server = new(accepted, options, SctpAssociationState.Established,
-            new(timeoutPolicy: new(receiveTimeout: TimeSpan.FromMilliseconds(30))));
+            new(timeoutPolicy: new(receiveTimeout: TimeSpan.FromMilliseconds(500))));
         ISctpTransport sender = client, receiver = server;
         try
         {

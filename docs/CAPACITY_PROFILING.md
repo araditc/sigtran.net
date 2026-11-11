@@ -75,3 +75,10 @@ first attempt; fragmented records, notifications and oversize-tail draining
 retain their existing state machine. Legacy/non-Linux paths retain pre-waiting.
 Linux integration tests cover pre-cancelled sends, pre-cancelled receives that
 must not consume queued data, metadata integrity and idle receive expiry.
+
+The first real nonblocking trial exposed an existing native ABI defect hidden
+by most pre-polling paths: lksctp `sctp_sendmsg` and `sctp_recvmsg` return C
+`int`, not `ssize_t`. Both imports now preserve signed 32-bit returns, so x64
+would-block is handled as EAGAIN rather than a positive overflowing length.
+A platform-independent signature test and the real Linux idle/cancellation
+tests guard this boundary. The failed trial is retained, not relabeled PASS.
