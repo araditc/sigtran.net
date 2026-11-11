@@ -59,3 +59,19 @@ nested calls get distinct writers, failed/unbalanced scopes cannot poison reuse,
 and encodings above 4 KiB are not retained. Encoded output remains a fresh owned
 copy, never pooled memory. No public API or wire format changes are intended.
 See the standard [writer reset contract](https://learn.microsoft.com/en-us/dotnet/api/system.formats.asn1.asnwriter.reset?view=net-10.0).
+
+The first real encoding trial reduced allocation to about 10,305 bytes per
+transaction but did not improve observed TPS. Native CPU sampling identified
+syscall entry, scheduling/context-switch and yield costs; syscall summaries
+also observed a poll before almost every send/receive. These are separate
+diagnostic observations, not timed-capacity evidence or exact managed CPU costs.
+
+## Nonblocking Native I/O
+
+The Linux metadata adapter already forces its socket nonblocking. It now tries
+that native operation first and waits for readiness only after would-block.
+Caller cancellation and the operation deadline are still checked before the
+first attempt; fragmented records, notifications and oversize-tail draining
+retain their existing state machine. Legacy/non-Linux paths retain pre-waiting.
+Linux integration tests cover pre-cancelled sends, pre-cancelled receives that
+must not consume queued data, metadata integrity and idle receive expiry.

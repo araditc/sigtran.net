@@ -470,6 +470,7 @@ Run("Native SCTP checks Linux notification lengths and address encoding", Native
 Run("Native SCTP distinguishes path failure from association loss", NativeSctpWireTests.KernelLifecycle);
 Run("Native SCTP assembles complete records and discards oversized tails", NativeSctpWireTests.RecordBoundaries);
 Run("Native SCTP keeps record boundaries and metadata on supported Linux", NativeSctpWireTests.NativeRecordIo);
+Run("Native SCTP optimistic I/O honors cancellation and idle receive deadlines", NativeSctpWireTests.NativeCancellationAndIdleTimeout);
 Run("SCTP fault recovery selects deterministic actions", SctpFaultRecoverySelectsDeterministicActions);
 Run("SCTP reconnect policies compute bounded delays", SctpReconnectPoliciesComputeBoundedDelays);
 Run("SCTP reconnect schedules produce deterministic attempts", SctpReconnectSchedulesProduceDeterministicAttempts);

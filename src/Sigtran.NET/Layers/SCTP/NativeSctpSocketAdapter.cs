@@ -279,11 +279,11 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         try
         {
             int sent;
-            do
-            {
+            if (!OperatingSystem.IsLinux() || !_transportOptions.RequireKernelMetadata)
                 await WaitForSocketAsync(SelectMode.SelectWrite, budget, ct).ConfigureAwait(false);
-            }
-            while (!NativeSctpInterop.TrySendMessage(_socket, message, out sent));
+            CheckOperationBudget(budget, ct);
+            while (!NativeSctpInterop.TrySendMessage(_socket, message, out sent))
+                await WaitForSocketAsync(SelectMode.SelectWrite, budget, ct).ConfigureAwait(false);
             if (sent != message.Payload.Length)
             {
                 throw new InvalidDataException($"Native SCTP send wrote {sent} bytes for a {message.Payload.Length} byte message.");
@@ -335,9 +335,12 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
                 Memory<byte> receiveBuffer = direct
                     ? remaining
                     : (rented ??= ArrayPool<byte>.Shared.Rent(MinimumReceiveBuffer)).AsMemory(0, MinimumReceiveBuffer);
-                await WaitForSocketAsync(SelectMode.SelectRead, budget, ct).ConfigureAwait(false);
+                if (!OperatingSystem.IsLinux() || !_transportOptions.RequireKernelMetadata)
+                    await WaitForSocketAsync(SelectMode.SelectRead, budget, ct).ConfigureAwait(false);
+                CheckOperationBudget(budget, ct);
                 if (!NativeSctpInterop.TryReceiveFrame(_socket, receiveBuffer, out NativeSctpReceiveFrame frame))
                 {
+                    await WaitForSocketAsync(SelectMode.SelectRead, budget, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -465,11 +468,7 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
     {
         while (true)
         {
-            ct.ThrowIfCancellationRequested();
-            if (budget.IsTimedOut(DateTimeOffset.UtcNow))
-            {
-                throw new TimeoutException($"{budget.OperationKind} timed out at {budget.DeadlineUtc:O}.");
-            }
+            CheckOperationBudget(budget, ct);
 
             if (_socket.Poll(0, mode))
             {
@@ -478,6 +477,14 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
 
             await Task.Delay(2, ct).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>Checks cancellation/deadlines before every optimistic nonblocking native attempt.</summary>
+    private static void CheckOperationBudget(SctpOperationCancellationBudget budget, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (budget.IsTimedOut(DateTimeOffset.UtcNow))
+            throw new TimeoutException($"{budget.OperationKind} timed out at {budget.DeadlineUtc:O}.");
     }
 
     private void RecordFault(SctpTransportFault fault)

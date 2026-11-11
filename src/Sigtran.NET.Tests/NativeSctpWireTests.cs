@@ -203,6 +203,47 @@ internal static class NativeSctpWireTests
         return true;
     }
 
+    internal static void NativeCancellationAndIdleTimeout()
+    {
+        if (!CanRunNative()) return;
+        using Socket listener = new NativeSctpSocketFactory().CreateSocket();
+        NativeSctpInterop.ConfigureSocket(listener, 4, 4, true);
+        listener.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        listener.Listen(1);
+        var local = (IPEndPoint)listener.LocalEndPoint!;
+        SctpConnectionOptions options = new(new(local.Address.ToString(), local.Port), outboundStreams: 4, inboundStreams: 4);
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        using NativeSctpSocketAdapter client = new NativeSctpConnector().ConnectAsync(options, ct: timeout.Token).GetAwaiter().GetResult();
+        using Socket accepted = listener.AcceptAsync(timeout.Token).AsTask().GetAwaiter().GetResult();
+        using NativeSctpSocketAdapter server = new(accepted, options, SctpAssociationState.Established,
+            new(timeoutPolicy: new(receiveTimeout: TimeSpan.FromMilliseconds(30))));
+        ISctpTransport sender = client, receiver = server;
+        try
+        {
+            sender.SendAsync(new(new byte[] { 9 }, new(2, 3)), new(true)).AsTask().GetAwaiter().GetResult();
+            throw new InvalidOperationException("Pre-cancelled send reached native I/O.");
+        }
+        catch (OperationCanceledException) { }
+        Require(client.GetQueueMetrics().SentMessages == 0, "Pre-cancelled send changed counters.");
+        sender.SendAsync(new(new byte[] { 9 }, new(2, 3)), timeout.Token).AsTask().GetAwaiter().GetResult();
+        byte[] buffer = new byte[1];
+        try
+        {
+            receiver.ReceiveAsync(buffer, new(true)).AsTask().GetAwaiter().GetResult();
+            throw new InvalidOperationException("Pre-cancelled receive consumed data.");
+        }
+        catch (OperationCanceledException) { }
+        var result = receiver.ReceiveAsync(buffer, timeout.Token).AsTask().GetAwaiter().GetResult();
+        Require(result.BytesReceived == 1 && buffer[0] == 9 && result.Metadata.StreamId == 2,
+            "Cancellation must leave queued data and metadata intact.");
+        try
+        {
+            receiver.ReceiveAsync(buffer, timeout.Token).AsTask().GetAwaiter().GetResult();
+            throw new InvalidOperationException("Idle receive did not expire.");
+        }
+        catch (TimeoutException) { }
+    }
+
     private sealed class UnexpectedSocketFactory : INativeSctpSocketFactory
     {
         public Socket CreateSocket() => throw new InvalidOperationException("Validation opened a socket.");
