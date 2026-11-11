@@ -103,6 +103,13 @@ public static class TcapBer
 {
     private const int MaxValueLength = ushort.MaxValue;
 
+    /// <summary>Returns the exact short-tag TLV size before allocating an owned encoding.</summary>
+    internal static int GetEncodedLength(int valueLength)
+    {
+        if ((uint)valueLength > MaxValueLength) throw new InvalidOperationException("Unsupported BER value length.");
+        return 1 + GetLengthOctetCount(valueLength) + valueLength;
+    }
+
     /// <summary>Writes a BER TLV element to the caller-provided buffer.</summary>
     /// <param name="destination">The destination buffer.</param>
     /// <param name="tag">The BER tag.</param>

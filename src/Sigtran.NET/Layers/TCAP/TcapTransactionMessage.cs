@@ -72,40 +72,45 @@ public sealed class TcapTransactionMessage
             throw new InvalidOperationException("Invalid TCAP transaction fields for the package type.");
         }
 
-        byte[] content = new byte[2048];
-        int offset = 0;
+        int contentLength = (OriginatingTransactionId is { } origin ? TcapBer.GetEncodedLength(origin.Length) : 0)
+            + (DestinationTransactionId is { } destination ? TcapBer.GetEncodedLength(destination.Length) : 0)
+            + (ProviderAbortCause.HasValue ? TcapBer.GetEncodedLength(1) : 0)
+            + (DialoguePortion.IsEmpty ? 0 : TcapBer.GetEncodedLength(DialoguePortion.Length))
+            + (ComponentPortion.IsEmpty ? 0 : TcapBer.GetEncodedLength(ComponentPortion.Length));
+        byte[] result = new byte[TcapBer.GetEncodedLength(contentLength)];
+        int headerLength = result.Length - contentLength;
+        int offset = headerLength;
         if (OriginatingTransactionId.HasValue)
         {
-            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: true), OriginatingTransactionId.Value.Bytes);
+            WriteElement(result, ref offset, TcapTransactionTags.TransactionId(originating: true), OriginatingTransactionId.Value.Bytes);
         }
 
         if (DestinationTransactionId.HasValue)
         {
-            WriteElement(content, ref offset, TcapTransactionTags.TransactionId(originating: false), DestinationTransactionId.Value.Bytes);
+            WriteElement(result, ref offset, TcapTransactionTags.TransactionId(originating: false), DestinationTransactionId.Value.Bytes);
         }
 
         if (ProviderAbortCause is { } cause)
         {
-            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, false, TcapTransactionTags.ProviderAbortCause), [(byte)cause]);
+            WriteElement(result, ref offset, new TcapBerTag(TcapBerTagClass.Application, false, TcapTransactionTags.ProviderAbortCause), [(byte)cause]);
         }
 
         if (!DialoguePortion.IsEmpty)
         {
-            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.DialoguePortion), DialoguePortion.Span);
+            WriteElement(result, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.DialoguePortion), DialoguePortion.Span);
         }
 
         if (!ComponentPortion.IsEmpty)
         {
-            WriteElement(content, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.ComponentPortion), ComponentPortion.Span);
+            WriteElement(result, ref offset, new TcapBerTag(TcapBerTagClass.Application, constructed: true, TcapTransactionTags.ComponentPortion), ComponentPortion.Span);
         }
 
-        byte[] result = new byte[offset + 4];
-        if (!TcapBer.TryWriteElement(result, TcapTransactionTags.Package(PackageType), content.AsSpan(0, offset), out int written, out string? error))
+        // Fields already occupy their final range; writing the outer header copies the value onto itself.
+        if (!TcapBer.TryWriteElement(result, TcapTransactionTags.Package(PackageType), result.AsSpan(headerLength), out _, out string? error))
         {
             throw new InvalidOperationException(error);
         }
 
-        Array.Resize(ref result, written);
         return result;
     }
 

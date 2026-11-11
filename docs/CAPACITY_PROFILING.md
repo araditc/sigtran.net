@@ -47,3 +47,15 @@ generation fencing, cancellation and buffer ownership. Unit verification uses
 logs/packages are never overwritten. Re-run the full 1,800-second unprofiled
 workload only after short real cross-host trials demonstrate the intended
 effect. A shared-peer run remains non-dedicated even if numeric throughput passes.
+
+## Encoding Changes
+
+The first measured targets are TCAP's per-invoke 2 KiB scratch array and the
+standard ASN.1 writer's repeated buffer growth in MAP/TCAP encoders. Transactions
+now allocate their exact final TLV size. Length boundaries and long-form lengths
+are compared against an independent `AsnWriter`, including values above 2 KiB.
+Small BER writers are borrowed synchronously per thread and reset on return;
+nested calls get distinct writers, failed/unbalanced scopes cannot poison reuse,
+and encodings above 4 KiB are not retained. Encoded output remains a fresh owned
+copy, never pooled memory. No public API or wire format changes are intended.
+See the standard [writer reset contract](https://learn.microsoft.com/en-us/dotnet/api/system.formats.asn1.asnwriter.reset?view=net-10.0).

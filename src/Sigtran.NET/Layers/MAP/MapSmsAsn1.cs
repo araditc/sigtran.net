@@ -1,4 +1,5 @@
 using System.Formats.Asn1;
+using Sigtran.NET.Core.Utilities;
 
 namespace Sigtran.NET.Layers.MAP;
 
@@ -12,7 +13,8 @@ internal static class MapSmsAsn1
 
     internal static byte[] Encode(Action<AsnWriter> fields)
     {
-        AsnWriter writer = new(AsnEncodingRules.BER);
+        using BerWriterScope encoding = BerWriterCache.Rent();
+        AsnWriter writer = encoding.Writer;
         using (writer.PushSequence()) fields(writer);
         return writer.Encode();
     }

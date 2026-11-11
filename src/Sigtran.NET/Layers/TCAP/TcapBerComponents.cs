@@ -1,4 +1,5 @@
 using System.Formats.Asn1;
+using Sigtran.NET.Core.Utilities;
 
 namespace Sigtran.NET.Layers.TCAP;
 
@@ -83,7 +84,8 @@ public sealed class TcapBerInvokeComponent
     /// <returns>The encoded component.</returns>
     public byte[] Encode()
     {
-        AsnWriter writer = new(AsnEncodingRules.BER);
+        using BerWriterScope encoding = BerWriterCache.Rent();
+        AsnWriter writer = encoding.Writer;
         using (writer.PushSequence(InvokeTag))
         {
             writer.WriteInteger(unchecked((sbyte)InvokeId));

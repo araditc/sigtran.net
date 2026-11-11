@@ -26,6 +26,8 @@ The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
 dedicated-peer criterion remain open; historical capacity flags do not close them.
 The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
 CPU/allocation diagnostics and preserves the original baseline while tuning.
+Profile-guided encoding changes retain independently checked BER bytes and
+owned output buffers while removing repeated scratch/writer allocations.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records

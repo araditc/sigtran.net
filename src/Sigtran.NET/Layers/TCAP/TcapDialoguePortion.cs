@@ -1,4 +1,5 @@
 using System.Formats.Asn1;
+using Sigtran.NET.Core.Utilities;
 
 namespace Sigtran.NET.Layers.TCAP;
 
@@ -199,7 +200,8 @@ public sealed class TcapDialoguePortion
     /// <returns>The complete EXTERNAL TLV.</returns>
     public byte[] Encode()
     {
-        AsnWriter fields = new(AsnEncodingRules.BER);
+        using BerWriterScope encoding = BerWriterCache.Rent();
+        AsnWriter fields = encoding.Writer;
         fields.WriteObjectIdentifier(StructuredDialogueOid);
         using (fields.PushSequence(SingleAsn1))
         using (fields.PushSequence(new Asn1Tag(TagClass.Application, Accepted.HasValue ? 1 : 0, true)))
@@ -242,7 +244,8 @@ public sealed class TcapDialoguePortion
     /// <summary>Encodes a Q.773 ABRT issued by the dialogue service user.</summary>
     internal static byte[] EncodeUserAbort()
     {
-        AsnWriter fields = new(AsnEncodingRules.BER);
+        using BerWriterScope encoding = BerWriterCache.Rent();
+        AsnWriter fields = encoding.Writer;
         fields.WriteObjectIdentifier(StructuredDialogueOid);
         using (fields.PushSequence(SingleAsn1))
         using (fields.PushSequence(new Asn1Tag(TagClass.Application, 4, true)))
