@@ -99,3 +99,54 @@ The real Linux SDK suite also passed after making its concurrently invoked
 test event observer thread-safe; focused test selection cannot silently pass
 when it matches no tests. The final benchmark must run without profiler or
 concurrent build activity on the SDK VM.
+
+## Native CPU And Syscalls
+
+A separate 45-second baseline workload was sampled with SDK-PID-only native
+`perf` for ten seconds and `strace -f -c` for three seconds. The retained
+CPU-clock profile lost no samples. Self percentages included syscall entry
+8.79%, task-switch completion 8.29%, user `sched_yield` 6.37% and kernel
+scheduling 5.59%. Some managed symbols remained unresolved; this is not a
+complete managed CPU attribution. The syscall observation recorded 8,756 poll,
+4,202 sendmsg and 4,449 recvmsg calls. Its elapsed-time percentages include
+blocking and profiler overhead and must not be called on-CPU percentages.
+
+Tools were installed/extracted privately on the SDK host. The owned process
+was targeted explicitly; no global perf policy, kernel/sysctl, Kafka process,
+service or host-wide scheduling configuration was changed. Short profiler runs are
+diagnostic only. [Profile metadata and digests](evidence/COMPLETED_MAP_PROFILE_20261111.json)
+identify the retained private originals without publishing stack traces.
+
+## Full New-Policy Result
+
+The [1,800-second 10K-target run](CAPACITY_MEASUREMENT_10K_20261111.md)
+used frozen source `67db5bc7a317a4c1fb27d17280e1b23280110cdb`, no attached
+profiler and no concurrent build on the SDK host. It completed 22,241,973
+in-window transactions with zero failed/unresolved work. All full-run peer
+counts reconciled; 256 drain successes were excluded from TPS. The separately
+bounded PCAP matched 3,556 pairs across the five operations. Cleanup and
+before/after Kafka process identities were verified; this does not prove
+absence of shared-host interference.
+
+| Full-run observation | Historical baseline | New 10K-policy run |
+| --- | ---: | ---: |
+| Average completed TPS | 12,135.85 | 12,356.65 |
+| Minimum one-second TPS | 1,209 | 1,769 |
+| Allocated bytes per success including drain | 16,053 | 10,176 |
+| Average normalized SDK CPU | 82.77% | 80.95% |
+| Peak SDK working set | 108 MiB | 103 MiB |
+| P99 successful latency | 36.9 ms | 38.2 ms |
+
+Allocation per success is 36.6% lower. Throughput and CPU observations are not
+a controlled causal speedup claim: source, time and host contention differ.
+There were 29 measured seconds below 10K, with a maximum successful latency of
+1,044.874 ms. The average exceeds 10K, but the unchanged per-second and
+dedicated-host gates remain open. The raw prefix PCAP cannot explain a stall
+at measured offset 1,781 seconds. Keep host/scheduler, GC and retransmission
+correlation as unresolved diagnosis; do not infer that more hardware alone
+will fix it or continue optimizing toward the deferred 20K target.
+
+Seven reviewable tuning units cover analysis tooling, encoding allocation,
+nonblocking I/O, the signed native ABI fix, the owner-approved policy,
+fail-closed CI checks and this final verified report. Each retains separate
+build/test/pack/API logs before its commit/push. Runtime public API is unchanged.

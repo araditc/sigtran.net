@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "completed-map-capacity",
+  "testedSourceCommit": "67db5bc7a317a4c1fb27d17280e1b23280110cdb",
+  "capacityPolicy": "completed-map-10k-v1",
+  "targetTps": 10000,
+  "executionValid": true,
+  "numericTargetMet": false,
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "reasons": [
+    "completed-tps-below-target",
+    "hosts-not-both-dedicated",
+    "diagnostic-execution"
+  ],
+  "durationSeconds": 1800,
+  "completedTransactions": 22241973,
+  "lateSuccesses": 256,
+  "failedTransactions": 0,
+  "unresolvedTransactions": 0,
+  "completedTps": 12356.651666666667,
+  "minimumOneSecondTps": 1769,
+  "maximumOneSecondTps": 16488,
+  "secondsBelowTarget": 29,
+  "worstSecondOffset": 1781,
+  "latency": {
+    "Count": 22241973,
+    "P50Milliseconds": 20.5,
+    "P95Milliseconds": 32.3,
+    "P99Milliseconds": 38.2,
+    "MaximumMilliseconds": 1044.874438,
+    "ResolutionMilliseconds": 0.1
+  },
+  "sdkResources": {
+    "AllocatedBytes": 226331763392,
+    "Gen0Collections": 11753,
+    "Gen1Collections": 7040,
+    "Gen2Collections": 5,
+    "AverageCpuPercent": 80.95445122111929,
+    "PeakCpuPercent": 99.55291886773402,
+    "PeakWorkingSetMegabytes": 103,
+    "LogicalProcessors": 4,
+    "ServerGc": true
+  },
+  "peerCpuSeconds": 1232.151178,
+  "peerPeakRssKiB": 1920,
+  "wireSample": {
+    "pairedByOperation": [
+      712,
+      711,
+      711,
+      711,
+      711
+    ],
+    "matchedPairs": 3556,
+    "trailingInvokes": 1,
+    "sampleOnly": true,
+    "redecoded": true
+  },
+  "topology": "two-host-shared-peer",
+  "hardware": {
+    "sdk": {
+      "logicalProcessors": 4,
+      "memoryMiB": 15988,
+      "kernel": "5.15.0-191-generic"
+    },
+    "peer": {
+      "logicalProcessors": 4,
+      "memoryMiB": 5924,
+      "kernel": "6.8.0-149-generic"
+    }
+  },
+  "runtime": "10.0.12",
+  "rawArtifactSha256": {
+    "build.log": "e8e56dcccd87c7d14802f9d64065b44c2063eb2097179959449e93b1f7525f04",
+    "capture.log": "c8e97068e45a2bf796bf9879ea01221864430df6e68abf08aaaf0be16b8c88fd",
+    "inventory.json": "701c19cf58862b86808a1de28cdd39372f6f1bab36348bbf14245e605512db4e",
+    "libsctp.so.1": "a80051f32aafd1ca337d9675cbfabf0db36204982cd171ef6256e9a059a5701a",
+    "peer": "ee30929450cb49c28e97e7f79d33d36857e44b18e3163f304e4233319ec00f77",
+    "peer-build.log": "e86d6a8b47bf6f982d77502df6717f479a1c2129c07d762fc1822a6e30260fa6",
+    "peer.json": "475f6a987596258096ee38e9ebaa61cea376f9cd390667a92f8204044e9a2c2e",
+    "peer.log": "e55344247a6f1e9715112a016ce9affca5b064b88d4411ab4316b65a373e6b9b",
+    "result-sdk.json": "87b2195cce5047f389ec0d11d7f1c8da214abd2b71ca56662f0d7deeb67bf554",
+    "sample.pcap": "575ab80f53fd6737ddee0df3cbce59500fa728ca9a43ce0d4715139379c103d4",
+    "sdk.log": "4b8c743d8c407a0be0e98e6a42e7005c23354a5d8c10e0d13e6a888951bd4d64",
+    "source.tar": "4ea11c7fdac1f3ddb5401ea6c541fc00372cf3f12c68289f14c934fc126ab787"
+  }
+}

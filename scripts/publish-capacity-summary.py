@@ -19,6 +19,9 @@ def render(report):
     allocated = resources['AllocatedBytes'] / max(1, report['completedTransactions'] + report['lateSuccesses'])
     text = '\n'.join([
         '# Completed MAP Capacity Measurement', '', f'Status: **{status}**.', '',
+        f"Protocol/accounting execution: **{'PASS' if report['executionValid'] else 'FAIL'}**.",
+        f"Numeric capacity target: **{'MET' if report['numericTargetMet'] else 'NOT MET'}**.",
+        f"Capacity policy: `{report['capacityPolicy']}`.", '',
         f"Tested source: `{report['testedSourceCommit']}`.",
         f"Topology: `{report['topology']}`. One SDK process, one C peer process.", '',
         '| Observation | Measured value |', '| --- | ---: |',
@@ -26,6 +29,8 @@ def render(report):
         f"| In-window completed transactions | {report['completedTransactions']:,} |",
         f"| Average completed TPS | {report['completedTps']:,.2f} |",
         f"| Minimum / maximum one-second TPS | {report['minimumOneSecondTps']:,} / {report['maximumOneSecondTps']:,} |",
+        f"| Seconds below target / measured seconds | {report['secondsBelowTarget']} / {report['durationSeconds']} |",
+        f"| Worst one-second window, zero-based offset | {report['worstSecondOffset']} s |",
         f"| Failed / unresolved | {report['failedTransactions']} / {report['unresolvedTransactions']} |",
         f"| Successes during drain, excluded from TPS | {report['lateSuccesses']} |",
         f"| P50 / P95 / P99 latency | {latency['P50Milliseconds']:.1f} / {latency['P95Milliseconds']:.1f} / {latency['P99Milliseconds']:.1f} ms |",

@@ -12,11 +12,15 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 The [2026-11-11 target decision](CAPACITY_TARGET_DECISION.md) supersedes 20K as
 the current release threshold; new runs declare policy `completed-map-10k-v1`.
 
-**New-candidate qualification remains pending.** The [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md)
-completed 21,844,522 valid transactions with zero failures/unresolved work, but
-averaged 12,135.85 TPS on the authorized shared-peer topology. Implementation
-delivery is not capacity-gate completion. The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_20261111.json)
-retains tested source, original artifact hashes, wire comparison and resources.
+**Capacity remains NOT QUALIFIED.** The [new 10K-target measurement](CAPACITY_MEASUREMENT_10K_20261111.md)
+completed 22,241,973 valid transactions in 1,800 seconds at 12,356.65 average TPS,
+zero failures/unresolved work, P99 38.2 ms and peak working set 103 MiB.
+There were 29 sub-target seconds (minimum 1,769 TPS), and the peer was shared.
+The [new sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_10K_20261111.json)
+binds source `67db5bc7a317a4c1fb27d17280e1b23280110cdb`, original artifact
+hashes, full peer/SDK counters and 3,556 independently re-decoded wire pairs.
+The [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md) and its
+[JSON](evidence/COMPLETED_MAP_CAPACITY_20261111.json) remain unchanged.
 
 ## Ten Units
 
@@ -31,7 +35,7 @@ retains tested source, original artifact hashes, wire comparison and resources.
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
 | 9 | Real Linux execution and mismatch correction | Two-host smoke verified; explicit lab GC/timeout/capture/cleanup corrections |
-| 10 | Final evidence, CI and remaining-gate report | Implemented; real 1800-second evidence retained; target remains NOT QUALIFIED |
+| 10 | Final evidence, CI and remaining-gate report | Implemented; original and new-policy 1800-second evidence retained separately; capacity remains NOT QUALIFIED |
 
 Each unit runs build, SDK/qualification tests, public API compatibility and
 pack before its own commit/push. Names in runtime code describe the domain.
@@ -134,6 +138,10 @@ stack dialogue counts and peer per-operation counts must reconcile. A qualifying
 average cannot mask a low second. Source mismatch, changed Kafka process
 identities or conflicting pass flags fail verification. The resulting report
 separates execution correctness, numeric target and dedicated-host eligibility.
+Public output also exposes `secondsBelowTarget` and the zero-based
+`worstSecondOffset`; exactly 10,000 completions satisfies a window, and the
+first occurrence identifies a tied minimum. A high average is not a numeric
+pass when any complete one-second window is below the declared target.
 It is not a signed release envelope and never promotes stable by itself.
 
 ## Initial Live Observations
@@ -207,20 +215,20 @@ Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
 ## Remaining Work Within This Phase
 
 The owner-approved current target is 10K, with 20K deferred to future work.
-The prior configuration's worst one-second dip (1,209 TPS) needs separate
-investigation. The 1,051.948 ms maximum latency is not hidden by a 36.9 ms P99.
-About 16,053 allocated bytes per successful transaction and the exploratory
-user/kernel split identify investigation areas, not a proven root cause.
+The [profiling continuation](CAPACITY_PROFILING.md) collected separate managed
+allocation and native CPU/syscall diagnostics, removed repeated encoding
+allocations and corrected nonblocking SCTP error handling. The new full run
+allocated about 10,176 bytes per successful transaction, versus 16,053 in the
+original full run (36.6% lower). This comparison does not isolate a causal TPS
+gain. A 38.2 ms P99 does not hide the 1,044.874 ms maximum or 29 sub-target seconds.
 
-1. Run a separate bounded CPU/allocation profile of this exact five-operation
-   workload. Correlate kernel/syscall/wakeup cost, managed allocation sites,
-   queue scheduling, SCTP retransmission counters and hypervisor contention.
-   Profiler overhead must not be mixed into an unprofiled qualification claim.
-2. Optimize only demonstrated hot paths, preserving buffer ownership, dialogue
-   correlation, generation-fenced sends, cancellation and independent wire
-   validation. Increasing concurrency alone did not close the observed gap.
-3. Repeat the approved 10K/30-minute target on two genuinely dedicated hosts. Shared
-   diagnostics remain useful but cannot replace that acceptance criterion.
+1. Correlate remaining stalls with runtime scheduling/GC, SCTP retransmission
+   counters and host contention in a separate diagnostic run. A bounded prefix
+   PCAP does not cover later stalls, and sampled CPU/allocation attribution does
+   not establish their cause. Do not blame only hardware or only SDK code.
+2. Repeat the unchanged 10K/per-second/30-minute criterion on two genuinely
+   dedicated hosts, retaining resources, full counters and source-bound wire
+   evidence. Shared diagnostics cannot replace that acceptance criterion.
 
 Do not close Phase 61, promote stable, or begin claiming an operator SLA from
 this result. Phase 62's 72-hour resilience criterion remains separate.

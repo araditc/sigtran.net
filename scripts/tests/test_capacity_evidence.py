@@ -46,12 +46,18 @@ def fixture():
 
 class EvidenceTests(unittest.TestCase):
     def test_contract_accepts_only_complete_declared_target(self):
-        self.assertTrue(module.evaluate(*fixture())['qualificationPassed'])
+        report = module.evaluate(*fixture())
+        self.assertTrue(report['qualificationPassed'])
+        self.assertEqual(report['secondsBelowTarget'], 0)
+        self.assertEqual(report['worstSecondOffset'], 0)
 
     def test_shared_kafka_host_never_becomes_dedicated_evidence(self):
         values = list(fixture())
         values[2]['sharedPeer'] = True
-        self.assertFalse(module.evaluate(*values)['qualificationPassed'])
+        report = module.evaluate(*values)
+        self.assertTrue(report['executionValid'])
+        self.assertTrue(report['numericTargetMet'])
+        self.assertFalse(report['qualificationPassed'])
 
     def test_average_does_not_hide_a_stalled_second(self):
         values = list(fixture())
@@ -61,6 +67,17 @@ class EvidenceTests(unittest.TestCase):
         result = module.evaluate(*values)
         self.assertEqual(result['completedTps'], 10000)
         self.assertFalse(result['qualificationPassed'])
+        self.assertEqual(result['secondsBelowTarget'], 1)
+        self.assertEqual(result['worstSecondOffset'], 0)
+
+    def test_window_diagnostics_keep_exact_threshold_and_first_tied_minimum(self):
+        values = list(fixture())
+        windows = values[0]['Measured']['Counts']['CompletedPerSecond']
+        windows[3], windows[4], windows[5] = 9999, 9999, 10002
+        values[0]['NumericTargetMet'] = False
+        result = module.evaluate(*values)
+        self.assertEqual(result['secondsBelowTarget'], 2)
+        self.assertEqual(result['worstSecondOffset'], 3)
 
     def test_missing_and_tampered_completions_are_rejected(self):
         values = list(fixture())
@@ -105,8 +122,17 @@ class EvidenceTests(unittest.TestCase):
         report = module.evaluate(*values)
         text = summary.render(report)
         self.assertIn('NOT QUALIFIED', text)
+        self.assertIn('Protocol/accounting execution: **PASS**', text)
+        self.assertIn('Numeric capacity target: **MET**', text)
+        self.assertIn('completed-map-10k-v1', text)
+        self.assertIn('Seconds below target / measured seconds | 0 / 1800', text)
         self.assertIn('hosts-not-both-dedicated', text)
         self.assertIn('not proof', text)
+        values[0]['Measured']['Counts']['CompletedPerSecond'][:2] = [9999, 10001]
+        values[0]['NumericTargetMet'] = False
+        text = summary.render(module.evaluate(*values))
+        self.assertIn('Numeric capacity target: **NOT MET**', text)
+        self.assertIn('Seconds below target / measured seconds | 1 / 1800', text)
 
     def test_duplicate_properties_and_nonfinite_json_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

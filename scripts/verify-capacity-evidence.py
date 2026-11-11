@@ -200,7 +200,10 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
             'completedTransactions': measured['measured'], 'lateSuccesses': measured['late'],
             'failedTransactions': measured['failed'], 'unresolvedTransactions': 0,
             'completedTps': measured['measured'] / seconds, 'minimumOneSecondTps': min(measured['windows']),
-            'maximumOneSecondTps': max(measured['windows']), 'latency': sdk['Measured']['Latency'],
+            'maximumOneSecondTps': max(measured['windows']),
+            'secondsBelowTarget': sum(count < TARGET_TPS for count in measured['windows']),
+            'worstSecondOffset': measured['windows'].index(min(measured['windows'])),
+            'latency': sdk['Measured']['Latency'],
             'sdkResources': sdk['Measured']['Resources'], 'peerCpuSeconds': peer['cpuSeconds'],
             'peerPeakRssKiB': peer['peakRssKiB'], 'wireSample': sample,
             'topology': 'two-host-shared-peer' if inventory['sharedPeer'] else 'two-host-declared-dedicated'}

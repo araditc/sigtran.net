@@ -35,12 +35,20 @@ behavioral tests, standard code documentation, docs/README updates,
 build/test/pack, and its own commit/push. Runtime names describe the domain,
 never phase numbers or commercial-readiness terminology.
 
-Phase 61's [real 30-minute measurement](CAPACITY_MEASUREMENT_20261111.md)
-is retained, but the capacity gate is **not qualified**: 12,135.85 completed TPS
-and a shared peer do not meet the fixed target. Ten delivered implementation
-units must not be interpreted as an accepted capacity qualification.
+Phase 61's [historical 20K-target measurement](CAPACITY_MEASUREMENT_20261111.md)
+is retained: 12,135.85 average completed TPS, minimum one-second TPS 1,209 and
+a shared peer did not qualify that run. Its average exceeds the new 10K target,
+but does not retroactively qualify the candidate, per-second windows or hosts.
+Ten delivered implementation units do not constitute capacity qualification.
 On 2026-11-11 the owner [revised the current target to 10K](CAPACITY_TARGET_DECISION.md).
 New-candidate evidence is required; the original 20K result above is historical.
+
+The [new 10K-target measurement](CAPACITY_MEASUREMENT_10K_20261111.md) tested
+`67db5bc7a317a4c1fb27d17280e1b23280110cdb` for the full 1,800 seconds without
+a profiler. All 22,241,973 in-window transactions succeeded, averaging
+12,356.65 TPS, but 29 seconds were below 10K and the peer was shared.
+Phase 61 remains open for per-second stability and dedicated-host qualification;
+20K optimization is not a current blocker. Phases 62-65 remain distinct.
 
 The initial estimate is 12-20 engineering person-weeks, excluding external
 access and acceptance waiting time; phase 56 records the actual dependencies.

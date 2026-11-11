@@ -21,15 +21,20 @@ Fixed-memory closed-loop workers invoke all five correlated MAP SMS operations
 over native SCTP/M3UA/SCCP/TCAP. Source/artifact hashes, independent C peer
 counts, re-decoded PCAP, per-second completions, drain and resource observations
 must agree. Shared-peer runs cannot qualify dedicated-host capacity.
-The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
-21,844,522 valid transactions with zero failures/unresolved work, averaging
-12,135.85 TPS under the historical 20K target. **New-candidate qualification is
-pending** under policy `completed-map-10k-v1`; the old report is not regraded.
+The [new 10K-target, 30-minute result](docs/CAPACITY_MEASUREMENT_10K_20261111.md)
+completed 22,241,973 valid transactions at 12,356.65 average TPS, with zero
+failed/unresolved work. **Capacity is NOT QUALIFIED:** 29 one-second windows
+were below 10K (minimum 1,769), and the peer host was shared. The independent
+wire sample matched 3,556 complete pairs. The
+[historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) is unchanged.
 20K is future optimization, not the current v1 threshold. The dedicated-host
 criterion and all other release gates remain mandatory.
 Stable CI verifies named current blockers rather than a historical blocker count.
 The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
 CPU/allocation diagnostics and preserves the original baseline while tuning.
+Measured process-wide allocation fell from about 16,053 to 10,176 bytes per
+successful transaction (36.6% lower); shared-host observations do not establish
+a causal TPS improvement or explain the one-second stalls.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining
@@ -119,7 +124,7 @@ SIGTRAN.NET is currently in a **public release-candidate** track.
 - License: Apache-2.0.
 - GitHub prerelease/tag: `v1.0.0-rc.2` is published and points to the approved RC source commit.
 
-The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, independent RFC 4165 M2PA traffic, cross-implementation full-stack MAP SMS traffic, the numeric 20K TPS capacity gate, RC publication, package restore, operations-host smoke execution, and performance/resilience runs.
+The SDK has retained evidence for native Linux SCTP, external SCTP/M3UA traffic, independent RFC 4165 M2PA traffic, cross-implementation full-stack MAP SMS traffic, historical aggregate capacity, RC publication, package restore, operations-host smoke execution, and performance/resilience runs. Historical capacity does not qualify the current completed-MAP profile.
 
 It is **not yet a fully stable operator-grade SS7/SIGTRAN stack**. Stable production claims remain gated on operator/vendor-profile interoperability evidence, representative multi-host long-duration soak/failover evidence, representative Kubernetes SCTP validation, organization-trusted signing, and the protected stable release decision/execution.
 
@@ -184,7 +189,7 @@ The current engineering track focuses on:
 | SCCP | Stateful connectionless service for UDT/XUDT/LUDT, global-title translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Operator/vendor profile evidence remains; connection-oriented SCCP is post-1.0. |
 | TCAP | Dialogue manager for transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, timeout scanning, cleanup, snapshots, and metrics. Operator/vendor profile evidence remains. |
 | MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. Broader MAP is post-1.0. |
-| Performance | The numeric 20K TPS gate is closed by controlled two-association evidence; representative multi-host long-duration soak/failover remains a separate stable blocker. |
+| Performance | Current v1 target: 10K completed MAP TPS for 30 minutes. Shared-peer measurement averages 12,356.65 TPS but has 29 sub-target seconds; current capacity qualification and long-duration soak/failover remain open. Historical two-association evidence retains its original scope. |
 | Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. Representative Kubernetes SCTP/CNI qualification remains open. |
 
 ---

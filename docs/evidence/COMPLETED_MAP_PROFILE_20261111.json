@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "completed-map-profiling-diagnostic",
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "baselineSourceCommit": "a34f7e013b638999987283ff6b933294f4bbf28f",
+  "managedTrace": {
+    "tool": "dotnet-trace 10.0.750501",
+    "parser": "Microsoft.Diagnostics.Tracing.TraceEvent 3.2.8",
+    "sampleSeconds": 15,
+    "allocationTicks": 14512,
+    "weightedEstimatedBytes": 1546886632,
+    "eventsLost": 0,
+    "leadingByteArraySites": [
+      { "method": "TcapTransactionMessage.Encode", "weightedEstimatedBytes": 230879280 },
+      { "method": "TcapDialoguePortion.Encode", "weightedEstimatedBytes": 107019776 },
+      { "method": "TcapBerInvokeComponent.Encode", "weightedEstimatedBytes": 105847552 }
+    ],
+    "caveat": "Allocation ticks are sampled and weighted; managed thread-time samples include waits and are not on-CPU percentages."
+  },
+  "nativeCpuTrace": {
+    "workloadSeconds": 45,
+    "sampleSeconds": 10,
+    "eventsLost": 0,
+    "symbolSelfPercent": {
+      "syscall_enter_from_user_mode": 8.79,
+      "finish_task_switch.isra.0": 8.29,
+      "__sched_yield": 6.37,
+      "__schedule": 5.59
+    },
+    "caveat": "Separate diagnostic CPU-clock sampling; unresolved managed symbols prevent complete managed attribution."
+  },
+  "syscallObservation": {
+    "sampleSeconds": 3,
+    "pollCalls": 8756,
+    "sendmsgCalls": 4202,
+    "recvmsgCalls": 4449,
+    "caveat": "Elapsed syscall time includes blocking and profiling overhead; not on-CPU percentages."
+  },
+  "rawArtifactSha256": {
+    "baseline.nettrace": "0a3359b93f7bc4ec8056d443db3e348cee757d693e313b49bb80a6563b3bb1a1",
+    "allocations-sites.json": "a9a25d8eb8a29781cde09a7f7faf87d098b0ecdbe4d0336285c651dcf6a7acb3",
+    "cpu.perf": "9c416209c1cb30c9d0d1c0ecd5ef7a19ad4c80327c1a2a1746cfd29f36692e52",
+    "cpu-report.txt": "5c6faf422108e6649ada8f3df997f838fc798aba47fc8fbf3cfe1e56abd4ffd4",
+    "syscalls.txt": "8195585ddd6c22ec78ae8728f1905a2d0ac3a5e37405ff8eb1633ed68a3f1d6e"
+  },
+  "limitations": "Protected raw originals remain required. This diagnostic summary is not a signed release envelope, a capacity qualification, or proof of the remaining one-second stall cause."
+}

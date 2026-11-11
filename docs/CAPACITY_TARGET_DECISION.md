@@ -22,3 +22,9 @@ The legacy stable manifest also reopens capacity instead of inheriting its old
 aggregate pass. CI checks the actual named failed gates and their blockers,
 not the former hard-coded count of four historical gaps. Missing evidence still
 produces NO-GO; changing the threshold never substitutes for a measured run.
+
+The [first new-policy 30-minute run](CAPACITY_MEASUREMENT_10K_20261111.md)
+exceeded the average target at 12,356.65 completed TPS with zero failures, but
+did not qualify: 29 one-second windows were below 10K and the peer was shared.
+Reducing the target does not silently replace the per-second criterion with
+an average-only criterion. The latter would require a separate owner decision.
