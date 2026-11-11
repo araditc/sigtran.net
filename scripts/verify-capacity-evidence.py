@@ -29,8 +29,35 @@ def integers(values, length):
     return values
 
 
+def read_json(path):
+    """Reject ambiguous JSON and bound metadata before decoding untrusted evidence."""
+    require(path.stat().st_size <= 2 * 1024 * 1024, 'Evidence metadata exceeds the bounded size')
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, 'Duplicate JSON property')
+            result[key] = value
+        return result
+    def invalid_constant(value):
+        raise ValueError('Non-finite JSON number: ' + value)
+    return json.loads(path.read_text(), object_pairs_hook=unique, parse_constant=invalid_constant)
+
+
+def utc_time(value):
+    """Read .NET's seven fractional digits on Python 3.10 without changing original evidence bytes."""
+    match = re.fullmatch(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,7}))?(Z|[+-]\d{2}:\d{2})', value)
+    require(match is not None, 'Invalid RFC3339 timestamp')
+    # datetime has microsecond resolution; discard only the unrepresentable 100 ns digit.
+    fraction = ((match[2] or '') + '000000')[:6]
+    zone = '+00:00' if match[3] == 'Z' else match[3]
+    result = datetime.datetime.fromisoformat(match[1] + '.' + fraction + zone)
+    require(result.utcoffset() == datetime.timedelta(0), 'Evidence timestamp must be UTC')
+    return result
+
+
 def stage(value, seconds):
     """A completion outside measurement remains terminal, but never raises measured TPS."""
+    require(type(seconds) is int and 1 <= seconds <= 1800, 'Invalid measured stage duration')
     counts = value['Counts']
     started = integers(counts['StartedByOperation'], 5)
     measured = integers(counts['MeasuredByOperation'], 5)
@@ -54,6 +81,8 @@ def stage(value, seconds):
                 for key in ('AllocatedBytes', 'Gen0Collections', 'Gen1Collections', 'Gen2Collections',
                             'AverageCpuPercent', 'PeakCpuPercent', 'PeakWorkingSetMegabytes')),
             'Invalid process resource observations')
+    require(type(resources['ServerGc']) is bool and type(resources['LogicalProcessors']) is int
+            and resources['LogicalProcessors'] > 0, 'Missing observed runtime mode/resources')
     return {'started': started, 'measured': sum(measured), 'late': sum(late),
             'failed': sum(outcomes[1:]), 'windows': windows}
 
@@ -144,8 +173,8 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
     require(inventory['sdkExitCode'] == inventory['peerExitCode'] == inventory['captureExitCode'] == 0
             and inventory['completed'] is True and inventory.get('cleanupVerified') is True,
             'Child execution or owned-process cleanup did not complete cleanly')
-    start = datetime.datetime.fromisoformat(sdk['StartedAtUtc'])
-    finish = datetime.datetime.fromisoformat(sdk['FinishedAtUtc'])
+    start = utc_time(sdk['StartedAtUtc'])
+    finish = utc_time(sdk['FinishedAtUtc'])
     require(start.utcoffset() == finish.utcoffset() == datetime.timedelta(0)
             and seconds <= (finish - start).total_seconds() <= seconds + 60,
             'Wall-clock interval disagrees with monotonic duration')
@@ -170,7 +199,7 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
             'maximumOneSecondTps': max(measured['windows']), 'latency': sdk['Measured']['Latency'],
             'sdkResources': sdk['Measured']['Resources'], 'peerCpuSeconds': peer['cpuSeconds'],
             'peerPeakRssKiB': peer['peakRssKiB'], 'wireSample': sample,
-            'topology': 'two-vm-shared-peer' if inventory['sharedPeer'] else 'two-vm-declared-dedicated'}
+            'topology': 'two-host-shared-peer' if inventory['sharedPeer'] else 'two-host-declared-dedicated'}
 
 
 def digest(path):
@@ -184,7 +213,7 @@ def digest(path):
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
-    hashes = json.loads((root / 'sha256.json').read_text())
+    hashes = read_json(root / 'sha256.json')
     required = {'source.tar', 'inventory.json', 'result-sdk.json', 'peer.json', 'sample.pcap', 'capture.log', 'peer', 'libsctp.so.1'}
     require(required <= hashes.keys(), 'Missing required raw artifacts')
     for name, expected in hashes.items():
@@ -193,9 +222,9 @@ def verify(root, expected_source):
         require(digest(path) == expected, 'Artifact hash mismatch: ' + name)
     with tarfile.open(root / 'source.tar') as archive:
         require(archive.pax_headers.get('comment') == expected_source, 'Source archive commit differs')
-    inventory = json.loads((root / 'inventory.json').read_text())
-    sdk = json.loads((root / 'result-sdk.json').read_text())
-    peer = json.loads((root / 'peer.json').read_text())
+    inventory = read_json(root / 'inventory.json')
+    sdk = read_json(root / 'result-sdk.json')
+    peer = read_json(root / 'peer.json')
     log = (root / 'capture.log').read_text()
     require(re.search(r"Packets received/dropped on interface '[^']+': [0-9]+/0 \(pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0\)", log),
             'Missing capture counters or packet drops')
@@ -206,6 +235,21 @@ def verify(root, expected_source):
         args += ['-e', field]
     table = subprocess.run(args, capture_output=True, text=True, check=True, timeout=60).stdout
     result = evaluate(sdk, peer, inventory, verify_sample(table, port), expected_source)
+    result['hardware'] = {name: {'logicalProcessors': inventory['before'][name]['processors'],
+                                'memoryMiB': inventory['before'][name]['memoryKiB']['MemTotal'] // 1024,
+                                'kernel': inventory['before'][name]['kernel']}
+                          for name in ('sdk', 'peer')}
+    result['runtime'] = sdk['Runtime']
+    if 'cpu-sample.json' in hashes:
+        sample = read_json(root / 'cpu-sample.json')
+        require(sample.get('sampleOnly') is True and .1 <= sample['sampleSeconds'] <= 6
+                and all(type(sample[key]) in (int, float) and math.isfinite(sample[key]) and sample[key] >= 0
+                        for key in ('sdkUserCpuSeconds', 'sdkKernelCpuSeconds', 'hostReportedStealPercent')),
+                'Invalid exploratory CPU observation')
+        when = utc_time(sample['capturedAtUtc'])
+        require(utc_time(sdk['StartedAtUtc']) <= when
+                <= utc_time(sdk['FinishedAtUtc']), 'CPU observation is outside the measured run')
+        result['cpuSample'] = sample
     result['rawArtifactSha256'] = hashes
     return result
 

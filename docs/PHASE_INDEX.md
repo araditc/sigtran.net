@@ -65,6 +65,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 58 | Native SCTP multihoming and live path failover | [Native SCTP Multihoming](NATIVE_SCTP_MULTIHOMING.md), [Retained Evidence](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json) | Ten units complete; isolated Linux same-association path loss verified; separate-host and stable qualification remain open |
 | 59 | MTP3 and M2PA runtime | [MTP3](MTP3.md), [Retained Evidence](evidence/MTP3_M2PA_20261110.json) | Ten units complete for the ITU endpoint profile; independent SCCP wire traffic and SDK-to-SDK native changeover/changeback verified |
 | 60 | End-to-end reference service and external interoperability | [Reference Service](REFERENCE_SERVICE.md), [Retained Evidence](evidence/REFERENCE_SERVICE_20261110.json) | Ten units complete for the isolated M3UA ITU MAP SMS profile; independent C MAP endpoint and maintained STP transit verified |
+| 61 | Completed MAP transaction capacity | [Capacity Qualification](CAPACITY_QUALIFICATION.md), [Real Measurement](CAPACITY_MEASUREMENT_20261111.md) | Ten implementation units delivered; 21,844,522 successful transactions in 1800 seconds; 12,135.85 TPS on shared-peer topology, capacity NOT QUALIFIED |
 
 ## Current Production Gate
 
@@ -74,12 +75,15 @@ preserves the historical Phase 56 closure and admitted Phase 57/HA work.
 All ten tooling units are delivered; [the exit summary](PHASE56_BASELINE_SUMMARY.md)
 records the bounded two-host smoke and the mandatory candidate gate.
 
-The retained verification catalog reports native Linux SCTP, external SCTP peer
-traffic, independent M3UA, independent M2PA, repository-profile full-stack MAP
-SMS traffic, RC SBOM/provenance/API-baseline evidence, and the closed numeric
-20K TPS capacity gate. Stable product readiness remains blocked on four required
-gates: operator/vendor profile acceptance, representative multi-host
-long-duration soak/failover, representative Kubernetes SCTP deployment, and an
-organization-trusted stable signing identity. Protected stable publication may
-execute only after those gates are retained as passing evidence and the machine
-evaluator returns `GO`.
+The retained catalog includes native SCTP, independent protocol traffic,
+repository-profile MAP SMS and historical RC/supply-chain evidence. Historical
+numeric capacity passes keep their original workload and topology boundaries;
+they do not close Phase 61's stricter completed-MAP, 30-minute, dedicated-host
+target. A shared-peer diagnostic cannot close that gate.
+
+Stable readiness is determined by the mandatory exact-candidate gates in
+`eng/qualification/release-policy.json`, not a historical count of four gaps.
+Capacity, long-run resilience, representative Kubernetes deployment, operator
+acceptance and final candidate release evidence retain their distinct acceptance
+criteria in phases 61-65. Protected stable publication requires current,
+source/package/scope-bound evidence and a machine-evaluated `GO`.

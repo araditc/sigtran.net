@@ -35,6 +35,11 @@ behavioral tests, standard code documentation, docs/README updates,
 build/test/pack, and its own commit/push. Runtime names describe the domain,
 never phase numbers or commercial-readiness terminology.
 
+Phase 61's [real 30-minute measurement](CAPACITY_MEASUREMENT_20261111.md)
+is retained, but the capacity gate is **not qualified**: 12,135.85 completed TPS
+and a shared peer do not meet the fixed target. Ten delivered implementation
+units must not be interpreted as an accepted capacity qualification.
+
 The initial estimate is 12-20 engineering person-weeks, excluding external
 access and acceptance waiting time; phase 56 records the actual dependencies.
 No fixed completion date is implied by that estimate.

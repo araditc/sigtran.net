@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "completed-map-capacity",
+  "testedSourceCommit": "382336cb2668ea70ce0c7cb94dcc2f9e15e5bcbb",
+  "executionValid": true,
+  "numericTargetMet": false,
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "reasons": [
+    "completed-tps-below-target",
+    "hosts-not-both-dedicated",
+    "diagnostic-execution"
+  ],
+  "durationSeconds": 1800,
+  "completedTransactions": 21844522,
+  "lateSuccesses": 256,
+  "failedTransactions": 0,
+  "unresolvedTransactions": 0,
+  "completedTps": 12135.845555555556,
+  "minimumOneSecondTps": 1209,
+  "maximumOneSecondTps": 16402,
+  "latency": {
+    "Count": 21844522,
+    "P50Milliseconds": 21.1,
+    "P95Milliseconds": 30.8,
+    "P99Milliseconds": 36.9,
+    "MaximumMilliseconds": 1051.94756,
+    "ResolutionMilliseconds": 0.1
+  },
+  "sdkResources": {
+    "AllocatedBytes": 350663578104,
+    "Gen0Collections": 16256,
+    "Gen1Collections": 7138,
+    "Gen2Collections": 3,
+    "AverageCpuPercent": 82.77285653156794,
+    "PeakCpuPercent": 99.53243929306043,
+    "PeakWorkingSetMegabytes": 108,
+    "LogicalProcessors": 4,
+    "ServerGc": true
+  },
+  "peerCpuSeconds": 1204.510361,
+  "peerPeakRssKiB": 1920,
+  "wireSample": {
+    "pairedByOperation": [
+      703,
+      703,
+      703,
+      703,
+      702
+    ],
+    "matchedPairs": 3514,
+    "trailingInvokes": 1,
+    "sampleOnly": true,
+    "redecoded": true
+  },
+  "topology": "two-host-shared-peer",
+  "hardware": {
+    "sdk": {
+      "logicalProcessors": 4,
+      "memoryMiB": 15988,
+      "kernel": "5.15.0-191-generic"
+    },
+    "peer": {
+      "logicalProcessors": 4,
+      "memoryMiB": 5924,
+      "kernel": "6.8.0-149-generic"
+    }
+  },
+  "runtime": "10.0.12",
+  "cpuSample": {
+    "sampleSeconds": 2.002322651911527,
+    "sdkUserCpuSeconds": 2.77,
+    "sdkKernelCpuSeconds": 3.93,
+    "hostReportedStealPercent": 0.0,
+    "sampleOnly": true,
+    "capturedAtUtc": "2026-11-11T08:36:07.390348+00:00",
+    "cpuModel": "Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz"
+  },
+  "rawArtifactSha256": {
+    "build.log": "cbb1f82471bc549cbad351add85f41d0e1e4ff0c61263433d74f9e248b1411f3",
+    "capture.log": "cd42fabf5326c9c766d29f54f17af42336d3ff8775bd6389b3a46c2c64e45ada",
+    "cpu-sample.json": "8f3cd56ebf28fffa228ec86dd6777413df4172a4cabf51038b04db22dfb0f0b9",
+    "cpu-sampler.py": "931eeb80f0661ef8f1ef4fe0a7ce4d047756be68a270c652fe8e3bee02924c4e",
+    "inventory.json": "10eedc796e44b90ee2262ebcc0a2e35876ab874ab90032c6c07b233b3609ae90",
+    "libsctp.so.1": "a80051f32aafd1ca337d9675cbfabf0db36204982cd171ef6256e9a059a5701a",
+    "peer": "ee30929450cb49c28e97e7f79d33d36857e44b18e3163f304e4233319ec00f77",
+    "peer-build.log": "e86d6a8b47bf6f982d77502df6717f479a1c2129c07d762fc1822a6e30260fa6",
+    "peer.json": "8ec9eea5e90bedfe7f118c23048de5b4d969fdb59f121a75bee92d324e2f64e9",
+    "peer.log": "f34474983cb722ec84e71409f0d6e8672be52bfafe5b2190938e416f20f2e119",
+    "result-sdk.json": "b90f631ad9ce851683acc8395256fb1dcf1b684a65f552dc29a6851e1b4733a3",
+    "sample.pcap": "2aa7c2d6069aa9d441782bd4d14a16c29a0965fea47f73e42b04f05a45965d50",
+    "sdk.log": "73dd4fd0b97aea8e53321bad93363597530e690bf7c9f5675b645849081e37c7",
+    "source.tar": "f65654d62269d68b810df0acec0dfecf2ff01e68163ed89d2b2585f34769c644"
+  }
+}

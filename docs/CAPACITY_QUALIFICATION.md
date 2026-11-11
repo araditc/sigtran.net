@@ -1,6 +1,6 @@
 # Completed MAP Transaction Capacity
 
-Phase 61 qualifies one Linux SDK process, native SCTP/M3UA, connectionless
+Phase 61 evaluates one Linux SDK process, native SCTP/M3UA, connectionless
 SCCP, TCAP dialogue negotiation and the five typed MAP SMS operations.
 The fixed target is 20,000 successful **completed** transactions per second
 for 1,800 consecutive measured seconds on two declared dedicated hosts.
@@ -8,6 +8,12 @@ That is at least 36,000,000 valid correlated results, not queue admissions,
 SCTP sends, M3UA echoes or HTTP requests. The workload is an equal round-robin
 mix of SRI-SM, MO-ForwardSM, MT-ForwardSM, ReportSMDeliveryStatus and
 AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
+
+**Current result: NOT QUALIFIED.** The [verified 30-minute measurement](CAPACITY_MEASUREMENT_20261111.md)
+completed 21,844,522 valid transactions with zero failures/unresolved work, but
+averaged 12,135.85 TPS on the authorized shared-peer topology. Implementation
+delivery is not capacity-gate completion. The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_20261111.json)
+retains tested source, original artifact hashes, wire comparison and resources.
 
 ## Ten Units
 
@@ -22,7 +28,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
 | 9 | Real Linux execution and mismatch correction | Two-host smoke verified; explicit lab GC/timeout/capture/cleanup corrections |
-| 10 | Final evidence, CI and remaining-gate report | Pending |
+| 10 | Final evidence, CI and remaining-gate report | Implemented; real 1800-second evidence retained; target remains NOT QUALIFIED |
 
 Each unit runs build, SDK/qualification tests, public API compatibility and
 pack before its own commit/push. Names in runtime code describe the domain.
@@ -106,8 +112,14 @@ compared; this does not assert absence of performance interference.
 
 ## Evidence Verification
 
-On Linux with TShark, run `python3 scripts/verify-capacity-evidence.py RUN_ROOT
---source-commit FULL_TESTED_COMMIT`. The verifier rehashes original artifacts,
+On Linux with TShark, run:
+
+```bash
+python3 scripts/verify-capacity-evidence.py RUN_ROOT \
+  --source-commit FULL_TESTED_COMMIT
+```
+
+The verifier rehashes original artifacts,
 checks the git archive source ID, re-decodes the PCAP and independently matches
 transaction/invoke identities, dialogue contexts, stream/PPID and the five MAP
 results. A bounded prefix sample may end with unpaired invokes; only complete
@@ -139,3 +151,73 @@ and [server/workstation discussion](https://learn.microsoft.com/en-us/dotnet/sta
 Every MAP operation explicitly uses a five-second timeout within the ten-second
 drain budget. Capture must open before load starts, cleanup must be verified,
 and UTC duration must corroborate the monotonic interval.
+
+## Reproduction And Publication
+
+Use a clean committed checkout and pre-authorized pinned SSH identities.
+The SDK VM needs .NET 10, GCC/lksctp headers, Python, iproute2, dumpcap with
+interface permission and TShark. The peer needs Linux kernel SCTP, Python,
+iproute2, timeout, nice and taskset; it does not need .NET, GCC or root access.
+The transferred lksctp binary/library must be ABI-compatible with its libc.
+
+```bash
+python3 scripts/run-capacity-qualification.py \
+  --sdk-host SDK_IPV4 --peer-host PEER_IPV4 --user LAB_USER \
+  --sdk-key /private/sdk-key --peer-key /private/peer-key \
+  --dedicated-hosts --duration 1800 --concurrency 256 --peer-cpu 3 \
+  --output /private/new-capacity-run
+```
+
+Choose an available peer CPU index from inventory. An explicitly approved
+shared-peer measurement must use `--shared-peer`, never `--dedicated-hosts`
+as a substitute for actually dedicating the host. Short diagnostics additionally
+require `--diagnostic --duration N`. Keep credentials out of shell history and
+logs; the controller also accepts a process-only peer password environment.
+The archive and output roots are unique and retained, not recursively removed.
+
+Generate public summaries from original protected raw evidence on Linux:
+
+```bash
+python3 scripts/publish-capacity-summary.py /private/run \
+  --source-commit FULL_TESTED_COMMIT \
+  --json-output /review/new-capacity-summary.json \
+  --markdown-output /review/new-capacity-summary.md
+```
+
+Publication re-verifies hashes, counters and wire data first. Both output files
+are created exclusively; a saved PASS flag is not accepted as input. Public
+output contains counts and digests, not topology addresses, SSH identities,
+subscriber traces or private directories. Raw evidence must remain accessible
+to an authorized reviewer; a public hash without retained bytes is not sufficient.
+Queue maxima are one-second sampled observations, not exact kernel/high-water
+marks. This capacity run does not establish 72-hour leak freedom or resilience.
+
+For exploratory CPU attribution, `sample-capacity-process.py RUN_ROOT` reads a
+two-second procfs sample from the run-owned capacity child. It does not attach
+a profiler or mutate process settings. User/kernel seconds are process CPU
+across all threads, not percentages of one core. The reported host steal
+counter is platform-dependent; zero does not exonerate a hypervisor or prove
+dedicated physical resources. A short sample cannot identify which syscall,
+allocation site or scheduling decision caused the full-run throughput limit.
+Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
+
+## Remaining Work Within This Phase
+
+The target is unchanged. Average throughput needs about 65% improvement on the
+observed configuration, and the worst one-second dip (1,209 TPS) needs separate
+investigation. The 1,051.948 ms maximum latency is not hidden by a 36.9 ms P99.
+About 16,053 allocated bytes per successful transaction and the exploratory
+user/kernel split identify investigation areas, not a proven root cause.
+
+1. Run a separate bounded CPU/allocation profile of this exact five-operation
+   workload. Correlate kernel/syscall/wakeup cost, managed allocation sites,
+   queue scheduling, SCTP retransmission counters and hypervisor contention.
+   Profiler overhead must not be mixed into an unprofiled qualification claim.
+2. Optimize only demonstrated hot paths, preserving buffer ownership, dialogue
+   correlation, generation-fenced sends, cancellation and independent wire
+   validation. Increasing concurrency alone did not close the observed gap.
+3. Repeat the fixed 30-minute target on two genuinely dedicated hosts. Shared
+   diagnostics remain useful but cannot replace that acceptance criterion.
+
+Do not close Phase 61, promote stable, or begin claiming an operator SLA from
+this result. Phase 62's 72-hour resilience criterion remains separate.

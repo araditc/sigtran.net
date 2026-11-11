@@ -2,7 +2,9 @@
 import copy
 import importlib.util
 import pathlib
+import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('capacity_evidence', pathlib.Path(__file__).resolve().parents[1] / 'verify-capacity-evidence.py')
 module = importlib.util.module_from_spec(spec)
@@ -29,6 +31,8 @@ def fixture():
                WarmupSeconds=10, Warmup=stage(10), Measured=stage(1800), Stack=stack, TargetTps=20000,
                ExecutionPassed=True, NumericTargetMet=True, Diagnostic=False)
     sdk.update(StartedAtUtc='2026-01-01T00:00:00+00:00', FinishedAtUtc='2026-01-01T00:30:00+00:00')
+    for item in (sdk['Warmup'], sdk['Measured']):
+        item['Resources'].update(ServerGc=True, LogicalProcessors=4)
     peer = dict(schemaVersion=1, workload=module.WORKLOAD, passed=True, received=total, responses=total,
                 byOperation=[total // 5] * 5, cpuSeconds=1, peakRssKiB=1)
     before = {'sdk': {'machineHash': '1' * 64, 'kafkaProcesses': []},
@@ -69,6 +73,9 @@ class EvidenceTests(unittest.TestCase):
         values = list(fixture())
         values[0]['SourceCommit'] = 'b' * 40
         with self.assertRaises(ValueError): module.evaluate(*values)
+        values = list(fixture())
+        values[0]['Measured']['Latency']['P99Milliseconds'] = float('nan')
+        with self.assertRaises(ValueError): module.evaluate(*values)
 
     def test_short_wall_clock_and_unverified_cleanup_are_rejected(self):
         values = list(fixture())
@@ -77,9 +84,45 @@ class EvidenceTests(unittest.TestCase):
         values = list(fixture())
         values[2]['cleanupVerified'] = False
         with self.assertRaises(ValueError): module.evaluate(*values)
+
+    def test_wire_sample_rejects_wrong_stream_and_control_context(self):
+        with patch.object(module.wire, 'messages', return_value=[(1, False, 0, 4, 3, {6: (101).to_bytes(4, 'big')})]):
+            with self.assertRaisesRegex(ValueError, 'activation context'):
+                module.verify_sample('unused synthetic input', 33061)
+        messages = [(1, False, 0, 4, 3, {6: (100).to_bytes(4, 'big')}),
+                    (2, True, 0, 1, 1, {6: (100).to_bytes(4, 'big')})]
+        with patch.object(module.wire, 'messages', return_value=messages):
+            with self.assertRaisesRegex(ValueError, 'wrong stream/context'):
+                module.verify_sample('unused synthetic input', 33061)
+
+    def test_public_report_does_not_hide_a_shared_host_or_failure(self):
+        summary_spec = importlib.util.spec_from_file_location('capacity_summary', pathlib.Path(__file__).resolve().parents[1] / 'publish-capacity-summary.py')
+        summary = importlib.util.module_from_spec(summary_spec)
+        summary_spec.loader.exec_module(summary)
         values = list(fixture())
-        values[0]['Measured']['Latency']['P99Milliseconds'] = float('nan')
-        with self.assertRaises(ValueError): module.evaluate(*values)
+        values[2]['sharedPeer'] = True
+        report = module.evaluate(*values)
+        text = summary.render(report)
+        self.assertIn('NOT QUALIFIED', text)
+        self.assertIn('hosts-not-both-dedicated', text)
+        self.assertIn('not proof', text)
+
+    def test_duplicate_properties_and_nonfinite_json_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / 'metadata.json'
+            path.write_text('{"passed":false,"passed":true}')
+            with self.assertRaisesRegex(ValueError, 'Duplicate JSON'):
+                module.read_json(path)
+            path.write_text('{"tps":NaN}')
+            with self.assertRaisesRegex(ValueError, 'Non-finite JSON'):
+                module.read_json(path)
+
+    def test_dotnet_seven_digit_timestamps_are_portable_and_require_utc(self):
+        parsed = module.utc_time('2026-11-11T08:11:33.8478911+00:00')
+        self.assertEqual(parsed.microsecond, 847891)
+        self.assertEqual(module.utc_time('2026-11-11T08:11:33Z').microsecond, 0)
+        with self.assertRaises(ValueError): module.utc_time('2026-11-11T08:11:33')
+        with self.assertRaises(ValueError): module.utc_time('2026-11-11T08:11:33+03:30')
 
 
 if __name__ == '__main__':

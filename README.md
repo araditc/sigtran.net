@@ -16,22 +16,14 @@ The approved continuation is [phases 56-65](docs/RELEASE_QUALIFICATION_ROADMAP.m
 The [completed MAP capacity qualification](docs/CAPACITY_QUALIFICATION.md)
 keeps the 20K TPS / 30-minute / two-dedicated-host target separate from
 historical benchmarks and explicitly non-qualifying diagnostic runs.
-Its completion ledger retains per-second successes, late results, cancellations
-and unresolved work rather than counting queued sends as transactions.
-Fixed closed-loop workers stop admission at the measured deadline and drain
-in-flight requests without silently removing cancelled transactions.
-Latency uses fixed-memory 0.1 ms buckets, with CPU, working set, allocation
-and GC observations reported alongside completion/error counters.
-The opt-in native capacity command executes all five correlated MAP SMS
-operations through SCTP/M3UA/SCCP/TCAP and reconciles final stack totals.
-An independently compiled C peer supplies per-operation request/response
-totals and rejects invalid SCTP metadata in the capacity profile.
-The rootless two-host controller checks machine/address identity, bounds
-capture, and labels explicitly authorized shared-peer measurements diagnostic.
-Evidence verification rehashes source/artifacts, re-decodes sampled wire data,
-and rejects conflicting peer counts or averages that hide low-TPS seconds.
-Initial real two-VM smoke results are diagnostic, below the capacity target;
-the workload host records explicit GC mode, invoke timeout and verified cleanup.
+Fixed-memory closed-loop workers invoke all five correlated MAP SMS operations
+over native SCTP/M3UA/SCCP/TCAP. Source/artifact hashes, independent C peer
+counts, re-decoded PCAP, per-second completions, drain and resource observations
+must agree. Shared-peer runs cannot qualify dedicated-host capacity.
+The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
+21,844,522 valid transactions with zero failures/unresolved work, averaging
+12,135.85 TPS. **Phase 61 capacity is not qualified**: the 20K target and
+dedicated-peer criterion remain open; historical capacity flags do not close them.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
