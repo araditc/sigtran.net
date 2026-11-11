@@ -88,3 +88,14 @@ by most pre-polling paths: lksctp `sctp_sendmsg` and `sctp_recvmsg` return C
 would-block is handled as EAGAIN rather than a positive overflowing length.
 A platform-independent signature test and the real Linux idle/cancellation
 tests guard this boundary. The failed trial is retained, not relabeled PASS.
+
+## Current 10K Preflight
+
+The corrected native candidate `104eac346ba37b839aa30136c30e6f757e422add`
+completed a 30-second unprofiled trial at 12,505.1 completed TPS, minimum
+one-second throughput 10,509, zero failed/unresolved work and 79.68% normalized
+SDK CPU. This is a short preflight, not a substituted 30-minute pass.
+The real Linux SDK suite also passed after making its concurrently invoked
+test event observer thread-safe; focused test selection cannot silently pass
+when it matches no tests. The final benchmark must run without profiler or
+concurrent build activity on the SDK VM.

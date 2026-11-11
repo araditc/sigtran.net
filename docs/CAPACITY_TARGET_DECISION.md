@@ -17,3 +17,8 @@ regraded. New evidence must declare this policy and the exact new candidate.
 The change does not waive operator acceptance, resilience, Kubernetes, signing,
 provenance or other mandatory release gates. Shared-peer measurements remain
 explicitly diagnostic, even when numeric throughput meets 10K.
+
+The legacy stable manifest also reopens capacity instead of inheriting its old
+aggregate pass. CI checks the actual named failed gates and their blockers,
+not the former hard-coded count of four historical gaps. Missing evidence still
+produces NO-GO; changing the threshold never substitutes for a measured run.

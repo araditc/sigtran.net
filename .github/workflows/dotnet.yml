@@ -30,6 +30,15 @@ jobs:
       - name: Test
         run: dotnet run --project src/Sigtran.NET.Tests/Sigtran.NET.Tests.csproj --configuration Release --no-build
 
+      - name: Verify focused SDK tests reject empty selections
+        shell: bash
+        run: |
+          set +e
+          dotnet run --project src/Sigtran.NET.Tests --configuration Release --no-build -- --filter '__no_sdk_test_has_this_name__'
+          status=$?
+          set -e
+          test "$status" -eq 2
+
       - name: Test qualification contracts and tamper rejection
         run: dotnet run --project eng/Sigtran.NET.Qualification.Tests --configuration Release --no-build
 
@@ -158,8 +167,18 @@ jobs:
           if ($decision.decision -ne "NO-GO") {
             throw "Stable evaluator must remain NO-GO while qualification gates are open."
           }
-          if (@($decision.blockers).Count -ne 5 -or $decision.candidateQualification.decision -ne 'NO-GO') {
-            throw "Expected four historical blockers plus the mandatory candidate qualification blocker."
+          if ($decision.candidateQualification.decision -ne 'NO-GO') {
+            throw "Mandatory exact-candidate qualification must remain NO-GO."
+          }
+          $failedGates = @($decision.gates | Where-Object { $_.required -and -not $_.passed })
+          foreach ($gate in $failedGates) {
+            $matching = @($decision.blockers | Where-Object { $_.StartsWith("$($gate.id):", [StringComparison]::Ordinal) })
+            if ($matching.Count -ne 1) { throw "Missing or duplicate blocker for $($gate.id)." }
+          }
+          foreach ($id in @('capacity-target', 'candidate-qualification')) {
+            if (-not @($failedGates | Where-Object id -eq $id).Count) {
+              throw "Current gate $id must not be closed by historical evidence."
+            }
           }
           if (-not $decision.publicApiBaseline.acceptedAdditionsPresent) {
             throw "Stable evaluator did not retain the accepted public API additions evidence."

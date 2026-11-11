@@ -27,6 +27,7 @@ The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
 pending** under policy `completed-map-10k-v1`; the old report is not regraded.
 20K is future optimization, not the current v1 threshold. The dedicated-host
 criterion and all other release gates remain mandatory.
+Stable CI verifies named current blockers rather than a historical blocker count.
 The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
 CPU/allocation diagnostics and preserves the original baseline while tuning.
 Profile-guided encoding changes retain independently checked BER bytes and
