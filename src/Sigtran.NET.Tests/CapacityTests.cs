@@ -93,5 +93,7 @@ internal static partial class CapacityTests
             (_, _) => throw new IOException("Injected"), CancellationToken.None);
         Require(failed.Counts.Reconciled && failed.Counts.Failed > 0 && failed.Counts.Measured == 0,
             "Transport exceptions must not be successful completions");
+        Require(failed.Resources.ServerGc == System.Runtime.GCSettings.IsServerGC,
+            "The reported GC mode must be observed from the current process, not inferred from build flags");
     }
 }

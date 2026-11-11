@@ -21,7 +21,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 6 | Independent C peer counters and machine-readable summary | Implemented; independent fixtures compiled in CI |
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
-| 9 | Real Linux execution and mismatch correction | Pending |
+| 9 | Real Linux execution and mismatch correction | Two-host smoke verified; explicit lab GC/timeout/capture/cleanup corrections |
 | 10 | Final evidence, CI and remaining-gate report | Pending |
 
 Each unit runs build, SDK/qualification tests, public API compatibility and
@@ -120,3 +120,22 @@ average cannot mask a low second. Source mismatch, changed Kafka process
 identities or conflicting pass flags fail verification. The resulting report
 separates execution correctness, numeric target and dedicated-host eligibility.
 It is not a signed release envelope and never promotes stable by itself.
+
+## Initial Live Observations
+
+Two authorized shared-peer smoke measurements completed on different Linux
+VMs: 51,816 in-window MAP results in 5 seconds at concurrency 64, and 116,584
+in 10 seconds at concurrency 256. Both had zero failures/unresolved invokes.
+The second PCAP independently matched 3,403 complete pairs spanning all five
+operations; peer and SDK full-run counts reconciled. These are diagnostics,
+not qualification evidence or an extrapolation to thirty minutes.
+
+The initial workstation-GC run allocated about 16 KiB per transaction and had
+frequent collections. The workload executable now explicitly selects server GC
+and records the observed runtime mode; the SDK library never changes its
+consumer's GC policy. This is a measured comparison candidate, not a claimed
+speedup. See Microsoft's [GC configuration](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/garbage-collector)
+and [server/workstation discussion](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/workstation-server-gc).
+Every MAP operation explicitly uses a five-second timeout within the ten-second
+drain budget. Capture must open before load starts, cleanup must be verified,
+and UTC duration must corroborate the monotonic interval.

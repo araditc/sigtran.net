@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Re-decode a bounded wire sample and reconcile complete MAP throughput evidence."""
 import argparse
+import datetime
 import hashlib
 import importlib.util
 import json
@@ -141,7 +142,13 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
         require(before[name]['machineHash'] == after[name]['machineHash'], 'Host identity changed')
         require(before[name]['kafkaProcesses'] == after[name]['kafkaProcesses'], 'Kafka process identity changed during test')
     require(inventory['sdkExitCode'] == inventory['peerExitCode'] == inventory['captureExitCode'] == 0
-            and inventory['completed'] is True, 'Child execution did not complete cleanly')
+            and inventory['completed'] is True and inventory.get('cleanupVerified') is True,
+            'Child execution or owned-process cleanup did not complete cleanly')
+    start = datetime.datetime.fromisoformat(sdk['StartedAtUtc'])
+    finish = datetime.datetime.fromisoformat(sdk['FinishedAtUtc'])
+    require(start.utcoffset() == finish.utcoffset() == datetime.timedelta(0)
+            and seconds <= (finish - start).total_seconds() <= seconds + 60,
+            'Wall-clock interval disagrees with monotonic duration')
     numeric = execution and seconds == 1800 and min(measured['windows']) >= 20000
     require(sdk['NumericTargetMet'] is numeric, 'Numeric target flag disagrees with per-second observations')
     dedicated = inventory['dedicatedDeclaration'] is True and not inventory['sharedPeer']

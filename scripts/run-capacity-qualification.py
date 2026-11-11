@@ -93,6 +93,8 @@ def run(args):
         ipaddress.IPv4Address(host)
     if args.peer_cpu < 0:
         raise ValueError('Invalid peer CPU')
+    if not 1 <= args.concurrency <= 4096 or not 1024 <= args.port <= 65535:
+        raise ValueError('Invalid concurrency or unprivileged SCTP port')
     if subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=ROOT).strip():
         raise ValueError('Commit tracked changes before capturing candidate source')
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -173,6 +175,9 @@ def run(args):
         capture = start_owned(sdk, root, 'capture', capture_line)
         channels.append((sdk, root, 'capture', capture))
         time.sleep(1)
+        with sdk.open_sftp() as sftp:
+            if capture.exit_status_ready() or sftp.stat(root + '/sample.pcap').st_size < 24:
+                raise RuntimeError('Capture failed to open before workload admission')
         diagnostic = args.diagnostic or not eligible
         executable = root + '/src/Sigtran.NET.PerformanceLab/bin/Release/net10.0/Sigtran.NET.PerformanceLab.dll'
         workload = shlex.join(['timeout', '--signal=INT', '--kill-after=10s', str(budget) + 's',
@@ -207,6 +212,11 @@ def run(args):
                     stop_owned(client, root, name)
                 except Exception:
                     pass  # The independent timeout remains armed; no unrelated PID is signaled.
+        cleanup_deadline = time.monotonic() + 10
+        while any(not channel.exit_status_ready() for _, _, _, channel in channels) and time.monotonic() < cleanup_deadline:
+            time.sleep(.1)
+        if 'manifest' in locals():
+            manifest['cleanupVerified'] = all(channel.exit_status_ready() for _, _, _, channel in channels)
         for name, client in (('sdk', sdk), ('peer', peer)):
             if name not in roots:
                 continue

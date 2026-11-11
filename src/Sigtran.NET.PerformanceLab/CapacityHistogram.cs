@@ -48,4 +48,4 @@ internal sealed record CapacityLatency(long Count, double P50Milliseconds, doubl
 /// <summary>Process-wide allocations and resources cover measurement plus bounded drain, not just successful work.</summary>
 internal sealed record CapacityResources(long AllocatedBytes, int Gen0Collections, int Gen1Collections,
     int Gen2Collections, double AverageCpuPercent, double PeakCpuPercent, long PeakWorkingSetMegabytes,
-    int LogicalProcessors);
+    int LogicalProcessors, bool ServerGc);

@@ -45,6 +45,7 @@ internal sealed class CapacitySession : IAsyncDisposable
     private int _peakInbound;
     private readonly PerformanceMessages _messages = PerformanceMessages.CreateSynthetic();
     private readonly IMapSmsService _map;
+    private static readonly TimeSpan InvokeTimeout = TimeSpan.FromSeconds(5);
 
     internal CapacitySession(CapacityOptions options)
     {
@@ -85,11 +86,11 @@ internal sealed class CapacitySession : IAsyncDisposable
     {
         var outcome = await (operation switch
         {
-            0 => _map.InvokeRoutingInfoForShortMessageAsync(_messages.RoutingInfo, ct: ct),
-            1 => _map.InvokeMoForwardShortMessageAsync(_messages.MobileOriginated, ct: ct),
-            2 => _map.InvokeMtForwardShortMessageAsync(_messages.MobileTerminated, ct: ct),
-            3 => _map.InvokeReportShortMessageDeliveryStatusAsync(_messages.DeliveryStatus, ct: ct),
-            4 => _map.InvokeAlertServiceCentreAsync(_messages.Alert, ct: ct),
+            0 => _map.InvokeRoutingInfoForShortMessageAsync(_messages.RoutingInfo, InvokeTimeout, ct),
+            1 => _map.InvokeMoForwardShortMessageAsync(_messages.MobileOriginated, InvokeTimeout, ct),
+            2 => _map.InvokeMtForwardShortMessageAsync(_messages.MobileTerminated, InvokeTimeout, ct),
+            3 => _map.InvokeReportShortMessageDeliveryStatusAsync(_messages.DeliveryStatus, InvokeTimeout, ct),
+            4 => _map.InvokeAlertServiceCentreAsync(_messages.Alert, InvokeTimeout, ct),
             _ => throw new ArgumentOutOfRangeException(nameof(operation))
         }).ConfigureAwait(false);
         return Classify(outcome.Outcome);

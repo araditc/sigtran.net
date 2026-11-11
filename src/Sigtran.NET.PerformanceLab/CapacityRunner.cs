@@ -40,7 +40,8 @@ internal static class CapacityRunner
             new(Math.Max(0, GC.GetTotalAllocatedBytes(false) - allocated),
                 GC.CollectionCount(0) - collections[0], GC.CollectionCount(1) - collections[1],
                 GC.CollectionCount(2) - collections[2], resources.AverageCpuPercent,
-                resources.PeakCpuPercent, resources.PeakWorkingSetMegabytes, Environment.ProcessorCount));
+                resources.PeakCpuPercent, resources.PeakWorkingSetMegabytes, Environment.ProcessorCount,
+                System.Runtime.GCSettings.IsServerGC));
 
         async Task WorkerAsync()
         {

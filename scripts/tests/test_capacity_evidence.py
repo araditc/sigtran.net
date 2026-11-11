@@ -28,13 +28,14 @@ def fixture():
     sdk = dict(SchemaVersion=1, SourceCommit=source, Workload=module.WORKLOAD, DurationSeconds=1800,
                WarmupSeconds=10, Warmup=stage(10), Measured=stage(1800), Stack=stack, TargetTps=20000,
                ExecutionPassed=True, NumericTargetMet=True, Diagnostic=False)
+    sdk.update(StartedAtUtc='2026-01-01T00:00:00+00:00', FinishedAtUtc='2026-01-01T00:30:00+00:00')
     peer = dict(schemaVersion=1, workload=module.WORKLOAD, passed=True, received=total, responses=total,
                 byOperation=[total // 5] * 5, cpuSeconds=1, peakRssKiB=1)
     before = {'sdk': {'machineHash': '1' * 64, 'kafkaProcesses': []},
               'peer': {'machineHash': '2' * 64, 'kafkaProcesses': []}}
     inventory = dict(schemaVersion=1, sourceCommit=source, durationSeconds=1800, before=before,
                      after=copy.deepcopy(before), sdkExitCode=0, peerExitCode=0, captureExitCode=0,
-                     completed=True, dedicatedDeclaration=True, sharedPeer=False, diagnostic=False)
+                     completed=True, cleanupVerified=True, dedicatedDeclaration=True, sharedPeer=False, diagnostic=False)
     return sdk, peer, inventory, {'redecoded': True, 'pairedByOperation': [1] * 5}, source
 
 
@@ -67,6 +68,14 @@ class EvidenceTests(unittest.TestCase):
     def test_candidate_mismatch_and_nonfinite_latency_are_rejected(self):
         values = list(fixture())
         values[0]['SourceCommit'] = 'b' * 40
+        with self.assertRaises(ValueError): module.evaluate(*values)
+
+    def test_short_wall_clock_and_unverified_cleanup_are_rejected(self):
+        values = list(fixture())
+        values[0]['FinishedAtUtc'] = '2026-01-01T00:00:10+00:00'
+        with self.assertRaises(ValueError): module.evaluate(*values)
+        values = list(fixture())
+        values[2]['cleanupVerified'] = False
         with self.assertRaises(ValueError): module.evaluate(*values)
         values = list(fixture())
         values[0]['Measured']['Latency']['P99Milliseconds'] = float('nan')
