@@ -57,6 +57,13 @@ jobs:
           python3 scripts/tests/test_reference_service_evidence.py
           python3 scripts/tests/test_reference_service_collection.py
 
+      - name: Compile and test independent native peer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libsctp-dev
+          gcc -std=c11 -O2 -Wall -Wextra -Werror tools/interop-peer/sigtran_reference_peer.c -lsctp -o "$RUNNER_TEMP/sigtran-peer"
+          "$RUNNER_TEMP/sigtran-peer" --self-test
+
       - name: Test legacy flag promotion rejection
         shell: pwsh
         run: ./eng/test-qualification-gate.ps1

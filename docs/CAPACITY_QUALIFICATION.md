@@ -18,7 +18,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 3 | Fixed workers, warmup exclusion and complete drain accounting | Implemented; drain/cancel/failure tests |
 | 4 | Bounded latency and resource observations | Implemented; quantile and overflow tests |
 | 5 | Native full-stack session with generation-fenced sends | Implemented; MAP outcome classification tests |
-| 6 | Independent C peer counters and machine-readable summary | Pending |
+| 6 | Independent C peer counters and machine-readable summary | Implemented; independent fixtures compiled in CI |
 | 7 | Two-host inventory, execution and shared-host safety | Pending |
 | 8 | Source-bound report verification and tamper tests | Pending |
 | 9 | Real Linux execution and mismatch correction | Pending |
@@ -74,3 +74,12 @@ execution PASS. The final stack totals must match every admitted dialogue.
 `sdk.json` is created once and retains warmup and measurement separately.
 Numeric target and protocol execution are distinct; this file alone cannot
 prove dedicated topology, peer counts, wire validity or release qualification.
+
+The independent C executable accepts `IP PORT 0 capacity /private/peer.json`.
+It validates the protocol envelopes, MAP arguments, ordered stream 1, network
+byte-order PPID 3, Routing Context 100 and declared point codes. It counts
+each accepted request/response by operation, without per-request logging.
+After orderly SDK closure it creates a new JSON summary with PID, process CPU
+seconds and peak RSS. Signal termination, invalid metadata or partial input
+cannot emit a passing summary. These counters corroborate SDK totals; peer
+send acceptance alone is not proof of SDK application completion.

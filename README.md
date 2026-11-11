@@ -24,6 +24,8 @@ Latency uses fixed-memory 0.1 ms buckets, with CPU, working set, allocation
 and GC observations reported alongside completion/error counters.
 The opt-in native capacity command executes all five correlated MAP SMS
 operations through SCTP/M3UA/SCCP/TCAP and reconciles final stack totals.
+An independently compiled C peer supplies per-operation request/response
+totals and rejects invalid SCTP metadata in the capacity profile.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records

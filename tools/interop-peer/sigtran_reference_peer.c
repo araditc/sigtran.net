@@ -8,6 +8,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 #include <signal.h>
@@ -16,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/resource.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -77,6 +79,36 @@ static int reference_profile = 0;
 static int wrong_activation_context = 0;
 static int asp_client = 0;
 static uint32_t reference_context = REFERENCE_CONTEXT;
+static int capacity_mode = 0;
+static uint64_t capacity_counts[5] = {0};
+
+/* Fixed index order matches the declared equal-mix workload, not arrival order. */
+static int capacity_operation_index(uint8_t code)
+{
+    const uint8_t codes[] = {45U, 46U, 44U, 47U, 64U};
+    for (int i = 0; i < 5; i++) if (codes[i] == code) return i;
+    return -1;
+}
+
+/* A summary is emitted only after orderly client EOF; partial/terminated runs fail closed. */
+static int write_capacity_summary(const char *path, unsigned int operations)
+{
+    struct rusage resources;
+    if (getrusage(RUSAGE_SELF, &resources) != 0) return -1;
+    FILE *file = fopen(path, "wx");
+    if (file == NULL) return -1;
+    int result = fprintf(file,
+        "{\"schemaVersion\":1,\"workload\":\"itu-map-sms-five-operation-equal-mix-v1\","
+        "\"received\":%u,\"responses\":%u,\"byOperation\":[%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 "],"
+        "\"processId\":%ld,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,\"passed\":true}\n",
+        operations, operations, capacity_counts[0], capacity_counts[1], capacity_counts[2],
+        capacity_counts[3], capacity_counts[4], (long)getpid(),
+        resources.ru_utime.tv_sec + resources.ru_stime.tv_sec
+            + (resources.ru_utime.tv_usec + resources.ru_stime.tv_usec) / 1000000.0,
+        resources.ru_maxrss);
+    int closed = fclose(file);
+    return result < 0 || closed != 0 ? -1 : 0;
+}
 
 enum map_reply { REPLY_RESULT, REPLY_ERROR, REPLY_REJECT, REPLY_MALFORMED, REPLY_SILENCE };
 
@@ -839,6 +871,9 @@ static int handle_data(int socket_fd, const uint8_t *message, size_t message_len
     if (parse_m3ua_protocol_data(message, message_length, &protocol_data) != 0
         || protocol_data.service_indicator != 3U || stream_id == 0U
         || (reference_profile && (!protocol_data.has_context || protocol_data.routing_context != reference_context))
+        || (capacity_mode && (!protocol_data.has_context || protocol_data.routing_context != 100U
+            || protocol_data.opc != 1U || protocol_data.dpc != 2U || protocol_data.network_indicator != 2U
+            || stream_id != 1U))
         || parse_sccp_udt(protocol_data.payload, protocol_data.payload_length, &sccp) != 0
         || parse_tcap_invoke(sccp.user_data, sccp.user_data_length, &invoke) != 0
         || validate_map_parameters(&invoke) != 0) {
@@ -871,12 +906,20 @@ static int handle_data(int socket_fd, const uint8_t *message, size_t message_len
         return -1;
     }
     (*operation_count)++;
+    if (capacity_mode) {
+        int index = capacity_operation_index(invoke.operation_code);
+        if (index < 0) return -1;
+        capacity_counts[index]++;
+    }
     log_event(events[reply], detail);
     return 0;
 }
 
 static int self_test(void)
 {
+    if (capacity_operation_index(45U) != 0 || capacity_operation_index(46U) != 1
+        || capacity_operation_index(44U) != 2 || capacity_operation_index(47U) != 3
+        || capacity_operation_index(64U) != 4 || capacity_operation_index(0U) != -1) return 1;
     struct tcap_invoke_view invoke = {.originating_transaction_id = (const uint8_t[]){0xA0U},
         .originating_transaction_id_length = 1U, .invoke_id = 1U, .operation_code = 45U};
     static const uint8_t error[] = {0x64U, 13U, 0x49U, 1U, 0xA0U, 0x6CU, 8U, 0xA3U, 6U, 2U, 1U, 1U, 2U, 1U, 6U};
@@ -923,11 +966,17 @@ int main(int argc, char **argv)
     uint8_t message[BUFFER_SIZE];
     unsigned int operation_count = 0U;
     int invalid_context_acknowledged = 0;
+    int orderly_eof = 0;
     char detail[128];
 
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
-    quiet_traffic = argc > 4 && strcmp(argv[4], "quiet") == 0;
+    capacity_mode = argc > 4 && strcmp(argv[4], "capacity") == 0;
+    if (capacity_mode && (argc != 6 || expected_operations != 0U)) {
+        fprintf(stderr, "Capacity requires unlimited operations and a new summary path.\n");
+        return 2;
+    }
+    quiet_traffic = capacity_mode || (argc > 4 && strcmp(argv[4], "quiet") == 0);
     asp_client = argc > 4 && strcmp(argv[4], "reference-asp") == 0;
     reference_profile = argc > 4 && (strcmp(argv[4], "reference") == 0 || asp_client);
     reference_context = asp_client ? 200U : REFERENCE_CONTEXT;
@@ -1058,6 +1107,7 @@ int main(int argc, char **argv)
         uint8_t message_type;
 
         if (received == 0) {
+            orderly_eof = 1;
             break;
         }
         if (received < 0) {
@@ -1097,6 +1147,14 @@ int main(int argc, char **argv)
             || (receive_info.sinfo_ppid != M3UA_PPID
                 && ntohl(receive_info.sinfo_ppid) != M3UA_PPID)) {
             log_event("validation-failed", "layer=SCTP/M3UA");
+            close(connection_fd);
+            return 1;
+        }
+
+        if (capacity_mode && (((flags & MSG_EOR) == 0) || (flags & MSG_TRUNC)
+            || (receive_info.sinfo_flags & SCTP_UNORDERED) != 0
+            || ntohl(receive_info.sinfo_ppid) != M3UA_PPID)) {
+            log_event("validation-failed", "reason=capacity-metadata");
             close(connection_fd);
             return 1;
         }
@@ -1203,6 +1261,10 @@ int main(int argc, char **argv)
 
     int passed = ((expected_operations == 0U && operation_count > 0U)
         || operation_count == expected_operations) && (!asp_client || invalid_context_acknowledged);
+    if (capacity_mode) {
+        passed = passed && orderly_eof && !stop_requested;
+        if (passed && write_capacity_summary(argv[5], operation_count) != 0) passed = 0;
+    }
     snprintf(
         detail,
         sizeof(detail),
