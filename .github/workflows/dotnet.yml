@@ -40,7 +40,9 @@ jobs:
         run: python3 scripts/tests/test_capture_backend.py
 
       - name: Test capacity topology safety
-        run: python3 scripts/tests/test_capacity_topology.py
+        run: |
+          python3 scripts/tests/test_capacity_topology.py
+          python3 scripts/tests/test_capacity_evidence.py
 
       - name: Test MAP SMS wire evidence verification
         shell: bash

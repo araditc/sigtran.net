@@ -20,7 +20,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 5 | Native full-stack session with generation-fenced sends | Implemented; MAP outcome classification tests |
 | 6 | Independent C peer counters and machine-readable summary | Implemented; independent fixtures compiled in CI |
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
-| 8 | Source-bound report verification and tamper tests | Pending |
+| 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
 | 9 | Real Linux execution and mismatch correction | Pending |
 | 10 | Final evidence, CI and remaining-gate report | Pending |
 
@@ -103,3 +103,20 @@ runs at nice 10 on one declared CPU. Capture is bounded by 8,192 packets,
 Private run roots, child-only timeouts, before/after inventory and SHA256s
 are retained even on failed execution. Kafka process IDs/start times can be
 compared; this does not assert absence of performance interference.
+
+## Evidence Verification
+
+On Linux with TShark, run `python3 scripts/verify-capacity-evidence.py RUN_ROOT
+--source-commit FULL_TESTED_COMMIT`. The verifier rehashes original artifacts,
+checks the git archive source ID, re-decodes the PCAP and independently matches
+transaction/invoke identities, dialogue contexts, stream/PPID and the five MAP
+results. A bounded prefix sample may end with unpaired invokes; only complete
+pairs corroborate wire validity, and sample counts are never multiplied into TPS.
+Complete SDK/peer totals account for the entire measured interval.
+
+Warmup, measured successes, late results, terminal failures, per-second totals,
+stack dialogue counts and peer per-operation counts must reconcile. A 20K
+average cannot mask a low second. Source mismatch, changed Kafka process
+identities or conflicting pass flags fail verification. The resulting report
+separates execution correctness, numeric target and dedicated-host eligibility.
+It is not a signed release envelope and never promotes stable by itself.

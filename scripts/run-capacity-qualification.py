@@ -113,7 +113,7 @@ def run(args):
         peer.connect(args.peer_host, username=args.user, password=password,
                      key_filename=args.peer_key, look_for_keys=False, allow_agent=False, timeout=10)
         before = {'sdk': remote_inventory(sdk), 'peer': remote_inventory(peer)}
-        eligible = validate_hosts(before['sdk'], before['peer'], args.peer_host, args.shared_peer)
+        eligible = validate_hosts(before['sdk'], before['peer'], args.peer_host, args.shared_peer) and args.dedicated_hosts
         if args.peer_cpu >= before['peer']['processors']:
             raise ValueError('Peer CPU is outside available affinity')
         route = json.loads(command(sdk, ['ip', '-j', '-4', 'route', 'get', args.peer_host]))
@@ -124,7 +124,7 @@ def run(args):
         manifest = {'schemaVersion': 1, 'sourceCommit': commit, 'before': before, 'route': route,
                     'roots': roots, 'dedicatedDeclaration': eligible, 'sharedPeer': args.shared_peer,
                     'peerCpu': args.peer_cpu, 'durationSeconds': args.duration,
-                    'diagnostic': args.diagnostic or args.shared_peer, 'concurrency': args.concurrency}
+                    'diagnostic': args.diagnostic or not eligible, 'concurrency': args.concurrency, 'port': args.port}
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
@@ -173,7 +173,7 @@ def run(args):
         capture = start_owned(sdk, root, 'capture', capture_line)
         channels.append((sdk, root, 'capture', capture))
         time.sleep(1)
-        diagnostic = args.diagnostic or args.shared_peer
+        diagnostic = args.diagnostic or not eligible
         executable = root + '/src/Sigtran.NET.PerformanceLab/bin/Release/net10.0/Sigtran.NET.PerformanceLab.dll'
         workload = shlex.join(['timeout', '--signal=INT', '--kill-after=10s', str(budget) + 's',
                               'dotnet', executable, 'capacity', '--remote-ip', args.peer_host,
@@ -241,5 +241,6 @@ if __name__ == '__main__':
     parser.add_argument('--peer-cpu', type=int, default=3)
     parser.add_argument('--diagnostic', action='store_true')
     parser.add_argument('--shared-peer', action='store_true')
+    parser.add_argument('--dedicated-hosts', action='store_true')
     parser.add_argument('--output', required=True)
     raise SystemExit(run(parser.parse_args()))

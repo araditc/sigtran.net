@@ -28,6 +28,8 @@ An independently compiled C peer supplies per-operation request/response
 totals and rejects invalid SCTP metadata in the capacity profile.
 The rootless two-host controller checks machine/address identity, bounds
 capture, and labels explicitly authorized shared-peer measurements diagnostic.
+Evidence verification rehashes source/artifacts, re-decodes sampled wire data,
+and rejects conflicting peer counts or averages that hide low-TPS seconds.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
