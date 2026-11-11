@@ -33,6 +33,9 @@ jobs:
       - name: Test qualification contracts and tamper rejection
         run: dotnet run --project eng/Sigtran.NET.Qualification.Tests --configuration Release --no-build
 
+      - name: Test trace analysis attribution
+        run: dotnet run --project eng/Sigtran.NET.TraceAnalysis --configuration Release --no-build -- --self-test
+
       - name: Test qualification plan launcher
         run: python3 scripts/tests/test_qualification_plan.py
 

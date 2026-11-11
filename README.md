@@ -24,6 +24,8 @@ The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
 21,844,522 valid transactions with zero failures/unresolved work, averaging
 12,135.85 TPS. **Phase 61 capacity is not qualified**: the 20K target and
 dedicated-peer criterion remain open; historical capacity flags do not close them.
+The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
+CPU/allocation diagnostics and preserves the original baseline while tuning.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
