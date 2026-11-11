@@ -14,7 +14,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | Unit | Implementation and acceptance | Status |
 | --- | --- | --- |
 | 1 | Fixed target, bounded options and diagnostic separation | Implemented; unit verification retained locally |
-| 2 | Measured completion ledger and per-second windows | Pending |
+| 2 | Measured completion ledger and per-second windows | Implemented; boundary and reconciliation tests |
 | 3 | Fixed workers, warmup exclusion and complete drain accounting | Pending |
 | 4 | Bounded latency and resource observations | Pending |
 | 5 | Native full-stack session with generation-fenced sends | Pending |
@@ -40,4 +40,7 @@ declared workload and hardware, not an unconditional performance promise.
 Short, local or shared-host runs are diagnostic and cannot close the dedicated
 two-host gate. Historical aggregate/single-host capacity remains separate.
 Kafka services, configuration and ports must never be changed by this runner.
+The measured interval is half-open: a result at exactly 1,800 seconds belongs
+to drain. Accounting arrays are fixed by the five operations, eight terminal
+outcomes and measured seconds, independent of the number of transactions.
 The stable evaluator and release policy are not automatically promoted.

@@ -27,4 +27,21 @@ internal static partial class CapacityTests
     {
         if (!condition) throw new InvalidOperationException(message);
     }
+
+    internal static void Ledger()
+    {
+        CapacityLedger ledger = new(2, 1000);
+        ledger.Admit(0); ledger.Complete(0, CapacityOutcome.Success, 0, 999);
+        ledger.Admit(1); ledger.Complete(1, CapacityOutcome.Success, 0, 1000);
+        ledger.Admit(2); ledger.Complete(2, CapacityOutcome.Success, 1999, 2000);
+        ledger.Admit(3); ledger.Complete(3, CapacityOutcome.Cancelled, 1999, 2001);
+        ledger.Admit(4); ledger.Complete(4, CapacityOutcome.Timeout, 1999, 2002);
+        var counts = ledger.Snapshot();
+        Require(counts.Reconciled && counts.Measured == 2 && counts.Late == 1 && counts.Failed == 2,
+            "Exact endpoint is drain, not measured TPS; cancellation and timeout must remain failures");
+        Require(counts.CompletedPerSecond.SequenceEqual([1L, 1L]), "Seconds must use completion time");
+        ledger.Admit(0);
+        Require(!ledger.Snapshot().Reconciled && ledger.Snapshot().Unresolved == 1,
+            "Admitted but uncompleted work must invalidate reconciliation");
+    }
 }

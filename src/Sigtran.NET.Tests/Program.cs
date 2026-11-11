@@ -42,6 +42,7 @@ Run("SIGTRAN structured event sink writes JSON Lines", SigtranStructuredEventSin
 Run("SIGTRAN node configuration validates environment settings", SigtranNodeConfigurationValidatesEnvironmentSettings);
 Run("Reference host validates opt-in ITU MAP SMS settings before startup", ReferenceServiceTests.Configuration);
 Run("Capacity options preserve the fixed target and fence diagnostics", CapacityTests.Options);
+Run("Capacity ledger reconciles late results, cancellations and missing completions", CapacityTests.Ledger);
 Run("Reference host owns the MAP, TCAP and SCCP lifecycles over one MTP3 network", ReferenceServiceTests.Composition);
 Run("Reference operations validate input and bound admission before correlated MAP dispatch", ReferenceServiceTests.Operations);
 Run("Reference HTTP boundary rejects forwarded identity, bad credentials and invalid bodies", ReferenceServiceTests.LocalHttpBoundary);
