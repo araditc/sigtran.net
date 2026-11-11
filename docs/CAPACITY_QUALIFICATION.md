@@ -19,7 +19,7 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 | 4 | Bounded latency and resource observations | Implemented; quantile and overflow tests |
 | 5 | Native full-stack session with generation-fenced sends | Implemented; MAP outcome classification tests |
 | 6 | Independent C peer counters and machine-readable summary | Implemented; independent fixtures compiled in CI |
-| 7 | Two-host inventory, execution and shared-host safety | Pending |
+| 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Pending |
 | 9 | Real Linux execution and mismatch correction | Pending |
 | 10 | Final evidence, CI and remaining-gate report | Pending |
@@ -83,3 +83,23 @@ After orderly SDK closure it creates a new JSON summary with PID, process CPU
 seconds and peak RSS. Signal termination, invalid metadata or partial input
 cannot emit a passing summary. These counters corroborate SDK totals; peer
 send acceptance alone is not proof of SDK application completion.
+
+## Two-Host Controller
+
+`scripts/run-capacity-qualification.py` needs Python/Paramiko on the controller,
+pinned SSH known hosts, a key for the SDK VM and either a peer key or the
+process-only `SIGTRAN_CAPACITY_PEER_PASSWORD` environment variable. No credential
+is written into artifacts. The controller archives the clean source commit,
+builds on the SDK VM and transfers the C executable plus its local SCTP library
+to a private peer directory. It uses no sudo, package installation, daemon,
+firewall change, service stop or machine-wide tuning.
+
+Both machine hashes, address ownership and non-local data routing must match.
+Declare hosts dedicated only after excluding competing workloads; inventory
+cannot prove an operator declaration by itself. A shared peer is accepted only
+with `--shared-peer`, which forces diagnostic/non-qualifying status. The C peer
+runs at nice 10 on one declared CPU. Capture is bounded by 8,192 packets,
+20 seconds and 16 MiB; it samples protocol validity, not every transaction.
+Private run roots, child-only timeouts, before/after inventory and SHA256s
+are retained even on failed execution. Kafka process IDs/start times can be
+compared; this does not assert absence of performance interference.
