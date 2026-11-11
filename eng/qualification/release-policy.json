@@ -3,6 +3,7 @@
   "packageId": "Sigtran.NET",
   "version": "1.0.0",
   "scopeId": "itu-map-sms-v1",
+  "capacityRevision": "completed-map-10k-v1",
   "gates": [
     {"id":"native-linux-sctp","bundlePath":null,"bundleSha256":null},
     {"id":"external-m3ua","bundlePath":null,"bundleSha256":null},

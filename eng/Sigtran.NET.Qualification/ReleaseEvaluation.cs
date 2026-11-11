@@ -3,7 +3,8 @@ using System.Text.Json;
 namespace Sigtran.Qualification;
 
 /// <summary>Pins result envelopes for every mandatory product gate; omitted gates never imply success.</summary>
-internal sealed record QualificationPolicy(int SchemaVersion, string PackageId, string Version, string ScopeId, GateEvidence[] Gates);
+internal sealed record QualificationPolicy(int SchemaVersion, string PackageId, string Version, string ScopeId,
+    GateEvidence[] Gates, string? CapacityRevision = null);
 
 /// <summary>References a reviewed envelope by immutable digest.</summary>
 internal sealed record GateEvidence(string Id, string? BundlePath, string? BundleSha256);
@@ -14,6 +15,8 @@ internal sealed record GateDecision(string Id, bool Passed, string[] Errors);
 /// <summary>Aggregates actual result validation into a fail-closed release decision.</summary>
 internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, string[] Errors)
 {
+    internal const int CapacityTargetTps = 10000;
+    internal const string CapacityRevision = "completed-map-10k-v1";
     internal static readonly string[] RequiredGates =
     ["native-linux-sctp", "external-m3ua", "full-stack-traffic", "independent-m2pa", "operator-profile",
      "capacity-target", "multi-host-soak", "operations-runtime", "kubernetes-sctp", "trusted-signing",
@@ -27,6 +30,7 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
         else if (context.PackageVersion != policy.Version) errors.Add("Candidate package version does not match stable policy.");
         if (policy.SchemaVersion != 2 || policy.PackageId != "Sigtran.NET" || policy.Version != "1.0.0"
             || policy.ScopeId != "itu-map-sms-v1") errors.Add("Unknown qualification target/schema.");
+        if (policy.CapacityRevision != CapacityRevision) errors.Add("Current approved capacity revision is required.");
         if (policy.Gates is null || policy.Gates.Any(g => g is null)
             || !policy.Gates.Select(g => g.Id).Order().SequenceEqual(RequiredGates.Order()))
             errors.Add("Exactly the mandatory product gates are required, without duplicates or omissions.");
@@ -78,7 +82,23 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
         switch (gate)
         {
             case "wire-conformance": Minimum("vectorCount", 1); Minimum("negativeCases", 1); Require("vectors"); break;
-            case "capacity-target": Minimum("completedTps", 20000); Minimum("durationSeconds", 1800); Minimum("distinctHosts", 2); break;
+            case "capacity-target":
+                Minimum("completedTps", CapacityTargetTps);
+                Minimum("minimumOneSecondTps", CapacityTargetTps);
+                Minimum("durationSeconds", 1800);
+                Minimum("distinctHosts", 2);
+                Minimum("dedicatedHosts", 2);
+                Maximum("unresolvedOperations", 0);
+                if (!metrics.TryGetValue("targetTps", out double target) || target != CapacityTargetTps)
+                    errors.Add("Measured target must match the current capacity policy.");
+                if ((result?.Observations ?? 0) < CapacityTargetTps * 1800L)
+                    errors.Add("At least 18000000 completed observations are required.");
+                if (result is not null && metrics.TryGetValue("durationSeconds", out double seconds)
+                    && double.IsFinite(seconds) && seconds > 0 && metrics.TryGetValue("completedTps", out double tps)
+                    && double.IsFinite(tps) && Math.Abs(result.Observations / seconds - tps) > 0.01)
+                    errors.Add("Completed TPS must reconcile with observed transactions and measured duration.");
+                Require("pcap"); Require("comparison");
+                break;
             case "multi-host-soak": Minimum("durationSeconds", 259200); Minimum("faultScenarios", 3); Minimum("distinctHosts", 2); Maximum("unresolvedOperations", 0); break;
             case "native-multihoming": Minimum("pathFailures", 1); Minimum("survivingPaths", 1); break;
             case "mtp3-m2pa": Minimum("linkFailuresRecovered", 1); break;

@@ -29,7 +29,8 @@ internal static partial class Tests
             GateEvidence g = new("wire-conformance", "bundle.json", EvidenceFiles.Hash(Path.Combine(f.Root, "bundle.json")));
             var c = new CandidateContext(b.SourceCommit, "1.0.0", b.PackageSha256, b.ScopeSha256, DateTimeOffset.UtcNow);
             var policy = new QualificationPolicy(2, "Sigtran.NET", "1.0.0", "itu-map-sms-v1",
-                ReleaseEvaluation.RequiredGates.Select(id => id == g.Id ? g : new GateEvidence(id, null, null)).ToArray());
+                ReleaseEvaluation.RequiredGates.Select(id => id == g.Id ? g : new GateEvidence(id, null, null)).ToArray(),
+                ReleaseEvaluation.CapacityRevision);
             Check(!ReleaseEvaluation.Evaluate(policy, f.Root, c, new SyntheticVerifier(false)).Gates.Single(x => x.Id == g.Id).Passed, "unsigned evidence accepted");
             Check(ReleaseEvaluation.Evaluate(policy, f.Root, c, new SyntheticVerifier(true)).Gates.Single(x => x.Id == g.Id).Passed, "verified gate rejected");
         }));

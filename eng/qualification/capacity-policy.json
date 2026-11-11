@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "completed-map-10k-v1",
+  "approvedOn": "2026-11-11",
+  "authority": "Explicit product-owner direction in the project conversation",
+  "countingUnit": "successful-correlated-completed-map-transaction",
+  "minimumCompletedTps": 10000,
+  "measurementSeconds": 1800,
+  "windowSeconds": 1,
+  "minimumDedicatedHosts": 2,
+  "maximumFailedTransactions": 0,
+  "maximumUnresolvedTransactions": 0,
+  "futureOptimizationTargetTps": 20000,
+  "decision": "The former 20K capacity target is future work, not the current v1 release threshold. All other release gates remain mandatory. Historical evidence is not rewritten."
+}

@@ -13,22 +13,23 @@ spec.loader.exec_module(module)
 
 def fixture():
     def stage(seconds):
-        count = seconds * 20000
+        count = seconds * 10000
         return {'Counts': {'StartedByOperation': [count // 5] * 5, 'MeasuredByOperation': [count // 5] * 5,
                            'LateByOperation': [0] * 5, 'Outcomes': [count] + [0] * 7,
-                           'CompletedPerSecond': [20000] * seconds}, 'MeasuredSeconds': seconds,
+                           'CompletedPerSecond': [10000] * seconds}, 'MeasuredSeconds': seconds,
                 'ElapsedSeconds': seconds + .01, 'Aborted': False,
                 'Latency': {'Count': count, 'ResolutionMilliseconds': .1, 'P50Milliseconds': 1,
                             'P95Milliseconds': 2, 'P99Milliseconds': 3, 'MaximumMilliseconds': 4},
                 'Resources': dict.fromkeys(['AllocatedBytes', 'Gen0Collections', 'Gen1Collections', 'Gen2Collections',
                                            'AverageCpuPercent', 'PeakCpuPercent', 'PeakWorkingSetMegabytes'], 1)}
     source = 'a' * 40
-    total = 1810 * 20000
+    total = 1810 * 10000
     stack = dict.fromkeys(['Reconnects', 'Faults', 'Pending', 'Active', 'Malformed', 'DroppedEvents',
                           'ForeignTransfers', 'UnsolicitedInvokes', 'SccpReturns', 'OutboundQueue', 'InboundQueue'], 0)
     stack.update(dict.fromkeys(['Sent', 'Received', 'Opened', 'Closed'], total), ReadersHealthy=True)
     sdk = dict(SchemaVersion=1, SourceCommit=source, Workload=module.WORKLOAD, DurationSeconds=1800,
-               WarmupSeconds=10, Warmup=stage(10), Measured=stage(1800), Stack=stack, TargetTps=20000,
+               WarmupSeconds=10, Warmup=stage(10), Measured=stage(1800), Stack=stack, TargetTps=10000,
+               CapacityPolicy=module.CAPACITY_POLICY,
                ExecutionPassed=True, NumericTargetMet=True, Diagnostic=False)
     sdk.update(StartedAtUtc='2026-01-01T00:00:00+00:00', FinishedAtUtc='2026-01-01T00:30:00+00:00')
     for item in (sdk['Warmup'], sdk['Measured']):
@@ -55,10 +56,10 @@ class EvidenceTests(unittest.TestCase):
     def test_average_does_not_hide_a_stalled_second(self):
         values = list(fixture())
         windows = values[0]['Measured']['Counts']['CompletedPerSecond']
-        windows[0], windows[1] = 10000, 30000
+        windows[0], windows[1] = 5000, 15000
         values[0]['NumericTargetMet'] = False
         result = module.evaluate(*values)
-        self.assertEqual(result['completedTps'], 20000)
+        self.assertEqual(result['completedTps'], 10000)
         self.assertFalse(result['qualificationPassed'])
 
     def test_missing_and_tampered_completions_are_rejected(self):
@@ -123,6 +124,15 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(module.utc_time('2026-11-11T08:11:33Z').microsecond, 0)
         with self.assertRaises(ValueError): module.utc_time('2026-11-11T08:11:33')
         with self.assertRaises(ValueError): module.utc_time('2026-11-11T08:11:33+03:30')
+
+    def test_prior_20k_target_is_not_silently_regraded_as_current_evidence(self):
+        values = list(fixture())
+        values[0]['TargetTps'] = 20000
+        values[0].pop('CapacityPolicy')
+        with self.assertRaisesRegex(ValueError, 'policy mismatch'): module.evaluate(*values)
+        policy = module.read_json(pathlib.Path(__file__).resolve().parents[2] / 'eng/qualification/capacity-policy.json')
+        self.assertEqual(policy['minimumCompletedTps'], module.TARGET_TPS)
+        self.assertEqual(policy['id'], module.CAPACITY_POLICY)
 
 
 if __name__ == '__main__':

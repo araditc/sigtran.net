@@ -22,7 +22,7 @@ internal static partial class Tests
             using BundleFixture f = new();
             var b = f.Bundle with { GateId = "capacity-target", Result = new("passed", 100, 0,
                 new() { ["completedTps"] = 25000, ["durationSeconds"] = 2, ["distinctHosts"] = 1 }) };
-            Check(ReleaseEvaluation.CheckOutcome("capacity-target", b).Length == 2, "weak capacity result");
+            Check(ReleaseEvaluation.CheckOutcome("capacity-target", b).Length >= 2, "weak capacity result");
         }));
         Cases.Add(("NaN metrics and failed observations cannot pass", () =>
         {
@@ -35,6 +35,21 @@ internal static partial class Tests
             var p = Contracts.Read<QualificationPolicy>("eng/qualification/release-policy.json");
             var r = ReleaseEvaluation.Evaluate(p, Directory.GetCurrentDirectory());
             Check(r.Decision == "NO-GO" && r.Gates.Length == 15 && r.Gates.All(g => !g.Passed), "current policy");
+        }));
+        Cases.Add(("Approved 10K capacity changes only the declared target, not duration or dedicated evidence", () =>
+        {
+            using BundleFixture f = new();
+            var b = f.Bundle with { GateId = "capacity-target", Result = new("passed", 18000000, 0,
+                new() { ["targetTps"] = 10000, ["completedTps"] = 10000, ["minimumOneSecondTps"] = 10000,
+                    ["durationSeconds"] = 1800, ["distinctHosts"] = 2, ["dedicatedHosts"] = 2, ["unresolvedOperations"] = 0 }),
+                Artifacts = [f.Bundle.Artifacts[0], f.Bundle.Artifacts[0] with { Kind = "pcap", Path = "sample.pcap" },
+                    f.Bundle.Artifacts[0] with { Kind = "comparison", Path = "comparison.json" }] };
+            Check(ReleaseEvaluation.CheckOutcome("capacity-target", b).Length == 0, "approved capacity contract rejected");
+            b.Result.Metrics["minimumOneSecondTps"] = 9999;
+            Check(ReleaseEvaluation.CheckOutcome("capacity-target", b).Length > 0, "low second accepted");
+            b.Result.Metrics["minimumOneSecondTps"] = 10000;
+            b.Result.Metrics["dedicatedHosts"] = 1;
+            Check(ReleaseEvaluation.CheckOutcome("capacity-target", b).Length > 0, "shared topology accepted");
         }));
     }
 }

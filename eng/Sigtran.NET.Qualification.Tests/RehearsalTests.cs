@@ -19,7 +19,8 @@ internal static partial class Tests
             }
             Dictionary<string, double> metrics = new()
             {
-                ["vectorCount"] = 10, ["negativeCases"] = 5, ["completedTps"] = 20000,
+                ["vectorCount"] = 10, ["negativeCases"] = 5, ["completedTps"] = 10000,
+                ["targetTps"] = 10000, ["minimumOneSecondTps"] = 10000, ["dedicatedHosts"] = 2,
                 ["durationSeconds"] = 259200, ["distinctHosts"] = 2, ["faultScenarios"] = 3,
                 ["unresolvedOperations"] = 0, ["pathFailures"] = 1, ["survivingPaths"] = 1,
                 ["linkFailuresRecovered"] = 1, ["operationTypes"] = 5, ["nodeFailureRecovery"] = 1,
@@ -30,11 +31,12 @@ internal static partial class Tests
             foreach (string id in ReleaseEvaluation.RequiredGates)
             {
                 string path = id + ".json";
-                var bundle = f.Bundle with { GateId = id, Artifacts = artifacts.ToArray(), Result = new("passed", 100, 0, metrics) };
+                long observations = id == "capacity-target" ? 10000L * (long)metrics["durationSeconds"] : 100;
+                var bundle = f.Bundle with { GateId = id, Artifacts = artifacts.ToArray(), Result = new("passed", observations, 0, metrics) };
                 File.WriteAllText(Path.Combine(f.Root, path), JsonSerializer.Serialize(bundle, Contracts.Json));
                 gates.Add(new(id, path, EvidenceFiles.Hash(Path.Combine(f.Root, path))));
             }
-            var policy = new QualificationPolicy(2, "Sigtran.NET", "1.0.0", "itu-map-sms-v1", gates.ToArray());
+            var policy = new QualificationPolicy(2, "Sigtran.NET", "1.0.0", "itu-map-sms-v1", gates.ToArray(), ReleaseEvaluation.CapacityRevision);
             var context = new CandidateContext(f.Bundle.SourceCommit, "1.0.0", f.Bundle.PackageSha256, f.Bundle.ScopeSha256, DateTimeOffset.UtcNow);
             Check(ReleaseEvaluation.Evaluate(policy, f.Root, context, new SyntheticVerifier(true)).Decision == "GO", "positive rehearsal");
             Check(ReleaseEvaluation.Evaluate(policy, f.Root, context, new SyntheticVerifier(false)).Decision == "NO-GO", "unverified rehearsal");

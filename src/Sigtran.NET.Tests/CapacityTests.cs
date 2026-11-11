@@ -6,7 +6,8 @@ internal static partial class CapacityTests
         string[] basic = ["--remote-ip", "192.0.2.2", "--source-commit", new('a', 40),
             "--output", Path.GetFullPath("artifacts/capacity-test")];
         var options = CapacityOptions.Parse(basic);
-        Require(options.DurationSeconds == 1800 && !options.Diagnostic && CapacityOptions.TargetTps == 20000,
+        Require(options.DurationSeconds == 1800 && !options.Diagnostic && CapacityOptions.TargetTps == 10000
+            && CapacityOptions.AcceptanceRevision == "completed-map-10k-v1",
             "The qualification target must be fixed");
         Reject([.. basic, "--duration-seconds", "5"]);
         Reject([.. basic, "--concurrency", "0"]);

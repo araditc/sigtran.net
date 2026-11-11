@@ -14,7 +14,8 @@ SIGTRAN.NET is a standards-oriented C#/.NET SDK for building and testing SS7-ove
 
 The approved continuation is [phases 56-65](docs/RELEASE_QUALIFICATION_ROADMAP.md).
 The [completed MAP capacity qualification](docs/CAPACITY_QUALIFICATION.md)
-keeps the 20K TPS / 30-minute / two-dedicated-host target separate from
+uses the [owner-approved 10K TPS target](docs/CAPACITY_TARGET_DECISION.md)
+for 30 minutes on two dedicated hosts, separate from
 historical benchmarks and explicitly non-qualifying diagnostic runs.
 Fixed-memory closed-loop workers invoke all five correlated MAP SMS operations
 over native SCTP/M3UA/SCCP/TCAP. Source/artifact hashes, independent C peer
@@ -22,8 +23,10 @@ counts, re-decoded PCAP, per-second completions, drain and resource observations
 must agree. Shared-peer runs cannot qualify dedicated-host capacity.
 The [real 30-minute result](docs/CAPACITY_MEASUREMENT_20261111.md) completed
 21,844,522 valid transactions with zero failures/unresolved work, averaging
-12,135.85 TPS. **Phase 61 capacity is not qualified**: the 20K target and
-dedicated-peer criterion remain open; historical capacity flags do not close them.
+12,135.85 TPS under the historical 20K target. **New-candidate qualification is
+pending** under policy `completed-map-10k-v1`; the old report is not regraded.
+20K is future optimization, not the current v1 threshold. The dedicated-host
+criterion and all other release gates remain mandatory.
 The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
 CPU/allocation diagnostics and preserves the original baseline while tuning.
 Profile-guided encoding changes retain independently checked BER bytes and

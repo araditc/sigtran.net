@@ -5,6 +5,12 @@ This is the continuation of Phase 61, not a new capacity criterion. Preserve the
 protocol execution, numeric capacity and dedicated-host qualification remain
 separate decisions. Kafka service, configuration and workload are outside scope.
 
+The owner [approved a 10K current v1 target](CAPACITY_TARGET_DECISION.md) on
+2026-11-11; 20K is now future optimization. Stop speculative optimization once
+the current measured profile is met; keep correctness and all other gates.
+The SDK test executable supports `--filter NAME` for focused Linux diagnosis;
+the default still executes the complete suite and an empty selection fails.
+
 ## Collection And Attribution
 
 Collect separate bounded diagnostics before changing code. The pinned private

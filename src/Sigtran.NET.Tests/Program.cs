@@ -18,6 +18,10 @@ using Sigtran.NET.Core.Interfaces;
 using Sigtran.NET.Core.Utilities;
 using Sigtran.NET.Operations;
 
+string? testFilter = args is ["--filter", var selectedFilter] && !string.IsNullOrWhiteSpace(selectedFilter)
+    ? selectedFilter : args.Length == 0 ? null : throw new ArgumentException("Usage: --filter NAME");
+int executedTests = 0;
+
 Run("SIGTRAN trace formatter emits summaries and hex dumps", SigtranTraceFormatterEmitsSummariesAndHexDumps);
 Run("SIGTRAN conformance registry stores vectors deterministically", SigtranConformanceRegistryStoresVectorsDeterministically);
 Run("SIGTRAN built-in vectors include M3UA and MAP payloads", SigtranBuiltInVectorsIncludeM3uaAndMapPayloads);
@@ -559,6 +563,8 @@ Run("M3UA exposes RKM response convenience helpers", M3uaExposesRkmResponseConve
 Run("M3UA RKM client registers and deregisters routing keys", M3uaRkmClientRegistersAndDeregistersRoutingKeys);
 Run("M3UA RKM client can require successful responses", M3uaRkmClientRequiresSuccessfulResponses);
 Run("M3UA rejects Routing Key without Destination Point Code", M3uaRejectsRoutingKeyWithoutDestinationPointCode);
+
+if (executedTests == 0) { Console.Error.WriteLine("The requested filter selected no SDK tests."); Environment.ExitCode = 2; }
 
 static void SigtranTraceFormatterEmitsSummariesAndHexDumps()
 {
@@ -10308,9 +10314,10 @@ static void M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision()
         heartbeatTimeout: TimeSpan.FromSeconds(1),
         shutdownTimeout: TimeSpan.FromSeconds(1));
 
-    List<M3uaRuntimeEventKind> events = [];
+    System.Collections.Concurrent.ConcurrentQueue<M3uaRuntimeEventKind> events = new();
+    System.Collections.Concurrent.ConcurrentQueue<string> details = new();
     M3uaRuntime runtime = new(factory, options);
-    runtime.RuntimeEvent += (_, args) => events.Add(args.Kind);
+    runtime.RuntimeEvent += (_, args) => { events.Enqueue(args.Kind); details.Enqueue($"{args.Kind}:{args.State}:{args.Detail}"); };
     runtime.StartAsync().AsTask().GetAwaiter().GetResult();
 
     AssertEqual(M3uaRuntimeState.Active, runtime.State, "M3UA runtime active state");
@@ -10339,7 +10346,7 @@ static void M3uaRuntimeCarriesMtp3TrafficWithHeartbeatSupervision()
     M3uaRuntimeMetrics metrics = runtime.GetMetrics();
     AssertEqual(1L, metrics.SentTransfers, "M3UA runtime sent transfers");
     AssertEqual(1L, metrics.ReceivedTransfers, "M3UA runtime received transfers");
-    Assert(metrics.HeartbeatsSent > 0, "M3UA runtime should send heartbeats");
+    Assert(metrics.HeartbeatsSent > 0, $"M3UA heartbeat missing: state={metrics.State} faults={metrics.Faults} events={string.Join(";", details)}");
     Assert(metrics.HeartbeatsAcknowledged > 0, "M3UA runtime should acknowledge heartbeats");
     AssertEqual(0L, metrics.HeartbeatTimeouts, "M3UA runtime heartbeat timeouts");
     Assert(events.Contains(M3uaRuntimeEventKind.AspActivated), "M3UA runtime ASP activation event");
@@ -12082,8 +12089,10 @@ static void SigtranNodeConfigurationValidatesEnvironmentSettings()
         "duplicate point code should be reported");
 }
 
-static void Run(string name, Action test)
+void Run(string name, Action test)
 {
+    if (testFilter is not null && !name.Contains(testFilter, StringComparison.OrdinalIgnoreCase)) return;
+    executedTests++;
     try
     {
         test();

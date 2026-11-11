@@ -15,6 +15,8 @@ SPEC = importlib.util.spec_from_file_location('wire', pathlib.Path(__file__).wit
 wire = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(wire)
 WORKLOAD = 'itu-map-sms-five-operation-equal-mix-v1'
+CAPACITY_POLICY = 'completed-map-10k-v1'
+TARGET_TPS = 10000
 OPCODES = (45, 46, 44, 47, 64)
 
 
@@ -149,7 +151,8 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
             and sdk['SourceCommit'] == inventory['sourceCommit'] == expected_source, 'Candidate source mismatch')
     require(sdk['SchemaVersion'] == peer['schemaVersion'] == inventory['schemaVersion'] == 1,
             'Unsupported evidence schema')
-    require(sdk['Workload'] == peer['workload'] == WORKLOAD and sdk['TargetTps'] == 20000, 'Workload/target mismatch')
+    require(sdk['Workload'] == peer['workload'] == WORKLOAD and sdk['TargetTps'] == TARGET_TPS
+            and sdk.get('CapacityPolicy') == CAPACITY_POLICY, 'Workload/target/policy mismatch')
     seconds = inventory['durationSeconds']
     require(type(seconds) is int and 1 <= seconds <= 1800 and sdk['DurationSeconds'] == seconds, 'Duration mismatch')
     warm = stage(sdk['Warmup'], sdk['WarmupSeconds'])
@@ -178,7 +181,7 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
     require(start.utcoffset() == finish.utcoffset() == datetime.timedelta(0)
             and seconds <= (finish - start).total_seconds() <= seconds + 60,
             'Wall-clock interval disagrees with monotonic duration')
-    numeric = execution and seconds == 1800 and min(measured['windows']) >= 20000
+    numeric = execution and seconds == 1800 and min(measured['windows']) >= TARGET_TPS
     require(sdk['NumericTargetMet'] is numeric, 'Numeric target flag disagrees with per-second observations')
     dedicated = inventory['dedicatedDeclaration'] is True and not inventory['sharedPeer']
     dedicated = dedicated and all(not before[name]['kafkaProcesses'] for name in ('sdk', 'peer'))
@@ -187,10 +190,11 @@ def evaluate(sdk, peer, inventory, sample, expected_source):
     reasons = []
     if not execution: reasons.append('protocol-or-accounting-failure')
     if seconds != 1800: reasons.append('duration-below-1800-seconds')
-    if min(measured['windows']) < 20000: reasons.append('completed-tps-below-target')
+    if min(measured['windows']) < TARGET_TPS: reasons.append('completed-tps-below-target')
     if not dedicated: reasons.append('hosts-not-both-dedicated')
     if diagnostic: reasons.append('diagnostic-execution')
     return {'schemaVersion': 1, 'evidenceKind': 'completed-map-capacity', 'testedSourceCommit': expected_source,
+            'capacityPolicy': CAPACITY_POLICY, 'targetTps': TARGET_TPS,
             'executionValid': execution, 'numericTargetMet': numeric, 'qualificationPassed': qualified,
             'stablePromotion': False, 'reasons': reasons, 'durationSeconds': seconds,
             'completedTransactions': measured['measured'], 'lateSuccesses': measured['late'],

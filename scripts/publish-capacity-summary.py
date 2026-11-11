@@ -42,7 +42,7 @@ def render(report):
         'full SDK/peer counters, not extrapolated capture samples, establish totals.', '',
         '## Remaining Gates', '',
         *[f'- `{reason}`' for reason in report['reasons']], '',
-        'The fixed capacity target remains 20,000 successful complete transactions',
+        f"The declared capacity target is {report['targetTps']:,} successful complete transactions",
         'in every measured second for 1,800 seconds on two dedicated hosts.',
         'A shared Kafka host is not dedicated evidence. No Kafka service or',
         'configuration changes are authorized by this report. Unchanged process',

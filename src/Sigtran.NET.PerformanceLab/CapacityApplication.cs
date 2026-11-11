@@ -50,7 +50,8 @@ internal static class CapacityApplication
                 bool numericTargetMet = executionPassed && options.DurationSeconds == 1800
                     && measured.Counts.CompletedPerSecond.All(count => count >= CapacityOptions.TargetTps);
                 var report = new { SchemaVersion = 1, options.SourceCommit, Workload = CapacityOptions.Workload,
-                    options.Diagnostic, TargetTps = CapacityOptions.TargetTps, options.DurationSeconds,
+                    options.Diagnostic, CapacityPolicy = CapacityOptions.AcceptanceRevision,
+                    TargetTps = CapacityOptions.TargetTps, options.DurationSeconds,
                     options.WarmupSeconds, options.Concurrency, options.QueueCapacity,
                     ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
                     StartedAtUtc = started, FinishedAtUtc = DateTimeOffset.UtcNow, Warmup = warmup,

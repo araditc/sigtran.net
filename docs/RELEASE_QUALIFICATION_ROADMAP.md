@@ -24,7 +24,7 @@ The executable scope contract is `eng/qualification/scope.json`.
 | 58 | Native SCTP completion | Multi-address connection, kernel notifications, message boundaries, path failover under traffic |
 | 59 | MTP3 and M2PA runtime | MTP3 over IMtp2Link, linksets/routesets, SLS, network management, changeover/changeback, independent traffic |
 | 60 | External interoperability | Separately maintained peer or vendor stack; positive/negative M3UA and MAP SMS scenarios; mismatches corrected |
-| 61 | Capacity qualification | 20K completed transactions/second for 30 minutes on declared hardware/workload, latency/error/resource report |
+| 61 | Capacity qualification | Owner-approved current target: 10K completed transactions/second for 30 minutes on declared hardware/workload; latency/error/resource report; 20K deferred |
 | 62 | Long-run resilience | At least 72 hours; bounded memory/queues; network/process failures; every outstanding request accounted for |
 | 63 | Deployment qualification | Representative Kubernetes SCTP network, readiness/drain, pod/node failure, upgrade and rollback |
 | 64 | Operator acceptance | Documented STP/HLR/SMSC or vendor profile, controlled pilot, accepted operations and support boundaries |
@@ -39,6 +39,8 @@ Phase 61's [real 30-minute measurement](CAPACITY_MEASUREMENT_20261111.md)
 is retained, but the capacity gate is **not qualified**: 12,135.85 completed TPS
 and a shared peer do not meet the fixed target. Ten delivered implementation
 units must not be interpreted as an accepted capacity qualification.
+On 2026-11-11 the owner [revised the current target to 10K](CAPACITY_TARGET_DECISION.md).
+New-candidate evidence is required; the original 20K result above is historical.
 
 The initial estimate is 12-20 engineering person-weeks, excluding external
 access and acceptance waiting time; phase 56 records the actual dependencies.

@@ -2,14 +2,17 @@
 
 Phase 61 evaluates one Linux SDK process, native SCTP/M3UA, connectionless
 SCCP, TCAP dialogue negotiation and the five typed MAP SMS operations.
-The fixed target is 20,000 successful **completed** transactions per second
+The current owner-approved target is 10,000 successful **completed** transactions per second
 for 1,800 consecutive measured seconds on two declared dedicated hosts.
-That is at least 36,000,000 valid correlated results, not queue admissions,
+That is at least 18,000,000 valid correlated results, not queue admissions,
 SCTP sends, M3UA echoes or HTTP requests. The workload is an equal round-robin
 mix of SRI-SM, MO-ForwardSM, MT-ForwardSM, ReportSMDeliveryStatus and
 AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 
-**Current result: NOT QUALIFIED.** The [verified 30-minute measurement](CAPACITY_MEASUREMENT_20261111.md)
+The [2026-11-11 target decision](CAPACITY_TARGET_DECISION.md) supersedes 20K as
+the current release threshold; new runs declare policy `completed-map-10k-v1`.
+
+**New-candidate qualification remains pending.** The [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md)
 completed 21,844,522 valid transactions with zero failures/unresolved work, but
 averaged 12,135.85 TPS on the authorized shared-peer topology. Implementation
 delivery is not capacity-gate completion. The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_20261111.json)
@@ -127,7 +130,7 @@ pairs corroborate wire validity, and sample counts are never multiplied into TPS
 Complete SDK/peer totals account for the entire measured interval.
 
 Warmup, measured successes, late results, terminal failures, per-second totals,
-stack dialogue counts and peer per-operation counts must reconcile. A 20K
+stack dialogue counts and peer per-operation counts must reconcile. A qualifying
 average cannot mask a low second. Source mismatch, changed Kafka process
 identities or conflicting pass flags fail verification. The resulting report
 separates execution correctness, numeric target and dedicated-host eligibility.
@@ -203,8 +206,8 @@ Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
 
 ## Remaining Work Within This Phase
 
-The target is unchanged. Average throughput needs about 65% improvement on the
-observed configuration, and the worst one-second dip (1,209 TPS) needs separate
+The owner-approved current target is 10K, with 20K deferred to future work.
+The prior configuration's worst one-second dip (1,209 TPS) needs separate
 investigation. The 1,051.948 ms maximum latency is not hidden by a 36.9 ms P99.
 About 16,053 allocated bytes per successful transaction and the exploratory
 user/kernel split identify investigation areas, not a proven root cause.
@@ -216,7 +219,7 @@ user/kernel split identify investigation areas, not a proven root cause.
 2. Optimize only demonstrated hot paths, preserving buffer ownership, dialogue
    correlation, generation-fenced sends, cancellation and independent wire
    validation. Increasing concurrency alone did not close the observed gap.
-3. Repeat the fixed 30-minute target on two genuinely dedicated hosts. Shared
+3. Repeat the approved 10K/30-minute target on two genuinely dedicated hosts. Shared
    diagnostics remain useful but cannot replace that acceptance criterion.
 
 Do not close Phase 61, promote stable, or begin claiming an operator SLA from

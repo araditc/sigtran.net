@@ -57,14 +57,15 @@
     },
     {
       "id": "capacity-target",
-      "title": "20K TPS capacity target",
+      "title": "10K completed MAP TPS capacity qualification",
       "required": true,
-      "passed": true,
-      "evidence": [
+      "passed": false,
+      "evidence": [],
+      "historicalEvidence": [
         "docs/evidence/PHASE56_CAPACITY_35696403076/aggregate/summary.json",
         "docs/evidence/PHASE56_CAPACITY_35696403076/sha256.txt"
       ],
-      "note": "Phase 56 two-association native-SCTP load-share qualification passed the numeric 20K TPS gate: aggregate sustained 35.9K TPS, peak 34.5K TPS, soak 45.8K TPS, with latency/resource criteria passing and zero failed operations. Representative multi-host soak remains a separate gate."
+      "note": "Current owner-approved policy completed-map-10k-v1 requires new exact-candidate 10K completed MAP TPS evidence for 1800 seconds on two dedicated hosts. Historical Phase 56 aggregate 20K evidence remains retained but cannot close the current gate; other product gates are unchanged."
     },
     {
       "id": "multi-host-soak",

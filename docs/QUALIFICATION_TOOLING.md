@@ -32,6 +32,11 @@ packageVersion, packageSha256, scopeSha256, completedAtUtc, result and artifacts
 Result contains outcome, positive observations, zero failures and finite
 numeric metrics. Each artifact contains kind, relative path and expected SHA-256.
 All fifteen mandatory gates must be present. Empty/missing envelopes fail.
+The owner-approved capacity revision is `completed-map-10k-v1`: 10K completed
+TPS, a 10K minimum one-second window, 1,800 seconds, at least 18M completed
+observations, two dedicated hosts and zero unresolved work. Capacity envelopes
+also require targetTps=10000, PCAP and comparison artifacts; historical 20K
+flags or a shared-host result cannot satisfy the new exact-candidate gate.
 
 Scope SHA-256 covers strict deserialized scope JSON serialized by the tool,
 so checkout newline conventions do not change semantic scope identity.

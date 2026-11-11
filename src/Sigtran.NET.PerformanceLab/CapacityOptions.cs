@@ -8,7 +8,8 @@ internal sealed record CapacityOptions(string RemoteIp, int RemotePort, string S
     string Output, int DurationSeconds, int WarmupSeconds, int Concurrency, int QueueCapacity,
     bool Diagnostic)
 {
-    internal const int TargetTps = 20_000;
+    internal const int TargetTps = 10_000;
+    internal const string AcceptanceRevision = "completed-map-10k-v1";
     internal const int RequiredSeconds = 1800;
     internal const string Workload = "itu-map-sms-five-operation-equal-mix-v1";
 
