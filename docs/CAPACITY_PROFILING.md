@@ -150,3 +150,16 @@ Seven reviewable tuning units cover analysis tooling, encoding allocation,
 nonblocking I/O, the signed native ABI fix, the owner-approved policy,
 fail-closed CI checks and this final verified report. Each retains separate
 build/test/pack/API logs before its commit/push. Runtime public API is unchanged.
+
+## Per-Second Stall Diagnosis
+
+The 29 sub-target windows were not identical: most clustered at offsets
+1,338-1,390 seconds, while the worst was offset 1,781. Historical raw counters
+alone cannot assign a GC, scheduler or retransmission cause to those windows.
+New runs retain bounded `RuntimeObservations` with actual monotonic offsets,
+cumulative GC pause/collection counts, ThreadPool threads/queued/completed work,
+process CPU and Linux host SCTP/CPU counters. Delayed sampling is visible rather
+than mislabeled as an exact second. SCTP counters are namespace-wide, CPU ticks
+are host-wide, and an absent counter is not zero. Guest ticks are not counted
+twice. This changes diagnostics, never completion accounting or acceptance.
+See the [.NET runtime metric definitions](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-runtime).

@@ -48,6 +48,26 @@ internal static partial class CapacityTests
 
     internal static void Workers() => WorkersAsync().GetAwaiter().GetResult();
 
+    internal static void Diagnostics() => DiagnosticsAsync().GetAwaiter().GetResult();
+
+    private static async Task DiagnosticsAsync()
+    {
+        var sctp = CapacityDiagnostics.ParseSctp("SctpT3Retransmits\t2\nSctpFastRetransmits 7\nunknown 8\nSctpInPktDiscards -1\n");
+        Require(sctp.Count == 2 && sctp["SctpT3Retransmits"] == 2 && sctp["SctpFastRetransmits"] == 7,
+            "Host counters must not invent absent or negative observations");
+        var cpu = CapacityDiagnostics.ParseHostCpu("cpu 1 2 3 4 5 6 7 8 90 91\ncpu0 0");
+        Require(cpu == new CapacityHostCpu(19, 4, 5, 8), "Guest ticks must not double-count CPU");
+        Require(CapacityDiagnostics.ParseHostCpu("invalid") is null, "Unavailable CPU counters must remain absent");
+        await using CapacityDiagnostics diagnostics = new(3, TimeSpan.FromMilliseconds(5));
+        diagnostics.Start(System.Diagnostics.Stopwatch.GetTimestamp());
+        await Task.Delay(40);
+        var observations = await diagnostics.StopAsync();
+        Require(observations.Length == 3 && observations[0].ElapsedSeconds < observations[^1].ElapsedSeconds,
+            "Sampling memory must be bounded and retain real monotonic offsets");
+        Require(observations[^1].GcPauseMilliseconds >= 0 && observations[^1].ProcessCpuSeconds >= 0,
+            "Runtime observations must be cumulative, not inferred from TPS");
+    }
+
     internal static void Histogram()
     {
         CapacityHistogram histogram = new();

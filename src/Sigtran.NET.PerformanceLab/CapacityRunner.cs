@@ -24,24 +24,27 @@ internal static class CapacityRunner
         CapacityLedger ledger = new((int)Math.Ceiling(duration.TotalSeconds), Stopwatch.Frequency, deadline);
         CapacityHistogram histogram = new();
         using ProcessResourceSampler sampler = new();
+        await using CapacityDiagnostics diagnostics = new((int)Math.Ceiling((duration + drain).TotalSeconds) + 3);
         Task[] workers = Enumerable.Range(0, concurrency).Select(_ => Task.Run(WorkerAsync)).ToArray();
         await ready.Task.ConfigureAwait(false);
         long allocated = GC.GetTotalAllocatedBytes(false);
         int[] collections = [GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2)];
         sampler.Start();
         origin = Stopwatch.GetTimestamp();
+        diagnostics.Start(origin);
         lifetime.CancelAfter(duration + drain);
         start.SetResult();
         await Task.WhenAll(workers).ConfigureAwait(false);
         double elapsed = (Stopwatch.GetTimestamp() - origin) / (double)Stopwatch.Frequency;
         ProcessResourceSnapshot resources = sampler.Stop();
+        CapacityObservation[] observations = await diagnostics.StopAsync().ConfigureAwait(false);
         return new(ledger.Snapshot(), Math.Min(duration.TotalSeconds, elapsed), elapsed,
             ct.IsCancellationRequested || lifetime.IsCancellationRequested, histogram.Snapshot(),
             new(Math.Max(0, GC.GetTotalAllocatedBytes(false) - allocated),
                 GC.CollectionCount(0) - collections[0], GC.CollectionCount(1) - collections[1],
                 GC.CollectionCount(2) - collections[2], resources.AverageCpuPercent,
                 resources.PeakCpuPercent, resources.PeakWorkingSetMegabytes, Environment.ProcessorCount,
-                System.Runtime.GCSettings.IsServerGC));
+                System.Runtime.GCSettings.IsServerGC), observations);
 
         async Task WorkerAsync()
         {
@@ -71,4 +74,4 @@ internal static class CapacityRunner
 
 /// <summary>A measured stage excludes warmup and drain from its throughput denominator.</summary>
 internal sealed record CapacityRun(CapacityCounts Counts, double MeasuredSeconds, double ElapsedSeconds,
-    bool Aborted, CapacityLatency Latency, CapacityResources Resources);
+    bool Aborted, CapacityLatency Latency, CapacityResources Resources, CapacityObservation[] RuntimeObservations);
