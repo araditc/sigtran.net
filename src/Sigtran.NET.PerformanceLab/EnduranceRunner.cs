@@ -37,12 +37,46 @@ internal sealed record EnduranceResources(long WorkingSetBytes, long PeakWorking
     int Gen0, int Gen1, int Gen2, int ThreadPoolThreads, long ThreadPoolPending, long ThreadPoolCompleted);
 
 /// <summary>One consistent ledger snapshot with an actual monotonic sample timestamp.</summary>
-internal sealed record EnduranceSample(double ElapsedSeconds, EnduranceCounts Counts, EnduranceResources Resources);
+internal sealed record EnduranceSample(DateTimeOffset StartedAtUtc, double ElapsedSeconds, EnduranceCounts Counts, EnduranceResources Resources);
 
 /// <summary>Separates completions before the deadline from late successes without losing either.</summary>
 internal sealed record EnduranceRun(DateTimeOffset StartedAtUtc, DateTimeOffset FinishedAtUtc,
     double MeasuredSeconds, double ElapsedSeconds, long[] MeasuredByOperation, long LateSuccesses,
     EnduranceCounts Counts, CapacityLatency Latency, bool Aborted, string[] Errors);
+
+/// <summary>Uses the same terminal and measurement path for ordinary invokes and fresh recovery probes.</summary>
+internal sealed class EnduranceExecution(EnduranceClock clock, EnduranceLedger ledger, int concurrency,
+    Func<int, CancellationToken, ValueTask<CapacityOutcome>> invoke, long[] measured, CapacityHistogram histogram)
+{
+    internal EnduranceClock Clock => clock;
+    internal EnduranceLedger Ledger => ledger;
+
+    internal async ValueTask<CapacityOutcome> InvokeAsync(EnduranceAdmission admission, CancellationToken ct)
+    {
+        CapacityOutcome outcome = CapacityOutcome.TransportFailure;
+        try { outcome = await invoke(admission.Operation, ct).ConfigureAwait(false); }
+        catch (OperationCanceledException) { outcome = CapacityOutcome.Cancelled; }
+        catch (Exception) { outcome = CapacityOutcome.TransportFailure; }
+        finally
+        {
+            long completed = clock.ElapsedTicks;
+            ledger.Complete(admission, outcome, completed);
+            if (outcome == CapacityOutcome.Success && completed < clock.DeadlineTicks)
+            {
+                Interlocked.Increment(ref measured[admission.Operation]);
+                histogram.Record(completed - admission.StartedTicks);
+            }
+        }
+        return outcome;
+    }
+
+    internal async Task ProbeAsync(CancellationToken ct)
+    {
+        if (!ledger.TryAdmit(concurrency, clock.ElapsedTicks, out var admission, recoveryProbe: true)
+            || await InvokeAsync(admission, ct).ConfigureAwait(false) != CapacityOutcome.Success)
+            throw new InvalidOperationException("A fresh recovery probe failed.");
+    }
+}
 
 /// <summary>Runs one fixed worker set for the entire measurement; it never retains a Task or record per transaction.</summary>
 internal static class EnduranceRunner
@@ -50,7 +84,7 @@ internal static class EnduranceRunner
     internal static async Task<EnduranceRun> RunAsync(EnduranceRunSettings settings, EnduranceLedger ledger,
         Func<int, CancellationToken, ValueTask<CapacityOutcome>> invoke, Func<bool> connected,
         Action<EnduranceSample> checkpoint, CancellationToken ct = default,
-        Func<EnduranceClock, CancellationToken, Task>? control = null)
+        Func<EnduranceExecution, CancellationToken, Task>? control = null)
     {
         if (settings.Duration <= TimeSpan.Zero || settings.Duration > TimeSpan.FromSeconds(EnduranceOptions.RequiredSeconds)
             || settings.Concurrency is < 1 or > 1024 || settings.CheckpointInterval <= TimeSpan.Zero
@@ -65,15 +99,17 @@ internal static class EnduranceRunner
         CapacityHistogram histogram = new();
         int readyWorkers = 0;
         EnduranceClock? clock = null;
+        EnduranceExecution? execution = null;
         Task observer = Task.CompletedTask, supervisor = Task.CompletedTask;
         Task[] workers = Enumerable.Range(0, settings.Concurrency).Select(worker => Task.Run(() => WorkerAsync(worker))).ToArray();
         await ready.Task.ConfigureAwait(false);
         clock = new(settings.Duration);
+        execution = new(clock, ledger, settings.Concurrency, invoke, measured, histogram);
         bool aborted;
         try
         {
             using EnduranceResourceProbe initial = new();
-            checkpoint(new(clock.ElapsedSeconds, ledger.Snapshot(), initial.Read()));
+            checkpoint(new(clock.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), initial.Read()));
             lifetime.CancelAfter(settings.Duration + settings.DrainTimeout);
             start.SetResult();
             observer = ObserveAsync();
@@ -109,20 +145,7 @@ internal static class EnduranceRunner
                 {
                     if (!connected() || !ledger.TryAdmit(worker, clock.ElapsedTicks, out var admission))
                     { await Task.Delay(10, lifetime.Token).ConfigureAwait(false); continue; }
-                    CapacityOutcome outcome = CapacityOutcome.TransportFailure;
-                    try { outcome = await invoke(admission.Operation, lifetime.Token).ConfigureAwait(false); }
-                    catch (OperationCanceledException) { outcome = CapacityOutcome.Cancelled; }
-                    catch (Exception) { outcome = CapacityOutcome.TransportFailure; }
-                    finally
-                    {
-                        long completed = clock.ElapsedTicks;
-                        ledger.Complete(admission, outcome, completed);
-                        if (outcome == CapacityOutcome.Success && completed < clock.DeadlineTicks)
-                        {
-                            Interlocked.Increment(ref measured[admission.Operation]);
-                            histogram.Record(completed - admission.StartedTicks);
-                        }
-                    }
+                    await execution!.InvokeAsync(admission, lifetime.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
@@ -135,7 +158,7 @@ internal static class EnduranceRunner
                 using EnduranceResourceProbe probe = new();
                 using PeriodicTimer timer = new(settings.CheckpointInterval);
                 while (await timer.WaitForNextTickAsync(observing.Token).ConfigureAwait(false))
-                    checkpoint(new(clock!.ElapsedSeconds, ledger.Snapshot(), probe.Read()));
+                    checkpoint(new(clock!.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), probe.Read()));
             }
             catch (OperationCanceledException) when (observing.IsCancellationRequested) { }
             catch (Exception error) { errors.Enqueue("checkpoint:" + error.GetType().Name); await lifetime.CancelAsync(); }
@@ -143,7 +166,7 @@ internal static class EnduranceRunner
 
         async Task SuperviseAsync()
         {
-            try { if (control is not null) await control(clock!, observing.Token).ConfigureAwait(false); }
+            try { if (control is not null) await control(execution!, observing.Token).ConfigureAwait(false); }
             catch (OperationCanceledException) when (observing.IsCancellationRequested) { }
             catch (Exception error) { errors.Enqueue("control:" + error.GetType().Name); await lifetime.CancelAsync(); }
         }

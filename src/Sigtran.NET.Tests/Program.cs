@@ -56,6 +56,7 @@ Run("Endurance ledger accounts fault outcomes, probes and duplicate completions"
 Run("Endurance ledger bounds slots and reconciles concurrent terminal outcomes", EnduranceTests.ConcurrentLedger);
 Run("Endurance journal binds exact payload bytes and rejects overwrite or excess disk use", EnduranceTests.Journal);
 Run("Endurance workers drain deadlines and preserve cancelled terminal outcomes", EnduranceTests.Runner);
+Run("Endurance control rejects unknown actions, replay identities and malformed frames", EnduranceTests.ControlProtocol);
 Run("TCAP exact-size encoding matches standard BER across length boundaries", EncodingAllocationTests.TransactionLengths);
 Run("BER writer reuse preserves nested, failed and parallel encoder isolation", EncodingAllocationTests.WriterLeases);
 Run("TCAP small transaction allocation excludes the old 2 KiB scratch buffer", EncodingAllocationTests.TransactionAllocation);

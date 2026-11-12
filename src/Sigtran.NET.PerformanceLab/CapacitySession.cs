@@ -47,9 +47,11 @@ internal sealed class CapacitySession : IAsyncDisposable
     private readonly IMapSmsService _map;
     private readonly CapacitySocketFactory _sockets;
     internal CapacitySocketProfile SocketProfile => _sockets.Snapshot();
+    internal bool IsActive => _runtime.State == M3uaRuntimeState.Active;
+    internal int LocalPort => _sockets.LocalPort;
     private static readonly TimeSpan InvokeTimeout = TimeSpan.FromSeconds(5);
 
-    internal CapacitySession(CapacityOptions options)
+    internal CapacitySession(CapacityOptions options, bool allowReconnect = false)
     {
         _sockets = new(options.SocketProfile == CapacitySocketFactory.LanProfile);
         M3uaDelegateRuntimeSessionFactory factory = new(async ct =>
@@ -66,8 +68,10 @@ internal sealed class CapacitySession : IAsyncDisposable
                 new(asp, requireActiveAspForPayload: true),
                 new(asp, routingContext: 100, requireActiveAspForPayload: true)));
         });
-        _runtime = new(factory, new(new(1, M3uaTrafficModeType.Loadshare), new(maxAttempts: 0),
-            options.QueueCapacity, options.QueueCapacity, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(5)));
+        _runtime = new(factory, new(new(1, M3uaTrafficModeType.Loadshare),
+            new(maxAttempts: allowReconnect ? 120 : 0, initialDelay: TimeSpan.FromMilliseconds(100), maxDelay: TimeSpan.FromSeconds(1)),
+            options.QueueCapacity, options.QueueCapacity, TimeSpan.FromSeconds(allowReconnect ? 2 : 10),
+            TimeSpan.FromSeconds(allowReconnect ? 2 : 5)));
         _network = new(_runtime, _runtime.SendOnActiveAssociationAsync);
         _sccp = new(_network, new(2, 1, 1), 2, options: new(
             inboundQueueCapacity: options.QueueCapacity, returnQueueCapacity: options.QueueCapacity));

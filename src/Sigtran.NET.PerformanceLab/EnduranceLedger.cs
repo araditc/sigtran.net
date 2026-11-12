@@ -85,14 +85,22 @@ internal sealed class EnduranceLedger
     /// <summary>Marks a known scheduled injection while traffic is in flight; this is classification, not proof of causation.</summary>
     internal void BeginFault(int id, long ticks)
     {
+        if (!TryBeginFault(id, ticks)) throw new InvalidOperationException("A fault requires active traffic.");
+    }
+
+    /// <summary>A transient empty in-flight set is a retryable boundary, not an admission/observation race.</summary>
+    internal bool TryBeginFault(int id, long ticks)
+    {
         lock (_sync)
         {
-            if (_faultId is not null || id != _recovered + 1 || _pending == 0 || _fatal || ticks < 0)
+            if (_faultId is not null || id != _recovered + 1 || _fatal || ticks < 0)
                 throw new InvalidOperationException("A fault requires ordered identity and active traffic.");
+            if (_pending == 0) return false;
             _faultId = id;
             _faultStart = ticks;
             _faultFailures = 0;
             _probeSuccesses = 0;
+            return true;
         }
     }
 

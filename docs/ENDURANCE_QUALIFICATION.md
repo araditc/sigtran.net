@@ -34,7 +34,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | 2 | 64-bit, bounded, exact admission-to-terminal ledger | Complete; concurrent/fault tests and build/test/API/pack passed |
 | 3 | Continuous runner, durable checkpoints and deadline drain | Complete; journal/deadline/cancellation tests and build/test/API/pack passed |
 | 4 | Independent long-running peer and crash-surviving counter evidence | Complete; strict Linux C build/fixtures, mmap values above 2^32 and build/test/API/pack passed |
-| 5 | Scoped incident control, recovery probes and rollback | Planned |
+| 5 | Scoped incident control, recovery probes and rollback | Complete; control/rollback safety tests and final build/test/API/pack passed |
 | 6 | Memory/heap/queue progression and bounded capture/log storage | Planned |
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Planned |
 | 8 | Durable execution, watchdogs and authenticated host control | Planned |
@@ -91,3 +91,29 @@ must remain explicit. Accepted sends are not assumed to be SDK completions.
 Every SDK admission still requires its own terminal outcome, and any peer
 validation failure prevents qualification. Counter-file type/size/identity,
 response bounds and per-operation prefix reconciliation are checked.
+
+## Fault Control And Rollback
+
+The `endurance` application uses sequenced private control commands with
+unique per-incident nonces. It durably records the scheduled fault window
+before acknowledging injection. A source-side fault counter change outside a
+declared window aborts qualification; transfer-event subscriptions are avoided
+to prevent allocating event records for every DATA message.
+
+Release pauses admission, drains every outstanding invoke, waits for transport
+activation and requires five fresh MAP successes. The same measurement path
+counts probes and ordinary work. A capture-stop acknowledgement is required
+before resuming traffic. Reconnect is enabled only in the endurance session;
+the Phase 61 capacity default still forbids reconnect/replay. Endurance uses
+explicit two-second heartbeat/acknowledgement supervision, so a ten-second
+partition exercises transport recovery rather than relying on a favourable
+alignment with the thirty-minute profile's longer heartbeat interval.
+Probe windows also record their actual UTC bounds and active local SCTP port
+for independent capture correlation across association generations.
+
+The privileged network helper accepts only a root-owned immutable per-run
+plan. Its two exact tagged rules match SCTP, one peer address and one owned
+port; Kafka TCP traffic is not matched. It verifies an independent rollback
+timer before insertion, cleans partial insertion, and disarms only after both
+owned rules are verified absent. Lock/permission failures never mean absence.
+The guard retries uncertain cleanup independently of the SDK/controller.

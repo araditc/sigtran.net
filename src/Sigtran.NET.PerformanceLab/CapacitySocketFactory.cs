@@ -8,6 +8,8 @@ internal sealed class CapacitySocketFactory(bool lanProfile) : INativeSctpSocket
     internal const string LanProfile = "lan-bounded-v1";
     internal const string DefaultProfile = "system-default";
     private Socket? _socket;
+    internal int LocalPort => _socket?.LocalEndPoint is System.Net.IPEndPoint endpoint
+        ? endpoint.Port : throw new InvalidOperationException("No connected local endpoint exists.");
 
     /// <inheritdoc />
     public Socket CreateSocket()

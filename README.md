@@ -48,6 +48,8 @@ Its continuous runner drains in-flight work at the deadline and writes bounded,
 disk-flushed hash-chain checkpoints; interrupted prefixes cannot qualify.
 The independent C peer has 64-bit, process-crash-surviving counters with explicit
 publication-tail bounds, rather than assuming an interrupted peer emitted zero.
+Sequenced fault control requires fresh MAP recovery probes and capture-stop
+acknowledgement; scoped SCTP-only network faults have independent rollback.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
