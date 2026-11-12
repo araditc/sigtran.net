@@ -523,6 +523,7 @@ Run("M2PA codec round-trips User Data and Link Status", M2paCodecRoundTripsMessa
 Run("M2PA sequence and retrieval acknowledgements wrap correctly", M2paSequenceAndRetrievalAcknowledge);
 Run("M2PA SCTP metadata enforces PPID streams and ordering", M2paMetadataEnforcesTransportPolicy);
 Run("M2PA link aligns and carries MTP2 payload", M2paLinkAlignsAndCarriesPayload);
+Run("M2PA Busy Ended publishes a sendable state before waking blocked senders", M2paBusyEndedResumesAtomically);
 Run("M2PA readiness reports link runtime capabilities", M2paReadinessReportsRuntimeCapabilities);
 Run("M3UA diagnostics format hex and summaries", M3uaDiagnosticsFormatHexAndSummaries);
 Run("M3UA ASP client completes startup handshake", M3uaAspClientCompletesStartupHandshake);
@@ -8861,6 +8862,8 @@ static void SccpStatefulServiceRoutesConnectionlessTraffic()
     AssertEqual(SccpConnectionlessMessageKind.LongUnitdata, longData.MessageKind, "SCCP LUDT kind");
     AssertSequence(longPayload, longData.UserData.Span, "SCCP LUDT payload");
 
+    Assert(SpinWait.SpinUntil(() => service.GetMetrics().ReceivedMessages == 3, TimeSpan.FromSeconds(2)),
+        "SCCP receive metrics should catch up after channel publication");
     SccpServiceMetrics metrics = service.GetMetrics();
     AssertEqual(3L, metrics.SentMessages, "SCCP sent logical messages");
     AssertEqual(3L, metrics.ReceivedMessages, "SCCP received logical messages");
@@ -10588,6 +10591,42 @@ static void M2paLinkAlignsAndCarriesPayload()
     link.StopAsync().AsTask().GetAwaiter().GetResult();
     AssertEqual(Mtp2LinkState.OutOfService, link.State, "M2PA stopped link state");
     link.DisposeAsync().AsTask().GetAwaiter().GetResult();
+}
+
+static void M2paBusyEndedResumesAtomically()
+{
+    M2paLoopbackTransport transport = new();
+    M2paLink link = new(transport, new(normalProvingDuration: TimeSpan.Zero,
+        emergencyProvingDuration: TimeSpan.Zero, alignmentTimeout: TimeSpan.FromSeconds(2)));
+    int inconsistentEvents = 0;
+    int resumed = 0;
+    link.StateChanged += (_, args) =>
+    {
+        if (args.Reason != "remote-busy-ended") return;
+        if (link.RemoteBusy || link.State != Mtp2LinkState.InService) Interlocked.Increment(ref inconsistentEvents);
+        Interlocked.Increment(ref resumed);
+    };
+    try
+    {
+        link.StartAsync().AsTask().GetAwaiter().GetResult();
+        using CancellationTokenSource deadline = new(TimeSpan.FromSeconds(10));
+        for (int cycle = 0; cycle < 32; cycle++)
+        {
+            transport.QueueLinkStatus(M2paLinkStatus.Busy);
+            Assert(SpinWait.SpinUntil(() => link.State == Mtp2LinkState.Busy, TimeSpan.FromSeconds(2)), "Peer Busy missing");
+            Task send = link.SendAsync(new byte[] { (byte)cycle }, deadline.Token).AsTask();
+            Assert(!send.IsCompleted, "Busy must fence admission");
+            transport.QueueLinkStatus(M2paLinkStatus.BusyEnded);
+            send.GetAwaiter().GetResult();
+            byte[] buffer = new byte[1];
+            int count = link.ReceiveAsync(buffer, deadline.Token).AsTask().GetAwaiter().GetResult();
+            Assert(count == 1 && buffer[0] == cycle, "Busy recovery changed payload");
+            Assert(SpinWait.SpinUntil(() => link.RetrieveUnacknowledged().Count == 0
+                && Volatile.Read(ref resumed) == cycle + 1, TimeSpan.FromSeconds(2)), "Busy recovery did not finish");
+        }
+        AssertEqual(0, inconsistentEvents, "Busy recovery observers must see coherent state");
+    }
+    finally { link.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
 }
 
 static void M2paReadinessReportsRuntimeCapabilities()

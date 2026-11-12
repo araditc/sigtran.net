@@ -175,3 +175,12 @@ integrity and idle expiry. The standard runtime's
 [zero-byte receive implementation](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Net.Sockets/src/System/Net/Sockets/SocketPal.Unix.cs)
 uses a one-byte peek; this is a measured optimization candidate, not proof of
 the cause of every historical low window.
+
+The complete Linux suite also exposed a pre-existing M2PA Busy Ended race:
+the availability signal was released before `InService` was visible. Recovery
+now publishes congestion/state atomically before waking senders, with observers
+outside the state lock. A 32-cycle native-independent test exercises recovery
+and verifies payload/acknowledgement accounting. This is not a claimed cause of
+M3UA capacity stalls. The SCCP metrics test now waits for its documented
+point-in-time counter to catch up with channel publication instead of assuming
+the producer continuation has already run when the consumer returns.

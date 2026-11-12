@@ -668,12 +668,7 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
                 SetState(Mtp2LinkState.Busy, "remote-busy");
                 break;
             case M2paLinkStatus.BusyEnded:
-                EndRemoteBusy();
-                if (!LocalProcessorOutage && !RemoteProcessorOutage)
-                {
-                    SetState(Mtp2LinkState.InService, "remote-busy-ended");
-                }
-
+                EndRemoteBusy(restoreService: true);
                 break;
             case M2paLinkStatus.OutOfService:
                 SetState(Mtp2LinkState.OutOfService, "remote-out-of-service");
@@ -775,21 +770,30 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
         }
     }
 
-    private void EndRemoteBusy()
+    private void EndRemoteBusy(bool restoreService = false)
     {
         TaskCompletionSource<bool>? available = null;
+        Mtp2LinkState previous;
+        Mtp2LinkState current;
         lock (_sync)
         {
-            if (!_remoteBusy)
+            previous = _state;
+            if (restoreService && !_localProcessorOutage && !_remoteProcessorOutage)
             {
-                return;
+                _state = Mtp2LinkState.InService;
             }
 
-            _remoteBusy = false;
-            available = _remoteAvailable;
+            current = _state;
+            if (_remoteBusy)
+            {
+                _remoteBusy = false;
+                available = _remoteAvailable;
+            }
         }
 
-        available.TrySetResult(true);
+        // A resumed sender must observe both cleared congestion and the restored link state.
+        available?.TrySetResult(true);
+        if (previous != current) PublishStateChanged(previous, current, "remote-busy-ended");
     }
 
     private async Task StopCoreAsync(
@@ -890,6 +894,11 @@ public sealed class M2paLink : IMtp2Link, IAsyncDisposable
             _state = state;
         }
 
+        PublishStateChanged(previous, state, reason);
+    }
+
+    private void PublishStateChanged(Mtp2LinkState previous, Mtp2LinkState state, string reason)
+    {
         EventHandler<M2paLinkStateChangedEventArgs>? handler = StateChanged;
         if (handler is null)
         {
