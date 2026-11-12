@@ -62,7 +62,7 @@ def render(report):
         for name in ('sdk', 'peer'):
             node = hardware[name]
             text += f"- {name.upper()} host: {node['logicalProcessors']} logical CPUs, {node['memoryMiB']} MiB RAM, Linux `{node['kernel']}`.\n"
-        text += '\nThe private peer was constrained to one CPU at nice 10. Declared logical\n'
+        text += f"\nThe private peer was constrained to one CPU at nice {report.get('peerNice', 10)}. Declared logical\n"
         text += 'CPUs do not establish dedicated physical-core performance.\n'
     if 'cpuSample' in report:
         sample = report['cpuSample']

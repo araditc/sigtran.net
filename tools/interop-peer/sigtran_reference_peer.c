@@ -95,14 +95,17 @@ static int write_capacity_summary(const char *path, unsigned int operations)
 {
     struct rusage resources;
     if (getrusage(RUSAGE_SELF, &resources) != 0) return -1;
+    errno = 0;
+    int priority = getpriority(PRIO_PROCESS, 0);
+    if (errno != 0) return -1;
     FILE *file = fopen(path, "wx");
     if (file == NULL) return -1;
     int result = fprintf(file,
         "{\"schemaVersion\":1,\"workload\":\"itu-map-sms-five-operation-equal-mix-v1\","
         "\"received\":%u,\"responses\":%u,\"byOperation\":[%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 "],"
-        "\"processId\":%ld,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,\"passed\":true}\n",
+        "\"processId\":%ld,\"nice\":%d,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,\"passed\":true}\n",
         operations, operations, capacity_counts[0], capacity_counts[1], capacity_counts[2],
-        capacity_counts[3], capacity_counts[4], (long)getpid(),
+        capacity_counts[3], capacity_counts[4], (long)getpid(), priority,
         resources.ru_utime.tv_sec + resources.ru_stime.tv_sec
             + (resources.ru_utime.tv_usec + resources.ru_stime.tv_usec) / 1000000.0,
         resources.ru_maxrss);

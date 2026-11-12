@@ -314,7 +314,7 @@ def verify(root, expected_source):
     if 'processReceiptVersion' in inventory:
         require(inventory['processReceiptVersion'] == 1 and inventory.get('collectionErrors') == [],
                 'Incomplete durable process collection')
-        for role in ('sdk', 'peer', 'capture'):
+        for role in (('sdk', 'peer', 'capture', 'observer') if inventory.get('peerObservationVersion') else ('sdk', 'peer', 'capture')):
             name = role + '.exit'
             require(name in hashes, 'Missing durable exit receipt')
             receipt = (root / name).read_bytes()
@@ -323,6 +323,14 @@ def verify(root, expected_source):
                     'Exit receipt disagrees with inventory')
     sdk = read_json(root / 'result-sdk.json')
     peer = read_json(root / 'peer.json')
+    if inventory.get('peerObservationVersion'):
+        require(inventory['peerObservationVersion'] == 1 and inventory['observerExitCode'] == 0
+                and 'peer-runtime.json' in hashes, 'Missing bounded peer observation')
+        observed = read_json(root / 'peer-runtime.json')
+        require(observed['schemaVersion'] == 1 and observed['observedProcessExit'] is True
+                and observed['processId'] == peer['processId'] and peer['nice'] == inventory['peerNice']
+                and 0 <= peer['nice'] <= 19 and 2 <= len(observed['records']) <= inventory['durationSeconds'] + 90,
+                'Peer observation identity or priority differs')
     log = (root / 'capture.log').read_text()
     require(re.search(r"Packets received/dropped on interface '[^']+': [0-9]+/0 \(pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0\)", log),
             'Missing capture counters or packet drops')
@@ -338,6 +346,8 @@ def verify(root, expected_source):
                                 'kernel': inventory['before'][name]['kernel']}
                           for name in ('sdk', 'peer')}
     result['runtime'] = sdk['Runtime']
+    if 'nice' in peer:
+        result['peerNice'] = peer['nice']
     limits = runtime_worker_limits(sdk, inventory)
     if limits is not None:
         result['threadPoolLimits'] = limits

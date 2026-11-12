@@ -243,3 +243,14 @@ not a stable public configuration contract, a library default or a universal
 recommendation. Evidence records the environment request and runtime version,
 not an invented observation of private runtime fields. Measure it separately
 and requalify on runtime changes; leave Kafka and host policy unchanged.
+
+The six-minute spin-zero experiment was rejected as the final profile:
+10,801.24 average TPS, minimum 4,150 and ten low seconds. It did reproduce a
+1,062.687 ms tail while SDK CPU fell in the low brackets, without long GC or
+new SDK-side retransmissions. The evidence does not prove a peer-side cause.
+New runs therefore observe only the owned C peer's CPU, state, actual nice,
+major faults and aggregate host CPU/SCTP counters at one-second cadence.
+No Kafka task is sampled. A separate explicit `--peer-nice 0` trial uses normal
+priority for the private peer on the same single CPU; the default remains 10.
+This changes only the owned test process and records its observed priority.
+Cross-host clocks and aggregate counters do not constitute exact causal traces.

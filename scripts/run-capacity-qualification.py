@@ -89,7 +89,7 @@ def start_owned(client, root, name, shell):
 
 def owned_shell(root, name, shell):
     """The receipt is written only after wait observes the owned timeout's real exit status."""
-    if name not in ('sdk', 'peer', 'capture'):
+    if name not in ('sdk', 'peer', 'capture', 'observer'):
         raise ValueError('Invalid owned job name')
     pid = shlex.quote(root + '/' + name + '.pid')
     pending = shlex.quote(root + '/' + name + '.exit.pending')
@@ -135,6 +135,8 @@ def run(args):
         ipaddress.IPv4Address(host)
     if args.peer_cpu < 0:
         raise ValueError('Invalid peer CPU')
+    if not 0 <= args.peer_nice <= 19:
+        raise ValueError('Peer nice must be between normal priority 0 and 19')
     if not 1 <= args.concurrency <= 4096 or not 1024 <= args.port <= 65535:
         raise ValueError('Invalid concurrency or unprivileged SCTP port')
     if subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=ROOT).strip():
@@ -212,12 +214,14 @@ def run(args):
                     'diagnostic': args.diagnostic or not eligible, 'concurrency': args.concurrency, 'port': args.port}
         manifest['maximumWorkerThreads'] = args.maximum_workers
         manifest['disableWorkerSpin'] = args.disable_worker_spin
+        manifest['peerNice'] = args.peer_nice
+        manifest['peerObservationVersion'] = 1
         manifest['processReceiptVersion'] = 1
         manifest['collectionErrors'] = []
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
-                        'tools/interop-peer', 'README.md', 'LICENSE'], cwd=ROOT, check=True)
+                        'tools/interop-peer', 'scripts/sample-capacity-peer.py', 'README.md', 'LICENSE'], cwd=ROOT, check=True)
         with sdk.open_sftp() as sftp:
             sftp.put(str(archive), roots['sdk'] + '/source.tar')
         root = roots['sdk']
@@ -231,10 +235,11 @@ def run(args):
                 source.get(remote, str(output / name))
                 destination.put(str(output / name), roots['peer'] + '/' + name)
             destination.chmod(roots['peer'] + '/peer', 0o700)
+            destination.put(str(ROOT / 'scripts/sample-capacity-peer.py'), roots['peer'] + '/sample-capacity-peer.py')
         budget = args.duration + 80
         peer_root = roots['peer']
         peer_line = ('timeout --signal=TERM --kill-after=5s ' + str(budget) + 's '
-                     + shlex.join(['env', 'LD_LIBRARY_PATH=' + peer_root, 'nice', '-n', '10',
+                     + shlex.join(['env', 'LD_LIBRARY_PATH=' + peer_root, 'nice', '-n', str(args.peer_nice),
                                    'taskset', '-c', str(args.peer_cpu), peer_root + '/peer', args.peer_host,
                                    str(args.port), '0', 'capacity', peer_root + '/peer.json'])
                      + ' >' + shlex.quote(peer_root + '/peer.log') + ' 2>&1')
@@ -254,6 +259,12 @@ def run(args):
             time.sleep(.1)
         else:
             raise TimeoutError('Peer listen deadline')
+        observer_line = shlex.join(['timeout', '--kill-after=5s', str(budget + 5) + 's',
+                                   'nice', '-n', '19', 'python3', peer_root + '/sample-capacity-peer.py',
+                                   peer_root, '--cpu', str(args.peer_cpu), '--budget', str(budget)])
+        observer_line += ' >' + shlex.quote(peer_root + '/observer.log') + ' 2>&1'
+        observer = start_owned(peer, peer_root, 'observer', observer_line)
+        channels.append((peer, peer_root, 'observer', observer))
         interface = route[0]['dev']
         capture_line = shlex.join(['timeout', '--kill-after=5s', '25s', 'dumpcap', '-p', '-P', '-i', interface,
                                   '-a', 'packets:8192', '-a', 'duration:20', '-a', 'filesize:16384',
@@ -281,7 +292,7 @@ def run(args):
                 raise TimeoutError('Workload controller deadline')
             time.sleep(1)
         manifest['sdkExitCode'] = exit_code(sdk, root, 'sdk')
-        for client, job_root, name in ((peer, peer_root, 'peer'), (sdk, root, 'capture')):
+        for client, job_root, name in ((peer, peer_root, 'peer'), (sdk, root, 'capture'), (peer, peer_root, 'observer')):
             end = time.monotonic() + 30
             while exit_code(client, job_root, name) is None and time.monotonic() < end:
                 time.sleep(.2)
@@ -289,6 +300,7 @@ def run(args):
                 raise TimeoutError('Owned child did not stop')
         manifest['peerExitCode'] = exit_code(peer, peer_root, 'peer')
         manifest['captureExitCode'] = exit_code(sdk, root, 'capture')
+        manifest['observerExitCode'] = exit_code(peer, peer_root, 'observer')
         manifest['after'] = {'sdk': remote_read(sdk, lambda: remote_inventory(sdk)),
                              'peer': remote_read(peer, lambda: remote_inventory(peer))}
         manifest['completed'] = True
@@ -321,7 +333,8 @@ def run(args):
             if name not in roots:
                 continue
             files = ['build.log', 'peer-build.log', 'sdk.log', 'capture.log', 'sample.pcap', 'result/sdk.json',
-                     'sdk.exit', 'capture.exit'] if name == 'sdk' else ['peer.log', 'peer.json', 'peer.exit']
+                     'sdk.exit', 'capture.exit'] if name == 'sdk' else ['peer.log', 'peer.json', 'peer.exit',
+                         'observer.exit', 'observer.log', 'peer-runtime.json']
             try:
                 def collect():
                     with client.open_sftp() as sftp:
@@ -342,7 +355,8 @@ def run(args):
         hashes = {file.name: hashlib.sha256(file.read_bytes()).hexdigest()
                   for file in output.iterdir() if file.is_file() and file.name != 'sha256.json'}
         (output / 'sha256.json').write_text(json.dumps(hashes, indent=2))
-    return manifest['sdkExitCode'] or manifest['peerExitCode'] or manifest['captureExitCode'] or bool(manifest['collectionErrors'])
+    return (manifest['sdkExitCode'] or manifest['peerExitCode'] or manifest['captureExitCode']
+            or manifest['observerExitCode'] or bool(manifest['collectionErrors']))
 
 
 if __name__ == '__main__':
@@ -357,6 +371,7 @@ if __name__ == '__main__':
     parser.add_argument('--duration', type=int, default=1800)
     parser.add_argument('--concurrency', type=int, default=256)
     parser.add_argument('--peer-cpu', type=int, default=3)
+    parser.add_argument('--peer-nice', type=int, default=10)
     parser.add_argument('--maximum-workers', type=int)
     parser.add_argument('--disable-worker-spin', action='store_true')
     parser.add_argument('--diagnostic', action='store_true')
