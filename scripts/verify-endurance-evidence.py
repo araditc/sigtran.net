@@ -123,7 +123,7 @@ def replay_resources(path, header, checkpoint_samples, final):
     require((size - 8) // OBSERVATION.size <= SECONDS + 60, 'Observation count exceeds bound')
     wanted = {sample['ElapsedSeconds']: sample for sample in checkpoint_samples}
     require(len(wanted) == len(checkpoint_samples), 'Repeated checkpoint timestamp')
-    previous = None
+    previous = first = None
     number, maximum_gap, maximum_idle, last_progress, last_success = 0, 0.0, 0.0, 0.0, 0
     rss = managed = heap = growth = max_pending = max_active = max_out = max_in = 0
     baseline = None
@@ -132,6 +132,7 @@ def replay_resources(path, header, checkpoint_samples, final):
         require(stream.read(8) == b'SGENOBS1', 'Observation format differs')
         while data := stream.read(OBSERVATION.size):
             row = OBSERVATION.unpack(data)
+            if first is None: first = row
             elapsed, *rest = row
             finite(elapsed); finite(row[7])
             require(all(type(value) is int and value >= 0 for i, value in enumerate(row) if i not in (0, 7)), 'Negative resource counter')
@@ -171,11 +172,13 @@ def replay_resources(path, header, checkpoint_samples, final):
             and summary['PeakInboundQueue'] >= max_in and max(summary['PeakActive'], summary['PeakOutboundQueue'], summary['PeakInboundQueue']) <= header['QueueCapacity'],
             'Reported queue/context bounds differ')
     require(rss <= 512 * 1048576 and max(managed, heap) <= 256 * 1048576 and growth <= 128 * 1048576
-            and maximum_idle <= 120 and summary['WithinBounds'] is True and summary['Violations'] == [], 'Resource/progress qualification failed')
+            and max(maximum_gap, maximum_idle) <= 120 and summary['WithinBounds'] is True and summary['Violations'] == [], 'Resource/progress qualification failed')
     terminal = counts(final['Run']['Counts'])
     require((terminal['started'], terminal['successes'], terminal['pending']) == previous[14:17], 'Final ledger differs from last original observation')
     return dict(observations=number, maximumObservationGapSeconds=maximum_gap, peakWorkingSetBytes=rss,
-                maximumObservedManagedBytes=managed, maximumObservedHeapBytes=heap, maximumResidentGrowthBytes=growth)
+                maximumObservedManagedBytes=managed, maximumObservedHeapBytes=heap, maximumResidentGrowthBytes=growth,
+                processCpuSeconds=previous[7] - first[7], allocatedBytes=previous[6] - first[6],
+                gen0Collections=previous[8] - first[8], gen1Collections=previous[9] - first[9], gen2Collections=previous[10] - first[10])
 
 
 def journal_contract(frames, sdk, expected_source):
@@ -344,6 +347,13 @@ def maintenance(audit, run):
                 unitFilesUnchanged=True, fallbackTimerCancelled=True)
 
 
+def supervisor_cleanup(receipt, inventory):
+    """A successful child does not imply its privileged supervisor verified restoration."""
+    require(receipt.get('verified') is True and inventory.get('supervisorCleanupVerified') is True,
+            'Independent supervisor cleanup receipt missing or unsuccessful')
+    utc_time(receipt['observedAtUtc'])
+
+
 def verify(root, expected_source):
     root = pathlib.Path(root).resolve()
     require(re.fullmatch('[0-9a-f]{40}', expected_source), 'Expected source must be a full commit')
@@ -351,7 +361,8 @@ def verify(root, expected_source):
     required = {'source.tar', 'policy.json', 'inventory.json', 'sdk/sdk.json', 'sdk/checkpoints.jsonl',
                 'sdk/resource-observations.bin', 'sdk.exit', 'controller.exit', 'controller-events.jsonl',
                 'peer-result.json', 'peer-counters.bin', 'host-maintenance.json', 'network-cleanup.json',
-                'network-events.jsonl', 'captures.json', 'peer', 'peer.log', 'libsctp.so.1', 'sdk-executable.dll', 'sdk-library.dll'}
+                'network-events.jsonl', 'captures.json', 'peer', 'peer.log', 'libsctp.so.1', 'sdk-executable.dll', 'sdk-library.dll',
+                'supervisor-cleanup.json'}
     require(required <= hashes.keys() and len(hashes) <= 512, 'Required raw evidence is incomplete')
     for name, expected in hashes.items():
         require(re.fullmatch('[0-9a-f]{64}', expected) and capacity.digest(relative_file(root, name)) == expected, 'Raw artifact hash mismatch: ' + name)
@@ -366,6 +377,7 @@ def verify(root, expected_source):
     inventory, sdk, peer = (read_json(root / name) for name in ('inventory.json', 'sdk/sdk.json', 'peer-result.json'))
     require(inventory['sourceCommit'] == peer['sourceCommit'] == expected_source and inventory['completed'] is True
             and inventory['cleanupVerified'] is True and inventory['collectionErrors'] == [], 'Controller/peer collection is incomplete')
+    supervisor_cleanup(read_json(root / 'supervisor-cleanup.json'), inventory)
     for role in ('sdk', 'controller'):
         require((root / (role + '.exit')).read_bytes() == b'0\n' and inventory[role + 'ExitCode'] == 0, 'Actual child exit is not zero')
     require(peer['binarySha256'] == hashes['peer'] and peer['librarySha256'] == hashes['libsctp.so.1']
@@ -424,6 +436,7 @@ def verify(root, expected_source):
                 policy=POLICY, executionValid=True, qualificationPassed=qualified, stablePromotion=False,
                 diagnostic=header['Diagnostic'], reasons=reasons, durationSeconds=seconds,
                 completedTransactions=measured, completedTps=tps, faultWindowTerminalOutcomes=terminal['faultTerminals'],
+                lateSuccesses=sdk['Run']['LateSuccesses'], terminalAdmissions=terminal['started'], latency=sdk['Run']['Latency'],
                 unexpectedFailures=terminal['unexpected'], unresolvedOperations=terminal['pending'],
                 recoveredIncidents=len(faults), faultScenarios=len(KINDS), resources=resources,
                 wire=wire, maintenance=restored, socketProfile=header['SocketProfile'],

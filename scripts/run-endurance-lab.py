@@ -274,6 +274,7 @@ def collect(value, root):
     raw = root / 'work'
     inventory = json.loads((raw / 'inventory.json').read_text())
     inventory['controllerExitCode'] = int((raw / 'controller.exit').read_text())
+    inventory['supervisorCleanupVerified'] = json.loads((raw / 'supervisor-cleanup.json').read_text())['verified']
     host.atomic(raw / 'inventory.json', inventory)
     files = {}
     for path in sorted(raw.rglob('*')):
@@ -311,8 +312,13 @@ def main():
         signal.signal(signal.SIGTERM, forward); signal.signal(signal.SIGINT, forward)
         code = child.wait()
         (root / 'work/controller.exit').write_text(str(code) + '\n')
-        try: cleanup(value, root)
-        finally: collect(value, root)
+        cleanup_verified = False
+        try:
+            cleanup(value, root)
+            cleanup_verified = True
+        finally:
+            host.atomic(root / 'work/supervisor-cleanup.json', dict(verified=cleanup_verified, observedAtUtc=host.now()))
+            collect(value, root)
         if code: raise SystemExit(1)
 
 

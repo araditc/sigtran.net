@@ -26,6 +26,13 @@ def frame(sequence, previous, payload):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_successful_child_cannot_substitute_for_supervisor_cleanup(self):
+        good = dict(verified=True, observedAtUtc='2026-01-01T00:00:00+00:00')
+        evidence.supervisor_cleanup(good, dict(supervisorCleanupVerified=True))
+        for receipt, inventory in ((good, {}), (dict(good, verified=False), dict(supervisorCleanupVerified=True)),
+                                   (good, dict(supervisorCleanupVerified=False))):
+            with self.assertRaises(ValueError): evidence.supervisor_cleanup(receipt, inventory)
+
     def test_journal_requires_exact_payload_order_and_final_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             path = pathlib.Path(directory) / 'journal'

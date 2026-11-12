@@ -27,6 +27,14 @@ print(json.dumps(result,indent=2))
 '''
 
 
+def qualification_status(value):
+    """Require the independent verdict and successful stopped supervision; liveness never qualifies."""
+    unit, summary = value.get('unit', {}), value.get('verifiedSummary', {})
+    return (unit.get('ActiveState') == 'inactive' and unit.get('Result') == 'success'
+            and summary.get('executionValid') is True and summary.get('qualificationPassed') is True
+            and summary.get('stablePromotion') is False)
+
+
 def main():
     import paramiko
     parser = argparse.ArgumentParser(description=__doc__)
@@ -44,6 +52,7 @@ def main():
     try:
         client.connect(args.host, username='ammar', key_filename=args.key, look_for_keys=False, allow_agent=False, timeout=15)
         result = json.loads(bootstrap.command(client, ['python3', '-c', CODE, args.run_id], timeout=30))
+        result['qualificationPassed'] = qualification_status(result)
         if args.summary_output:
             if result['unit']['ActiveState'] != 'inactive' or result['unit']['Result'] != 'success':
                 raise ValueError('Successful stopped supervision is required before summary retrieval')

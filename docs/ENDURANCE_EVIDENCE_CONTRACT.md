@@ -12,16 +12,21 @@ The protected raw root contains `source.tar`, executed `policy.json`,
 `sdk/checkpoints.jsonl`, `sdk/sdk.json`, `sdk/resource-observations.bin`,
 `peer-result.json`, `peer-counters.bin`, `host-maintenance.json`,
 `controller-events.jsonl`, `network-events.jsonl`, `network-cleanup.json`,
+`supervisor-cleanup.json`,
 `captures.json`, bounded capture/log files, `peer`, `libsctp.so.1`,
 `sdk-executable.dll`, `sdk-library.dll` and a final `sha256.json` inventory.
 Private SSH keys and credentials are outside this evidence root and must not
 enter hashes, reports, Git or workflow artifacts.
 
-The final collector runs only after the host-local service/children stop. It
+The final collector runs only after SDK/controller/capture children stop and
+scoped cleanup is checked. Retrieval additionally requires successful stopped
+systemd supervision, including ExecStopPost. The collector
 records actual exit receipts, execution binary hashes, before/after machine
 and boot identities, observed SDK PID/start ticks, scoped-rule cleanup and
 collection errors. It hashes every retained artifact without following links
-or escaping the root. The source archive's commit comment and policy bytes
+or escaping the root. The supervisor's actual post-child cleanup receipt
+must also be successful; zero SDK/controller exits cannot substitute for it.
+The source archive's commit comment and policy bytes
 must match the candidate/executed policy. No raw artifact is overwritten by
 publication. Aborted prefixes remain diagnostic, not passing evidence.
 

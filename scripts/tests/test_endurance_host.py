@@ -10,6 +10,7 @@ import types
 spec = importlib.util.spec_from_file_location('endurance_host_test', pathlib.Path(__file__).resolve().parents[1] / 'endurance-host.py')
 host = importlib.util.module_from_spec(spec); spec.loader.exec_module(host)
 driver = host.load_module('endurance_driver_test', 'run-endurance-lab.py')
+inspection = host.load_module('endurance_inspection_test', 'inspect-endurance-lab.py')
 
 
 def fixture():
@@ -20,6 +21,13 @@ def fixture():
 
 
 class HostTests(unittest.TestCase):
+    def test_qualification_needs_independent_verdict_and_stopped_successful_supervision(self):
+        summary = dict(executionValid=True, qualificationPassed=True, stablePromotion=False)
+        self.assertTrue(inspection.qualification_status(dict(unit=dict(ActiveState='inactive', Result='success'), verifiedSummary=summary)))
+        self.assertFalse(inspection.qualification_status(dict(unit=dict(ActiveState='active', Result='success'), verifiedSummary=summary)))
+        self.assertFalse(inspection.qualification_status(dict(unit=dict(ActiveState='failed', Result='exit-code'), verifiedSummary=summary)))
+        self.assertFalse(inspection.qualification_status(dict(unit=dict(ActiveState='inactive', Result='success'), verifiedSummary=dict(summary, qualificationPassed=False))))
+
     def test_child_stop_failure_still_requests_host_restoration(self):
         peer = object.__new__(host.Peer); peer.process = object(); peer.value = {}; peer.root = pathlib.Path('/protected')
         def fail(_): raise RuntimeError('Synthetic child-stop failure')

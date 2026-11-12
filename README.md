@@ -74,6 +74,10 @@ then completed 4,251,513 measured transactions at 11,809.76 TPS, recovered all
 three fault families and matched all fifteen fresh PCAP probe pairs. Unexpected
 failures/unresolved work were zero; original Kafka state and scoped-rule cleanup
 were verified. This closes only the diagnostic unit, not 72-hour qualification.
+The [continuous execution status](docs/ENDURANCE_EXECUTION_STATUS.md) tracks
+unit 10 separately. Its final verifier also requires the actual supervisor's
+successful cleanup receipt, not only zero child exit codes. No Phase 62 or
+stable qualification is claimed before the full duration and verified exit.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
