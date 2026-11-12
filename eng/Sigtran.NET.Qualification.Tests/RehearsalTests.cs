@@ -9,7 +9,8 @@ internal static partial class Tests
         Cases.Add(("All-gate synthetic rehearsal passes only through injected test verifier", () =>
         {
             using BundleFixture f = new();
-            string[] kinds = ["report", "pcap", "comparison", "vectors", "acceptance", "cluster-validation", "certificate-verification", "api-diff", "protection"];
+            string[] kinds = ["report", "pcap", "comparison", "vectors", "acceptance", "cluster-validation", "certificate-verification", "api-diff", "protection",
+                "checkpoint-journal", "resource-observations", "terminal-accounting", "host-restoration"];
             List<EvidenceArtifact> artifacts = [];
             foreach (string kind in kinds)
             {
@@ -22,6 +23,9 @@ internal static partial class Tests
                 ["vectorCount"] = 10, ["negativeCases"] = 5, ["completedTps"] = 10000,
                 ["targetTps"] = 10000, ["minimumOneSecondTps"] = 10000, ["dedicatedHosts"] = 2,
                 ["durationSeconds"] = 259200, ["distinctHosts"] = 2, ["faultScenarios"] = 3,
+                ["continuousSdkProcesses"] = 1, ["recoveredIncidents"] = 9, ["unexpectedFailures"] = 0,
+                ["accountingViolations"] = 0, ["maximumCheckpointGapSeconds"] = 60, ["restorationVerified"] = 1,
+                ["peakWorkingSetMiB"] = 128, ["maximumManagedHeapMiB"] = 64, ["maximumResidentGrowthMiB"] = 16,
                 ["unresolvedOperations"] = 0, ["pathFailures"] = 1, ["survivingPaths"] = 1,
                 ["linkFailuresRecovered"] = 1, ["operationTypes"] = 5, ["nodeFailureRecovery"] = 1,
                 ["policyRecovery"] = 1, ["drain"] = 1, ["rollback"] = 1, ["signatureVerified"] = 1,

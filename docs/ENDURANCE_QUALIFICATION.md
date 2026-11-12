@@ -25,6 +25,8 @@ an SCTP-only partition restricted to the owned lab flow. Kafka TCP ports,
 configuration and topic data are outside fault-injection scope. A 72-hour
 Kafka maintenance window requires separate explicit owner approval; the prior
 30-minute permission is not assumed to authorize three days of service outage.
+The owner has now explicitly approved temporary Kafka/health-timer shutdown
+on the peer for this entire 72-hour test, with verified restoration on exit.
 
 ## Ten Units
 
@@ -36,7 +38,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | 4 | Independent long-running peer and crash-surviving counter evidence | Complete; strict Linux C build/fixtures, mmap values above 2^32 and build/test/API/pack passed |
 | 5 | Scoped incident control, recovery probes and rollback | Complete; control/rollback safety tests and final build/test/API/pack passed |
 | 6 | Memory/heap/queue progression and bounded capture/log storage | Complete; resource/rollover/binary-format tests and final build/test/API/pack passed |
-| 7 | Independent verifier, tamper rejection and release-boundary tests | Planned |
+| 7 | Independent verifier, tamper rejection and release-boundary tests | Complete; corruption/release-boundary tests and final build/test/API/pack passed |
 | 8 | Durable execution, watchdogs and authenticated host control | Planned |
 | 9 | Real two-host short diagnostic of all incident families | Planned |
 | 10 | Actual 72-hour run, restoration, verification and exit report | Pending real execution; cannot be claimed early |

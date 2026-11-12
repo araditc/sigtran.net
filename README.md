@@ -53,6 +53,10 @@ acknowledgement; scoped SCTP-only network faults have independent rollback.
 One-second resource/progress observations are replayable from a bounded binary
 stream with minute checkpoints;
 memory, queue or progress breaches fail the run, and TCAP rollover is tested.
+The [independent evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires
+raw-journal/resource replay, actual fault/rollback receipts and five correlated
+PCAP recovery probes per incident. Legacy duration-only soak summaries cannot
+close this gate; a short diagnostic never becomes a 72-hour qualification.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

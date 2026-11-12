@@ -4,6 +4,16 @@ internal static partial class Tests
 {
     private static void RegisterEvaluation()
     {
+        Cases.Add(("Legacy duration-only soak cannot close independently verified endurance", () =>
+        {
+            using BundleFixture f = new();
+            var b = f.Bundle with { GateId = "multi-host-soak", Result = new("passed", 2592000000, 0,
+                new() { ["durationSeconds"] = 259200, ["faultScenarios"] = 3,
+                    ["distinctHosts"] = 2, ["unresolvedOperations"] = 0 }) };
+            var errors = ReleaseEvaluation.CheckOutcome("multi-host-soak", b);
+            Check(errors.Any(e => e.Contains("terminal-accounting")) && errors.Any(e => e.Contains("restorationVerified")),
+                "legacy result bypassed accounting/restoration evidence");
+        }));
         Cases.Add(("Removing or duplicating mandatory gates cannot yield GO", () =>
         {
             using BundleFixture f = new();

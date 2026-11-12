@@ -99,7 +99,17 @@ internal sealed record ReleaseEvaluation(string Decision, GateDecision[] Gates, 
                     errors.Add("Completed TPS must reconcile with observed transactions and measured duration.");
                 Require("pcap"); Require("comparison");
                 break;
-            case "multi-host-soak": Minimum("durationSeconds", 259200); Minimum("faultScenarios", 3); Minimum("distinctHosts", 2); Maximum("unresolvedOperations", 0); break;
+            case "multi-host-soak":
+                Minimum("durationSeconds", 259200); Minimum("faultScenarios", 3); Minimum("distinctHosts", 2);
+                Minimum("completedTps", CapacityTargetTps); Minimum("continuousSdkProcesses", 1);
+                Maximum("continuousSdkProcesses", 1); Minimum("recoveredIncidents", 9);
+                Maximum("unresolvedOperations", 0); Maximum("unexpectedFailures", 0);
+                Maximum("accountingViolations", 0); Maximum("maximumCheckpointGapSeconds", 120);
+                Maximum("peakWorkingSetMiB", 512); Maximum("maximumManagedHeapMiB", 256);
+                Maximum("maximumResidentGrowthMiB", 128); Minimum("restorationVerified", 1);
+                Require("checkpoint-journal"); Require("resource-observations"); Require("terminal-accounting");
+                Require("host-restoration"); Require("pcap"); Require("comparison");
+                break;
             case "native-multihoming": Minimum("pathFailures", 1); Minimum("survivingPaths", 1); break;
             case "mtp3-m2pa": Minimum("linkFailuresRecovered", 1); break;
             case "operator-profile": Minimum("operationTypes", 5); Minimum("negativeCases", 4); Require("acceptance"); break;
