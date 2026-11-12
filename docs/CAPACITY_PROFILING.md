@@ -204,3 +204,16 @@ GC pause/Gen2 deltas, observed ThreadPool queue maximum and available namespace
 SCTP deltas. Missing counters stay absent, and `coversCompleteWindow` explicitly
 marks incomplete bracketing. This evidence supports diagnosis, not an automatic
 root-cause label or qualification waiver.
+
+The OID trial reduced allocation to about 9,189 bytes/success but retained five
+low seconds (minimum 8,940 TPS); lower allocation alone did not solve scheduling
+headroom. A read-only cgroup check found no quota throttling. A subsequent
+application-only experiment can use `--maximum-workers 4` on the declared
+four-processor SDK VM. This sets the documented .NET 10
+[`DOTNET_ThreadPool_ForceMaxWorkerThreads`](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/threading)
+only for the owned workload process, never for the SDK library, Kafka, services
+or the machine. The controller rejects limits below the declared processor
+count or above 1,024. SDK evidence records actual `ThreadPoolLimits`; a declared
+limit that is not observed fails verification. This is an experiment until its
+measured correctness, tails and throughput are reviewed; it is not a universal
+application-threading recommendation.

@@ -188,6 +188,15 @@ class EvidenceTests(unittest.TestCase):
         stage['RuntimeObservations'] = [None] * 1815
         with self.assertRaisesRegex(ValueError, 'Unbounded'): module.runtime_diagnostics(stage)
 
+    def test_worker_profile_must_match_actual_runtime_limits(self):
+        limits = dict(MinimumWorkers=4, MaximumWorkers=4, MinimumIoThreads=1, MaximumIoThreads=1000)
+        self.assertEqual(module.runtime_worker_limits({'ThreadPoolLimits': limits}, {'maximumWorkerThreads': 4}), limits)
+        with self.assertRaisesRegex(ValueError, 'not observed'):
+            module.runtime_worker_limits({'ThreadPoolLimits': limits}, {'maximumWorkerThreads': 8})
+        with self.assertRaisesRegex(ValueError, 'lacks observed'):
+            module.runtime_worker_limits({}, {'maximumWorkerThreads': 4})
+        self.assertIsNone(module.runtime_worker_limits({}, {}))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -46,6 +46,9 @@ TCAP dialogue OIDs are decoded without numeric-string round trips while
 retaining BER structure checks and bounded arc validation.
 Verified summaries expose timestamp-bracketed stall observations without
 turning sampled correlation or missing counters into a root-cause claim.
+The capacity runner supports an explicit, bounded application worker-limit
+experiment and records actual runtime limits; the library never changes its
+consumer's ThreadPool configuration.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining

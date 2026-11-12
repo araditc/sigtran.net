@@ -80,6 +80,13 @@ def render(report):
                  f"maximum sampling gap {observation['maximumSampleGapSeconds']:.3f} s; "
                  f"cumulative GC pause {observation['totalGcPauseMilliseconds']:.3f} ms.\n\n")
         text += observation['caveat'] + '\n'
+    if 'threadPoolLimits' in report:
+        limits = report['threadPoolLimits']
+        text += '\n## Application Runtime Profile\n\n'
+        text += f"Observed worker minimum/maximum: {limits['MinimumWorkers']} / {limits['MaximumWorkers']}.\n\n"
+        text += 'Worker limits apply only to the workload application. The SDK library never\n'
+        text += 'changes a consumer thread pool. Results are conditional on this declared\n'
+        text += 'profile and do not establish an HTTP or mixed-service workload SLA.\n'
     return text
 
 

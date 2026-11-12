@@ -269,6 +269,22 @@ def runtime_diagnostics(stage_value):
             'caveat': 'Sample brackets may span adjacent seconds. Namespace counters and sampled queue maxima are not association-only traces or proof of stall causation.'}
 
 
+def runtime_worker_limits(sdk, inventory):
+    """Require an observed process limit when the controller declares an application tuning profile."""
+    declared = inventory.get('maximumWorkerThreads')
+    limits = sdk.get('ThreadPoolLimits')
+    if limits is None:
+        require(declared is None, 'Worker-limited run lacks observed runtime limits')
+        return None
+    require(all(type(limits[key]) is int and limits[key] > 0
+                for key in ('MinimumWorkers', 'MaximumWorkers', 'MinimumIoThreads', 'MaximumIoThreads'))
+            and limits['MinimumWorkers'] <= limits['MaximumWorkers']
+            and limits['MinimumIoThreads'] <= limits['MaximumIoThreads'], 'Invalid observed ThreadPool limits')
+    require(declared is None or (type(declared) is int and declared == limits['MaximumWorkers']),
+            'Declared worker limit was not observed in the tested process')
+    return limits
+
+
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
@@ -299,6 +315,9 @@ def verify(root, expected_source):
                                 'kernel': inventory['before'][name]['kernel']}
                           for name in ('sdk', 'peer')}
     result['runtime'] = sdk['Runtime']
+    limits = runtime_worker_limits(sdk, inventory)
+    if limits is not None:
+        result['threadPoolLimits'] = limits
     if 'RuntimeObservations' in sdk['Measured']:
         result['runtimeDiagnostics'] = runtime_diagnostics(sdk['Measured'])
     if 'cpu-sample.json' in hashes:

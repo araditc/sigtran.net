@@ -49,11 +49,15 @@ internal static class CapacityApplication
                     && metrics.UnsolicitedInvokes == 0 && metrics.SccpReturns == 0;
                 bool numericTargetMet = executionPassed && options.DurationSeconds == 1800
                     && measured.Counts.CompletedPerSecond.All(count => count >= CapacityOptions.TargetTps);
+                ThreadPool.GetMinThreads(out int minimumWorkers, out int minimumIoThreads);
+                ThreadPool.GetMaxThreads(out int maximumWorkers, out int maximumIoThreads);
                 var report = new { SchemaVersion = 1, options.SourceCommit, Workload = CapacityOptions.Workload,
                     options.Diagnostic, CapacityPolicy = CapacityOptions.AcceptanceRevision,
                     TargetTps = CapacityOptions.TargetTps, options.DurationSeconds,
                     options.WarmupSeconds, options.Concurrency, options.QueueCapacity,
                     ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
+                    ThreadPoolLimits = new { MinimumWorkers = minimumWorkers, MaximumWorkers = maximumWorkers,
+                        MinimumIoThreads = minimumIoThreads, MaximumIoThreads = maximumIoThreads },
                     StartedAtUtc = started, FinishedAtUtc = DateTimeOffset.UtcNow, Warmup = warmup,
                     Measured = measured, Stack = metrics, ExecutionPassed = executionPassed,
                     NumericTargetMet = numericTargetMet, QualificationPassed = false };

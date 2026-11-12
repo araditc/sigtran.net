@@ -58,6 +58,16 @@ def remote_inventory(client):
     return json.loads(data)
 
 
+def worker_environment(maximum, processors):
+    """Bound only the owned .NET process; never change services or machine-wide runtime policy."""
+    if maximum is None:
+        return []
+    if type(maximum) is not int or not processors <= maximum <= 1024:
+        raise ValueError('Maximum workers must cover the declared logical processors and be <= 1024')
+    # .NET 10 documents this environment value as hexadecimal, unlike runtimeconfig.json.
+    return ['env', 'DOTNET_ThreadPool_ForceMaxWorkerThreads=' + format(maximum, 'x')]
+
+
 def private_remote_root(client):
     with client.open_sftp() as sftp:
         root = sftp.normalize('.') + '/sigtran-capacity-' + secrets.token_hex(8)
@@ -115,6 +125,7 @@ def run(args):
         peer.connect(args.peer_host, username=args.user, password=password,
                      key_filename=args.peer_key, look_for_keys=False, allow_agent=False, timeout=10)
         before = {'sdk': remote_inventory(sdk), 'peer': remote_inventory(peer)}
+        runtime_environment = worker_environment(args.maximum_workers, before['sdk']['processors'])
         eligible = validate_hosts(before['sdk'], before['peer'], args.peer_host, args.shared_peer) and args.dedicated_hosts
         if args.peer_cpu >= before['peer']['processors']:
             raise ValueError('Peer CPU is outside available affinity')
@@ -127,6 +138,7 @@ def run(args):
                     'roots': roots, 'dedicatedDeclaration': eligible, 'sharedPeer': args.shared_peer,
                     'peerCpu': args.peer_cpu, 'durationSeconds': args.duration,
                     'diagnostic': args.diagnostic or not eligible, 'concurrency': args.concurrency, 'port': args.port}
+        manifest['maximumWorkerThreads'] = args.maximum_workers
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
@@ -181,7 +193,7 @@ def run(args):
         diagnostic = args.diagnostic or not eligible
         executable = root + '/src/Sigtran.NET.PerformanceLab/bin/Release/net10.0/Sigtran.NET.PerformanceLab.dll'
         workload = shlex.join(['timeout', '--signal=INT', '--kill-after=10s', str(budget) + 's',
-                              'dotnet', executable, 'capacity', '--remote-ip', args.peer_host,
+                              *runtime_environment, 'dotnet', executable, 'capacity', '--remote-ip', args.peer_host,
                               '--remote-port', str(args.port), '--source-commit', commit, '--output', root + '/result',
                               '--duration-seconds', str(args.duration), '--warmup-seconds', '10',
                               '--concurrency', str(args.concurrency), '--diagnostic', str(diagnostic).lower()])
@@ -249,6 +261,7 @@ if __name__ == '__main__':
     parser.add_argument('--duration', type=int, default=1800)
     parser.add_argument('--concurrency', type=int, default=256)
     parser.add_argument('--peer-cpu', type=int, default=3)
+    parser.add_argument('--maximum-workers', type=int)
     parser.add_argument('--diagnostic', action='store_true')
     parser.add_argument('--shared-peer', action='store_true')
     parser.add_argument('--dedicated-hosts', action='store_true')

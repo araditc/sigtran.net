@@ -20,6 +20,12 @@ class TopologyTests(unittest.TestCase):
     def test_separate_hosts(self):
         self.assertTrue(module.validate_hosts(self.sdk, self.peer, '192.0.2.2', False))
 
+    def test_worker_profile_is_bounded_process_only_and_hexadecimal(self):
+        self.assertEqual(module.worker_environment(None, 4), [])
+        self.assertEqual(module.worker_environment(16, 4), ['env', 'DOTNET_ThreadPool_ForceMaxWorkerThreads=10'])
+        for value in (True, 0, 3, 1025, '4'):
+            with self.assertRaises(ValueError): module.worker_environment(value, 4)
+
     def test_kafka_requires_explicit_nonqualifying_mode(self):
         self.peer['kafkaProcesses'] = [{'pid': 1}]
         with self.assertRaises(ValueError):
