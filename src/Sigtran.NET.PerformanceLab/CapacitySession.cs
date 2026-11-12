@@ -45,13 +45,16 @@ internal sealed class CapacitySession : IAsyncDisposable
     private int _peakInbound;
     private readonly PerformanceMessages _messages = PerformanceMessages.CreateSynthetic();
     private readonly IMapSmsService _map;
+    private readonly CapacitySocketFactory _sockets;
+    internal CapacitySocketProfile SocketProfile => _sockets.Snapshot();
     private static readonly TimeSpan InvokeTimeout = TimeSpan.FromSeconds(5);
 
     internal CapacitySession(CapacityOptions options)
     {
+        _sockets = new(options.SocketProfile == CapacitySocketFactory.LanProfile);
         M3uaDelegateRuntimeSessionFactory factory = new(async ct =>
         {
-            NativeSctpConnector connector = new();
+            NativeSctpConnector connector = new(_sockets);
             var transport = await connector.ConnectAsync(new(new(options.RemoteIp, options.RemotePort),
                 outboundStreams: 8, inboundStreams: 8, defaultPayloadProtocolIdentifier: 3),
                 new(new(options.QueueCapacity, 64 * 1024 * 1024),

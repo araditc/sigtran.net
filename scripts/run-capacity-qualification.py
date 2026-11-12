@@ -219,6 +219,7 @@ def run(args, restore_host=None):
         manifest['processReceiptVersion'] = 1
         manifest['collectionErrors'] = []
         manifest['hostMaintenanceRequired'] = restore_host is not None
+        manifest['nativeSocketProfile'] = args.socket_profile
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
@@ -240,7 +241,8 @@ def run(args, restore_host=None):
         budget = args.duration + 80
         peer_root = roots['peer']
         peer_line = ('timeout --signal=TERM --kill-after=5s ' + str(budget) + 's '
-                     + shlex.join(['env', 'LD_LIBRARY_PATH=' + peer_root, 'nice', '-n', str(args.peer_nice),
+                     + shlex.join(['env', 'LD_LIBRARY_PATH=' + peer_root,
+                                   'SIGTRAN_CAPACITY_SOCKET_PROFILE=' + args.socket_profile, 'nice', '-n', str(args.peer_nice),
                                    'taskset', '-c', str(args.peer_cpu), peer_root + '/peer', args.peer_host,
                                    str(args.port), '0', 'capacity', peer_root + '/peer.json'])
                      + ' >' + shlex.quote(peer_root + '/peer.log') + ' 2>&1')
@@ -284,6 +286,7 @@ def run(args, restore_host=None):
                               '--remote-port', str(args.port), '--source-commit', commit, '--output', root + '/result',
                               '--duration-seconds', str(args.duration), '--warmup-seconds', '10',
                               '--concurrency', str(args.concurrency), '--diagnostic', str(diagnostic).lower()])
+        workload += ' ' + shlex.join(['--socket-profile', args.socket_profile])
         workload += ' >' + shlex.quote(root + '/sdk.log') + ' 2>&1'
         sdk_channel = start_owned(sdk, root, 'sdk', workload)
         channels.append((sdk, root, 'sdk', sdk_channel))
@@ -380,6 +383,7 @@ def create_parser():
     parser.add_argument('--peer-cpu', type=int, default=3)
     parser.add_argument('--peer-nice', type=int, default=10)
     parser.add_argument('--maximum-workers', type=int)
+    parser.add_argument('--socket-profile', choices=('system-default', 'lan-bounded-v1'), default='system-default')
     parser.add_argument('--disable-worker-spin', action='store_true')
     parser.add_argument('--diagnostic', action='store_true')
     parser.add_argument('--shared-peer', action='store_true')

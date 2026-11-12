@@ -73,6 +73,16 @@ def render(report):
             text += f"- {name.upper()} host: {node['logicalProcessors']} logical CPUs, {node['memoryMiB']} MiB RAM, Linux `{node['kernel']}`.\n"
         text += f"\nThe private peer was constrained to one CPU at nice {report.get('peerNice', 10)}. Declared logical\n"
         text += 'CPUs do not establish dedicated physical-core performance.\n'
+    if 'nativeSocketProfiles' in report:
+        text += '\n## Observed Socket Profile\n\n'
+        for name, value in report['nativeSocketProfiles'].items():
+            text += (f"- {name.upper()}: `{value['Name']}`, effective send/receive buffers "
+                     f"{value['SendBufferBytes']} / {value['ReceiveBufferBytes']} bytes; "
+                     f"RTO initial/minimum/maximum {value['RtoInitialMilliseconds']} / "
+                     f"{value['RtoMinimumMilliseconds']} / {value['RtoMaximumMilliseconds']} ms.\n")
+        text += '\nThese are per-socket workload settings, not SDK defaults or a public-network\n'
+        text += 'recommendation. Buffer requests may be clamped. The opt-in LAN profile\n'
+        text += 'uses shorter recovery bounds and needs requalification on a different path.\n'
     if 'cpuSample' in report:
         sample = report['cpuSample']
         text += '\n## Exploratory CPU Sample\n\n'

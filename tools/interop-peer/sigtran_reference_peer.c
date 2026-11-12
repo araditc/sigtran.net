@@ -13,6 +13,7 @@
 #include <netinet/sctp.h>
 #include <signal.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,6 +82,36 @@ static int asp_client = 0;
 static uint32_t reference_context = REFERENCE_CONTEXT;
 static int capacity_mode = 0;
 static uint64_t capacity_counts[5] = {0};
+static const char *capacity_socket_profile = "system-default";
+static struct sctp_rtoinfo capacity_rto;
+static int capacity_send_buffer, capacity_receive_buffer;
+_Static_assert(sizeof(struct sctp_rtoinfo) == 16, "Unexpected Linux sctp_rtoinfo size");
+_Static_assert(offsetof(struct sctp_rtoinfo, srto_initial) == 4, "Unexpected Linux SCTP RTO layout");
+
+/* Only the explicitly opted-in private LAN capacity socket is tuned, never host sysctls. */
+static int configure_capacity_socket(int fd)
+{
+    const char *profile = getenv("SIGTRAN_CAPACITY_SOCKET_PROFILE");
+    if (profile != NULL) capacity_socket_profile = profile;
+    if (strcmp(capacity_socket_profile, "lan-bounded-v1") == 0) {
+        struct sctp_rtoinfo value = { .srto_initial = 300U, .srto_max = 1000U, .srto_min = 200U };
+        int buffer = 1024 * 1024;
+        if (setsockopt(fd, IPPROTO_SCTP, SCTP_RTOINFO, &value, sizeof(value)) != 0
+            || setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &buffer, sizeof(buffer)) != 0
+            || setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &buffer, sizeof(buffer)) != 0) return -1;
+    } else if (strcmp(capacity_socket_profile, "system-default") != 0) return -1;
+    socklen_t size = sizeof(capacity_rto);
+    if (getsockopt(fd, IPPROTO_SCTP, SCTP_RTOINFO, &capacity_rto, &size) != 0 || size != sizeof(capacity_rto)) return -1;
+    if (strcmp(capacity_socket_profile, "lan-bounded-v1") == 0
+        && (capacity_rto.srto_initial != 300U || capacity_rto.srto_min != 200U || capacity_rto.srto_max != 1000U)) {
+        errno = EINVAL;
+        return -1;
+    }
+    size = sizeof(int);
+    if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &capacity_send_buffer, &size) != 0) return -1;
+    size = sizeof(int);
+    return getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &capacity_receive_buffer, &size);
+}
 
 /* Fixed index order matches the declared equal-mix workload, not arrival order. */
 static int capacity_operation_index(uint8_t code)
@@ -103,12 +134,15 @@ static int write_capacity_summary(const char *path, unsigned int operations)
     int result = fprintf(file,
         "{\"schemaVersion\":1,\"workload\":\"itu-map-sms-five-operation-equal-mix-v1\","
         "\"received\":%u,\"responses\":%u,\"byOperation\":[%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 "],"
-        "\"processId\":%ld,\"nice\":%d,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,\"passed\":true}\n",
+        "\"processId\":%ld,\"nice\":%d,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,"
+        "\"sctpSocketProfile\":{\"Name\":\"%s\",\"SendBufferBytes\":%d,\"ReceiveBufferBytes\":%d,"
+        "\"RtoInitialMilliseconds\":%u,\"RtoMinimumMilliseconds\":%u,\"RtoMaximumMilliseconds\":%u},\"passed\":true}\n",
         operations, operations, capacity_counts[0], capacity_counts[1], capacity_counts[2],
         capacity_counts[3], capacity_counts[4], (long)getpid(), priority,
         resources.ru_utime.tv_sec + resources.ru_stime.tv_sec
             + (resources.ru_utime.tv_usec + resources.ru_stime.tv_usec) / 1000000.0,
-        resources.ru_maxrss);
+        resources.ru_maxrss, capacity_socket_profile, capacity_send_buffer, capacity_receive_buffer,
+        capacity_rto.srto_initial, capacity_rto.srto_min, capacity_rto.srto_max);
     int closed = fclose(file);
     return result < 0 || closed != 0 ? -1 : 0;
 }
@@ -1080,6 +1114,11 @@ int main(int argc, char **argv)
     }
     if (connection_fd < 0) {
         perror("accept");
+        return 1;
+    }
+    if (capacity_mode && configure_capacity_socket(connection_fd) != 0) {
+        perror("capacity socket profile");
+        close(connection_fd);
         return 1;
     }
     log_event("association-accepted", detail);

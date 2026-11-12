@@ -137,8 +137,9 @@ nice 10 profile, and no experimental worker-spin setting.
 runner. The owner has approved temporary broker/controller and health-check
 quiescence on the peer VM for the next dedicated test. This approval does not
 authorize configuration, topic-data, firewall, enablement or global tuning edits.
-The full 1,800-second dedicated run is still pending; no passing claim follows
-from approval or from the earlier shared-host numerical result.
+The first full [dedicated-window run](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+finished with two low seconds and remains NOT QUALIFIED. Service restoration
+passed. No passing claim follows from approval or the earlier shared-host result.
 
 The wrapper requires `--allow-temporary-unit-stop`, `--dedicated-hosts`, and
 one `--maintenance-unit UNIT` for each approved service/timer, in stop order.
@@ -256,6 +257,13 @@ allocation site or scheduling decision caused the full-run throughput limit.
 Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
 
 ## Remaining Work Within This Phase
+
+The first dedicated rerun retained 26,575,568 completions and zero failures,
+but two sub-target seconds (minimum 781) prevented qualification. The severe
+stall coincided with transport retransmission observations rather than a long
+GC pause. The [socket-profile experiment](CAPACITY_SOCKET_PROFILE.md) provides
+explicit, kernel-observed per-socket recovery/buffer settings for the next run.
+It never changes the target or silently promotes the failed evidence.
 
 The owner-approved 10K numerical criterion was met in the final 30-minute
 run; 20K remains deferred. No further speculative tuning is needed to claim

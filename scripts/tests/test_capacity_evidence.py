@@ -220,6 +220,30 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(report['peerNice'], 0)
         self.assertIsNone(report['runtimeTuning']['WorkerSpinLimitEnvironment'])
 
+    def test_socket_profile_requires_both_effective_kernel_observations(self):
+        value = dict(Name='lan-bounded-v1', SendBufferBytes=425984, ReceiveBufferBytes=425984,
+                     RtoInitialMilliseconds=300, RtoMinimumMilliseconds=200, RtoMaximumMilliseconds=1000)
+        sdk, peer, inventory = {'SctpSocketProfile': value}, {'sctpSocketProfile': copy.deepcopy(value)}, {'nativeSocketProfile': 'lan-bounded-v1'}
+        self.assertEqual(module.socket_profiles(sdk, peer, inventory)['sdk'], value)
+        peer['sctpSocketProfile']['RtoMinimumMilliseconds'] = 1000
+        with self.assertRaises(ValueError): module.socket_profiles(sdk, peer, inventory)
+        peer['sctpSocketProfile'] = copy.deepcopy(value)
+        peer['sctpSocketProfile']['Name'] = 'system-default'
+        with self.assertRaises(ValueError): module.socket_profiles(sdk, peer, inventory)
+        self.assertIsNone(module.socket_profiles({}, {}, {}))
+
+    def test_approved_host_maintenance_does_not_hide_real_low_seconds(self):
+        # Original private bytes were independently rehashed/redecoded before publication.
+        report = module.read_json(pathlib.Path(__file__).resolve().parents[2]
+            / 'docs/evidence/COMPLETED_MAP_CAPACITY_DEDICATED_ATTEMPT_20261112.json')
+        self.assertEqual(report['testedSourceCommit'], 'ea8ceb2f3e27aabdfaa6ed24114ef2bcc1e2d3c4')
+        self.assertTrue(report['executionValid'] and report['hostMaintenance']['restorationVerified'])
+        self.assertEqual(report['topology'], 'two-host-declared-dedicated')
+        self.assertEqual(report['secondsBelowTarget'], 2)
+        self.assertEqual(report['minimumOneSecondTps'], 781)
+        self.assertFalse(report['numericTargetMet'] or report['qualificationPassed'] or report['stablePromotion'])
+        self.assertEqual(report['reasons'], ['completed-tps-below-target'])
+
 
 if __name__ == '__main__':
     unittest.main()

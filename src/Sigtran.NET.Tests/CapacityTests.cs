@@ -15,6 +15,20 @@ internal static partial class CapacityTests
         Reject([.. basic, "--concurrency", "512", "--queue-capacity", "32"]);
         Reject([.. basic, "--source-commit", new('b', 40)]);
         Reject([.. basic, "--typo", "true"]);
+        Reject([.. basic, "--socket-profile", "unknown"]);
+        Require(options.SocketProfile == CapacitySocketFactory.DefaultProfile
+            && CapacityOptions.Parse([.. basic, "--socket-profile", "lan-bounded-v1"]).SocketProfile == CapacitySocketFactory.LanProfile,
+            "LAN tuning must be explicit, never the default");
+        byte[] rto = CapacitySocketFactory.EncodeRto(300, 200, 1000);
+        Require(rto.Length == 16 && BitConverter.ToUInt32(rto, 0) == 0
+            && BitConverter.ToUInt32(rto, 4) == 300 && BitConverter.ToUInt32(rto, 8) == 1000
+            && BitConverter.ToUInt32(rto, 12) == 200, "Linux SCTP RTO field order/width differs");
+        foreach (var invalid in new (uint Initial, uint Minimum, uint Maximum)[] { (100, 200, 1000), (300, 0, 1000), (300, 200, 100), (300, 200, 60001) })
+        {
+            try { CapacitySocketFactory.EncodeRto(invalid.Initial, invalid.Minimum, invalid.Maximum); }
+            catch (ArgumentOutOfRangeException) { continue; }
+            throw new InvalidOperationException("Invalid RTO ordering accepted");
+        }
         Require(CapacityOptions.Parse([.. basic, "--duration-seconds", "2", "--diagnostic", "true"]).Diagnostic,
             "A short run must explicitly be diagnostic");
         void Reject(string[] args)

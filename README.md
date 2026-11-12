@@ -30,18 +30,22 @@ This source-build profile uses .NET 10.0.12/server GC, four application workers,
 concurrency 256 and a single-CPU independent C peer at normal priority. The
 minimum has only 26 TPS headroom; this is not an unconditional production SLA.
 The SDK never changes a consumer's ThreadPool configuration.
-An owner-approved [temporary maintenance window](docs/CAPACITY_QUALIFICATION.md#explicit-maintenance-window)
-is being prepared for a fresh dedicated-host run. A remote restoration timer,
-state/hash audit and restoration verification are required before accepting
-that run; approval alone does not close qualification. Audit validation respects
-systemd timer metadata while still requiring explicit idle PIDs for services.
+An owner-approved [dedicated-window attempt](docs/CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+completed 26,575,568 transactions with zero failures but two low seconds,
+including a minimum of 781 TPS: **NOT QUALIFIED**. Kafka was temporarily stopped
+and its original unit states/enablement/hashes restored and verified.
+The [opt-in per-socket LAN profile](docs/CAPACITY_SOCKET_PROFILE.md) now records
+effective buffer and RTO values at both endpoints. It changes neither SDK/host
+defaults nor acceptance criteria; a new full run is still required.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
 unproved historical causes. Changes cover non-consuming async SCTP readiness,
 TCAP OID allocation, M2PA Busy recovery correctness, bounded runtime/owned-peer
 observations and durable process exit collection. The rejected worker-spin
-experiment is not part of the final profile. Kafka was not changed.
+experiment is not part of the successful shared-host profile. Those earlier
+shared-host runs did not change Kafka; the later approved maintenance window
+and verified restoration are recorded separately above.
 The [29-low-second baseline](docs/CAPACITY_MEASUREMENT_10K_20261111.md) and
 [historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) are preserved.
 20K remains future optimization. Dedicated-host and other release gates remain

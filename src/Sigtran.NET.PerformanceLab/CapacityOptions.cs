@@ -8,6 +8,7 @@ internal sealed record CapacityOptions(string RemoteIp, int RemotePort, string S
     string Output, int DurationSeconds, int WarmupSeconds, int Concurrency, int QueueCapacity,
     bool Diagnostic)
 {
+    internal string SocketProfile { get; init; } = CapacitySocketFactory.DefaultProfile;
     internal const int TargetTps = 10_000;
     internal const string AcceptanceRevision = "completed-map-10k-v1";
     internal const int RequiredSeconds = 1800;
@@ -17,7 +18,7 @@ internal sealed record CapacityOptions(string RemoteIp, int RemotePort, string S
     internal static CapacityOptions Parse(string[] args)
     {
         HashSet<string> allowed = ["remote-ip", "remote-port", "source-commit", "output",
-            "duration-seconds", "warmup-seconds", "concurrency", "queue-capacity", "diagnostic"];
+            "duration-seconds", "warmup-seconds", "concurrency", "queue-capacity", "diagnostic", "socket-profile"];
         Dictionary<string, string> values = new(StringComparer.Ordinal);
         for (int i = 0; i < args.Length; i += 2)
         {
@@ -47,8 +48,11 @@ internal sealed record CapacityOptions(string RemoteIp, int RemotePort, string S
         if (!diagnostic && (duration != RequiredSeconds || IPAddress.IsLoopback(ip)))
             throw new ArgumentException("Qualification requires 1800 seconds and a remote peer.");
         int concurrency = Number("concurrency", 256, 1, 4096);
+        string profile = values.GetValueOrDefault("socket-profile", CapacitySocketFactory.DefaultProfile);
+        if (profile is not (CapacitySocketFactory.DefaultProfile or CapacitySocketFactory.LanProfile))
+            throw new ArgumentException("Unknown socket profile.");
         return new(ip.ToString(), Number("remote-port", 33061, 1024, 65535), commit, Path.GetFullPath(output),
             duration, Number("warmup-seconds", 10, 1, 600), concurrency,
-            Number("queue-capacity", 8192, concurrency, 65536), diagnostic);
+            Number("queue-capacity", 8192, concurrency, 65536), diagnostic) { SocketProfile = profile };
     }
 }

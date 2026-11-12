@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "completed-map-capacity",
+  "testedSourceCommit": "ea8ceb2f3e27aabdfaa6ed24114ef2bcc1e2d3c4",
+  "capacityPolicy": "completed-map-10k-v1",
+  "targetTps": 10000,
+  "executionValid": true,
+  "numericTargetMet": false,
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "reasons": [
+    "completed-tps-below-target"
+  ],
+  "durationSeconds": 1800,
+  "completedTransactions": 26575568,
+  "lateSuccesses": 256,
+  "failedTransactions": 0,
+  "unresolvedTransactions": 0,
+  "completedTps": 14764.204444444444,
+  "minimumOneSecondTps": 781,
+  "maximumOneSecondTps": 20675,
+  "secondsBelowTarget": 2,
+  "worstSecondOffset": 949,
+  "latency": {
+    "Count": 26575568,
+    "P50Milliseconds": 16.8,
+    "P95Milliseconds": 24.1,
+    "P99Milliseconds": 30,
+    "MaximumMilliseconds": 1047.529016,
+    "ResolutionMilliseconds": 0.1
+  },
+  "sdkResources": {
+    "AllocatedBytes": 233284992888,
+    "Gen0Collections": 14739,
+    "Gen1Collections": 6402,
+    "Gen2Collections": 6,
+    "AverageCpuPercent": 83.86004503922463,
+    "PeakCpuPercent": 91.89041666071944,
+    "PeakWorkingSetMegabytes": 102,
+    "LogicalProcessors": 4,
+    "ServerGc": true
+  },
+  "peerCpuSeconds": 1379.959452,
+  "peerPeakRssKiB": 1920,
+  "wireSample": {
+    "pairedByOperation": [
+      714,
+      714,
+      713,
+      713,
+      713
+    ],
+    "matchedPairs": 3567,
+    "trailingInvokes": 5,
+    "sampleOnly": true,
+    "redecoded": true
+  },
+  "topology": "two-host-declared-dedicated",
+  "hostMaintenance": {
+    "explicitlyAuthorized": true,
+    "quiescenceVerified": true,
+    "restorationVerified": true,
+    "unitFilesUnchanged": true,
+    "fallbackTimerArmed": true,
+    "fallbackTimerCancelled": true,
+    "stoppedUnitCount": 4,
+    "restoredActiveUnitCount": 3
+  },
+  "hardware": {
+    "sdk": {
+      "logicalProcessors": 4,
+      "memoryMiB": 15988,
+      "kernel": "5.15.0-191-generic"
+    },
+    "peer": {
+      "logicalProcessors": 4,
+      "memoryMiB": 5924,
+      "kernel": "6.8.0-149-generic"
+    }
+  },
+  "runtime": "10.0.12",
+  "peerNice": 0,
+  "threadPoolLimits": {
+    "MinimumWorkers": 4,
+    "MaximumWorkers": 4,
+    "MinimumIoThreads": 1,
+    "MaximumIoThreads": 1000
+  },
+  "runtimeTuning": {
+    "WorkerSpinLimitEnvironment": null
+  },
+  "runtimeDiagnostics": {
+    "observationCount": 1802,
+    "maximumSampleGapSeconds": 1.0090728139999783,
+    "totalGcPauseMilliseconds": 33276.994,
+    "maximumObservedThreadPoolPending": 105,
+    "lowestSubTargetWindows": [
+      {
+        "secondOffset": 949,
+        "completedTps": 781,
+        "sampleStartSeconds": 948.001629249,
+        "sampleEndSeconds": 950.001997297,
+        "coversCompleteWindow": true,
+        "gcPauseMilliseconds": 16.286000000000058,
+        "gen2Collections": 0,
+        "maximumObservedThreadPoolPending": 0,
+        "normalizedProcessCpuPercent": 44.19521701938595,
+        "namespaceSctpDelta": {
+          "SctpFastRetransmits": 0,
+          "SctpInDataChunkDiscards": 0,
+          "SctpCurrEstab": 0,
+          "SctpT3Retransmits": 1,
+          "SctpInPktDiscards": 45,
+          "SctpInSCTPPacks": 17494,
+          "SctpOutSCTPPacks": 18232
+        }
+      },
+      {
+        "secondOffset": 320,
+        "completedTps": 9944,
+        "sampleStartSeconds": 319.001637712,
+        "sampleEndSeconds": 321.000606371,
+        "coversCompleteWindow": true,
+        "gcPauseMilliseconds": 48.5,
+        "gen2Collections": 0,
+        "maximumObservedThreadPoolPending": 4,
+        "normalizedProcessCpuPercent": 83.69630971788048,
+        "namespaceSctpDelta": {
+          "SctpFastRetransmits": 0,
+          "SctpInDataChunkDiscards": 0,
+          "SctpCurrEstab": 0,
+          "SctpT3Retransmits": 0,
+          "SctpInPktDiscards": 1,
+          "SctpInSCTPPacks": 31725,
+          "SctpOutSCTPPacks": 33609
+        }
+      }
+    ],
+    "caveat": "Sample brackets may span adjacent seconds. Namespace counters and sampled queue maxima are not association-only traces or proof of stall causation."
+  },
+  "rawArtifactSha256": {
+    "build.log": "4bfdb5263e2e0131869e5a637fbb89781197b9eceb65d543e4f04d615f73382a",
+    "capture.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "capture.log": "b5c8d82c7ddcee9b3c2c9b21533cfc29b9bf9ab26d6786288d84414fd0c4b24d",
+    "host-maintenance.json": "8e7a191f768a849c9a5ab3c7e14a781fcf5ae46c0ee16dd5da548c665f23d5b8",
+    "inventory.json": "11d9719ee84bc7be90f4a607596c6dfd394356adb60d40107364ff006052a8e6",
+    "libsctp.so.1": "a80051f32aafd1ca337d9675cbfabf0db36204982cd171ef6256e9a059a5701a",
+    "observer.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "observer.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "peer": "bb867b0f401a7ebb3c37d9146b1cf487ea535adfbf3b52cb27c3250da5ff9367",
+    "peer-build.log": "e86d6a8b47bf6f982d77502df6717f479a1c2129c07d762fc1822a6e30260fa6",
+    "peer-runtime.json": "f26a98895df4e0a0594407ea62f5632f9cfcbddabd2580cd51509679d66ae572",
+    "peer.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "peer.json": "2b6b57997337fcbeaaf4fb349868b7ea7a0d23a89cbf6646f477fafee7b2b361",
+    "peer.log": "bd4b808e6bcd211e9eb9dcf23da4ad85c973153273e9da1c95873db716147b15",
+    "result-sdk.json": "369220e2d8029f056a9c7c785c125828ffaeed5d1805fe5d9ca2a2efd55b1de3",
+    "sample.pcap": "4ba23e7b1c1134aaa4fb0178af8dbabf604a7e60f81ae3fe8da80d9eb397de73",
+    "sdk.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "sdk.log": "4b1eb5d45425465c185773373e97f4f09c352999bff61ee17190862fadb732cf",
+    "source.tar": "e3e2ebf8dfd3447dc8852ceaa61e395b303cc9ad26d8ce6f21f3b07d7aa25207"
+  }
+}

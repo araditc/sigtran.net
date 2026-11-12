@@ -332,6 +332,24 @@ def host_maintenance(audit, sdk):
                 stoppedUnitCount=len(units), restoredActiveUnitCount=len(order))
 
 
+def socket_profiles(sdk, peer, inventory):
+    """Require effective settings from both independent endpoints when a socket profile is declared."""
+    declared = inventory.get('nativeSocketProfile')
+    if declared is None:
+        return None  # Historical runs retain their original, unobserved socket defaults.
+    require(declared in ('system-default', 'lan-bounded-v1'), 'Unknown native socket profile')
+    profiles = dict(sdk=sdk['SctpSocketProfile'], peer=peer['sctpSocketProfile'])
+    for value in profiles.values():
+        require(value['Name'] == declared, 'Native socket profile was not observed')
+        fields = ('SendBufferBytes', 'ReceiveBufferBytes', 'RtoInitialMilliseconds', 'RtoMinimumMilliseconds', 'RtoMaximumMilliseconds')
+        require(all(type(value[key]) is int and value[key] > 0 for key in fields), 'Invalid observed socket values')
+        require(value['RtoMinimumMilliseconds'] <= value['RtoInitialMilliseconds'] <= value['RtoMaximumMilliseconds'],
+                'Invalid observed RTO ordering')
+        if declared == 'lan-bounded-v1':
+            require([value[key] for key in fields[2:]] == [300, 200, 1000], 'Requested LAN RTO bounds were not effective')
+    return profiles
+
+
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
@@ -378,6 +396,9 @@ def verify(root, expected_source):
     if inventory.get('hostMaintenanceRequired'):
         require('host-maintenance.json' in hashes, 'Missing hashed host maintenance audit')
         result['hostMaintenance'] = host_maintenance(read_json(root / 'host-maintenance.json'), sdk)
+    profiles = socket_profiles(sdk, peer, inventory)
+    if profiles is not None:
+        result['nativeSocketProfiles'] = profiles
     result['hardware'] = {name: {'logicalProcessors': inventory['before'][name]['processors'],
                                 'memoryMiB': inventory['before'][name]['memoryKiB']['MemTotal'] // 1024,
                                 'kernel': inventory['before'][name]['kernel']}

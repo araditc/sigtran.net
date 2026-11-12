@@ -21,6 +21,7 @@ internal static class CapacityApplication
                 using CancellationTokenSource startup = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
                 startup.CancelAfter(TimeSpan.FromSeconds(15));
                 await session.StartAsync(startup.Token).ConfigureAwait(false);
+                _ = session.SocketProfile; // Fail before warmup when the kernel does not accept the declared profile.
                 Console.WriteLine("capacity stage=warmup workload=" + CapacityOptions.Workload);
                 var warmup = await CapacityRunner.RunAsync(TimeSpan.FromSeconds(options.WarmupSeconds),
                     options.Concurrency, session.InvokeAsync, stop.Token).ConfigureAwait(false);
@@ -56,6 +57,7 @@ internal static class CapacityApplication
                     TargetTps = CapacityOptions.TargetTps, options.DurationSeconds,
                     options.WarmupSeconds, options.Concurrency, options.QueueCapacity,
                     ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
+                    SctpSocketProfile = session.SocketProfile,
                     ThreadPoolLimits = new { MinimumWorkers = minimumWorkers, MaximumWorkers = maximumWorkers,
                         MinimumIoThreads = minimumIoThreads, MaximumIoThreads = maximumIoThreads },
                     RuntimeTuning = new { WorkerSpinLimitEnvironment =
