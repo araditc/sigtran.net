@@ -232,3 +232,14 @@ An actual SDK-host control test closed its SSH transport during an owned job;
 the recovered receipt retained exit 7. A second bounded timeout retained 124.
 Neither failure was interpreted as exit zero. These jobs did not run SIGTRAN
 traffic or interact with the peer/Kafka host.
+
+The remaining three low seconds justify a separate scheduling-cost experiment,
+not a retroactive root-cause claim. `--disable-worker-spin` requests
+`DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0` only in the owned workload process.
+The [.NET 10 worker implementation](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Private.CoreLib/src/System/Threading/PortableThreadPool.WorkerThread.cs)
+reads this setting; its semaphore has a spinning path and worker dispatch also
+contains yielding. This is a version-specific internal runtime tuning setting,
+not a stable public configuration contract, a library default or a universal
+recommendation. Evidence records the environment request and runtime version,
+not an invented observation of private runtime fields. Measure it separately
+and requalify on runtime changes; leave Kafka and host policy unchanged.

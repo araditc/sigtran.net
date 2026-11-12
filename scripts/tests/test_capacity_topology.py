@@ -25,6 +25,8 @@ class TopologyTests(unittest.TestCase):
         self.assertEqual(module.worker_environment(16, 4), ['env', 'DOTNET_ThreadPool_ForceMaxWorkerThreads=10'])
         for value in (True, 0, 3, 1025, '4'):
             with self.assertRaises(ValueError): module.worker_environment(value, 4)
+        self.assertEqual(module.worker_environment(4, 4, True), ['env',
+            'DOTNET_ThreadPool_ForceMaxWorkerThreads=4', 'DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0'])
 
     def test_durable_receipts_never_invent_success(self):
         for value in (0, 1, 124, 143, 255):

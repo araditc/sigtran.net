@@ -51,6 +51,8 @@ experiment and records actual runtime limits; the library never changes its
 consumer's ThreadPool configuration.
 Long-run collection uses SSH keepalives and durable owned-process exit receipts;
 an interrupted collector or missing status cannot silently become a pass.
+Optional worker-spin diagnostics are explicitly version-specific application
+experiments, not library defaults or stable runtime configuration promises.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining

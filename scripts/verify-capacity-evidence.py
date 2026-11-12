@@ -285,6 +285,19 @@ def runtime_worker_limits(sdk, inventory):
     return limits
 
 
+def runtime_tuning(sdk, inventory):
+    """Record an experimental environment request, not reflection-based proof of runtime internals."""
+    tuning = sdk.get('RuntimeTuning')
+    if inventory.get('disableWorkerSpin'):
+        require(tuning is not None and tuning.get('WorkerSpinLimitEnvironment') == '0',
+                'Worker spin experiment is missing its process environment request')
+    if tuning is not None:
+        value = tuning.get('WorkerSpinLimitEnvironment')
+        require(value is None or (isinstance(value, str) and re.fullmatch('[0-9]{1,4}', value)),
+                'Invalid runtime tuning environment value')
+    return tuning
+
+
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
@@ -328,6 +341,9 @@ def verify(root, expected_source):
     limits = runtime_worker_limits(sdk, inventory)
     if limits is not None:
         result['threadPoolLimits'] = limits
+    tuning = runtime_tuning(sdk, inventory)
+    if tuning is not None:
+        result['runtimeTuning'] = tuning
     if 'RuntimeObservations' in sdk['Measured']:
         result['runtimeDiagnostics'] = runtime_diagnostics(sdk['Measured'])
     if 'cpu-sample.json' in hashes:

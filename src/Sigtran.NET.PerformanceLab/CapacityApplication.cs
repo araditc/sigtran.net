@@ -58,6 +58,8 @@ internal static class CapacityApplication
                     ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
                     ThreadPoolLimits = new { MinimumWorkers = minimumWorkers, MaximumWorkers = maximumWorkers,
                         MinimumIoThreads = minimumIoThreads, MaximumIoThreads = maximumIoThreads },
+                    RuntimeTuning = new { WorkerSpinLimitEnvironment =
+                        Environment.GetEnvironmentVariable("DOTNET_ThreadPool_UnfairSemaphoreSpinLimit") },
                     StartedAtUtc = started, FinishedAtUtc = DateTimeOffset.UtcNow, Warmup = warmup,
                     Measured = measured, Stack = metrics, ExecutionPassed = executionPassed,
                     NumericTargetMet = numericTargetMet, QualificationPassed = false };

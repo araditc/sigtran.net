@@ -197,6 +197,13 @@ class EvidenceTests(unittest.TestCase):
             module.runtime_worker_limits({}, {'maximumWorkerThreads': 4})
         self.assertIsNone(module.runtime_worker_limits({}, {}))
 
+    def test_worker_spin_experiment_is_explicit_and_not_an_inferred_runtime_state(self):
+        value = {'WorkerSpinLimitEnvironment': '0'}
+        self.assertEqual(module.runtime_tuning({'RuntimeTuning': value}, {'disableWorkerSpin': True}), value)
+        with self.assertRaisesRegex(ValueError, 'missing its process'):
+            module.runtime_tuning({}, {'disableWorkerSpin': True})
+        self.assertIsNone(module.runtime_tuning({}, {}))
+
 
 if __name__ == '__main__':
     unittest.main()

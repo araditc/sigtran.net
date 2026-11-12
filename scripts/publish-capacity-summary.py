@@ -87,6 +87,10 @@ def render(report):
         text += 'Worker limits apply only to the workload application. The SDK library never\n'
         text += 'changes a consumer thread pool. Results are conditional on this declared\n'
         text += 'profile and do not establish an HTTP or mixed-service workload SLA.\n'
+    if report.get('runtimeTuning', {}).get('WorkerSpinLimitEnvironment') == '0':
+        text += '\nThe owned process requested `DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0`.\n'
+        text += 'This is a version-specific experimental runtime tuning setting, not an SDK\n'
+        text += 'default or a stable public runtime contract. Requalify it after runtime changes.\n'
     return text
 
 

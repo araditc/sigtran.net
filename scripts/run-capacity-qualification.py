@@ -59,14 +59,19 @@ def remote_inventory(client):
     return json.loads(data)
 
 
-def worker_environment(maximum, processors):
+def worker_environment(maximum, processors, disable_spin=False):
     """Bound only the owned .NET process; never change services or machine-wide runtime policy."""
-    if maximum is None:
-        return []
-    if type(maximum) is not int or not processors <= maximum <= 1024:
+    if type(disable_spin) is not bool:
+        raise ValueError('Invalid worker spin experiment')
+    values = []
+    if maximum is not None and (type(maximum) is not int or not processors <= maximum <= 1024):
         raise ValueError('Maximum workers must cover the declared logical processors and be <= 1024')
     # .NET 10 documents this environment value as hexadecimal, unlike runtimeconfig.json.
-    return ['env', 'DOTNET_ThreadPool_ForceMaxWorkerThreads=' + format(maximum, 'x')]
+    if maximum is not None:
+        values.append('DOTNET_ThreadPool_ForceMaxWorkerThreads=' + format(maximum, 'x'))
+    if disable_spin:
+        values.append('DOTNET_ThreadPool_UnfairSemaphoreSpinLimit=0')
+    return ['env', *values] if values else []
 
 
 def private_remote_root(client):
@@ -192,7 +197,7 @@ def run(args):
         connect(sdk)
         connect(peer)
         before = {'sdk': remote_inventory(sdk), 'peer': remote_inventory(peer)}
-        runtime_environment = worker_environment(args.maximum_workers, before['sdk']['processors'])
+        runtime_environment = worker_environment(args.maximum_workers, before['sdk']['processors'], args.disable_worker_spin)
         eligible = validate_hosts(before['sdk'], before['peer'], args.peer_host, args.shared_peer) and args.dedicated_hosts
         if args.peer_cpu >= before['peer']['processors']:
             raise ValueError('Peer CPU is outside available affinity')
@@ -206,6 +211,7 @@ def run(args):
                     'peerCpu': args.peer_cpu, 'durationSeconds': args.duration,
                     'diagnostic': args.diagnostic or not eligible, 'concurrency': args.concurrency, 'port': args.port}
         manifest['maximumWorkerThreads'] = args.maximum_workers
+        manifest['disableWorkerSpin'] = args.disable_worker_spin
         manifest['processReceiptVersion'] = 1
         manifest['collectionErrors'] = []
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
@@ -352,6 +358,7 @@ if __name__ == '__main__':
     parser.add_argument('--concurrency', type=int, default=256)
     parser.add_argument('--peer-cpu', type=int, default=3)
     parser.add_argument('--maximum-workers', type=int)
+    parser.add_argument('--disable-worker-spin', action='store_true')
     parser.add_argument('--diagnostic', action='store_true')
     parser.add_argument('--shared-peer', action='store_true')
     parser.add_argument('--dedicated-hosts', action='store_true')
