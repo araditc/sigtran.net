@@ -69,6 +69,11 @@ The [diagnostic log](docs/ENDURANCE_DIAGNOSTICS.md) also retains the second
 attempt's 360-second SDK result and rejected collection/wire outcome.
 Controller fixes preserve exact restoration checks and leave admission paused
 while final capture buffers retire; failed evidence is never promoted.
+The [verified six-minute diagnostic](docs/evidence/ENDURANCE_DIAGNOSTIC_20261112.json)
+then completed 4,251,513 measured transactions at 11,809.76 TPS, recovered all
+three fault families and matched all fifteen fresh PCAP probe pairs. Unexpected
+failures/unresolved work were zero; original Kafka state and scoped-rule cleanup
+were verified. This closes only the diagnostic unit, not 72-hour qualification.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

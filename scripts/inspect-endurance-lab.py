@@ -34,6 +34,7 @@ def main():
     parser.add_argument('--host', default='192.168.100.28')
     parser.add_argument('--key', required=True)
     parser.add_argument('--known-hosts', default=str(pathlib.Path.home() / '.ssh/known_hosts'))
+    parser.add_argument('--summary-output', type=pathlib.Path)
     args = parser.parse_args()
     if not re.fullmatch('[a-z0-9][a-z0-9-]{0,47}', args.run_id): raise ValueError('Invalid run identity')
     spec = importlib.util.spec_from_file_location('endurance_bootstrap', pathlib.Path(__file__).with_name('start-endurance-lab.py'))
@@ -43,6 +44,17 @@ def main():
     try:
         client.connect(args.host, username='ammar', key_filename=args.key, look_for_keys=False, allow_agent=False, timeout=15)
         result = json.loads(bootstrap.command(client, ['python3', '-c', CODE, args.run_id], timeout=30))
+        if args.summary_output:
+            if result['unit']['ActiveState'] != 'inactive' or result['unit']['Result'] != 'success':
+                raise ValueError('Successful stopped supervision is required before summary retrieval')
+            with client.open_sftp() as sftp:
+                with sftp.open('/opt/sigtran-endurance/runs/' + args.run_id + '/verified-summary.json', 'rb') as stream:
+                    data = stream.read(2097153)
+            if len(data) > 2097152: raise ValueError('Oversized verified summary')
+            value = json.loads(data)
+            if value['executionValid'] is not True or value['stablePromotion'] is not False:
+                raise ValueError('Unexpected summary boundary')
+            with args.summary_output.open('xb') as stream: stream.write(data)
         print(json.dumps(result, indent=2))
     finally: client.close()
 
