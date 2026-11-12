@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "completed-map-endurance-v1",
+  "workload": "itu-map-sms-five-operation-equal-mix-v1",
+  "minimumDurationSeconds": 259200,
+  "singleContinuousSdkProcess": true,
+  "checkpointSeconds": 60,
+  "maximumCheckpointGapSeconds": 120,
+  "minimumStableCompletedTps": 10000,
+  "maximumWorkingSetMiB": 512,
+  "maximumManagedHeapMiB": 256,
+  "maximumResidentGrowthMiB": 128,
+  "maximumFaultRecoverySeconds": 90,
+  "faultHoldSeconds": 10,
+  "faultKinds": ["peer-restart", "peer-outage", "sctp-partition"],
+  "faultOffsetsSeconds": [900, 1800, 2700, 87300, 88200, 89100, 173700, 174600, 175500],
+  "maximumCaptureBytes": 134217728,
+  "maximumCheckpointBytes": 67108864,
+  "maximumUnexpectedFailures": 0,
+  "maximumUnresolvedOperations": 0,
+  "automaticStablePromotion": false
+}

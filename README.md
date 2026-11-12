@@ -38,6 +38,11 @@ The minimum margin is only 79 TPS (0.79%): this is not a general production SLA.
 This source-build evidence does not qualify an untested packaged candidate.
 The SDK never changes a consumer's ThreadPool configuration.
 
+[Phase 62 long-run resilience](docs/ENDURANCE_QUALIFICATION.md) is in progress.
+Its versioned contract requires one continuous 72-hour SDK process, durable
+accounting/resource checkpoints and nine incidents across three fault families.
+Short diagnostics or the Phase 61 pass cannot close this qualification.
+
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
 unproved historical causes. Changes cover non-consuming async SCTP readiness,
