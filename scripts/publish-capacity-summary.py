@@ -73,6 +73,13 @@ def render(report):
                  f"CPU model: `{sample['cpuModel']}`.\n\n")
         text += 'This sample cannot identify a syscall/allocation bottleneck or assign the\n'
         text += 'full-run limit solely to SDK code, kernel, network, GC or hardware.\n'
+    if 'runtimeDiagnostics' in report:
+        observation = report['runtimeDiagnostics']
+        text += '\n## Runtime Observations\n\n'
+        text += (f"Retained {observation['observationCount']} timestamped observations; "
+                 f"maximum sampling gap {observation['maximumSampleGapSeconds']:.3f} s; "
+                 f"cumulative GC pause {observation['totalGcPauseMilliseconds']:.3f} ms.\n\n")
+        text += observation['caveat'] + '\n'
     return text
 
 

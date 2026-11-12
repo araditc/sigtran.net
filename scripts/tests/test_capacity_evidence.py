@@ -160,6 +160,34 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(policy['minimumCompletedTps'], module.TARGET_TPS)
         self.assertEqual(policy['id'], module.CAPACITY_POLICY)
 
+    def test_runtime_diagnostics_bracket_actual_times_not_sample_indices(self):
+        stage = fixture()[0]['Measured']
+        stage['Counts']['CompletedPerSecond'] = [12000, 9000, 12000]
+        def observation(t, pause, retransmits):
+            return dict(ElapsedSeconds=t, GcPauseMilliseconds=pause, ProcessCpuSeconds=t,
+                        Gen0=0, Gen1=0, Gen2=0, ThreadPoolThreads=4, ThreadPoolPending=1,
+                        ThreadPoolCompleted=0, HostSctp={'SctpT3Retransmits': retransmits})
+        stage['RuntimeObservations'] = [observation(0, 0, 0), observation(.9, 2, 0), observation(2.2, 5, 1), observation(3, 6, 1)]
+        result = module.runtime_diagnostics(stage)
+        bracket = result['lowestSubTargetWindows'][0]
+        self.assertEqual(bracket['secondOffset'], 1)
+        self.assertEqual(bracket['sampleStartSeconds'], .9)
+        self.assertEqual(bracket['sampleEndSeconds'], 2.2)
+        self.assertTrue(bracket['coversCompleteWindow'])
+        self.assertEqual(bracket['gcPauseMilliseconds'], 3)
+        self.assertEqual(bracket['namespaceSctpDelta']['SctpT3Retransmits'], 1)
+        stage['RuntimeObservations'][2]['HostSctp'] = None
+        self.assertNotIn('namespaceSctpDelta', module.runtime_diagnostics(stage)['lowestSubTargetWindows'][0])
+        stage['RuntimeObservations'][2]['ElapsedSeconds'] = .8
+        with self.assertRaisesRegex(ValueError, 'not increasing'): module.runtime_diagnostics(stage)
+
+    def test_runtime_diagnostics_reject_invalid_or_unbounded_samples(self):
+        stage = fixture()[0]['Measured']
+        stage['RuntimeObservations'] = []
+        with self.assertRaisesRegex(ValueError, 'missing runtime'): module.runtime_diagnostics(stage)
+        stage['RuntimeObservations'] = [None] * 1815
+        with self.assertRaisesRegex(ValueError, 'Unbounded'): module.runtime_diagnostics(stage)
+
 
 if __name__ == '__main__':
     unittest.main()

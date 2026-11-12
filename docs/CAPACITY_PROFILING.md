@@ -196,3 +196,11 @@ codec directly, avoiding temporary numeric strings and split/parse arrays.
 The fixed dialogue syntax is compared by canonical value bytes. Immutable OID
 formatting is cached per instance, never in an attacker-expandable global map.
 Tests retain large-arc, malformed/truncated/non-minimal arc and exact wire checks.
+
+The raw-evidence verifier validates optional runtime sample bounds, finite
+numbers, monotonic time and cumulative counters. Sanitized output includes up
+to 20 lowest sub-target windows with actual enclosing sample timestamps,
+GC pause/Gen2 deltas, observed ThreadPool queue maximum and available namespace
+SCTP deltas. Missing counters stay absent, and `coversCompleteWindow` explicitly
+marks incomplete bracketing. This evidence supports diagnosis, not an automatic
+root-cause label or qualification waiver.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Re-decode a bounded wire sample and reconcile complete MAP throughput evidence."""
 import argparse
+import bisect
 import datetime
 import hashlib
 import importlib.util
@@ -217,6 +218,57 @@ def digest(path):
     return value.hexdigest()
 
 
+def runtime_diagnostics(stage_value):
+    """Bracket low seconds using actual sample times; correlation never establishes causation."""
+    observations = stage_value['RuntimeObservations']
+    seconds = len(stage_value['Counts']['CompletedPerSecond'])
+    require(isinstance(observations, list) and 2 <= len(observations) <= seconds + 14,
+            'Unbounded or missing runtime observations')
+    numeric_fields = ('ElapsedSeconds', 'GcPauseMilliseconds', 'ProcessCpuSeconds')
+    counter_fields = ('Gen0', 'Gen1', 'Gen2', 'ThreadPoolThreads', 'ThreadPoolPending', 'ThreadPoolCompleted')
+    previous = None
+    for item in observations:
+        require(all(type(item[key]) in (int, float) and math.isfinite(item[key]) and item[key] >= 0
+                    for key in numeric_fields), 'Invalid runtime sample number')
+        require(all(type(item[key]) is int and item[key] >= 0 for key in counter_fields), 'Invalid runtime sample counter')
+        require(item['ElapsedSeconds'] <= seconds + 15, 'Runtime sample exceeds bounded drain')
+        host = item.get('HostSctp')
+        require(host is None or (isinstance(host, dict) and all(type(n) is int and n >= 0 for n in host.values())),
+                'Invalid namespace SCTP observation')
+        if previous is not None:
+            require(item['ElapsedSeconds'] > previous['ElapsedSeconds'], 'Runtime sample times are not increasing')
+            require(all(item[key] >= previous[key] for key in ('GcPauseMilliseconds', 'ProcessCpuSeconds',
+                        'Gen0', 'Gen1', 'Gen2', 'ThreadPoolCompleted')), 'Cumulative runtime counter decreased')
+        previous = item
+    times = [item['ElapsedSeconds'] for item in observations]
+    windows = stage_value['Counts']['CompletedPerSecond']
+    low = sorted((i for i, count in enumerate(windows) if count < TARGET_TPS), key=lambda i: (windows[i], i))
+    brackets = []
+    for second in low[:20]:
+        begin = max(0, bisect.bisect_right(times, second) - 1)
+        end = min(len(times) - 1, bisect.bisect_left(times, second + 1))
+        a, b = observations[begin], observations[end]
+        span = b['ElapsedSeconds'] - a['ElapsedSeconds']
+        entry = {'secondOffset': second, 'completedTps': windows[second],
+                 'sampleStartSeconds': a['ElapsedSeconds'], 'sampleEndSeconds': b['ElapsedSeconds'],
+                 'coversCompleteWindow': times[begin] <= second and times[end] >= second + 1,
+                 'gcPauseMilliseconds': b['GcPauseMilliseconds'] - a['GcPauseMilliseconds'],
+                 'gen2Collections': b['Gen2'] - a['Gen2'],
+                 'maximumObservedThreadPoolPending': max(x['ThreadPoolPending'] for x in observations[begin:end + 1])}
+        if span > 0:
+            entry['normalizedProcessCpuPercent'] = (b['ProcessCpuSeconds'] - a['ProcessCpuSeconds']) / span / stage_value['Resources']['LogicalProcessors'] * 100
+        left, right = a.get('HostSctp'), b.get('HostSctp')
+        if left is not None and right is not None:
+            entry['namespaceSctpDelta'] = {key: right[key] - left[key] for key in left.keys() & right.keys()}
+        brackets.append(entry)
+    return {'observationCount': len(observations),
+            'maximumSampleGapSeconds': max(b - a for a, b in zip(times, times[1:])),
+            'totalGcPauseMilliseconds': observations[-1]['GcPauseMilliseconds'] - observations[0]['GcPauseMilliseconds'],
+            'maximumObservedThreadPoolPending': max(item['ThreadPoolPending'] for item in observations),
+            'lowestSubTargetWindows': brackets,
+            'caveat': 'Sample brackets may span adjacent seconds. Namespace counters and sampled queue maxima are not association-only traces or proof of stall causation.'}
+
+
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
@@ -247,6 +299,8 @@ def verify(root, expected_source):
                                 'kernel': inventory['before'][name]['kernel']}
                           for name in ('sdk', 'peer')}
     result['runtime'] = sdk['Runtime']
+    if 'RuntimeObservations' in sdk['Measured']:
+        result['runtimeDiagnostics'] = runtime_diagnostics(sdk['Measured'])
     if 'cpu-sample.json' in hashes:
         sample = read_json(root / 'cpu-sample.json')
         require(sample.get('sampleOnly') is True and .1 <= sample['sampleSeconds'] <= 6
