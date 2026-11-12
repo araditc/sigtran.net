@@ -78,6 +78,10 @@ The [continuous execution status](docs/ENDURANCE_EXECUTION_STATUS.md) tracks
 unit 10 separately. Its final verifier also requires the actual supervisor's
 successful cleanup receipt, not only zero child exit codes. No Phase 62 or
 stable qualification is claimed before the full duration and verified exit.
+The actual 72-hour attempt started at 2026-11-12 23:39:28 UTC on frozen source
+`5f5ce0a0119df978f78f3724284b5effde3baaff`. Its earliest measured finish is
+2026-11-15 23:39:28 UTC; final restoration/verification follows. The run is
+**in progress, not qualified** and remains independent of desktop connectivity.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

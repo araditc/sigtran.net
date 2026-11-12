@@ -6,7 +6,7 @@ must use one frozen committed source, one SDK process and 259,200 actual
 measured seconds. No timer acceleration, concatenation or process restart
 can substitute for this interval.
 
-The full attempt will run on the same authorized SDK and peer VMs under
+The full attempt is running on the same authorized SDK and peer VMs under
 `completed-map-endurance-v1`, using the explicit LAN socket profile, .NET
 10.0.12/server GC, four maximum workers, concurrency 256, queue capacity 8192
 and the independent normal-priority CPU-3 C peer. Nine scheduled incidents
@@ -27,6 +27,24 @@ logs remain retained. After owner-authorized cleanup of stale tool downloads
 and generated build caches, the complete `execution-freeze-retry` verification
 passed build/tests/API/pack. Sources, credentials and lab evidence were not
 removed. This preparation does not itself qualify the 72-hour interval.
+
+## Active Attempt
+
+| Field | Observed Value |
+| --- | --- |
+| Run identity | `map-endurance-full-20261112-a` |
+| Frozen source | `5f5ce0a0119df978f78f3724284b5effde3baaff` |
+| Actual measurement start UTC | `2026-11-12T23:39:28.3290508+00:00` |
+| Earliest measurement finish UTC | `2026-11-15T23:39:28.329050+00:00` |
+| Tehran start / earliest measurement finish | 2026-11-13 03:09 / 2026-11-16 03:09 |
+| Continuous SDK PID at start | `2413809` |
+| Diagnostic | `false` |
+| Initial observation | 18.26 seconds, 212,584 successes, 256 in flight, peak RSS 96.26 MiB |
+| Decision | Running, not qualified; no final result exists yet |
+
+The earliest finish is not a completion claim. Actual receipt collection,
+host/network restoration, independent replay and final review follow the
+measured deadline. Do not infer a pass from the service being active.
 
 The final report will record actual source/start/finish, duration, completed
 work/TPS, classified fault terminals, zero unexpected/unresolved work, resource
