@@ -50,6 +50,9 @@ The independent C peer has 64-bit, process-crash-surviving counters with explici
 publication-tail bounds, rather than assuming an interrupted peer emitted zero.
 Sequenced fault control requires fresh MAP recovery probes and capture-stop
 acknowledgement; scoped SCTP-only network faults have independent rollback.
+One-second resource/progress observations are replayable from a bounded binary
+stream with minute checkpoints;
+memory, queue or progress breaches fail the run, and TCAP rollover is tested.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

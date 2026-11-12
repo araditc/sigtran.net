@@ -28,9 +28,11 @@ internal sealed class EnduranceControl(EnduranceOptions options, CapacitySession
 {
     private long _observedFaults;
     private int? _window;
+    internal EnduranceClock? Clock { get; private set; }
 
     internal async Task RunAsync(EnduranceExecution execution, CancellationToken ct)
     {
+        Clock = execution.Clock;
         int sequence = 0;
         string? lastDigest = null, nonce = null;
         HashSet<string> nonces = [];

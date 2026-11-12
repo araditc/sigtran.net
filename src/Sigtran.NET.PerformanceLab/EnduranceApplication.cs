@@ -8,10 +8,13 @@ internal static class EnduranceApplication
         EnduranceOptions options = EnduranceOptions.Parse(args);
         Directory.CreateDirectory(options.Session.Output);
         using EnduranceJournal journal = new(Path.Combine(options.Session.Output, "checkpoints.jsonl"));
+        using EnduranceObservationLog observations = new(Path.Combine(options.Session.Output, "resource-observations.bin"));
         using CancellationTokenSource stop = new();
         ConsoleCancelEventHandler handler = (_, value) => { value.Cancel = true; stop.Cancel(); };
         Console.CancelKeyPress += handler;
         EnduranceLedger ledger = new(options.Session.Concurrency);
+        EnduranceMonitor monitor = new(options.Session.Concurrency, options.Session.QueueCapacity,
+            options.Diagnostic ? options.DurationSeconds / 6.0 : 600);
         try
         {
             await using CapacitySession session = new(options.Session, allowReconnect: true);
@@ -36,26 +39,41 @@ internal static class EnduranceApplication
                             options.DurationSeconds, options.Session.Concurrency, options.Session.QueueCapacity,
                             sample.StartedAtUtc, ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
                             LocalPort = session.LocalPort, HeartbeatIntervalSeconds = 2, HeartbeatTimeoutSeconds = 2,
+                            ObservationSeconds = 1, CheckpointSeconds = EnduranceOptions.CheckpointSeconds,
                             ServerGc = System.Runtime.GCSettings.IsServerGC, SocketProfile = socketProfile, FaultPlan = options.FaultPlan(),
                             ThreadPoolLimits = new { MinimumWorkers = minimumWorkers, MaximumWorkers = maximumWorkers,
                                 MinimumIoThreads = minimumIoThreads, MaximumIoThreads = maximumIoThreads }, Sample = sample, Stack = stack });
                         first = false;
                     }
-                    else journal.Append(new { Kind = "checkpoint", Sample = sample, Stack = stack });
+                    else journal.Append(new { Kind = "checkpoint", Sample = sample, Stack = stack, ResourceSummary = monitor.Snapshot() });
                     EnduranceControl.WriteAtomic(Path.Combine(options.Session.Output, "live-status.json"), new {
                         State = "running", sample.StartedAtUtc, sample.ElapsedSeconds, sample.Counts, Stack = stack });
                     Console.WriteLine($"endurance elapsed={sample.ElapsedSeconds:F1} successes={sample.Counts.Successful} pending={sample.Counts.Pending}");
-                }, stop.Token, control.RunAsync).ConfigureAwait(false);
+                }, stop.Token, control.RunAsync, sample =>
+                {
+                    var observedStack = session.Snapshot();
+                    observations.Append(sample, observedStack);
+                    monitor.Observe(sample, observedStack);
+                }).ConfigureAwait(false);
             control.ObserveFaults(null);
             for (int i = 0; i < 100 && session.Snapshot().Active > 0; i++) await Task.Delay(10).ConfigureAwait(false);
             var final = session.Snapshot();
+            if (monitor.Snapshot().WithinBounds)
+            {
+                using EnduranceResourceProbe finalProbe = new();
+                EnduranceSample finalSample = new(result.StartedAtUtc, control.Clock!.ElapsedSeconds, result.Counts, finalProbe.Read());
+                observations.Append(finalSample, final);
+                monitor.Observe(finalSample, final);
+            }
+            var resources = monitor.Snapshot();
             bool passed = !result.Aborted && result.Counts.Reconciled && result.Counts.Pending == 0
                 && result.Counts.UnexpectedFailures == 0 && result.Counts.RecoveredFaults == options.FaultPlan().Length
                 && final.Pending == 0 && final.Active == 0 && final.Malformed == 0 && final.DroppedEvents == 0
                 && final.ForeignTransfers == 0 && final.UnsolicitedInvokes == 0 && final.SccpReturns == 0
-                && final.OutboundQueue == 0 && final.InboundQueue == 0 && final.ReadersHealthy;
+                && final.OutboundQueue == 0 && final.InboundQueue == 0 && final.ReadersHealthy
+                && resources.WithinBounds && resources.BaselineWorkingSetBytes is not null;
             var report = new { SchemaVersion = 1, Policy = EnduranceOptions.Policy, options.Session.SourceCommit,
-                options.Diagnostic, Run = result, Stack = final, SocketProfile = session.SocketProfile,
+                options.Diagnostic, Run = result, Stack = final, ResourceSummary = resources, SocketProfile = session.SocketProfile,
                 ExecutionPassed = passed, QualificationPassed = false, StablePromotion = false };
             journal.Append(new { Kind = "finish", Report = report });
             string output = Path.Combine(options.Session.Output, "sdk.json");
@@ -67,7 +85,7 @@ internal static class EnduranceApplication
         }
         catch (Exception error)
         {
-            journal.Append(new { Kind = "failed", Error = error.GetType().Name, Counts = ledger.Snapshot() });
+            journal.Append(new { Kind = "failed", Error = error.GetType().Name, Counts = ledger.Snapshot(), ResourceSummary = monitor.Snapshot() });
             Console.Error.WriteLine(error);
             return 1;
         }

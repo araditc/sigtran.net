@@ -84,7 +84,8 @@ internal static class EnduranceRunner
     internal static async Task<EnduranceRun> RunAsync(EnduranceRunSettings settings, EnduranceLedger ledger,
         Func<int, CancellationToken, ValueTask<CapacityOutcome>> invoke, Func<bool> connected,
         Action<EnduranceSample> checkpoint, CancellationToken ct = default,
-        Func<EnduranceExecution, CancellationToken, Task>? control = null)
+        Func<EnduranceExecution, CancellationToken, Task>? control = null,
+        Action<EnduranceSample>? observe = null)
     {
         if (settings.Duration <= TimeSpan.Zero || settings.Duration > TimeSpan.FromSeconds(EnduranceOptions.RequiredSeconds)
             || settings.Concurrency is < 1 or > 1024 || settings.CheckpointInterval <= TimeSpan.Zero
@@ -109,7 +110,9 @@ internal static class EnduranceRunner
         try
         {
             using EnduranceResourceProbe initial = new();
-            checkpoint(new(clock.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), initial.Read()));
+            EnduranceSample firstSample = new(clock.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), initial.Read());
+            observe?.Invoke(firstSample);
+            checkpoint(firstSample);
             lifetime.CancelAfter(settings.Duration + settings.DrainTimeout);
             start.SetResult();
             observer = ObserveAsync();
@@ -156,9 +159,20 @@ internal static class EnduranceRunner
             try
             {
                 using EnduranceResourceProbe probe = new();
-                using PeriodicTimer timer = new(settings.CheckpointInterval);
+                TimeSpan interval = settings.CheckpointInterval < TimeSpan.FromSeconds(1)
+                    ? settings.CheckpointInterval : TimeSpan.FromSeconds(1);
+                using PeriodicTimer timer = new(interval);
+                double nextCheckpoint = settings.CheckpointInterval.TotalSeconds;
                 while (await timer.WaitForNextTickAsync(observing.Token).ConfigureAwait(false))
-                    checkpoint(new(clock!.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), probe.Read()));
+                {
+                    EnduranceSample sample = new(clock!.StartedAtUtc, clock.ElapsedSeconds, ledger.Snapshot(), probe.Read());
+                    observe?.Invoke(sample);
+                    if (sample.ElapsedSeconds >= nextCheckpoint)
+                    {
+                        checkpoint(sample);
+                        nextCheckpoint = sample.ElapsedSeconds + settings.CheckpointInterval.TotalSeconds;
+                    }
+                }
             }
             catch (OperationCanceledException) when (observing.IsCancellationRequested) { }
             catch (Exception error) { errors.Enqueue("checkpoint:" + error.GetType().Name); await lifetime.CancelAsync(); }

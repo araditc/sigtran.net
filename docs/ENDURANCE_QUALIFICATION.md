@@ -35,7 +35,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | 3 | Continuous runner, durable checkpoints and deadline drain | Complete; journal/deadline/cancellation tests and build/test/API/pack passed |
 | 4 | Independent long-running peer and crash-surviving counter evidence | Complete; strict Linux C build/fixtures, mmap values above 2^32 and build/test/API/pack passed |
 | 5 | Scoped incident control, recovery probes and rollback | Complete; control/rollback safety tests and final build/test/API/pack passed |
-| 6 | Memory/heap/queue progression and bounded capture/log storage | Planned |
+| 6 | Memory/heap/queue progression and bounded capture/log storage | Complete; resource/rollover/binary-format tests and final build/test/API/pack passed |
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Planned |
 | 8 | Durable execution, watchdogs and authenticated host control | Planned |
 | 9 | Real two-host short diagnostic of all incident families | Planned |
@@ -117,3 +117,33 @@ port; Kafka TCP traffic is not matched. It verifies an independent rollback
 timer before insertion, cleans partial insertion, and disarms only after both
 owned rules are verified absent. Lock/permission failures never mean absence.
 The guard retries uncertain cleanup independently of the SDK/controller.
+
+## Resource And Progress Bounds
+
+An observation is taken about once per second. Fixed-width binary records
+preserve those observations while hash-chain checkpoints are written each
+minute. The `SGENOBS1` header precedes 208-byte little-endian records
+(`double`, six signed 64-bit counters, `double`, eighteen signed 64-bit counters).
+The doubles are actual elapsed seconds and process CPU seconds. Remaining
+fields are RSS/OS peak RSS/managed bytes/GC heap/fragmentation/allocation,
+GC/ThreadPool counters, ledger admissions/successes/pending, active/pending
+dialogues, queues and unexpected-protocol counters, in that order.
+The stream has a separate 64 MiB byte bound and fixed maximum record count,
+and flushes to disk each minute and on disposal. Constant-size aggregates retain actual observation gaps,
+OS high-water RSS, sampled managed/GC heap, bounded queues/contexts and success
+progress. Managed-memory sampling is not misrepresented as an exact transient
+peak. The baseline is the first observation at or after 600 seconds (one-sixth
+of a short diagnostic); the maximum subsequent RSS growth is bounded too.
+No forced GC or per-transaction resource log is used.
+
+A resource/queue/protocol breach or more than 120 seconds without a successful
+result records the violated bound and aborts execution. Checkpoints retain
+the evidence; no unlimited sample list grows across three days. Captures and
+checkpoint storage have separate hard byte budgets. Mean TPS uses successful
+in-window results, including fresh probes and the measured fault downtime;
+drain remains excluded. This is not a relaxation of Phase 61's independent
+per-second capacity criterion.
+
+The default 24-bit TCAP transaction-ID range and configurable full 32-bit
+range both have rollover tests; the manager's existing allocation fence skips
+live identifiers. Multi-billion-run counters and dialogue handles remain 64-bit.

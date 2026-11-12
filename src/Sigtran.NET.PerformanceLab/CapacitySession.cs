@@ -118,14 +118,27 @@ internal sealed class CapacitySession : IAsyncDisposable
     {
         var m3ua = _runtime.GetMetrics();
         var tcap = _tcap.GetMetrics();
-        _peakOutbound = Math.Max(_peakOutbound, m3ua.OutboundQueueDepth);
-        _peakInbound = Math.Max(_peakInbound, m3ua.InboundQueueDepth);
+        int peakOutbound = UpdatePeak(ref _peakOutbound, m3ua.OutboundQueueDepth);
+        int peakInbound = UpdatePeak(ref _peakInbound, m3ua.InboundQueueDepth);
         return new(m3ua.SentTransfers, m3ua.ReceivedTransfers, m3ua.ReconnectAttempts, m3ua.Faults,
             tcap.OpenedDialogues, tcap.ClosedDialogues, tcap.PendingInvokes, tcap.ActiveDialogues,
             tcap.MalformedTransactions, tcap.DroppedDialogueEvents, _network.ForeignTransfers,
             Interlocked.Read(ref _unsolicited), Interlocked.Read(ref _returns),
-            m3ua.OutboundQueueDepth, m3ua.InboundQueueDepth, _peakOutbound, _peakInbound,
+            m3ua.OutboundQueueDepth, m3ua.InboundQueueDepth, peakOutbound, peakInbound,
             _observers.Length == 3 && _observers.All(task => !task.IsCompleted));
+    }
+
+    private static int UpdatePeak(ref int target, int value)
+    {
+        // Fault control and resource sampling can observe concurrently; never lower a previously observed peak.
+        int previous = Volatile.Read(ref target);
+        while (value > previous)
+        {
+            int actual = Interlocked.CompareExchange(ref target, value, previous);
+            if (actual == previous) return value;
+            previous = actual;
+        }
+        return previous;
     }
 
     private async Task ObserveAsync(int kind)
