@@ -126,7 +126,7 @@ def stop_owned(client, root, name):
     command(client, ['bash', '-c', shell], 10)
 
 
-def run(args):
+def run(args, restore_host=None):
     """Build a clean source archive once and retain incomplete evidence on any failure."""
     import paramiko  # Controller-only dependency; neither VM needs Paramiko or a Python package install.
     if args.duration not in range(1, 1801) or (args.duration != 1800 and not args.diagnostic):
@@ -218,6 +218,7 @@ def run(args):
         manifest['peerObservationVersion'] = 1
         manifest['processReceiptVersion'] = 1
         manifest['collectionErrors'] = []
+        manifest['hostMaintenanceRequired'] = restore_host is not None
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
@@ -348,10 +349,16 @@ def run(args):
             except Exception as error:
                 if 'manifest' in locals():
                     manifest['collectionErrors'].append(name + ':' + type(error).__name__)
-        if 'manifest' in locals():
-            (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         sdk.close()
         peer.close()
+        if restore_host is not None:
+            try:
+                restore_host(output)
+            except Exception as error:
+                if 'manifest' in locals():
+                    manifest['collectionErrors'].append('host-restoration:' + type(error).__name__)
+        if 'manifest' in locals():
+            (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         hashes = {file.name: hashlib.sha256(file.read_bytes()).hexdigest()
                   for file in output.iterdir() if file.is_file() and file.name != 'sha256.json'}
         (output / 'sha256.json').write_text(json.dumps(hashes, indent=2))
@@ -359,7 +366,7 @@ def run(args):
             or manifest['observerExitCode'] or bool(manifest['collectionErrors']))
 
 
-if __name__ == '__main__':
+def create_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sdk-host', required=True)
     parser.add_argument('--peer-host', required=True)
@@ -378,4 +385,8 @@ if __name__ == '__main__':
     parser.add_argument('--shared-peer', action='store_true')
     parser.add_argument('--dedicated-hosts', action='store_true')
     parser.add_argument('--output', required=True)
-    raise SystemExit(run(parser.parse_args()))
+    return parser
+
+
+if __name__ == '__main__':
+    raise SystemExit(run(create_parser().parse_args()))

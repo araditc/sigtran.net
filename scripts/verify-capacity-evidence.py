@@ -298,6 +298,38 @@ def runtime_tuning(sdk, inventory):
     return tuning
 
 
+def host_maintenance(audit, sdk):
+    """Require an approved, bounded maintenance window and restoration, not just idle PIDs."""
+    require(audit['schemaVersion'] == 1 and audit['explicitlyAuthorized'] is True
+            and audit['restorationVerified'] is True and audit['unitFilesUnchanged'] is True
+            and audit['fallbackTimerArmed'] is True and audit['fallbackTimerCancelled'] is True
+            and audit['restorationErrors'] == [], 'Unverified host maintenance/restoration')
+    units = audit['stoppedUnits']
+    require(isinstance(units, list) and 1 <= len(units) <= 8 and len(set(units)) == len(units)
+            and all(isinstance(unit, str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.@:-]*\.(service|timer)', unit)
+                    for unit in units), 'Invalid maintenance units')
+    before, quiet, after = (audit[key] for key in ('before', 'quiesced', 'after'))
+    require(all(set(states) == set(units) for states in (before, quiet, after)), 'Maintenance inventory differs')
+    for unit in units:
+        require(before[unit]['ActiveState'] in ('active', 'inactive')
+                and quiet[unit]['ActiveState'] == 'inactive' and quiet[unit]['MainPID'] == '0',
+                'Selected unit was not quiesced')
+        for key in ('ActiveState', 'SubState', 'UnitFileState', 'fragmentSha256'):
+            require(before[unit][key] == after[unit][key], 'Original unit state or definition was not restored')
+        require(re.fullmatch('[0-9a-f]{64}', before[unit]['fragmentSha256']) is not None
+                and quiet[unit]['fragmentSha256'] == before[unit]['fragmentSha256']
+                and quiet[unit]['UnitFileState'] == before[unit]['UnitFileState'], 'Maintenance changed a unit file/enablement')
+    order = [unit for unit in reversed(units) if before[unit]['ActiveState'] == 'active']
+    require(order and audit['restoreOrder'] == order, 'Restoration started an originally inactive unit')
+    begin, quiet_at, restored_at = (utc_time(audit[key]) for key in ('startedAtUtc', 'quiescedAtUtc', 'restoredAtUtc'))
+    require(begin <= quiet_at <= utc_time(sdk['StartedAtUtc'])
+            < utc_time(sdk['FinishedAtUtc']) <= restored_at
+            and (restored_at - begin).total_seconds() <= 7200, 'Maintenance interval does not bracket workload')
+    return dict(explicitlyAuthorized=True, quiescenceVerified=True, restorationVerified=True,
+                unitFilesUnchanged=True, fallbackTimerArmed=True, fallbackTimerCancelled=True,
+                stoppedUnitCount=len(units), restoredActiveUnitCount=len(order))
+
+
 def verify(root, expected_source):
     """Re-read original bytes and run TShark, rather than trusting a saved pass flag or TSV."""
     root = pathlib.Path(root).resolve()
@@ -341,6 +373,9 @@ def verify(root, expected_source):
         args += ['-e', field]
     table = subprocess.run(args, capture_output=True, text=True, check=True, timeout=60).stdout
     result = evaluate(sdk, peer, inventory, verify_sample(table, port), expected_source)
+    if inventory.get('hostMaintenanceRequired'):
+        require('host-maintenance.json' in hashes, 'Missing hashed host maintenance audit')
+        result['hostMaintenance'] = host_maintenance(read_json(root / 'host-maintenance.json'), sdk)
     result['hardware'] = {name: {'logicalProcessors': inventory['before'][name]['processors'],
                                 'memoryMiB': inventory['before'][name]['memoryKiB']['MemTotal'] // 1024,
                                 'kernel': inventory['before'][name]['kernel']}

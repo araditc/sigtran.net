@@ -57,6 +57,8 @@ declared workload and hardware, not an unconditional performance promise.
 Short, local or shared-host runs are diagnostic and cannot close the dedicated
 two-host gate. Historical aggregate/single-host capacity remains separate.
 Kafka services, configuration and ports must never be changed by this runner.
+An independently invoked, explicitly approved maintenance wrapper is described
+below; the rootless runner itself retains this restriction.
 The measured interval is half-open: a result at exactly 1,800 seconds belongs
 to drain. Accounting arrays are fixed by the five operations, eight terminal
 outcomes and measured seconds, independent of the number of transactions.
@@ -128,6 +130,35 @@ never inspect Kafka tasks. The final measurement used nice 0, not the historical
 nice 10 profile, and no experimental worker-spin setting.
 
 ## Evidence Verification
+
+### Explicit Maintenance Window
+
+`run-capacity-maintenance.py` is a separate opt-in wrapper, not the default
+runner. The owner has approved temporary broker/controller and health-check
+quiescence on the peer VM for the next dedicated test. This approval does not
+authorize configuration, topic-data, firewall, enablement or global tuning edits.
+The full 1,800-second dedicated run is still pending; no passing claim follows
+from approval or from the earlier shared-host numerical result.
+
+The wrapper requires `--allow-temporary-unit-stop`, `--dedicated-hosts`, and
+one `--maintenance-unit UNIT` for each approved service/timer, in stop order.
+It accepts `SIGTRAN_MAINTENANCE_SUDO_PASSWORD` only through its process
+environment and sends it through SSH stdin. Pinned SSH identity is mandatory.
+Before stopping anything it snapshots states, enablement and unit-file hashes,
+then arms a remote systemd restoration timer (default 55 minutes). Restoration
+starts only originally active units, in reverse order, even after controller
+failure; the initially inactive health service is not manually started.
+The timer is cancelled only after state/hash restoration is verified.
+
+The normal runner collects its before/after host inventories while services
+are quiesced, then invokes restoration before hashing final evidence. A hashed
+`host-maintenance.json` is mandatory for this mode. Verification rejects missing
+approval, non-quiesced units, changed definitions/enablement, wrong restoration
+order/timestamps, restoration errors or an uncancelled guard. Public output
+includes only a sanitized maintenance summary, not private host identities.
+Normal Kafka stop/start may write its own logs/checkpoints; no manual Kafka
+configuration or topic-data changes are made. Dedicated here means an approved
+VM workload window, not exclusive physical hypervisor cores.
 
 On Linux with TShark, run:
 

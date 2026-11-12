@@ -49,13 +49,22 @@ def render(report):
         *[f'- `{reason}`' for reason in report['reasons']], '',
         f"The declared capacity target is {report['targetTps']:,} successful complete transactions",
         'in every measured second for 1,800 seconds on two dedicated hosts.',
-        'A shared Kafka host is not dedicated evidence. No Kafka service or',
-        'configuration changes are authorized by this report. Unchanged process',
-        'identities do not prove absence of performance interference.', '',
+        'A shared Kafka host is not dedicated evidence. This report grants no',
+        'service-change authorization. Unchanged process identities alone do not',
+        'prove absence of performance interference.', '',
         'This is source-build workload evidence, not proof that a packed NuGet',
         'candidate was deployed. It is not a signed release envelope, an operator',
         'acceptance result, a production SLA or authorization to promote stable.', '',
     ])
+    if 'hostMaintenance' in report:
+        text += '\n## Approved Maintenance Window\n\n'
+        text += 'The owner explicitly approved temporary peer-host service quiescence.\n'
+        text += 'The hashed audit verifies inactive selected units before traffic and\n'
+        text += 'restoration of original active/inactive states, enablement and unit-file\n'
+        text += 'hashes after collection. A remote fallback timer was armed before stop\n'
+        text += 'and cancelled after verified restoration. No manual Kafka configuration\n'
+        text += 'or topic-data edits were made. This is a dedicated VM workload window,\n'
+        text += 'not proof of exclusive physical hypervisor resources.\n'
     if 'hardware' in report:
         hardware = report['hardware']
         text += '\n## Declared Hardware\n\n'
@@ -103,7 +112,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     report = verifier.verify(args.root, args.source_commit)
     # Exclusive output preserves previously reviewed evidence rather than silently replacing it.
-    with args.json_output.open('x', encoding='utf-8') as stream:
+    with args.json_output.open('x', encoding='utf-8', newline='\n') as stream:
         stream.write(json.dumps(report, indent=2) + '\n')
-    with args.markdown_output.open('x', encoding='utf-8') as stream:
+    with args.markdown_output.open('x', encoding='utf-8', newline='\n') as stream:
         stream.write(render(report))
