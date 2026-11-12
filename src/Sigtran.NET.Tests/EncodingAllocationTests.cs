@@ -65,6 +65,38 @@ internal static class EncodingAllocationTests
             "Small transaction encode must not recreate a 2 KiB scratch buffer");
     }
 
+    internal static void DialogueObjectIdentifiers()
+    {
+        foreach (uint[] arcs in new uint[][] { [0, 0], [1, 39], [2, uint.MaxValue, 0, 128],
+            [0, 4, 0, 0, 1, 0, 20, 3], [2, uint.MaxValue, uint.MaxValue] })
+        {
+            TcapObjectIdentifier oid = new(arcs);
+            string text = oid.ToString();
+            Require(ReferenceEquals(text, oid.ToString()), "Immutable OID formatting should be reused per instance");
+            AsnWriter standard = new(AsnEncodingRules.BER);
+            standard.WriteObjectIdentifier(text);
+            Require(new AsnReader(standard.Encode(), AsnEncodingRules.BER).ReadObjectIdentifier() == text,
+                "OID reference encoding must remain independent");
+            byte[] encoded = TcapDialoguePortion.CreateResponse(oid, true).Encode();
+            Require(TcapDialoguePortion.TryDecode(encoded, out var decoded, out _)
+                && decoded!.ApplicationContext.Arcs.SequenceEqual(arcs), "Direct OID decode changed arcs");
+        }
+
+        foreach (byte[] invalid in new byte[][] { [], [0x80], [0x80, 0], [0xff, 0xff, 0xff, 0xff, 0x7f], [0x2a, 0x80] })
+        {
+            AsnWriter fields = new(AsnEncodingRules.BER);
+            fields.WriteObjectIdentifier("0.0.17.773.1.1.1");
+            using (fields.PushSequence(new Asn1Tag(TagClass.ContextSpecific, 0, true)))
+            using (fields.PushSequence(new Asn1Tag(TagClass.Application, 0, true)))
+            using (fields.PushSequence(new Asn1Tag(TagClass.ContextSpecific, 1, true)))
+                fields.WriteEncodedValue(new byte[] { 6, (byte)invalid.Length }.Concat(invalid).ToArray());
+            byte[] body = fields.Encode();
+            Require(body.Length < 128, "Fixture must use the declared short-form EXTERNAL length");
+            Require(!TcapDialoguePortion.TryDecode([0x28, (byte)body.Length, .. body], out _, out _),
+                "Malformed OID content accepted");
+        }
+    }
+
     private static void Require(bool condition, string message)
     {
         if (!condition) throw new InvalidOperationException(message);

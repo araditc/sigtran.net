@@ -8,6 +8,7 @@ namespace Sigtran.NET.Layers.TCAP;
 /// </summary>
 public sealed class TcapObjectIdentifier
 {
+    private string? _text;
     /// <summary>Creates an object identifier from arcs.</summary>
     /// <param name="arcs">The object identifier arcs.</param>
     public TcapObjectIdentifier(params uint[] arcs)
@@ -68,7 +69,7 @@ public sealed class TcapObjectIdentifier
     /// <inheritdoc />
     public override string ToString()
     {
-        return string.Join(".", Arcs);
+        return _text ??= string.Join(".", Arcs);
     }
 
     private static ulong ReadBase128(ReadOnlySpan<byte> value, ref int offset, ulong max)
@@ -131,6 +132,7 @@ public enum TcapDialogueDiagnosticSource : byte
 public sealed class TcapDialoguePortion
 {
     private const string StructuredDialogueOid = "0.0.17.773.1.1.1";
+    private static readonly byte[] StructuredDialogueValue = new TcapObjectIdentifier(0, 0, 17, 773, 1, 1, 1).EncodeValue();
     private static readonly TcapBerTag External = new(TcapBerTagClass.Universal, true, 8);
     private static readonly Asn1Tag SingleAsn1 = Context(0);
     private static readonly Asn1Tag ApplicationContextTag = Context(1);
@@ -286,7 +288,7 @@ public sealed class TcapDialoguePortion
         try
         {
             AsnReader fields = new(external.Value, AsnEncodingRules.BER);
-            if (fields.ReadObjectIdentifier() != StructuredDialogueOid)
+            if (!ReadObjectIdentifierValue(fields).Span.SequenceEqual(StructuredDialogueValue))
             {
                 throw new AsnContentException("Unsupported TCAP dialogue abstract syntax.");
             }
@@ -311,9 +313,8 @@ public sealed class TcapDialoguePortion
             }
 
             AsnReader contextField = apdu.ReadSequence(ApplicationContextTag);
-            string context = contextField.ReadObjectIdentifier();
+            var oid = TcapObjectIdentifier.DecodeValue(ReadObjectIdentifierValue(contextField).Span);
             contextField.ThrowIfNotEmpty();
-            var oid = new TcapObjectIdentifier(context.Split('.').Select(uint.Parse).ToArray());
             bool? accepted = null;
             byte diagnostic = 0;
             TcapDialogueDiagnosticSource source = TcapDialogueDiagnosticSource.User;
@@ -369,6 +370,17 @@ public sealed class TcapDialoguePortion
             error = exception.Message;
             return false;
         }
+    }
+
+    private static ReadOnlyMemory<byte> ReadObjectIdentifierValue(AsnReader reader)
+    {
+        ReadOnlyMemory<byte> encoded = reader.ReadEncodedValue();
+        Asn1Tag tag = AsnDecoder.ReadEncodedValue(encoded.Span, AsnEncodingRules.BER,
+            out int offset, out int length, out int consumed);
+        if (tag != Asn1Tag.ObjectIdentifier || consumed != encoded.Length)
+            throw new AsnContentException("Expected a primitive object identifier.");
+        // The existing bounded base-128 codec validates the application OID arcs, not a string round trip.
+        return encoded.Slice(offset, length);
     }
 
     private static ReadOnlySpan<byte> ReadExternalValue(AsnReader reader)

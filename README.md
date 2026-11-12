@@ -42,6 +42,8 @@ Linux native receive readiness uses non-consuming async socket notification,
 preserving record/metadata ownership, cancellation and operation deadlines.
 Linux-suite follow-up also fixes M2PA Busy Ended state publication before send
 resumption; this correctness fix is separate from M3UA capacity measurements.
+TCAP dialogue OIDs are decoded without numeric-string round trips while
+retaining BER structure checks and bounded arc validation.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining

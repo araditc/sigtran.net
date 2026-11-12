@@ -184,3 +184,15 @@ and verifies payload/acknowledgement accounting. This is not a claimed cause of
 M3UA capacity stalls. The SCCP metrics test now waits for its documented
 point-in-time counter to catch up with channel publication instead of assuming
 the producer continuation has already run when the consumer returns.
+
+The five-minute before/after receive-readiness comparison retained six versus
+two sub-target windows (minimum 9,599 versus 9,982 TPS). The before-run low-window
+brackets had no new SCTP retransmissions, only about 60-72 ms cumulative GC pause
+across approximately two-second brackets, and no large sampling delay. This
+does not reproduce or explain the historical one-second extreme stall.
+Readiness alone did not close the target. Dialogue OID decoding now uses the
+standard ASN.1 reader/decoder for BER shape plus the existing bounded OID arc
+codec directly, avoiding temporary numeric strings and split/parse arrays.
+The fixed dialogue syntax is compared by canonical value bytes. Immutable OID
+formatting is cached per instance, never in an attacker-expandable global map.
+Tests retain large-arc, malformed/truncated/non-minimal arc and exact wire checks.
