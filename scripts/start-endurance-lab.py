@@ -69,6 +69,7 @@ with tarfile.open(stage/'source.tar') as archive:
   if member.issym() or member.islnk() or pathlib.PurePosixPath(member.name).is_absolute() or '..' in pathlib.PurePosixPath(member.name).parts:raise ValueError('Unsafe source archive')
  archive.extractall(source)
 with (stage/'build.log').open('wb') as log:
+ subprocess.run([sys.executable,'-m','unittest','discover','-s','scripts/tests','-p','test_endurance_*.py'],cwd=source,stdout=log,stderr=subprocess.STDOUT,check=True)
  subprocess.run(['dotnet','build','src/Sigtran.NET.PerformanceLab','-c','Release','-v:q','-m:1','/nodeReuse:false','/p:UseSharedCompilation=false'],cwd=source,stdout=log,stderr=subprocess.STDOUT,check=True)
  subprocess.run(['gcc','-std=c11','-O2','-Wall','-Wextra','-Werror','tools/interop-peer/sigtran_reference_peer.c','-lsctp','-o',str(stage/'peer')],cwd=source,stdout=log,stderr=subprocess.STDOUT,check=True)
 print('Build complete')
@@ -94,6 +95,8 @@ def start(args):
                            allow_agent=False, timeout=15, auth_timeout=15, banner_timeout=15, channel_timeout=180)
             client.get_transport().set_keepalive(15); clients.append(client)
         sdk, peer = clients
+        active = command(sdk, ['systemctl', 'list-units', '--type=service', '--state=active', '--plain', '--no-legend', 'sigtran-endurance-sdk-*'])
+        if active: raise ValueError('Another owned endurance job is active; do not build/load this SDK host')
         stage = command(sdk, ['python3', '-c', "import pathlib,sys; p=pathlib.Path.home()/('sigtran-endurance-stage-'+sys.argv[1]);p.mkdir(mode=0o700);print(p)", args.run_id])
         with sdk.open_sftp() as sftp:
             sftp.putfo(io.BytesIO(archive), stage + '/source.tar')

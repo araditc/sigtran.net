@@ -110,6 +110,12 @@ class Driver:
         host.atomic(self.raw / 'captures.json', self.captures)
         if code != 0: raise RuntimeError('Capture exit was not successful')
 
+    def finish_probe_capture(self, item):
+        """Keep ordinary admission paused until the final capture backend buffer has retired."""
+        settled = time.monotonic()
+        self.wait(lambda: time.monotonic() - settled >= 3, 5)
+        self.stop_capture(item)
+
     def header(self):
         path = self.raw / 'sdk/checkpoints.jsonl'
         if not path.exists(): return None
@@ -154,6 +160,12 @@ class Driver:
         runtime = subprocess.run([tools['dotnet'], '--list-runtimes'], check=True, capture_output=True, text=True,
                                  timeout=30, **host.demotion())
         if 'Microsoft.NETCore.App 10.0.12 ' not in runtime.stdout: raise ValueError('Qualified .NET runtime is unavailable')
+        topology = dict(sdk=host.inventory(), peer=rpc(self.value, self.root, dict(action='inventory')))
+        if topology['sdk']['machineHash'] == topology['peer']['machineHash'] or topology['sdk']['kafkaProcesses']:
+            raise ValueError('Two distinct hosts and an unshared SDK host are required')
+        for role in ('sdk', 'peer'):
+            addresses = {entry['local'] for link in topology[role]['addresses'] for entry in link.get('addr_info', [])}
+            if self.value[role + 'Ip'] not in addresses: raise ValueError('Data address not owned by authenticated host')
         # This durable marker tells ExecStopPost to request restoration even if prepare loses its SSH reply.
         (self.root / 'host-started').touch(exist_ok=False)
         try:
@@ -191,9 +203,12 @@ class Driver:
                 else: rpc(self.value, self.root, dict(action='start', id=incident['Id'], nonce=nonce))
                 self.event(incident, nonce, 'released')
                 self.command(incident['Id'], 'release', nonce)
-                self.stop_capture(capture)
+                # Admission stays paused while the capture backend retires its final kernel buffer.
+                # Immediate SIGINT can omit an entire short probe window despite zero reported drops.
+                self.finish_probe_capture(capture)
                 self.command(incident['Id'], 'capture-stopped', nonce)
-            self.wait(lambda: self.sdk.poll() is not None, self.value['durationSeconds'] + 60, allow_exit=True)
+            remaining = max(1, self.value['durationSeconds'] + 30 - (time.monotonic() - origin))
+            self.wait(lambda: self.sdk.poll() is not None, remaining, allow_exit=True)
             code = self.sdk.wait(); (self.raw / 'sdk.exit').write_text(str(code) + '\n')
             self.after = dict(sdk=host.inventory(), peer=rpc(self.value, self.root, dict(action='inventory')))
             if code: raise RuntimeError('SDK execution failed')
@@ -220,7 +235,13 @@ class Driver:
                 (self.raw / 'network-events.jsonl').write_bytes((self.root / 'network-events.jsonl').read_bytes())
             except Exception as error: errors.append('network:' + type(error).__name__)
             try:
-                rpc(self.value, self.root, dict(action='finish'))
+                # A service can be transitioning during restart. Retry only idempotent restoration, never MAP work.
+                deadline = time.monotonic() + 120
+                while True:
+                    try: rpc(self.value, self.root, dict(action='finish')); break
+                    except RuntimeError:
+                        if time.monotonic() >= deadline: raise
+                        time.sleep(2)
                 for name in ('peer-result.json', 'peer-counters.bin', 'peer.log', 'host-maintenance.json'): self.export(name)
                 audit = json.loads((self.raw / 'host-maintenance.json').read_text())
                 if not audit['restorationVerified'] or not audit['fallbackTimerCancelled']: raise RuntimeError('Peer restoration unverified')
@@ -263,6 +284,8 @@ def collect(value, root):
     report = verifier.verify(raw, value['sourceCommit'])
     # Publication is separate from originals and exclusive; no report is fabricated on verifier failure.
     with (root / 'verified-summary.json').open('x') as stream: json.dump(report, stream, indent=2); stream.write('\n')
+    if not value['diagnostic'] and not report['qualificationPassed']:
+        raise RuntimeError('Completed execution did not qualify the declared endurance target')
 
 
 def main():
@@ -279,14 +302,17 @@ def main():
         signal.signal(signal.SIGTERM, interrupt); signal.signal(signal.SIGINT, interrupt)
         Driver(value, root).run()
     else:
+        import fcntl
+        lock = (root.parent.parent / 'sdk-job.lock').open('a')
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         # A separate process prevents writing a success receipt before the actual driver has exited.
         child = subprocess.Popen(['/usr/bin/python3', '-I', str(HERE / 'run-endurance-lab.py'), 'run', str(root / 'host.json')])
         def forward(sig, _): child.send_signal(sig)
         signal.signal(signal.SIGTERM, forward); signal.signal(signal.SIGINT, forward)
         code = child.wait()
         (root / 'work/controller.exit').write_text(str(code) + '\n')
-        cleanup(value, root)
-        collect(value, root)
+        try: cleanup(value, root)
+        finally: collect(value, root)
         if code: raise SystemExit(1)
 
 

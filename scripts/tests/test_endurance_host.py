@@ -5,6 +5,7 @@ import pathlib
 import tempfile
 import unittest
 from unittest.mock import patch
+import types
 
 spec = importlib.util.spec_from_file_location('endurance_host_test', pathlib.Path(__file__).resolve().parents[1] / 'endurance-host.py')
 host = importlib.util.module_from_spec(spec); spec.loader.exec_module(host)
@@ -19,6 +20,32 @@ def fixture():
 
 
 class HostTests(unittest.TestCase):
+    def test_child_stop_failure_still_requests_host_restoration(self):
+        peer = object.__new__(host.Peer); peer.process = object(); peer.value = {}; peer.root = pathlib.Path('/protected')
+        def fail(_): raise RuntimeError('Synthetic child-stop failure')
+        peer.reap = fail
+        with patch.object(host, 'restore') as restore:
+            with self.assertRaises(RuntimeError): peer.finish()
+            restore.assert_called_once_with(peer.value, peer.root)
+
+    def test_probe_capture_is_not_stopped_before_kernel_buffer_settles(self):
+        instance = object.__new__(driver.Driver); calls = []
+        def wait(condition, timeout):
+            calls.append('wait'); self.assertEqual(timeout, 5); self.assertTrue(condition())
+        instance.wait = wait; instance.stop_capture = lambda item: calls.append(('stop', item))
+        with patch.object(driver.time, 'monotonic', side_effect=[10, 13]): instance.finish_probe_capture('owned')
+        self.assertEqual(calls, ['wait', ('stop', 'owned')])
+
+    def test_transitional_restore_is_observed_but_cannot_count_as_restored(self):
+        with tempfile.TemporaryDirectory() as directory:
+            definition = pathlib.Path(directory) / 'unit'; definition.write_text('fixture')
+            output = 'LoadState=loaded\nActiveState=activating\nSubState=start\nUnitFileState=enabled\nFragmentPath=' + str(definition) + '\n'
+            with patch.object(host, 'execute', return_value=types.SimpleNamespace(stdout=output)):
+                with self.assertRaises(ValueError): host.snapshot()
+                transitional = host.snapshot(strict=False)
+                expected = {key: dict(value, ActiveState='active', SubState='running') for key, value in transitional.items()}
+                self.assertFalse(host.restored(expected, transitional))
+
     def test_runtime_path_is_discovered_before_maintenance(self):
         with tempfile.TemporaryDirectory() as directory:
             path = pathlib.Path(directory) / 'dotnet'; path.touch()

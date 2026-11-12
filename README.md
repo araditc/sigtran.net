@@ -65,6 +65,10 @@ The first live diagnostic failed before traffic on a host-specific runtime
 path, and verified automatic Kafka restoration. Tool/runtime discovery now
 precedes maintenance; Phase 62 remains unqualified pending a successful
 diagnostic and the actual continuous 72-hour run.
+The [diagnostic log](docs/ENDURANCE_DIAGNOSTICS.md) also retains the second
+attempt's 360-second SDK result and rejected collection/wire outcome.
+Controller fixes preserve exact restoration checks and leave admission paused
+while final capture buffers retire; failed evidence is never promoted.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

@@ -20,6 +20,7 @@ import stat
 import subprocess
 import sys
 import time
+import traceback
 
 BASE = pathlib.Path('/opt/sigtran-endurance/runs')
 UNITS = ['kafka-anw-health.timer', 'kafka-anw-health.service',
@@ -103,13 +104,13 @@ def inventory():
     return value
 
 
-def snapshot():
+def snapshot(strict=True):
     result = {}
     for unit in UNITS:
         output = execute(['systemctl', 'show', unit, '--no-pager',
                           '--property=LoadState,ActiveState,SubState,UnitFileState,MainPID,FragmentPath']).stdout
         state = dict(line.split('=', 1) for line in output.splitlines() if '=' in line)
-        if state.get('LoadState') != 'loaded' or state['ActiveState'] not in ('active', 'inactive'):
+        if state.get('LoadState') != 'loaded' or (strict and state['ActiveState'] not in ('active', 'inactive')):
             raise ValueError('Maintenance unit unavailable/transitioning')
         state['fragmentSha256'] = hashlib.sha256(pathlib.Path(state['FragmentPath']).read_bytes()).hexdigest()
         result[unit] = state
@@ -139,7 +140,7 @@ def restore(value, root):
             except Exception as error: errors.append(unit + ':' + type(error).__name__)
         deadline = time.monotonic() + 90
         while True:
-            audit['after'] = snapshot()
+            audit['after'] = snapshot(strict=False)
             if restored(audit['before'], audit['after']) or time.monotonic() >= deadline: break
             time.sleep(2)
         audit.update(restorationVerified=restored(audit['before'], audit['after']), restorationErrors=errors,
@@ -233,8 +234,10 @@ class Peer:
 
     def finish(self):
         self.held = True
-        if self.process is not None: self.reap(signal.SIGTERM)
-        audit = restore(self.value, self.root)
+        try:
+            if self.process is not None: self.reap(signal.SIGTERM)
+        finally:
+            audit = restore(self.value, self.root)
         counters = load_module('endurance_peer_counter', 'endurance-peer-counters.py').read(self.data / 'peer-counters.bin', self.forced)
         result = dict(sourceCommit=self.value['sourceCommit'], binarySha256=self.value['peerSha256'],
                       librarySha256=self.value['librarySha256'], forcedKills=self.forced, counters=counters,
@@ -244,7 +247,10 @@ class Peer:
         return dict(result=result, maintenance=audit)
 
     def tick(self):
-        if not self.prepared or self.finished: return
+        if self.finished: return
+        if not self.prepared:
+            if time.monotonic() - self.last_heartbeat > 180: raise TimeoutError('Unused peer control lease expired')
+            return
         if time.monotonic() - self.last_heartbeat > 180 or datetime.datetime.now(datetime.timezone.utc) >= datetime.datetime.fromisoformat(self.value['expiresAtUtc']):
             self.finish(); raise TimeoutError('Peer lease expired; maintenance restored')
         if self.process is not None and self.process.poll() is not None: self.reap()
@@ -329,7 +335,9 @@ def serve(value, root):
                         if not part or len(data) + len(part) > 8192: raise ValueError('Malformed peer control')
                         data += part
                     try: response = dict(ok=True, value=peer.request(json.loads(data)))
-                    except Exception as error: response = dict(ok=False, error=type(error).__name__)
+                    except Exception as error:
+                        traceback.print_exc(file=sys.stderr)
+                        response = dict(ok=False, error=type(error).__name__)
                     client.sendall(json.dumps(response).encode() + b'\n')
                     if response.get('value', {}).get('shutdown'): running = False
     finally:

@@ -5,6 +5,17 @@ The frozen host-local controller and plan live under a new root-owned
 restarts its SDK or overwrites an earlier attempt. Builds happen before
 maintenance and measured traffic, outside the execution service.
 
+`start-endurance-lab.py` requires a clean committed tree, strict known-host
+verification and explicit maintenance approval. It runs Linux safety tests
+and strict native compilation before launch. `inspect-endurance-lab.py`
+reads service state, retained resource/ledger progress and the verified summary
+without changing the workload. It never infers qualification from liveness.
+The bootstrap rejects an already active owned SDK job before building; an
+exclusive host-local lock also prevents concurrent controllers from starting
+maintenance. Authenticated machine/address ownership is checked before stop.
+Even a child-stop exception requests host restoration, and an unused peer
+control daemon expires without operating on Kafka.
+
 ## Ownership And Control
 
 The protected controller is launched as a systemd service. Its SDK, native C
@@ -40,6 +51,10 @@ Baseline capture starts before association setup. Each fault uses an eight-file
 1 MiB ring on the owned flow, held until all five fresh probes complete.
 Short diagnostics use the same ten-second fault holds as the full run, so
 they exercise the same heartbeat/reconnect supervision before qualification.
+After probe acknowledgement, capture remains active for three seconds with
+ordinary admission still paused. Stopping immediately can discard the final
+kernel capture buffer without incrementing reported drop counters; the final
+verifier still requires the actual five probe pairs, regardless of this delay.
 The network helper records actual owned-rule drop counters before removal;
 Kafka TCP traffic is not a fault target. Source/policy/binary identities are
 pinned, and each private attempt retains both failed and successful artifacts.
