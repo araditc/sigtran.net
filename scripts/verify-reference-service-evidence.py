@@ -80,7 +80,7 @@ def extract_table(capture, timeout=60):
 
 
 def messages(table, port, endpoint=None):
-    """Extract independently decoded M3UA messages, deduplicating identical SCTP retransmissions."""
+    """Deduplicate M3UA retransmissions only when DATA payload, stream and PPID agree, not outer IP bytes."""
     reader = csv.DictReader(io.StringIO(table), delimiter="\t")
     require(tuple(reader.fieldnames or ()) == FIELDS, "Unexpected capture field schema")
     seen, result = {}, []

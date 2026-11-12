@@ -25,8 +25,9 @@ must agree. Shared-peer runs cannot qualify dedicated-host capacity.
 [dedicated 2026-11-12 measurement](docs/CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
 completed 26,599,474 in-window transactions in 1,800 seconds: 14,777.49 average
 TPS, minimum 10,079, zero sub-target seconds and zero failed/unresolved work.
-Independent PCAP decoding matched 3,551 complete MAP pairs; full-run SDK and
-peer counts reconciled. Kafka was temporarily stopped with explicit approval,
+Independent PCAP decoding matched 3,551 complete MAP pairs and checked DATA
+payload/stream/PPID on retransmissions; full-run SDK and peer counts reconciled.
+Kafka was temporarily stopped with explicit approval,
 then its original states/enablement/unit hashes were restored and verified.
 The [exit report](docs/CAPACITY_QUALIFICATION_EXIT.md) records source
 `947d69abd081449cc0e2c286409eeab69a659ab7`, .NET 10.0.12/server GC, four

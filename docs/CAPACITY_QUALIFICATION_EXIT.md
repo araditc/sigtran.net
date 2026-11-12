@@ -48,8 +48,9 @@ Neither was overwritten or regraded. The combined LAN-profile rerun had no
 measured SDK namespace T3 increase; this is not an association-only causal trace
 or proof that any individual setting uniquely caused the improvement.
 
-A startup ASP Active Ack retransmission at about 201.7 ms was byte-identical
-in original frames 10/11. TShark's default TSN analysis suppressed its duplicate
+A startup ASP Active Ack retransmission at about 201.7 ms had an identical DATA
+payload and stream/PPID in original frames 10/11, not an identical outer IP frame.
+TShark's default TSN analysis suppressed its duplicate
 payload, triggering a false changed-bytes rejection. Extraction now preserves
 payloads and reads absolute TSNs; independent comparison still rejects changed
 bytes, stream/PPID, empty payloads and malformed envelopes. Original PCAP bytes

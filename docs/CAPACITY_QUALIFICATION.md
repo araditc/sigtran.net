@@ -185,8 +185,9 @@ Complete SDK/peer totals account for the entire measured interval.
 Extraction uses absolute on-wire TSNs and disables TShark's TSN-analysis payload
 suppression. The independent parser still requires identical bytes, stream and
 PPID for retransmissions; changed or missing payload is never ignored. A real
-startup duplicate exposed this dissector behavior. The packet hex dumps were
-identical; regression tests reject changed bytes/metadata and empty payloads.
+startup duplicate exposed this dissector behavior. The DATA payloads in the
+original packet hex dumps were identical, not the entire IP frames; regression
+tests reject changed payload/metadata and empty payloads.
 
 Warmup, measured successes, late results, terminal failures, per-second totals,
 stack dialogue counts and peer per-operation counts must reconcile. A qualifying
