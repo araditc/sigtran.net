@@ -43,12 +43,16 @@ Ten delivered implementation units do not constitute capacity qualification.
 On 2026-11-11 the owner [revised the current target to 10K](CAPACITY_TARGET_DECISION.md).
 New-candidate evidence is required; the original 20K result above is historical.
 
-The [new 10K-target measurement](CAPACITY_MEASUREMENT_10K_20261111.md) tested
-`67db5bc7a317a4c1fb27d17280e1b23280110cdb` for the full 1,800 seconds without
-a profiler. All 22,241,973 in-window transactions succeeded, averaging
-12,356.65 TPS, but 29 seconds were below 10K and the peer was shared.
-Phase 61 remains open for per-second stability and dedicated-host qualification;
-20K optimization is not a current blocker. Phases 62-65 remain distinct.
+The [2026-11-12 rerun](CAPACITY_MEASUREMENT_10K_20261112.md) tested
+`324f1932cc7820335599c2e7b70e60ada32de4d9` for the full 1,800 seconds without
+a profiler: 25,590,881 successful in-window transactions, 14,217.16 average TPS,
+minimum 10,026 and zero sub-target seconds or failures/unresolved work.
+The [stall diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) retains the original
+29-low-second baseline, interrupted collection and rejected experiments.
+Phase 61's numerical regression is closed for that declared profile, but the
+dedicated-host qualification remains open. The minimum margin is only 26 TPS;
+no general production SLA is implied. 20K is not a current blocker. Phases
+62-65 and exact-candidate release trust remain distinct.
 
 The initial estimate is 12-20 engineering person-weeks, excluding external
 access and acceptance waiting time; phase 56 records the actual dependencies.

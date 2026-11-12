@@ -65,7 +65,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 58 | Native SCTP multihoming and live path failover | [Native SCTP Multihoming](NATIVE_SCTP_MULTIHOMING.md), [Retained Evidence](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json) | Ten units complete; isolated Linux same-association path loss verified; separate-host and stable qualification remain open |
 | 59 | MTP3 and M2PA runtime | [MTP3](MTP3.md), [Retained Evidence](evidence/MTP3_M2PA_20261110.json) | Ten units complete for the ITU endpoint profile; independent SCCP wire traffic and SDK-to-SDK native changeover/changeback verified |
 | 60 | End-to-end reference service and external interoperability | [Reference Service](REFERENCE_SERVICE.md), [Retained Evidence](evidence/REFERENCE_SERVICE_20261110.json) | Ten units complete for the isolated M3UA ITU MAP SMS profile; independent C MAP endpoint and maintained STP transit verified |
-| 61 | Completed MAP transaction capacity | [Capacity Qualification](CAPACITY_QUALIFICATION.md), [Current 10K Measurement](CAPACITY_MEASUREMENT_10K_20261111.md), [Profiling](CAPACITY_PROFILING.md) | Ten implementation units and profiling continuation delivered; 22,241,973 successful transactions in 1800 seconds, 12,356.65 average TPS; 29 sub-target seconds and shared peer mean NOT QUALIFIED |
+| 61 | Completed MAP transaction capacity | [Capacity Qualification](CAPACITY_QUALIFICATION.md), [Current 10K Measurement](CAPACITY_MEASUREMENT_10K_20261112.md), [Stall Diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) | Numerical criterion MET: 25,590,881 in-window successes in 1800 seconds, minimum 10,026 TPS and zero low seconds/errors. Shared-host profile remains NOT QUALIFIED for the dedicated gate |
 
 ## Current Production Gate
 

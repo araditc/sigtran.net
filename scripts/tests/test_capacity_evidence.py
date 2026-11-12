@@ -1,4 +1,4 @@
-"""Synthetic contract fixtures only; these are never published as measured benchmark evidence."""
+"""Offline evidence contracts; synthetic fixtures never become measured benchmark evidence."""
 import copy
 import importlib.util
 import pathlib
@@ -203,6 +203,22 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing its process'):
             module.runtime_tuning({}, {'disableWorkerSpin': True})
         self.assertIsNone(module.runtime_tuning({}, {}))
+
+    def test_retained_numeric_pass_does_not_close_dedicated_qualification(self):
+        # Metadata consistency only: CI cannot replace original private hash/wire verification.
+        report = module.read_json(pathlib.Path(__file__).resolve().parents[2]
+            / 'docs/evidence/COMPLETED_MAP_CAPACITY_10K_20261112.json')
+        self.assertEqual(report['testedSourceCommit'], '324f1932cc7820335599c2e7b70e60ada32de4d9')
+        self.assertEqual(report['capacityPolicy'], module.CAPACITY_POLICY)
+        self.assertTrue(report['executionValid'] and report['numericTargetMet'])
+        self.assertEqual(report['durationSeconds'], 1800)
+        self.assertEqual(report['secondsBelowTarget'], 0)
+        self.assertGreaterEqual(report['minimumOneSecondTps'], module.TARGET_TPS)
+        self.assertFalse(report['qualificationPassed'] or report['stablePromotion'])
+        self.assertIn('hosts-not-both-dedicated', report['reasons'])
+        self.assertEqual(report['threadPoolLimits']['MaximumWorkers'], 4)
+        self.assertEqual(report['peerNice'], 0)
+        self.assertIsNone(report['runtimeTuning']['WorkerSpinLimitEnvironment'])
 
 
 if __name__ == '__main__':

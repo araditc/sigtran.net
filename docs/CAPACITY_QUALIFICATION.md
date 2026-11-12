@@ -12,15 +12,19 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 The [2026-11-11 target decision](CAPACITY_TARGET_DECISION.md) supersedes 20K as
 the current release threshold; new runs declare policy `completed-map-10k-v1`.
 
-**Capacity remains NOT QUALIFIED.** The [new 10K-target measurement](CAPACITY_MEASUREMENT_10K_20261111.md)
-completed 22,241,973 valid transactions in 1,800 seconds at 12,356.65 average TPS,
-zero failures/unresolved work, P99 38.2 ms and peak working set 103 MiB.
-There were 29 sub-target seconds (minimum 1,769 TPS), and the peer was shared.
-The [new sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_10K_20261111.json)
-binds source `67db5bc7a317a4c1fb27d17280e1b23280110cdb`, original artifact
-hashes, full peer/SDK counters and 3,556 independently re-decoded wire pairs.
-The [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md) and its
-[JSON](evidence/COMPLETED_MAP_CAPACITY_20261111.json) remain unchanged.
+**Numeric criterion MET; dedicated-host qualification NOT QUALIFIED.** The
+[2026-11-12 verified measurement](CAPACITY_MEASUREMENT_10K_20261112.md) completed
+25,590,881 in-window transactions in 1,800 seconds, averaging 14,217.16 TPS with
+minimum 10,026, zero low seconds, zero failures/unresolved work and P99 31.6 ms.
+The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_10K_20261112.json) binds
+source `324f1932cc7820335599c2e7b70e60ada32de4d9`, original hashes, four zero
+exit receipts, full counts and 3,319 re-decoded wire pairs. This uses the declared
+four-worker application profile and normal-priority single-CPU peer. The peer
+host remains shared and the minimum margin is only 26 TPS, so it is not a
+general performance SLA or dedicated-host qualification. See the
+[stall diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) for limits and reproduction.
+The [29-low-second baseline](CAPACITY_MEASUREMENT_10K_20261111.md) and
+[original 20K measurement](CAPACITY_MEASUREMENT_20261111.md) remain unchanged.
 
 ## Ten Units
 
@@ -35,7 +39,7 @@ The [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md) and its
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
 | 9 | Real Linux execution and mismatch correction | Two-host smoke verified; explicit lab GC/timeout/capture/cleanup corrections |
-| 10 | Final evidence, CI and remaining-gate report | Implemented; original and new-policy 1800-second evidence retained separately; capacity remains NOT QUALIFIED |
+| 10 | Final evidence, CI and remaining-gate report | Implemented; numerical regression now passes for the declared source/profile; shared-host evidence does not close dedicated-host qualification |
 
 Each unit runs build, SDK/qualification tests, public API compatibility and
 pack before its own commit/push. Names in runtime code describe the domain.
@@ -116,6 +120,12 @@ runs at nice 10 on one declared CPU. Capture is bounded by 8,192 packets,
 Private run roots, child-only timeouts, before/after inventory and SHA256s
 are retained even on failed execution. Kafka process IDs/start times can be
 compared; this does not assert absence of performance interference.
+New long runs use 15-second SSH keepalives, atomic exit receipts for the actual
+owned timeout children and bounded reconnect/collection. Unknown status never
+becomes zero. Optional peer priority is explicit (`--peer-nice 0..19`, default
+10); the peer summary records the actual value. Owned-peer CPU/state observations
+never inspect Kafka tasks. The final measurement used nice 0, not the historical
+nice 10 profile, and no experimental worker-spin setting.
 
 ## Evidence Verification
 
@@ -214,21 +224,14 @@ Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
 
 ## Remaining Work Within This Phase
 
-The owner-approved current target is 10K, with 20K deferred to future work.
-The [profiling continuation](CAPACITY_PROFILING.md) collected separate managed
-allocation and native CPU/syscall diagnostics, removed repeated encoding
-allocations and corrected nonblocking SCTP error handling. The new full run
-allocated about 10,176 bytes per successful transaction, versus 16,053 in the
-original full run (36.6% lower). This comparison does not isolate a causal TPS
-gain. A 38.2 ms P99 does not hide the 1,044.874 ms maximum or 29 sub-target seconds.
+The owner-approved 10K numerical criterion was met in the final 30-minute
+run; 20K remains deferred. No further speculative tuning is needed to claim
+that bounded numerical observation. The minimum margin is narrow, and the
+original extreme stall's exact cause remains unproved rather than retroactively
+attributed. Keep the [diagnosis and negative experiments](CAPACITY_STALL_DIAGNOSIS_20261112.md).
 
-1. Correlate remaining stalls with runtime scheduling/GC, SCTP retransmission
-   counters and host contention in a separate diagnostic run. A bounded prefix
-   PCAP does not cover later stalls, and sampled CPU/allocation attribution does
-   not establish their cause. Do not blame only hardware or only SDK code.
-2. Repeat the unchanged 10K/per-second/30-minute criterion on two genuinely
-   dedicated hosts, retaining resources, full counters and source-bound wire
-   evidence. Shared diagnostics cannot replace that acceptance criterion.
-
-Do not close Phase 61, promote stable, or begin claiming an operator SLA from
-this result. Phase 62's 72-hour resilience criterion remains separate.
+Re-run the same criterion on two genuinely dedicated hosts before closing the
+complete Phase 61 qualification. Bind any final candidate to its actual package,
+source and trusted envelope; a source-build shared-peer report cannot replace
+those requirements. Do not promote stable or claim an operator SLA from this
+run. Phase 62's 72-hour resilience criterion remains separate.

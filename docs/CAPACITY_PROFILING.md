@@ -89,7 +89,7 @@ would-block is handled as EAGAIN rather than a positive overflowing length.
 A platform-independent signature test and the real Linux idle/cancellation
 tests guard this boundary. The failed trial is retained, not relabeled PASS.
 
-## Current 10K Preflight
+## Initial 10K Preflight
 
 The corrected native candidate `104eac346ba37b839aa30136c30e6f757e422add`
 completed a 30-second unprofiled trial at 12,505.1 completed TPS, minimum
@@ -117,7 +117,7 @@ service or host-wide scheduling configuration was changed. Short profiler runs a
 diagnostic only. [Profile metadata and digests](evidence/COMPLETED_MAP_PROFILE_20261111.json)
 identify the retained private originals without publishing stack traces.
 
-## Full New-Policy Result
+## First 10K-Policy Result
 
 The [1,800-second 10K-target run](CAPACITY_MEASUREMENT_10K_20261111.md)
 used frozen source `67db5bc7a317a4c1fb27d17280e1b23280110cdb`, no attached
@@ -146,7 +146,7 @@ at measured offset 1,781 seconds. Keep host/scheduler, GC and retransmission
 correlation as unresolved diagnosis; do not infer that more hardware alone
 will fix it or continue optimizing toward the deferred 20K target.
 
-Seven reviewable tuning units cover analysis tooling, encoding allocation,
+Seven reviewable 2026-11-11 tuning units cover analysis tooling, encoding allocation,
 nonblocking I/O, the signed native ABI fix, the owner-approved policy,
 fail-closed CI checks and this final verified report. Each retains separate
 build/test/pack/API logs before its commit/push. Runtime public API is unchanged.
@@ -254,3 +254,23 @@ No Kafka task is sampled. A separate explicit `--peer-nice 0` trial uses normal
 priority for the private peer on the same single CPU; the default remains 10.
 This changes only the owned test process and records its observed priority.
 Cross-host clocks and aggregate counters do not constitute exact causal traces.
+
+## Final Rerun
+
+The [2026-11-12 final report](CAPACITY_MEASUREMENT_10K_20261112.md) retained
+25,590,881 in-window successes, minimum 10,026 TPS for all 1,800 seconds,
+14,217.16 average TPS and no failed/unresolved work. The library/wire fixes,
+four application workers, default spinning and normal-priority independent
+peer form the declared profile. Four durable exits were zero; hashes, full
+counts, actual peer nice and 3,319 PCAP pairs were independently reverified.
+No new profiler or build ran during measurement. Kafka process identities were
+unchanged and Kafka was not changed or profiled.
+
+Allocation per successful transaction including drain was about 9,290 bytes,
+8.7% below the original 10K-policy baseline's 10,176; cross-host before/after
+observations do not isolate a causal speedup. The minimum margin is only 26 TPS.
+See the [diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) and its
+[diagnostic comparison](evidence/CAPACITY_STALL_DIAGNOSTICS_20261112.json).
+These ten follow-up units close the numerical regression for the declared
+profile, not the dedicated-host or commercial release gates. Do not rewrite the
+interrupted attempt or rejected spin experiment as passing evidence.

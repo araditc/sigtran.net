@@ -28,3 +28,9 @@ exceeded the average target at 12,356.65 completed TPS with zero failures, but
 did not qualify: 29 one-second windows were below 10K and the peer was shared.
 Reducing the target does not silently replace the per-second criterion with
 an average-only criterion. The latter would require a separate owner decision.
+
+The [2026-11-12 rerun](CAPACITY_MEASUREMENT_10K_20261112.md) met the original
+per-second criterion without relaxing it: 1,800 measured seconds, minimum
+10,026 TPS, zero low seconds and zero failed/unresolved work. Source/profile
+conditions and the shared-peer restriction are explicit. Dedicated qualification
+remains open; numerical success is not a waiver or a stable release decision.

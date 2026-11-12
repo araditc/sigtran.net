@@ -21,46 +21,26 @@ Fixed-memory closed-loop workers invoke all five correlated MAP SMS operations
 over native SCTP/M3UA/SCCP/TCAP. Source/artifact hashes, independent C peer
 counts, re-decoded PCAP, per-second completions, drain and resource observations
 must agree. Shared-peer runs cannot qualify dedicated-host capacity.
-The [new 10K-target, 30-minute result](docs/CAPACITY_MEASUREMENT_10K_20261111.md)
-completed 22,241,973 valid transactions at 12,356.65 average TPS, with zero
-failed/unresolved work. **Capacity is NOT QUALIFIED:** 29 one-second windows
-were below 10K (minimum 1,769), and the peer host was shared. The independent
-wire sample matched 3,556 complete pairs. The
-[historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) is unchanged.
-20K is future optimization, not the current v1 threshold. The dedicated-host
-criterion and all other release gates remain mandatory.
-Stable CI verifies named current blockers rather than a historical blocker count.
-The [profiling continuation](docs/CAPACITY_PROFILING.md) retains separate
-CPU/allocation diagnostics and preserves the original baseline while tuning.
-Measured process-wide allocation fell from about 16,053 to 10,176 bytes per
-successful transaction (36.6% lower); shared-host observations do not establish
-a causal TPS improvement or explain the one-second stalls.
-The stall-diagnosis continuation records bounded, monotonic runtime observations
-for GC pauses, ThreadPool queues, CPU and host SCTP counters; per-second
-completion accounting and the 10K acceptance criterion remain unchanged.
-Linux native receive readiness uses non-consuming async socket notification,
-preserving record/metadata ownership, cancellation and operation deadlines.
-Linux-suite follow-up also fixes M2PA Busy Ended state publication before send
-resumption; this correctness fix is separate from M3UA capacity measurements.
-TCAP dialogue OIDs are decoded without numeric-string round trips while
-retaining BER structure checks and bounded arc validation.
-Verified summaries expose timestamp-bracketed stall observations without
-turning sampled correlation or missing counters into a root-cause claim.
-The capacity runner supports an explicit, bounded application worker-limit
-experiment and records actual runtime limits; the library never changes its
-consumer's ThreadPool configuration.
-Long-run collection uses SSH keepalives and durable owned-process exit receipts;
-an interrupted collector or missing status cannot silently become a pass.
-Optional worker-spin diagnostics are explicitly version-specific application
-experiments, not library defaults or stable runtime configuration promises.
-Owned-peer sampling separates remote scheduling from SDK GC/CPU observations.
-An explicit peer-priority trial changes only the private peer, never Kafka.
-Profile-guided encoding changes retain independently checked BER bytes and
-owned output buffers while removing repeated scratch/writer allocations.
-Linux SCTP attempts nonblocking I/O before readiness polling, retaining
-pre-I/O cancellation, timeout and record-boundary validation.
-The lksctp message imports preserve C `int` return widths, including signed
-would-block errors on 64-bit Linux.
+The [verified 2026-11-12 measurement](docs/CAPACITY_MEASUREMENT_10K_20261112.md)
+completed 25,590,881 in-window transactions in 1,800 seconds at 14,217.16 average
+TPS, minimum 10,026, zero sub-target seconds and zero failed/unresolved work.
+The numeric criterion is **MET**; dedicated-host qualification is **NOT QUALIFIED**
+because the peer host remains shared. The PCAP matched 3,319 complete pairs.
+This source-build profile uses .NET 10.0.12/server GC, four application workers,
+concurrency 256 and a single-CPU independent C peer at normal priority. The
+minimum has only 26 TPS headroom; this is not an unconditional production SLA.
+The SDK never changes a consumer's ThreadPool configuration.
+
+The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
+[profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
+unproved historical causes. Changes cover non-consuming async SCTP readiness,
+TCAP OID allocation, M2PA Busy recovery correctness, bounded runtime/owned-peer
+observations and durable process exit collection. The rejected worker-spin
+experiment is not part of the final profile. Kafka was not changed.
+The [29-low-second baseline](docs/CAPACITY_MEASUREMENT_10K_20261111.md) and
+[historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) are preserved.
+20K remains future optimization. Dedicated-host and other release gates remain
+mandatory; historical flags or an average throughput cannot promote stable.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records
@@ -209,7 +189,7 @@ The current engineering track focuses on:
 | SCCP | Stateful connectionless service for UDT/XUDT/LUDT, global-title translation, routing, bounded segmentation/reassembly, UDTS return policy, metrics, cancellation, and MTP3 receive ownership. Operator/vendor profile evidence remains; connection-oriented SCCP is post-1.0. |
 | TCAP | Dialogue manager for transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, timeout scanning, cleanup, snapshots, and metrics. Operator/vendor profile evidence remains. |
 | MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. Broader MAP is post-1.0. |
-| Performance | Current v1 target: 10K completed MAP TPS for 30 minutes. Shared-peer measurement averages 12,356.65 TPS but has 29 sub-target seconds; current capacity qualification and long-duration soak/failover remain open. Historical two-association evidence retains its original scope. |
+| Performance | The declared shared-peer profile met 10K in every second for 30 minutes: 14,217.16 average TPS, minimum 10,026 and zero errors. Dedicated-host qualification and long-duration soak/failover remain open; no general production SLA is implied. |
 | Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. Representative Kubernetes SCTP/CNI qualification remains open. |
 
 ---
