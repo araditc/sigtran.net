@@ -35,6 +35,7 @@ internal sealed record EnduranceOptions(CapacityOptions Session, int DurationSec
             sessionArgs.AddRange(["--" + pair.Key, pair.Value]);
         sessionArgs.AddRange(["--duration-seconds", "1", "--diagnostic", "true"]);
         CapacityOptions session = CapacityOptions.Parse(sessionArgs.ToArray());
+        if (session.Concurrency > 1024) throw new ArgumentException("Endurance permits at most 1024 fixed worker slots.");
         if (!diagnostic && IPAddress.IsLoopback(IPAddress.Parse(session.RemoteIp)))
             throw new ArgumentException("Endurance qualification requires a separate peer host.");
         return new(session, duration, diagnostic);
@@ -47,7 +48,7 @@ internal sealed record EnduranceOptions(CapacityOptions Session, int DurationSec
         int[] offsets = Diagnostic ? [DurationSeconds / 12, DurationSeconds / 3, DurationSeconds * 7 / 12]
             : [900, 1800, 2700, 87300, 88200, 89100, 173700, 174600, 175500];
         return offsets.Select((offset, index) => new EnduranceFaultPlan(index + 1, kinds[index % 3],
-            offset, Diagnostic ? 3 : 10)).ToArray();
+            offset, 10)).ToArray();
     }
 }
 

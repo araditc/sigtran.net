@@ -62,6 +62,12 @@ class NetworkTests(unittest.TestCase):
             return types.SimpleNamespace(returncode=0, stdout='LoadState=not-found\nActiveState=inactive\n')
         network.rollback(fixture(), 3, run)
 
+    def test_packet_counters_only_export_the_owned_tag(self):
+        def run(arguments):
+            self.assertEqual(arguments, ['iptables-save', '-c'])
+            return types.SimpleNamespace(returncode=0, stdout='[5:100] -A OUTPUT -p sctp --comment endurance-example-run-3 -j DROP\n[999:2000] -A INPUT --comment other -j DROP\n')
+        self.assertEqual(network.dropped_packets(fixture(), 3, run), 5)
+
 
 if __name__ == '__main__':
     unittest.main()

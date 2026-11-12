@@ -1177,6 +1177,14 @@ int main(int argc, char **argv)
         return 1;
     }
     log_event("association-accepted", detail);
+    if (endurance_mode) {
+        printf("{\"event\":\"socket-profile\",\"processId\":%ld,\"profile\":{\"Name\":\"%s\","
+            "\"SendBufferBytes\":%d,\"ReceiveBufferBytes\":%d,\"RtoInitialMilliseconds\":%u,"
+            "\"RtoMinimumMilliseconds\":%u,\"RtoMaximumMilliseconds\":%u}}\n",
+            (long)getpid(), capacity_socket_profile, capacity_send_buffer, capacity_receive_buffer,
+            capacity_rto.srto_initial, capacity_rto.srto_min, capacity_rto.srto_max);
+        fflush(stdout);
+    }
 
     receive_timeout.tv_sec = 1;
     receive_timeout.tv_usec = 0;

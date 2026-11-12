@@ -57,6 +57,10 @@ The [independent evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) require
 raw-journal/resource replay, actual fault/rollback receipts and five correlated
 PCAP recovery probes per incident. Legacy duration-only soak summaries cannot
 close this gate; a short diagnostic never becomes a 72-hour qualification.
+The [durable execution design](docs/ENDURANCE_EXECUTION.md) freezes host-local
+systemd supervision, restricted peer control, expiring maintenance heartbeats
+and independent restoration guards. Kafka maintenance has explicit owner
+approval for this test; data/configuration and enablement stay unchanged.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

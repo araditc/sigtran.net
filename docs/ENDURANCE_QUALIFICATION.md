@@ -39,7 +39,7 @@ on the peer for this entire 72-hour test, with verified restoration on exit.
 | 5 | Scoped incident control, recovery probes and rollback | Complete; control/rollback safety tests and final build/test/API/pack passed |
 | 6 | Memory/heap/queue progression and bounded capture/log storage | Complete; resource/rollover/binary-format tests and final build/test/API/pack passed |
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Complete; corruption/release-boundary tests and final build/test/API/pack passed |
-| 8 | Durable execution, watchdogs and authenticated host control | Planned |
+| 8 | Durable execution, watchdogs and authenticated host control | Complete; safety tests and final build/test/API/pack passed; real diagnostic is unit 9 |
 | 9 | Real two-host short diagnostic of all incident families | Planned |
 | 10 | Actual 72-hour run, restoration, verification and exit report | Pending real execution; cannot be claimed early |
 

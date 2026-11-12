@@ -109,7 +109,7 @@ def fault_plan(header):
     require(type(diagnostic) is bool, 'Diagnostic marker must be boolean')
     require((not diagnostic and duration == SECONDS) or (diagnostic and 300 <= duration <= 3600), 'Duration/diagnostic fence differs')
     offsets = (duration // 12, duration // 3, duration * 7 // 12) if diagnostic else OFFSETS
-    expected = [dict(Id=i + 1, Kind=KINDS[i % 3], OffsetSeconds=offset, HoldSeconds=3 if diagnostic else 10)
+    expected = [dict(Id=i + 1, Kind=KINDS[i % 3], OffsetSeconds=offset, HoldSeconds=10)
                 for i, offset in enumerate(offsets)]
     require(header['FaultPlan'] == expected, 'Declared fault schedule differs from the fixed policy')
     return expected
@@ -187,6 +187,10 @@ def journal_contract(frames, sdk, expected_source):
             and header['ObservationSeconds'] == 1 and header['CheckpointSeconds'] == 60
             and header['HeartbeatIntervalSeconds'] == header['HeartbeatTimeoutSeconds'] == 2,
             'Executed supervision/worker profile differs')
+    bounded_int(header['Concurrency'], 1024); bounded_int(header['QueueCapacity'], 65536)
+    require(header['Concurrency'] > 0 and header['QueueCapacity'] >= header['Concurrency'], 'Invalid concurrency/queue declaration')
+    validate_socket_profile(header['SocketProfile'])
+    require(sdk['SocketProfile'] == header['SocketProfile'], 'Native profile changed between initial and final association')
     require(frames[-1]['Report'] == sdk, 'Final JSON differs from final journal frame')
     plan = fault_plan(header)
     run = sdk['Run']
@@ -239,6 +243,8 @@ def journal_contract(frames, sdk, expected_source):
     terminal = counts(run['Counts'])
     measured = sum(vector(run['MeasuredByOperation'], 5)); late = bounded_int(run['LateSuccesses'])
     require(measured + late == terminal['successes'] and run['Latency']['Count'] == measured, 'Measured/drain/latency populations differ')
+    quantiles = [finite(run['Latency'][key]) for key in ('P50Milliseconds', 'P95Milliseconds', 'P99Milliseconds', 'MaximumMilliseconds')]
+    require(quantiles == sorted(quantiles) and run['Latency']['ResolutionMilliseconds'] == .1, 'Invalid latency quantiles/resolution')
     require(sdk['ExecutionPassed'] is True and run['Aborted'] is False and run['Errors'] == []
             and terminal['pending'] == terminal['unexpected'] == run['Counts']['AccountingViolations'] == 0
             and run['Counts']['Fatal'] is False and run['Counts']['ActiveFaultId'] is None
@@ -250,6 +256,12 @@ def journal_contract(frames, sdk, expected_source):
                                                'UnsolicitedInvokes', 'SccpReturns', 'OutboundQueue', 'InboundQueue')),
             'SDK final layer cleanup/protocol counters differ')
     return header, samples, faults, terminal, measured
+
+
+def validate_socket_profile(profile):
+    require(profile['Name'] == 'lan-bounded-v1' and profile['SendBufferBytes'] > 0 and profile['ReceiveBufferBytes'] > 0
+            and [profile[key] for key in ('RtoInitialMilliseconds', 'RtoMinimumMilliseconds', 'RtoMaximumMilliseconds')] == [300, 200, 1000],
+            'Observed bounded-LAN socket profile differs')
 
 
 def relative_file(root, name):
@@ -339,7 +351,7 @@ def verify(root, expected_source):
     required = {'source.tar', 'policy.json', 'inventory.json', 'sdk/sdk.json', 'sdk/checkpoints.jsonl',
                 'sdk/resource-observations.bin', 'sdk.exit', 'controller.exit', 'controller-events.jsonl',
                 'peer-result.json', 'peer-counters.bin', 'host-maintenance.json', 'network-cleanup.json',
-                'network-events.jsonl', 'captures.json', 'peer', 'libsctp.so.1', 'sdk-executable.dll', 'sdk-library.dll'}
+                'network-events.jsonl', 'captures.json', 'peer', 'peer.log', 'libsctp.so.1', 'sdk-executable.dll', 'sdk-library.dll'}
     require(required <= hashes.keys() and len(hashes) <= 512, 'Required raw evidence is incomplete')
     for name, expected in hashes.items():
         require(re.fullmatch('[0-9a-f]{64}', expected) and capacity.digest(relative_file(root, name)) == expected, 'Raw artifact hash mismatch: ' + name)
@@ -365,6 +377,14 @@ def verify(root, expected_source):
                 and before[role]['kafkaProcesses'] == after[role]['kafkaProcesses'] == [], 'Host identity/boot/maintenance changed')
     frames = chain(root / 'sdk/checkpoints.jsonl')
     header, samples, faults, terminal, measured = journal_contract(frames, sdk, expected_source)
+    require((root / 'peer.log').stat().st_size <= 64 * 1048576, 'Peer log exceeds budget')
+    profiles = []
+    with (root / 'peer.log').open() as stream:
+        for line in stream:
+            if '"event":"socket-profile"' in line:
+                entry = json_bytes(line); validate_socket_profile(entry['profile']); profiles.append(entry)
+    require(len(profiles) >= 3 and len(profiles) <= 64 and len({p['processId'] for p in profiles}) == len(profiles),
+            'Independent peer association profiles missing/repeated')
     require(header['ProcessId'] == inventory['sdkProcess']['pid'] and inventory['sdkProcess']['startTicks'] > 0,
             'Observed SDK process identity differs')
     resources = replay_resources(root / 'sdk/resource-observations.bin', header, samples, sdk)
@@ -406,7 +426,8 @@ def verify(root, expected_source):
                 completedTransactions=measured, completedTps=tps, faultWindowTerminalOutcomes=terminal['faultTerminals'],
                 unexpectedFailures=terminal['unexpected'], unresolvedOperations=terminal['pending'],
                 recoveredIncidents=len(faults), faultScenarios=len(KINDS), resources=resources,
-                wire=wire, maintenance=restored, rawArtifactSha256=hashes)
+                wire=wire, maintenance=restored, socketProfile=header['SocketProfile'],
+                peerAssociationProfiles=[entry['profile'] for entry in profiles], rawArtifactSha256=hashes)
 
 
 if __name__ == '__main__':

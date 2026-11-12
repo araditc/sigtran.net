@@ -7,6 +7,7 @@ import json
 import os
 import pathlib
 import re
+import shlex
 import stat
 import subprocess
 import time
@@ -60,6 +61,31 @@ def absent(plan, incident, run=execute):
 
 def guard_name(plan, incident):
     return 'sigtran-net-restore-' + plan['runId'] + '-' + str(incident)
+
+
+def dropped_packets(plan, incident, run=execute):
+    """Retain counters only for our exact tagged flow; do not export unrelated firewall policy."""
+    result = run(['iptables-save', '-c'])
+    if result.returncode: raise RuntimeError('Owned packet counters unavailable')
+    tag = 'endurance-' + plan['runId'] + '-' + str(incident)
+    packets = 0
+    for line in result.stdout.splitlines():
+        match = re.fullmatch(r'\[([0-9]+):[0-9]+\] (.*)', line)
+        if not match: continue
+        tokens = shlex.split(match[2])
+        if '--comment' in tokens and tokens[tokens.index('--comment') + 1] == tag:
+            if tokens[:2] not in (['-A', 'INPUT'], ['-A', 'OUTPUT']) or '-j' not in tokens or tokens[tokens.index('-j') + 1] != 'DROP':
+                raise RuntimeError('Owned rule identity differs')
+            packets += int(match[1])
+    return packets
+
+
+def record(path, incident, event, **values):
+    with (path.parent / 'network-events.jsonl').open('a') as stream:
+        if stream.tell() > 1040000: raise ValueError('Network event budget exceeded')
+        stream.write(json.dumps(dict(incident=incident, event=event,
+            observedAtUtc=datetime.datetime.now(datetime.timezone.utc).isoformat(), **values)) + '\n')
+        stream.flush(); os.fsync(stream.fileno())
 
 
 def rollback(plan, incident, run=execute):
@@ -141,12 +167,18 @@ def main():
         try:
             with (path.parent / 'network.lock').open('a') as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX)
-                if args.action == 'partition': partition(plan, args.incident, path)
+                if args.action == 'partition':
+                    partition(plan, args.incident, path)
+                    if any(execute(['iptables', '-w', '5', '-C', chain, *rule]).returncode != 0 for chain, rule in rules(plan, args.incident)):
+                        rollback(plan, args.incident); raise RuntimeError('Both partition rules were not verified')
+                    record(path, args.incident, 'injected', guardArmed=True)
                 elif args.action == 'status':
                     print(json.dumps(dict(incident=args.incident, rulesAbsent=absent(plan, args.incident))))
                 else:
                     for incident in (plan['networkFaultIds'] if args.action == 'rollback-all' else [args.incident]):
+                        packets = dropped_packets(plan, incident)
                         rollback(plan, incident)
+                        record(path, incident, 'rollback', droppedPackets=packets, rulesAbsent=True)
             return 0
         except (RuntimeError, subprocess.TimeoutExpired):
             if args.action != 'guard': raise

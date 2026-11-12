@@ -42,7 +42,7 @@ class EvidenceTests(unittest.TestCase):
 
     def test_diagnostic_never_relabels_short_duration_as_full_run(self):
         header = dict(DurationSeconds=360, Diagnostic=True)
-        header['FaultPlan'] = [dict(Id=i + 1, Kind=kind, OffsetSeconds=offset, HoldSeconds=3)
+        header['FaultPlan'] = [dict(Id=i + 1, Kind=kind, OffsetSeconds=offset, HoldSeconds=10)
                                for i, (kind, offset) in enumerate(zip(evidence.KINDS, (30, 120, 210)))]
         self.assertEqual(len(evidence.fault_plan(header)), 3)
         header['Diagnostic'] = False

@@ -19,6 +19,7 @@ internal static partial class EnduranceTests
         Reject([.. basic, "--diagnostic", "true", "--duration-seconds", "299"]);
         Reject([.. basic, "--diagnostic", "true", "--duration-seconds", "3601"]);
         Reject([.. basic, "--source-commit", new('b', 40)]);
+        Reject([.. basic, "--concurrency", "1025"]);
         var diagnostic = EnduranceOptions.Parse([.. basic, "--diagnostic", "true", "--duration-seconds", "360"]);
         Check(diagnostic.Diagnostic && diagnostic.FaultPlan().Length == 3, "A smoke test cannot masquerade as a full run");
         using JsonDocument policy = JsonDocument.Parse(File.ReadAllText("eng/qualification/endurance-policy.json"));
