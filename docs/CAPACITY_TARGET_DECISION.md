@@ -32,5 +32,12 @@ an average-only criterion. The latter would require a separate owner decision.
 The [2026-11-12 rerun](CAPACITY_MEASUREMENT_10K_20261112.md) met the original
 per-second criterion without relaxing it: 1,800 measured seconds, minimum
 10,026 TPS, zero low seconds and zero failed/unresolved work. Source/profile
-conditions and the shared-peer restriction are explicit. Dedicated qualification
-remains open; numerical success is not a waiver or a stable release decision.
+conditions and the shared-peer restriction are explicit. That report alone
+does not qualify dedicated hosts or authorize stable release.
+
+The later [dedicated-window rerun](CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
+meets the same unrelaxed criterion: minimum 10,079 TPS across all 1,800 seconds,
+zero failed/unresolved work, and approved quiescence/restoration verified.
+The [Phase 61 exit](CAPACITY_QUALIFICATION_EXIT.md) is limited to its exact
+source/hardware/socket/runtime profile. Final packaged-candidate trust,
+endurance, cluster and operator gates remain open. No old result was regraded.

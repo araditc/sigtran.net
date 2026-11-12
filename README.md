@@ -21,22 +21,21 @@ Fixed-memory closed-loop workers invoke all five correlated MAP SMS operations
 over native SCTP/M3UA/SCCP/TCAP. Source/artifact hashes, independent C peer
 counts, re-decoded PCAP, per-second completions, drain and resource observations
 must agree. Shared-peer runs cannot qualify dedicated-host capacity.
-The [verified 2026-11-12 measurement](docs/CAPACITY_MEASUREMENT_10K_20261112.md)
-completed 25,590,881 in-window transactions in 1,800 seconds at 14,217.16 average
-TPS, minimum 10,026, zero sub-target seconds and zero failed/unresolved work.
-The numeric criterion is **MET**; dedicated-host qualification is **NOT QUALIFIED**
-because the peer host remains shared. The PCAP matched 3,319 complete pairs.
-This source-build profile uses .NET 10.0.12/server GC, four application workers,
-concurrency 256 and a single-CPU independent C peer at normal priority. The
-minimum has only 26 TPS headroom; this is not an unconditional production SLA.
+**Phase 61 is qualified for the declared source/hardware/profile.** The
+[dedicated 2026-11-12 measurement](docs/CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
+completed 26,599,474 in-window transactions in 1,800 seconds: 14,777.49 average
+TPS, minimum 10,079, zero sub-target seconds and zero failed/unresolved work.
+Independent PCAP decoding matched 3,551 complete MAP pairs; full-run SDK and
+peer counts reconciled. Kafka was temporarily stopped with explicit approval,
+then its original states/enablement/unit hashes were restored and verified.
+The [exit report](docs/CAPACITY_QUALIFICATION_EXIT.md) records source
+`947d69abd081449cc0e2c286409eeab69a659ab7`, .NET 10.0.12/server GC, four
+application workers, concurrency 256 and a normal-priority single-CPU C peer.
+The [opt-in LAN socket profile](docs/CAPACITY_SOCKET_PROFILE.md) records effective
+buffers and recovery bounds on both endpoints; SDK/host defaults are unchanged.
+The minimum margin is only 79 TPS (0.79%): this is not a general production SLA.
+This source-build evidence does not qualify an untested packaged candidate.
 The SDK never changes a consumer's ThreadPool configuration.
-An owner-approved [dedicated-window attempt](docs/CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
-completed 26,575,568 transactions with zero failures but two low seconds,
-including a minimum of 781 TPS: **NOT QUALIFIED**. Kafka was temporarily stopped
-and its original unit states/enablement/hashes restored and verified.
-The [opt-in per-socket LAN profile](docs/CAPACITY_SOCKET_PROFILE.md) now records
-effective buffer and RTO values at both endpoints. It changes neither SDK/host
-defaults nor acceptance criteria; a new full run is still required.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
@@ -46,10 +45,12 @@ observations and durable process exit collection. The rejected worker-spin
 experiment is not part of the successful shared-host profile. Those earlier
 shared-host runs did not change Kafka; the later approved maintenance window
 and verified restoration are recorded separately above.
-The [29-low-second baseline](docs/CAPACITY_MEASUREMENT_10K_20261111.md) and
-[historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) are preserved.
-20K remains future optimization. Dedicated-host and other release gates remain
-mandatory; historical flags or an average throughput cannot promote stable.
+The [29-low-second baseline](docs/CAPACITY_MEASUREMENT_10K_20261111.md),
+[shared-host numerical pass](docs/CAPACITY_MEASUREMENT_10K_20261112.md),
+[failed first dedicated attempt](docs/CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+and [historical 20K-target result](docs/CAPACITY_MEASUREMENT_20261111.md) are preserved.
+20K remains future optimization. Phases 62-65 and exact-candidate release
+qualification remain mandatory; this result does not authorize stable publication.
 [Phase 56](docs/PHASE56_QUALIFICATION_BASELINE.md) establishes an executable
 Linux/.NET 10 ITU MAP SMS scope and qualification tooling under `eng`.
 The [source-anchored defect ledger](eng/qualification/defects.json) records

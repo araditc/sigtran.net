@@ -255,7 +255,7 @@ priority for the private peer on the same single CPU; the default remains 10.
 This changes only the owned test process and records its observed priority.
 Cross-host clocks and aggregate counters do not constitute exact causal traces.
 
-## Final Rerun
+## Shared-Host Rerun
 
 The [2026-11-12 final report](CAPACITY_MEASUREMENT_10K_20261112.md) retained
 25,590,881 in-window successes, minimum 10,026 TPS for all 1,800 seconds,
@@ -274,3 +274,27 @@ See the [diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) and its
 These ten follow-up units close the numerical regression for the declared
 profile, not the dedicated-host or commercial release gates. Do not rewrite the
 interrupted attempt or rejected spin experiment as passing evidence.
+
+## Dedicated-Window Follow-Up
+
+The [first dedicated attempt](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+retained two low seconds, minimum 781 TPS and a 1,047.529 ms maximum latency.
+In the severe bracket, SDK namespace T3 increased once, GC pause was 16.286 ms
+and normalized CPU fell; peer samples also showed retransmission activity.
+The exact packet loss cause is not established by aggregate counter brackets.
+
+An explicit [per-socket LAN profile](CAPACITY_SOCKET_PROFILE.md) requested
+bounded buffers and recovery timers through the existing factory injection
+contract, without changing SDK/host defaults. The next full
+[dedicated rerun](CAPACITY_MEASUREMENT_DEDICATED_20261112.md) passed: 26,599,474
+completions, minimum 10,079 TPS, zero low seconds/errors, P99 30.9 ms and
+66.255 ms maximum latency. Both kernels reported the effective settings.
+Allocation was about 8,715 bytes/success including drain, not an isolated
+codec-only number. This combined observation does not isolate each setting's
+causal contribution or prove stability on a different path.
+
+Strict PCAP re-decoding exposed TShark's suppression of a byte-identical startup
+duplicate. Absolute on-wire TSNs and payload-preserving extraction now allow
+independent exact duplicate comparison; changed payload/stream/PPID still fail.
+All original evidence bytes remain intact. The [exit report](CAPACITY_QUALIFICATION_EXIT.md)
+closes Phase 61 for its declared profile, not final release qualification.

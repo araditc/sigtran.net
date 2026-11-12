@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "completed-map-capacity",
+  "testedSourceCommit": "947d69abd081449cc0e2c286409eeab69a659ab7",
+  "capacityPolicy": "completed-map-10k-v1",
+  "targetTps": 10000,
+  "executionValid": true,
+  "numericTargetMet": true,
+  "qualificationPassed": true,
+  "stablePromotion": false,
+  "reasons": [],
+  "durationSeconds": 1800,
+  "completedTransactions": 26599474,
+  "lateSuccesses": 256,
+  "failedTransactions": 0,
+  "unresolvedTransactions": 0,
+  "completedTps": 14777.485555555555,
+  "minimumOneSecondTps": 10079,
+  "maximumOneSecondTps": 20485,
+  "secondsBelowTarget": 0,
+  "worstSecondOffset": 556,
+  "latency": {
+    "Count": 26599474,
+    "P50Milliseconds": 17,
+    "P95Milliseconds": 23.4,
+    "P99Milliseconds": 30.9,
+    "MaximumMilliseconds": 66.254873,
+    "ResolutionMilliseconds": 0.1
+  },
+  "sdkResources": {
+    "AllocatedBytes": 231813778104,
+    "Gen0Collections": 14992,
+    "Gen1Collections": 5954,
+    "Gen2Collections": 5,
+    "AverageCpuPercent": 84.05656125754362,
+    "PeakCpuPercent": 92.08467148811219,
+    "PeakWorkingSetMegabytes": 103,
+    "LogicalProcessors": 4,
+    "ServerGc": true
+  },
+  "peerCpuSeconds": 1354.955827,
+  "peerPeakRssKiB": 1920,
+  "wireSample": {
+    "pairedByOperation": [
+      711,
+      710,
+      710,
+      710,
+      710
+    ],
+    "matchedPairs": 3551,
+    "trailingInvokes": 1,
+    "sampleOnly": true,
+    "redecoded": true,
+    "extractionMode": "payload-preserving-independent-tsn-deduplication"
+  },
+  "topology": "two-host-declared-dedicated",
+  "hostMaintenance": {
+    "explicitlyAuthorized": true,
+    "quiescenceVerified": true,
+    "restorationVerified": true,
+    "unitFilesUnchanged": true,
+    "fallbackTimerArmed": true,
+    "fallbackTimerCancelled": true,
+    "stoppedUnitCount": 4,
+    "restoredActiveUnitCount": 3
+  },
+  "nativeSocketProfiles": {
+    "sdk": {
+      "Name": "lan-bounded-v1",
+      "SendBufferBytes": 425984,
+      "ReceiveBufferBytes": 425984,
+      "RtoInitialMilliseconds": 300,
+      "RtoMinimumMilliseconds": 200,
+      "RtoMaximumMilliseconds": 1000
+    },
+    "peer": {
+      "Name": "lan-bounded-v1",
+      "SendBufferBytes": 425984,
+      "ReceiveBufferBytes": 425984,
+      "RtoInitialMilliseconds": 300,
+      "RtoMinimumMilliseconds": 200,
+      "RtoMaximumMilliseconds": 1000
+    }
+  },
+  "hardware": {
+    "sdk": {
+      "logicalProcessors": 4,
+      "memoryMiB": 15988,
+      "kernel": "5.15.0-191-generic"
+    },
+    "peer": {
+      "logicalProcessors": 4,
+      "memoryMiB": 5924,
+      "kernel": "6.8.0-149-generic"
+    }
+  },
+  "runtime": "10.0.12",
+  "peerNice": 0,
+  "threadPoolLimits": {
+    "MinimumWorkers": 4,
+    "MaximumWorkers": 4,
+    "MinimumIoThreads": 1,
+    "MaximumIoThreads": 1000
+  },
+  "runtimeTuning": {
+    "WorkerSpinLimitEnvironment": null
+  },
+  "runtimeDiagnostics": {
+    "observationCount": 1802,
+    "maximumSampleGapSeconds": 1.0043342129999928,
+    "totalGcPauseMilliseconds": 33083.882,
+    "maximumObservedThreadPoolPending": 220,
+    "lowestSubTargetWindows": [],
+    "caveat": "Sample brackets may span adjacent seconds. Namespace counters and sampled queue maxima are not association-only traces or proof of stall causation."
+  },
+  "rawArtifactSha256": {
+    "build.log": "8aff4f75f1cd3dda568be427da24d6782944989c5c22d3f67432ed61ea3f6424",
+    "capture.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "capture.log": "a1514dff1d90a6419957b8e09008c3e1063f50c6a152f655ed650ee4d746c81a",
+    "host-maintenance.json": "197f308a773519c45da35fbc48ad4701b1a347537db1120dbf76eb14c7de78f7",
+    "inventory.json": "1a147d7e68bc369200c8ce6e875b68fa0b027cff7a9323f10f0bff5cca05e005",
+    "libsctp.so.1": "a80051f32aafd1ca337d9675cbfabf0db36204982cd171ef6256e9a059a5701a",
+    "observer.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "observer.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "peer": "995c79c9f103fb7f074e4932ed1c68611a99f900c8d4359b982303b1a0a76cba",
+    "peer-build.log": "e86d6a8b47bf6f982d77502df6717f479a1c2129c07d762fc1822a6e30260fa6",
+    "peer-runtime.json": "78902ab620e4c3404b498eb2f391ba5954df107f2f662428c242b5ea71db2a80",
+    "peer.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "peer.json": "686a8dc3f5455a4db319bf61d14770593179889f853961b160eadecc78f99de9",
+    "peer.log": "9ba2ce42e4ca3274918d00003412dff6e56dca3e96643638b18c4c9e71c381e5",
+    "result-sdk.json": "d8acd6a2d02d12d64e1299d25f4d1c1f8892e659f609e1ac25742c729d786c4e",
+    "sample.pcap": "3552dd3b0761a6124dfa5aba220bca0c94d309b99e7365586a2db6e112d81c9b",
+    "sdk.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "sdk.log": "bf93e72b65ae7d1492c0a08f8b979b857989ea77be250af43495611335692759",
+    "source.tar": "08d786f7c2a0321bbc767b5d62103ae717ae0626e939bc69a182569be3c70766"
+  }
+}

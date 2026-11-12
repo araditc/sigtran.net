@@ -9,6 +9,7 @@ internal sealed class CapacitySocketFactory(bool lanProfile) : INativeSctpSocket
     internal const string DefaultProfile = "system-default";
     private Socket? _socket;
 
+    /// <inheritdoc />
     public Socket CreateSocket()
     {
         Socket socket = new NativeSctpSocketFactory().CreateSocket();

@@ -10,7 +10,7 @@ import re
 import subprocess
 
 
-FIELDS = ("frame.number", "sctp.srcport", "sctp.dstport", "sctp.data_tsn",
+FIELDS = ("frame.number", "sctp.srcport", "sctp.dstport", "sctp.data_tsn_raw",
           "sctp.data_sid", "sctp.data_payload_proto_id", "data.data")
 CODES = (45, 46, 44, 47, 64, 44, 64, 45, 47, 64)
 OUTCOMES = ("Result",) * 5 + ("Error", "Reject", "MalformedResult", "TimedOut", "Result")
@@ -69,6 +69,16 @@ def sccp(data):
     return values
 
 
+def extract_table(capture, timeout=60):
+    """Preserve retransmitted DATA bytes; our parser, not TShark's suppression, verifies duplicates."""
+    command = ['tshark', '-n', '-r', str(capture), '--disable-protocol', 'm3ua',
+               '-o', 'sctp.tsn_analysis:FALSE', '-Y', 'sctp.data_payload_proto_id == 3',
+               '-T', 'fields', '-E', 'header=y']
+    for field in FIELDS:
+        command.extend(('-e', field))
+    return subprocess.run(command, capture_output=True, text=True, check=True, timeout=timeout).stdout
+
+
 def messages(table, port, endpoint=None):
     """Extract independently decoded M3UA messages, deduplicating identical SCTP retransmissions."""
     reader = csv.DictReader(io.StringIO(table), delimiter="\t")
@@ -83,12 +93,15 @@ def messages(table, port, endpoint=None):
         require(len({len(value) for value in vectors}) == 1, "Bundled chunk fields do not align")
         for tsn, stream, ppid, value in zip(*vectors):
             raw = bytes.fromhex(value)
-            key = src, dst, int(tsn, 0)
+            absolute_tsn = int(tsn, 0)
+            require(0 <= absolute_tsn <= 0xffffffff, 'Invalid absolute SCTP TSN')
+            key = src, dst, absolute_tsn
             require(int(ppid, 0) == 3, "M3UA PPID differs")
+            content = int(stream, 0), int(ppid, 0), raw
             if key in seen:
-                require(seen[key] == raw, "SCTP retransmission changed bytes")
+                require(seen[key] == content, "SCTP retransmission changed bytes or metadata")
                 continue
-            seen[key] = raw
+            seen[key] = content
             require(len(raw) >= 8 and raw[:2] == b"\x01\x00"
                     and int.from_bytes(raw[4:8], "big") == len(raw), "Invalid M3UA header")
             parameters, offset = {}, 8
@@ -231,11 +244,7 @@ def verify(root, profile):
     require(counters, "Capture counters are absent or report drops")
     sha = read("source-commit.txt")
     require(re.fullmatch(r"[a-f0-9]{40}", sha), "Invalid tested source commit")
-    command = ["tshark", "-n", "-r", str(root / "traffic.pcap"), "--disable-protocol", "m3ua",
-               "-Y", "sctp.data_payload_proto_id == 3", "-T", "fields", "-E", "header=y"]
-    for field in FIELDS:
-        command.extend(("-e", field))
-    table = subprocess.run(command, capture_output=True, text=True, check=True, timeout=20).stdout
+    table = extract_table(root / 'traffic.pcap', timeout=20)
     host = messages(table, 33060, 33061 if profile == "maintained" else None)
     result = verify_wire(host, profile)
     files = ["traffic.pcap", "wire-m3ua.tsv", "http-result.json", "peer.log", "host.log", "capture.log",

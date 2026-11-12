@@ -9,7 +9,6 @@ import json
 import math
 import pathlib
 import re
-import subprocess
 import tarfile
 
 SPEC = importlib.util.spec_from_file_location('wire', pathlib.Path(__file__).with_name('verify-reference-service-evidence.py'))
@@ -387,12 +386,9 @@ def verify(root, expected_source):
     require(re.search(r"Packets received/dropped on interface '[^']+': [0-9]+/0 \(pcap:0/dumpcap:0/flushed:0/ps_ifdrop:0\)", log),
             'Missing capture counters or packet drops')
     port = inventory.get('port', 33061)
-    args = ['tshark', '-n', '-r', str(root / 'sample.pcap'), '--disable-protocol', 'm3ua',
-            '-Y', 'sctp.data_payload_proto_id == 3', '-T', 'fields', '-E', 'header=y']
-    for field in wire.FIELDS:
-        args += ['-e', field]
-    table = subprocess.run(args, capture_output=True, text=True, check=True, timeout=60).stdout
+    table = wire.extract_table(root / 'sample.pcap')
     result = evaluate(sdk, peer, inventory, verify_sample(table, port), expected_source)
+    result['wireSample']['extractionMode'] = 'payload-preserving-independent-tsn-deduplication'
     if inventory.get('hostMaintenanceRequired'):
         require('host-maintenance.json' in hashes, 'Missing hashed host maintenance audit')
         result['hostMaintenance'] = host_maintenance(read_json(root / 'host-maintenance.json'), sdk)

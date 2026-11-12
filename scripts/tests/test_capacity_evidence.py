@@ -244,6 +244,34 @@ class EvidenceTests(unittest.TestCase):
         self.assertFalse(report['numericTargetMet'] or report['qualificationPassed'] or report['stablePromotion'])
         self.assertEqual(report['reasons'], ['completed-tps-below-target'])
 
+    def test_retained_dedicated_source_profile_pass_keeps_release_gates_open(self):
+        # Public metadata consistency is not a replacement for private raw hash/PCAP verification.
+        root = pathlib.Path(__file__).resolve().parents[2]
+        path = 'docs/evidence/COMPLETED_MAP_CAPACITY_DEDICATED_20261112.json'
+        report = module.read_json(root / path)
+        self.assertEqual(report['testedSourceCommit'], '947d69abd081449cc0e2c286409eeab69a659ab7')
+        self.assertEqual(report['capacityPolicy'], module.CAPACITY_POLICY)
+        self.assertTrue(report['executionValid'] and report['numericTargetMet'] and report['qualificationPassed'])
+        self.assertFalse(report['stablePromotion'])
+        self.assertEqual(report['reasons'], [])
+        self.assertEqual(report['durationSeconds'], 1800)
+        self.assertEqual(report['completedTransactions'], 26599474)
+        self.assertEqual(report['minimumOneSecondTps'], 10079)
+        self.assertEqual(report['secondsBelowTarget'], 0)
+        self.assertEqual(report['wireSample']['matchedPairs'], 3551)
+        self.assertEqual(report['wireSample']['extractionMode'], 'payload-preserving-independent-tsn-deduplication')
+        self.assertTrue(report['hostMaintenance']['restorationVerified'] and report['hostMaintenance']['fallbackTimerCancelled'])
+        self.assertEqual(len(report['rawArtifactSha256']['host-maintenance.json']), 64)
+        for profile in report['nativeSocketProfiles'].values():
+            self.assertEqual(profile['Name'], 'lan-bounded-v1')
+            self.assertEqual(profile['RtoMinimumMilliseconds'], 200)
+        manifest = module.read_json(root / 'eng/release/stable-release.json')
+        capacity = next(gate for gate in manifest['gates'] if gate['id'] == 'capacity-target')
+        self.assertFalse(capacity['passed'])
+        self.assertEqual(capacity['sourceProfileEvidence'], [path])
+        policy = module.read_json(root / 'eng/qualification/release-policy.json')
+        self.assertIsNone(next(gate for gate in policy['gates'] if gate['id'] == 'capacity-target')['bundlePath'])
+
 
 if __name__ == '__main__':
     unittest.main()

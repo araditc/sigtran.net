@@ -2,7 +2,11 @@
 
 ## Decision
 
-The [verified final measurement](CAPACITY_MEASUREMENT_10K_20261112.md) met the
+Current exit: the later [dedicated-window source/profile run](CAPACITY_QUALIFICATION_EXIT.md)
+qualified Phase 61. The original shared result and diagnosis below retain their
+historical limitations; final release qualification remains separate.
+
+The [earlier verified shared-host measurement](CAPACITY_MEASUREMENT_10K_20261112.md) met the
 unchanged numerical criterion: at least 10,000 validated completed MAP
 transactions in **every one-second window for 1,800 seconds**, with zero failed
 or unresolved work. All 25,590,881 in-window results reconciled with full peer
@@ -10,8 +14,8 @@ and SDK counters. Average TPS was 14,217.16, minimum 10,026, P99 31.6 ms and
 maximum successful latency 63.205 ms. All four durable process exits were zero.
 Independent PCAP decoding matched 3,319 complete pairs across all five operations.
 
-This is **not dedicated-host qualification**. The peer VM still runs Kafka;
-the test was explicitly diagnostic. The minimum margin is only 26 TPS (0.26%).
+That earlier report is **not dedicated-host qualification**. Its peer VM ran Kafka;
+the test was explicitly diagnostic. Its minimum margin was only 26 TPS (0.26%).
 Do not sell this as an unconditional SLA, a packaged-candidate deployment,
 signed release evidence or a stable promotion decision. No Kafka service,
 configuration, affinity or task was changed or profiled. Before/after Kafka
@@ -100,11 +104,31 @@ ran on the SDK host during the measurement. Resource allocation was about
 9,290 bytes/success including drain, versus 10,176 in the original 10K-policy
 baseline; this observed reduction is not a causal throughput claim.
 
-## Remaining Gate
+## Shared-Profile Qualification Boundary
 
-The numerical regression is closed **for this source/profile/run**. Re-run on
-two genuinely dedicated hosts before closing the complete Phase 61 qualification
-gate. Preserve current source/package/scope binding and release trust policy;
-these source-build reports alone do not meet that policy. Phase 62's 72-hour
-resilience, deployment, operator acceptance and release gates remain separate.
-20K optimization is deferred, not a current completion condition.
+The numerical regression above is closed **for that source/profile/run**; it
+cannot itself establish dedicated qualification. Preserve its original status
+and the release trust policy. It remains distinct from the follow-up below.
+
+## Dedicated Follow-Up And Exit
+
+The [first dedicated-window attempt](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+completed 26,575,568 transactions but retained two low seconds (9,944 and 781).
+The severe second was bracketed by one SDK namespace T3 increase, packet
+discards, reduced process CPU and only 16.286 ms GC pause; peer samples showed
+retransmission activity too. Those brackets are not a lost-packet causal trace.
+Dedicated workload ownership alone did not eliminate the dips.
+
+The [opt-in LAN socket profile](CAPACITY_SOCKET_PROFILE.md) records actual
+kernel recovery bounds and buffers on both endpoints. The subsequent full
+[dedicated rerun](CAPACITY_MEASUREMENT_DEDICATED_20261112.md) qualified:
+26,599,474 completions, minimum 10,079 TPS, zero low seconds/failures and
+maximum latency 66.255 ms. No measured SDK namespace T3 increase was observed.
+This combined before/after result is not proof of a unique root cause for all
+historical stalls. An identical startup retransmission remains in the PCAP;
+the independent verifier now preserves its bytes and rejects changed duplicates.
+
+The [Phase 61 exit](CAPACITY_QUALIFICATION_EXIT.md) applies only to its exact
+source/hardware/runtime/socket profile. The 79-TPS minimum margin is narrow.
+Phase 62's 72-hour resilience, cluster/operator acceptance and final trusted
+package-bound release qualification remain open; 20K remains deferred.

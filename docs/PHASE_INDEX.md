@@ -65,7 +65,7 @@ This index is the complete phase map for Sigtran.NET. It links each phase to the
 | 58 | Native SCTP multihoming and live path failover | [Native SCTP Multihoming](NATIVE_SCTP_MULTIHOMING.md), [Retained Evidence](evidence/NATIVE_SCTP_MULTIHOMING_20261110.json) | Ten units complete; isolated Linux same-association path loss verified; separate-host and stable qualification remain open |
 | 59 | MTP3 and M2PA runtime | [MTP3](MTP3.md), [Retained Evidence](evidence/MTP3_M2PA_20261110.json) | Ten units complete for the ITU endpoint profile; independent SCCP wire traffic and SDK-to-SDK native changeover/changeback verified |
 | 60 | End-to-end reference service and external interoperability | [Reference Service](REFERENCE_SERVICE.md), [Retained Evidence](evidence/REFERENCE_SERVICE_20261110.json) | Ten units complete for the isolated M3UA ITU MAP SMS profile; independent C MAP endpoint and maintained STP transit verified |
-| 61 | Completed MAP transaction capacity | [Capacity Qualification](CAPACITY_QUALIFICATION.md), [Current 10K Measurement](CAPACITY_MEASUREMENT_10K_20261112.md), [Stall Diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) | Numerical criterion MET: 25,590,881 in-window successes in 1800 seconds, minimum 10,026 TPS and zero low seconds/errors. Shared-host profile remains NOT QUALIFIED for the dedicated gate |
+| 61 | Completed MAP transaction capacity | [Exit Report](CAPACITY_QUALIFICATION_EXIT.md), [Dedicated Measurement](CAPACITY_MEASUREMENT_DEDICATED_20261112.md), [Socket Profile](CAPACITY_SOCKET_PROFILE.md), [Stall Diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) | PASS for tested source/hardware/profile: 26,599,474 successes in 1800 seconds, minimum 10,079 TPS, zero low seconds/errors, 3551 wire pairs and service restoration verified. Exact packaged-candidate release qualification remains open |
 
 ## Current Production Gate
 
@@ -78,12 +78,12 @@ records the bounded two-host smoke and the mandatory candidate gate.
 The retained catalog includes native SCTP, independent protocol traffic,
 repository-profile MAP SMS and historical RC/supply-chain evidence. Historical
 numeric capacity passes keep their original workload and topology boundaries;
-they do not close Phase 61's stricter completed-MAP, 30-minute, dedicated-host
-target. A shared-peer diagnostic cannot close that gate.
+they cannot replace the new Phase 61 completed-MAP, 30-minute, dedicated-window
+source/profile pass. A shared-peer diagnostic cannot qualify that target.
 
 Stable readiness is determined by the mandatory exact-candidate gates in
 `eng/qualification/release-policy.json`, not a historical count of four gaps.
-Capacity, long-run resilience, representative Kubernetes deployment, operator
+Final candidate-bound capacity, long-run resilience, representative Kubernetes deployment, operator
 acceptance and final candidate release evidence retain their distinct acceptance
 criteria in phases 61-65. Protected stable publication requires current,
 source/package/scope-bound evidence and a machine-evaluated `GO`.

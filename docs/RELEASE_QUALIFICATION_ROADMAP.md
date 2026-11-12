@@ -49,10 +49,20 @@ a profiler: 25,590,881 successful in-window transactions, 14,217.16 average TPS,
 minimum 10,026 and zero sub-target seconds or failures/unresolved work.
 The [stall diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) retains the original
 29-low-second baseline, interrupted collection and rejected experiments.
-Phase 61's numerical regression is closed for that declared profile, but the
-dedicated-host qualification remains open. The minimum margin is only 26 TPS;
-no general production SLA is implied. 20K is not a current blocker. Phases
-62-65 and exact-candidate release trust remain distinct.
+That shared-host report closed only its numerical regression, not the dedicated
+criterion. A later [first dedicated attempt](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+retained two low seconds (minimum 781) and was not silently promoted.
+
+Phase 61 is now [complete for the tested source/hardware/profile](CAPACITY_QUALIFICATION_EXIT.md).
+The [dedicated LAN-profile rerun](CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
+tested `947d69abd081449cc0e2c286409eeab69a659ab7`: 26,599,474 successful
+in-window transactions, average 14,777.49 TPS, minimum 10,079, zero low
+seconds/failures and 3,551 re-decoded MAP pairs. Owner-approved service
+quiescence and original-state/hash restoration were verified. The margin is
+only 79 TPS and the per-socket profile is explicit; no general SLA is implied.
+20K is not a current blocker. Next is Phase 62's actual 72-hour qualification.
+Phases 63-65 and final package/source/scope-bound trusted release qualification
+remain mandatory; a source-build pass does not close the stable release gates.
 
 The initial estimate is 12-20 engineering person-weeks, excluding external
 access and acceptance waiting time; phase 56 records the actual dependencies.

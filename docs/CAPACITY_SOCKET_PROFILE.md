@@ -41,7 +41,17 @@ No sysctl, firewall, priority of unrelated services or Kafka configuration is
 changed. SDK public APIs and application worker defaults are unchanged.
 
 This profile does not alter the workload, completion accounting, five-operation
-mix, 10,000-TPS threshold or 1,800-second criterion. A full new run is mandatory;
-requested settings and a short smoke test cannot establish qualification.
-Neither a passing source/profile run nor these socket settings establish a
-general SLA, resilience, operator acceptance or stable-release authorization.
+mix, 10,000-TPS threshold or 1,800-second criterion. The subsequent full
+[dedicated run](CAPACITY_MEASUREMENT_DEDICATED_20261112.md) now qualifies:
+minimum 10,079 TPS, 26,599,474 completions and zero low seconds/errors. Both
+kernels observed 425,984-byte send/receive buffers and the exact RTO bounds.
+The 60-second smoke alone did not establish this result.
+
+The prefix PCAP contains an identical startup retransmission after about
+201.7 ms, outside the measured interval. Short RTO bounds may interact with
+delayed acknowledgements and cause spurious retransmissions; do not infer that
+all retransmissions disappeared. Extraction preserves duplicate bytes for
+strict independent TSN/metadata comparison. The [exit report](CAPACITY_QUALIFICATION_EXIT.md)
+records the exact source/profile and its narrow minimum margin. Neither this
+pass nor the settings establish a general SLA, resilience, operator acceptance
+or stable-release authorization.

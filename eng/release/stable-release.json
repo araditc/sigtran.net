@@ -65,7 +65,10 @@
         "docs/evidence/PHASE56_CAPACITY_35696403076/aggregate/summary.json",
         "docs/evidence/PHASE56_CAPACITY_35696403076/sha256.txt"
       ],
-      "note": "Current owner-approved policy completed-map-10k-v1 requires new exact-candidate 10K completed MAP TPS evidence for 1800 seconds on two dedicated hosts. Historical Phase 56 aggregate 20K evidence remains retained but cannot close the current gate; other product gates are unchanged."
+      "sourceProfileEvidence": [
+        "docs/evidence/COMPLETED_MAP_CAPACITY_DEDICATED_20261112.json"
+      ],
+      "note": "Phase 61 source/hardware/profile qualification passed completed-map-10k-v1 for 1800 seconds on two dedicated workload hosts (source 947d69a, minimum 10079 TPS). This source-build result is retained separately; final deployed-package/source/scope-bound authenticated candidate evidence is still required in Phase 65. The release gate remains open; historical aggregate/shared reports cannot close it."
     },
     {
       "id": "multi-host-soak",

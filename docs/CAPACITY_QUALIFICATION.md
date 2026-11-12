@@ -12,17 +12,21 @@ AlertServiceCentre, using synthetic subscriber data and three-byte TPDUs.
 The [2026-11-11 target decision](CAPACITY_TARGET_DECISION.md) supersedes 20K as
 the current release threshold; new runs declare policy `completed-map-10k-v1`.
 
-**Numeric criterion MET; dedicated-host qualification NOT QUALIFIED.** The
-[2026-11-12 verified measurement](CAPACITY_MEASUREMENT_10K_20261112.md) completed
-25,590,881 in-window transactions in 1,800 seconds, averaging 14,217.16 TPS with
-minimum 10,026, zero low seconds, zero failures/unresolved work and P99 31.6 ms.
-The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_10K_20261112.json) binds
-source `324f1932cc7820335599c2e7b70e60ada32de4d9`, original hashes, four zero
-exit receipts, full counts and 3,319 re-decoded wire pairs. This uses the declared
-four-worker application profile and normal-priority single-CPU peer. The peer
-host remains shared and the minimum margin is only 26 TPS, so it is not a
-general performance SLA or dedicated-host qualification. See the
-[stall diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md) for limits and reproduction.
+**Phase 61 source/profile qualification PASS.** The
+[dedicated 2026-11-12 measurement](CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
+completed 26,599,474 in-window transactions in 1,800 seconds, averaging
+14,777.49 TPS, minimum 10,079, zero low seconds, zero failures/unresolved work
+and P99 30.9 ms. The [sanitized JSON](evidence/COMPLETED_MAP_CAPACITY_DEDICATED_20261112.json)
+binds source `947d69abd081449cc0e2c286409eeab69a659ab7`, original hashes,
+four zero exit receipts, full counts and 3,551 independently re-decoded pairs.
+The declared four-worker application, normal-priority single-CPU peer and
+opt-in LAN socket profile are explicit. Approved Kafka quiescence/restoration
+was verified. The minimum margin is only 79 TPS; no general SLA is established.
+The [exit report](CAPACITY_QUALIFICATION_EXIT.md) separates this completion from
+the still-open exact-package, operator, endurance and stable release gates.
+The [earlier shared-host numerical pass](CAPACITY_MEASUREMENT_10K_20261112.md)
+and [first failed dedicated attempt](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
+remain unchanged. See the [stall diagnosis](CAPACITY_STALL_DIAGNOSIS_20261112.md).
 The [29-low-second baseline](CAPACITY_MEASUREMENT_10K_20261111.md) and
 [original 20K measurement](CAPACITY_MEASUREMENT_20261111.md) remain unchanged.
 
@@ -39,7 +43,7 @@ The [29-low-second baseline](CAPACITY_MEASUREMENT_10K_20261111.md) and
 | 7 | Two-host inventory, execution and shared-host safety | Implemented; alias/shared-host/endpoint tests |
 | 8 | Source-bound report verification and tamper tests | Implemented; source/counter/latency/window rejection tests |
 | 9 | Real Linux execution and mismatch correction | Two-host smoke verified; explicit lab GC/timeout/capture/cleanup corrections |
-| 10 | Final evidence, CI and remaining-gate report | Implemented; numerical regression now passes for the declared source/profile; shared-host evidence does not close dedicated-host qualification |
+| 10 | Final evidence, CI and remaining-gate report | Complete for tested source/profile: dedicated 1800-second run and 3551 wire pairs verified; exact packaged-candidate release qualification remains separate |
 
 Each unit runs build, SDK/qualification tests, public API compatibility and
 pack before its own commit/push. Names in runtime code describe the domain.
@@ -140,6 +144,8 @@ authorize configuration, topic-data, firewall, enablement or global tuning edits
 The first full [dedicated-window run](CAPACITY_MEASUREMENT_DEDICATED_ATTEMPT_20261112.md)
 finished with two low seconds and remains NOT QUALIFIED. Service restoration
 passed. No passing claim follows from approval or the earlier shared-host result.
+The subsequent [LAN-profile rerun](CAPACITY_MEASUREMENT_DEDICATED_20261112.md)
+passed all 1,800 measured windows and the same maintenance verification.
 
 The wrapper requires `--allow-temporary-unit-stop`, `--dedicated-hosts`, and
 one `--maintenance-unit UNIT` for each approved service/timer, in stop order.
@@ -176,6 +182,11 @@ transaction/invoke identities, dialogue contexts, stream/PPID and the five MAP
 results. A bounded prefix sample may end with unpaired invokes; only complete
 pairs corroborate wire validity, and sample counts are never multiplied into TPS.
 Complete SDK/peer totals account for the entire measured interval.
+Extraction uses absolute on-wire TSNs and disables TShark's TSN-analysis payload
+suppression. The independent parser still requires identical bytes, stream and
+PPID for retransmissions; changed or missing payload is never ignored. A real
+startup duplicate exposed this dissector behavior. The packet hex dumps were
+identical; regression tests reject changed bytes/metadata and empty payloads.
 
 Warmup, measured successes, late results, terminal failures, per-second totals,
 stack dialogue counts and peer per-operation counts must reconcile. A qualifying
@@ -256,23 +267,17 @@ dedicated physical resources. A short sample cannot identify which syscall,
 allocation site or scheduling decision caused the full-run throughput limit.
 Use a separate, explicitly profiled run for causal CPU/allocation diagnosis.
 
-## Remaining Work Within This Phase
+## Exit And Remaining Release Gates
 
-The first dedicated rerun retained 26,575,568 completions and zero failures,
-but two sub-target seconds (minimum 781) prevented qualification. The severe
-stall coincided with transport retransmission observations rather than a long
-GC pause. The [socket-profile experiment](CAPACITY_SOCKET_PROFILE.md) provides
-explicit, kernel-observed per-socket recovery/buffer settings for the next run.
-It never changes the target or silently promotes the failed evidence.
+The fixed Phase 61 source/profile criterion is met without relaxing a window,
+target, duration, error count or dedicated-host requirement. The failed dedicated
+attempt remains NOT QUALIFIED. The new profile passed the entire rerun, but
+combined before/after changes do not prove a unique historical root cause or
+capacity on another network. Preserve the negative evidence and declared limits.
 
-The owner-approved 10K numerical criterion was met in the final 30-minute
-run; 20K remains deferred. No further speculative tuning is needed to claim
-that bounded numerical observation. The minimum margin is narrow, and the
-original extreme stall's exact cause remains unproved rather than retroactively
-attributed. Keep the [diagnosis and negative experiments](CAPACITY_STALL_DIAGNOSIS_20261112.md).
-
-Re-run the same criterion on two genuinely dedicated hosts before closing the
-complete Phase 61 qualification. Bind any final candidate to its actual package,
-source and trusted envelope; a source-build shared-peer report cannot replace
-those requirements. Do not promote stable or claim an operator SLA from this
-run. Phase 62's 72-hour resilience criterion remains separate.
+The release manifest's capacity flag and exact-candidate policy remain fail-closed:
+this test deployed source-built binaries, not a packed release candidate with an
+authenticated schema-2 evidence envelope. That final binding belongs to Phase 65,
+not an assertion that source/profile qualification authorizes publication.
+Phase 62 still requires a real 72-hour resilience run; phases 63-65 cover cluster,
+operator and release acceptance. 20K is deferred, and no operator SLA is implied.

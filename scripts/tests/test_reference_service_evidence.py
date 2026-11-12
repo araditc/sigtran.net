@@ -1,8 +1,12 @@
 """Reject reference-service reports that lack matching signalling evidence."""
 
 import importlib.util
+import csv
+import io
 from pathlib import Path
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 
 spec = importlib.util.spec_from_file_location("reference_wire",
@@ -54,6 +58,29 @@ def conversation():
 
 
 class ReferenceEvidenceTests(unittest.TestCase):
+    def test_extraction_preserves_duplicate_payloads_for_independent_comparison(self):
+        with patch.object(wire.subprocess, 'run', return_value=SimpleNamespace(stdout='captured bytes')) as run:
+            self.assertEqual(wire.extract_table(Path('original.pcap')), 'captured bytes')
+        command = run.call_args.args[0]
+        self.assertIn('sctp.tsn_analysis:FALSE', command)
+        self.assertIn('sctp.data_tsn_raw', command)
+        self.assertNotIn('sctp.retransmission', ' '.join(command))
+        self.assertTrue(run.call_args.kwargs['check'])
+
+    def test_retransmission_must_keep_payload_stream_and_ppid(self):
+        original = '0100040300000018000b0008000000020006000800000064'
+        def table(second, stream='0', ppid='3'):
+            output = io.StringIO()
+            writer = csv.writer(output, delimiter='\t')
+            writer.writerow(wire.FIELDS)
+            writer.writerow(['10', '33061', '44016', '1', '0', '3', original])
+            writer.writerow(['11', '33061', '44016', '1', stream, ppid, second])
+            return output.getvalue()
+        self.assertEqual(len(wire.messages(table(original), 33061)), 1)
+        for payload, stream, ppid in ((original[:-2] + '65', '0', '3'), ('', '0', '3'),
+                                      (original, '1', '3'), (original, '0', '2')):
+            with self.assertRaises(ValueError): wire.messages(table(payload, stream, ppid), 33061)
+
     def test_correlated_matrix(self):
         result = wire.verify_wire(conversation(), "reference")
         self.assertEqual(result["invokes"], 10)
