@@ -298,6 +298,16 @@ def verify(root, expected_source):
     with tarfile.open(root / 'source.tar') as archive:
         require(archive.pax_headers.get('comment') == expected_source, 'Source archive commit differs')
     inventory = read_json(root / 'inventory.json')
+    if 'processReceiptVersion' in inventory:
+        require(inventory['processReceiptVersion'] == 1 and inventory.get('collectionErrors') == [],
+                'Incomplete durable process collection')
+        for role in ('sdk', 'peer', 'capture'):
+            name = role + '.exit'
+            require(name in hashes, 'Missing durable exit receipt')
+            receipt = (root / name).read_bytes()
+            require(re.fullmatch(rb'(0|[1-9][0-9]{0,2})\n', receipt) is not None
+                    and int(receipt) <= 255 and int(receipt) == inventory[role + 'ExitCode'],
+                    'Exit receipt disagrees with inventory')
     sdk = read_json(root / 'result-sdk.json')
     peer = read_json(root / 'peer.json')
     log = (root / 'capture.log').read_text()

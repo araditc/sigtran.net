@@ -217,3 +217,18 @@ count or above 1,024. SDK evidence records actual `ThreadPoolLimits`; a declared
 limit that is not observed fails verification. This is an experiment until its
 measured correctness, tails and throughput are reviewed; it is not a universal
 application-threading recommendation.
+
+The first four-worker 30-minute attempt completed 26,155,370 in-window results
+at 14,530.76 average TPS, but offsets 308-310 were below target (minimum 9,782).
+Those brackets had no retransmissions or Gen2 and only modest GC pause. The
+historical one-second extreme was not reproduced. Both SSH control channels
+were interrupted before final collection; recovered originals remain a separate
+explicitly interrupted set, with unknown process exit statuses, never a passing
+qualification. The controller now uses 15-second SSH keepalives, retains the
+actual timeout PID and atomic child exit receipts, and can reconnect for
+read-only status/collection. Receipt/hash/status mismatch fails verification;
+collection failure no longer prevents preservation of the other host's data.
+An actual SDK-host control test closed its SSH transport during an owned job;
+the recovered receipt retained exit 7. A second bounded timeout retained 124.
+Neither failure was interpreted as exit zero. These jobs did not run SIGTRAN
+traffic or interact with the peer/Kafka host.

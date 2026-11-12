@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run a rootless two-VM capacity measurement. Never install or restart services."""
 import argparse
+import errno
 import hashlib
 import ipaddress
 import json
@@ -76,12 +77,38 @@ def private_remote_root(client):
 
 
 def start_owned(client, root, name, shell):
-    """Keep the SSH channel and timeout alive; cancellation kills only this owned timeout process."""
-    pid_path = shlex.quote(root + '/' + name + '.pid')
-    # The shell becomes timeout, so its saved PID cannot identify a different job.
-    text = f'umask 077; echo $$ > {pid_path}; exec ' + shell
-    _, output, _ = client.exec_command('bash -c ' + shlex.quote(text), timeout=2000)
+    """Retain the actual timeout PID and an atomic exit receipt independent of the SSH channel."""
+    _, output, _ = client.exec_command('bash -c ' + shlex.quote(owned_shell(root, name, shell)), timeout=2000)
     return output.channel
+
+
+def owned_shell(root, name, shell):
+    """The receipt is written only after wait observes the owned timeout's real exit status."""
+    if name not in ('sdk', 'peer', 'capture'):
+        raise ValueError('Invalid owned job name')
+    pid = shlex.quote(root + '/' + name + '.pid')
+    pending = shlex.quote(root + '/' + name + '.exit.pending')
+    receipt = shlex.quote(root + '/' + name + '.exit')
+    return (f'umask 077; {shell} & child=$!; printf "%s\\n" "$child" > {pid}; '
+            f'wait "$child"; status=$?; printf "%s\\n" "$status" > {pending}; '
+            f'mv -- {pending} {receipt}; exit "$status"')
+
+
+def parse_exit_receipt(data):
+    """Unknown, truncated and malformed statuses must never be interpreted as successful exit."""
+    if not isinstance(data, bytes) or not re.fullmatch(rb'(0|[1-9][0-9]{0,2})\n', data) or int(data) > 255:
+        raise ValueError('Invalid owned-process exit receipt')
+    return int(data)
+
+
+def read_exit_receipt(sftp, root, name):
+    try:
+        with sftp.open(root + '/' + name + '.exit', 'rb') as stream:
+            return parse_exit_receipt(stream.read(5))
+    except OSError as error:
+        if error.errno == errno.ENOENT:
+            return None
+        raise
 
 
 def stop_owned(client, root, name):
@@ -120,10 +147,50 @@ def run(args):
         client.set_missing_host_key_policy(paramiko.RejectPolicy())
     roots = {}
     channels = []
+    status_channels = {}
+    reconnects = {'sdk': 0, 'peer': 0}
+
+    def connect(client, reconnect=False):
+        previous = status_channels.pop(client, None)
+        if previous is not None:
+            try:
+                previous.close()
+            except (OSError, EOFError):
+                pass
+        client.close()
+        common = dict(username=args.user, timeout=10, banner_timeout=10, auth_timeout=10, channel_timeout=10)
+        if client is sdk:
+            client.connect(args.sdk_host, key_filename=args.sdk_key, **common)
+        else:
+            client.connect(args.peer_host, password=password, key_filename=args.peer_key,
+                           look_for_keys=False, allow_agent=False, **common)
+        client.get_transport().set_keepalive(15)
+        if reconnect:
+            reconnects['sdk' if client is sdk else 'peer'] += 1
+
+    def remote_read(client, action):
+        for attempt in range(2):
+            try:
+                transport = client.get_transport()
+                if transport is None or not transport.is_active():
+                    connect(client, reconnect=True)
+                return action()
+            except (OSError, EOFError, paramiko.SSHException):
+                if attempt:
+                    raise
+                connect(client, reconnect=True)
+
+    def exit_code(client, root, name):
+        def read():
+            if client not in status_channels:
+                status_channels[client] = client.open_sftp()
+                status_channels[client].get_channel().settimeout(10)
+            return read_exit_receipt(status_channels[client], root, name)
+        return remote_read(client, read)
+
     try:
-        sdk.connect(args.sdk_host, username=args.user, key_filename=args.sdk_key, timeout=10)
-        peer.connect(args.peer_host, username=args.user, password=password,
-                     key_filename=args.peer_key, look_for_keys=False, allow_agent=False, timeout=10)
+        connect(sdk)
+        connect(peer)
         before = {'sdk': remote_inventory(sdk), 'peer': remote_inventory(peer)}
         runtime_environment = worker_environment(args.maximum_workers, before['sdk']['processors'])
         eligible = validate_hosts(before['sdk'], before['peer'], args.peer_host, args.shared_peer) and args.dedicated_hosts
@@ -139,6 +206,8 @@ def run(args):
                     'peerCpu': args.peer_cpu, 'durationSeconds': args.duration,
                     'diagnostic': args.diagnostic or not eligible, 'concurrency': args.concurrency, 'port': args.port}
         manifest['maximumWorkerThreads'] = args.maximum_workers
+        manifest['processReceiptVersion'] = 1
+        manifest['collectionErrors'] = []
         (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         archive = output / 'source.tar'
         subprocess.run(['git', 'archive', '--format=tar', '-o', str(archive), commit, 'src',
@@ -201,44 +270,65 @@ def run(args):
         sdk_channel = start_owned(sdk, root, 'sdk', workload)
         channels.append((sdk, root, 'sdk', sdk_channel))
         deadline = time.monotonic() + budget + 15
-        while not sdk_channel.exit_status_ready():
+        while exit_code(sdk, root, 'sdk') is None:
             if time.monotonic() > deadline:
                 raise TimeoutError('Workload controller deadline')
             time.sleep(1)
-        manifest['sdkExitCode'] = sdk_channel.recv_exit_status()
-        for channel in (peer_channel, capture):
+        manifest['sdkExitCode'] = exit_code(sdk, root, 'sdk')
+        for client, job_root, name in ((peer, peer_root, 'peer'), (sdk, root, 'capture')):
             end = time.monotonic() + 30
-            while not channel.exit_status_ready() and time.monotonic() < end:
+            while exit_code(client, job_root, name) is None and time.monotonic() < end:
                 time.sleep(.2)
-            if not channel.exit_status_ready():
+            if exit_code(client, job_root, name) is None:
                 raise TimeoutError('Owned child did not stop')
-        manifest['peerExitCode'] = peer_channel.recv_exit_status()
-        manifest['captureExitCode'] = capture.recv_exit_status()
-        manifest['after'] = {'sdk': remote_inventory(sdk), 'peer': remote_inventory(peer)}
+        manifest['peerExitCode'] = exit_code(peer, peer_root, 'peer')
+        manifest['captureExitCode'] = exit_code(sdk, root, 'capture')
+        manifest['after'] = {'sdk': remote_read(sdk, lambda: remote_inventory(sdk)),
+                             'peer': remote_read(peer, lambda: remote_inventory(peer))}
         manifest['completed'] = True
         print(f"Capacity execution finished; SDK={manifest['sdkExitCode']} peer={manifest['peerExitCode']}", flush=True)
+    except Exception as error:
+        if 'manifest' in locals():
+            manifest['controllerError'] = type(error).__name__
+        raise
     finally:
         for client, root, name, channel in reversed(channels):
-            if not channel.exit_status_ready():
-                try:
+            try:
+                if exit_code(client, root, name) is None:
                     stop_owned(client, root, name)
-                except Exception:
-                    pass  # The independent timeout remains armed; no unrelated PID is signaled.
+            except Exception:
+                pass  # The independent timeout remains armed; no unrelated PID is signaled.
         cleanup_deadline = time.monotonic() + 10
-        while any(not channel.exit_status_ready() for _, _, _, channel in channels) and time.monotonic() < cleanup_deadline:
-            time.sleep(.1)
+        cleanup = False
+        try:
+            while True:
+                cleanup = all(exit_code(client, root, name) is not None for client, root, name, _ in channels)
+                if cleanup or time.monotonic() >= cleanup_deadline:
+                    break
+                time.sleep(.1)
+        except Exception:
+            pass
         if 'manifest' in locals():
-            manifest['cleanupVerified'] = all(channel.exit_status_ready() for _, _, _, channel in channels)
+            manifest['cleanupVerified'] = cleanup
+            manifest['sshReconnects'] = reconnects
         for name, client in (('sdk', sdk), ('peer', peer)):
             if name not in roots:
                 continue
-            files = ['build.log', 'peer-build.log', 'sdk.log', 'capture.log', 'sample.pcap', 'result/sdk.json'] if name == 'sdk' else ['peer.log', 'peer.json']
-            with client.open_sftp() as sftp:
-                for file in files:
-                    try:
-                        sftp.get(roots[name] + '/' + file, str(output / file.replace('/', '-')))
-                    except OSError:
-                        pass
+            files = ['build.log', 'peer-build.log', 'sdk.log', 'capture.log', 'sample.pcap', 'result/sdk.json',
+                     'sdk.exit', 'capture.exit'] if name == 'sdk' else ['peer.log', 'peer.json', 'peer.exit']
+            try:
+                def collect():
+                    with client.open_sftp() as sftp:
+                        for file in files:
+                            try:
+                                sftp.get(roots[name] + '/' + file, str(output / file.replace('/', '-')))
+                            except OSError as error:
+                                if error.errno != errno.ENOENT:
+                                    raise
+                remote_read(client, collect)
+            except Exception as error:
+                if 'manifest' in locals():
+                    manifest['collectionErrors'].append(name + ':' + type(error).__name__)
         if 'manifest' in locals():
             (output / 'inventory.json').write_text(json.dumps(manifest, indent=2))
         sdk.close()
@@ -246,7 +336,7 @@ def run(args):
         hashes = {file.name: hashlib.sha256(file.read_bytes()).hexdigest()
                   for file in output.iterdir() if file.is_file() and file.name != 'sha256.json'}
         (output / 'sha256.json').write_text(json.dumps(hashes, indent=2))
-    return manifest['sdkExitCode'] or manifest['peerExitCode'] or manifest['captureExitCode']
+    return manifest['sdkExitCode'] or manifest['peerExitCode'] or manifest['captureExitCode'] or bool(manifest['collectionErrors'])
 
 
 if __name__ == '__main__':

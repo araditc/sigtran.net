@@ -49,6 +49,8 @@ turning sampled correlation or missing counters into a root-cause claim.
 The capacity runner supports an explicit, bounded application worker-limit
 experiment and records actual runtime limits; the library never changes its
 consumer's ThreadPool configuration.
+Long-run collection uses SSH keepalives and durable owned-process exit receipts;
+an interrupted collector or missing status cannot silently become a pass.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining

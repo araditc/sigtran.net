@@ -26,6 +26,23 @@ class TopologyTests(unittest.TestCase):
         for value in (True, 0, 3, 1025, '4'):
             with self.assertRaises(ValueError): module.worker_environment(value, 4)
 
+    def test_durable_receipts_never_invent_success(self):
+        for value in (0, 1, 124, 143, 255):
+            self.assertEqual(module.parse_exit_receipt(str(value).encode() + b'\n'), value)
+        for value in (b'', b'0', b'-1\n', b'256\n', b'00\n', b'0\n1\n'):
+            with self.assertRaises(ValueError): module.parse_exit_receipt(value)
+        class Missing:
+            def open(self, *_): raise FileNotFoundError(2, 'not complete')
+        self.assertIsNone(module.read_exit_receipt(Missing(), '/private/run', 'sdk'))
+
+    def test_owned_shell_records_actual_timeout_child_after_wait(self):
+        script = module.owned_shell('/private/run with space', 'sdk', 'timeout 5s example')
+        self.assertIn('child=$!', script)
+        self.assertNotIn('echo $$', script)
+        self.assertLess(script.index('wait "$child"'), script.index('status=$?'))
+        self.assertIn('sdk.exit.pending', script)
+        with self.assertRaises(ValueError): module.owned_shell('/private/run', '../foreign', 'unused')
+
     def test_kafka_requires_explicit_nonqualifying_mode(self):
         self.peer['kafkaProcesses'] = [{'pid': 1}]
         with self.assertRaises(ValueError):
