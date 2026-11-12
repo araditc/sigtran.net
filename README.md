@@ -33,7 +33,8 @@ The SDK never changes a consumer's ThreadPool configuration.
 An owner-approved [temporary maintenance window](docs/CAPACITY_QUALIFICATION.md#explicit-maintenance-window)
 is being prepared for a fresh dedicated-host run. A remote restoration timer,
 state/hash audit and restoration verification are required before accepting
-that run; approval alone does not close qualification.
+that run; approval alone does not close qualification. Audit validation respects
+systemd timer metadata while still requiring explicit idle PIDs for services.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

@@ -312,7 +312,9 @@ def host_maintenance(audit, sdk):
     require(all(set(states) == set(units) for states in (before, quiet, after)), 'Maintenance inventory differs')
     for unit in units:
         require(before[unit]['ActiveState'] in ('active', 'inactive')
-                and quiet[unit]['ActiveState'] == 'inactive' and quiet[unit]['MainPID'] == '0',
+                and quiet[unit]['ActiveState'] == 'inactive'
+                and (quiet[unit].get('MainPID', '0') == '0' if unit.endswith('.timer')
+                     else quiet[unit].get('MainPID') == '0'),
                 'Selected unit was not quiesced')
         for key in ('ActiveState', 'SubState', 'UnitFileState', 'fragmentSha256'):
             require(before[unit][key] == after[unit][key], 'Original unit state or definition was not restored')

@@ -156,6 +156,8 @@ are quiesced, then invokes restoration before hashing final evidence. A hashed
 approval, non-quiesced units, changed definitions/enablement, wrong restoration
 order/timestamps, restoration errors or an uncancelled guard. Public output
 includes only a sanitized maintenance summary, not private host identities.
+Systemd timers have no `MainPID` property; service units must explicitly
+report PID zero while quiesced. Missing service PIDs are not assumed idle.
 Normal Kafka stop/start may write its own logs/checkpoints; no manual Kafka
 configuration or topic-data changes are made. Dedicated here means an approved
 VM workload window, not exclusive physical hypervisor cores.

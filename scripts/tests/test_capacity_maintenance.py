@@ -81,6 +81,15 @@ class MaintenanceTests(unittest.TestCase):
         self.assertEqual(result['restoredActiveUnitCount'], 3)
         self.assertNotIn('peerHost', result)
 
+    def test_systemd_timers_have_no_main_pid_but_services_must_report_zero(self):
+        audit, sdk = audit_fixture()
+        for states in (audit['before'], audit['quiesced'], audit['after']):
+            del states[audit['stoppedUnits'][0]]['MainPID']
+        self.assertTrue(verifier.host_maintenance(audit, sdk)['quiescenceVerified'])
+        del audit['quiesced'][audit['stoppedUnits'][2]]['MainPID']
+        with self.assertRaisesRegex(ValueError, 'not quiesced'):
+            verifier.host_maintenance(audit, sdk)
+
     def test_unapproved_unrestored_or_uncancelled_maintenance_is_rejected(self):
         for key in ('explicitlyAuthorized', 'restorationVerified', 'unitFilesUnchanged',
                     'fallbackTimerArmed', 'fallbackTimerCancelled'):
