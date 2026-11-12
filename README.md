@@ -42,6 +42,8 @@ The SDK never changes a consumer's ThreadPool configuration.
 Its versioned contract requires one continuous 72-hour SDK process, durable
 accounting/resource checkpoints and nine incidents across three fault families.
 Short diagnostics or the Phase 61 pass cannot close this qualification.
+The endurance ledger uses fixed worker slots and 64-bit counters, rejects
+duplicate completions and preserves fault-window terminal outcomes explicitly.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

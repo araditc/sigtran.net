@@ -52,6 +52,8 @@ Run("Capacity histogram bounds memory and declares tail-latency resolution", Cap
 Run("Capacity runtime observations bound memory and retain real sample timing", CapacityTests.Diagnostics);
 Run("Capacity MAP classification excludes every non-result outcome", CapacityTests.MapOutcomes);
 Run("Endurance options pin duration, fault schedule and diagnostic boundaries", EnduranceTests.Options);
+Run("Endurance ledger accounts fault outcomes, probes and duplicate completions", EnduranceTests.Ledger);
+Run("Endurance ledger bounds slots and reconciles concurrent terminal outcomes", EnduranceTests.ConcurrentLedger);
 Run("TCAP exact-size encoding matches standard BER across length boundaries", EncodingAllocationTests.TransactionLengths);
 Run("BER writer reuse preserves nested, failed and parallel encoder isolation", EncodingAllocationTests.WriterLeases);
 Run("TCAP small transaction allocation excludes the old 2 KiB scratch buffer", EncodingAllocationTests.TransactionAllocation);

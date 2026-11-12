@@ -31,7 +31,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | Unit | Deliverable | Status |
 | --- | --- | --- |
 | 1 | Versioned duration/resource/fault contract and validated options | Complete; build/test/API/pack passed |
-| 2 | 64-bit, bounded, exact admission-to-terminal ledger | Planned |
+| 2 | 64-bit, bounded, exact admission-to-terminal ledger | Complete; concurrent/fault tests and build/test/API/pack passed |
 | 3 | Continuous runner, durable checkpoints and deadline drain | Planned |
 | 4 | Independent long-running peer and crash-surviving counter evidence | Planned |
 | 5 | Scoped incident control, recovery probes and rollback | Planned |
@@ -45,3 +45,18 @@ Each unit includes code, behavioral tests, standard code documentation,
 docs/README updates, build/test/API/pack and its own commit/push. Runtime
 names describe the domain, never a phase number. Raw evidence is private;
 only validated sanitized summaries and hashes are published.
+
+## Terminal Accounting
+
+Each fixed worker slot owns a generation-fenced admission. Counters and
+generations are 64-bit; no per-transaction dictionary/list grows across the
+run. A consistent checkpoint includes all five operation totals, eight terminal
+outcomes, pending work, accounting violations and explicitly classified fault
+outcomes. A duplicate or stale completion invalidates accounting.
+
+The first timeout/transport/dialogue-close outcome inside a declared fault
+pauses new admissions, bounding fault failures to one in-flight cohort.
+Errors, rejects, malformed results and cancellation remain unexpected even
+inside a fault. After drain, five fresh successful probes are required before
+recovery is acknowledged; no prior request is replayed. Capture-stop
+acknowledgement precedes ordinary admission resumption.
