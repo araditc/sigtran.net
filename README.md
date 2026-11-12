@@ -61,6 +61,10 @@ The [durable execution design](docs/ENDURANCE_EXECUTION.md) freezes host-local
 systemd supervision, restricted peer control, expiring maintenance heartbeats
 and independent restoration guards. Kafka maintenance has explicit owner
 approval for this test; data/configuration and enablement stay unchanged.
+The first live diagnostic failed before traffic on a host-specific runtime
+path, and verified automatic Kafka restoration. Tool/runtime discovery now
+precedes maintenance; Phase 62 remains unqualified pending a successful
+diagnostic and the actual continuous 72-hour run.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

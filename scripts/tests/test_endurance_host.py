@@ -4,9 +4,11 @@ import importlib.util
 import pathlib
 import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('endurance_host_test', pathlib.Path(__file__).resolve().parents[1] / 'endurance-host.py')
 host = importlib.util.module_from_spec(spec); spec.loader.exec_module(host)
+driver = host.load_module('endurance_driver_test', 'run-endurance-lab.py')
 
 
 def fixture():
@@ -17,6 +19,14 @@ def fixture():
 
 
 class HostTests(unittest.TestCase):
+    def test_runtime_path_is_discovered_before_maintenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / 'dotnet'; path.touch()
+            with patch.object(driver.shutil, 'which', return_value=str(path)):
+                self.assertEqual(driver.executable('dotnet'), str(path.resolve()))
+            with patch.object(driver.shutil, 'which', return_value=None):
+                with self.assertRaises(ValueError): driver.executable('dotnet')
+
     def test_short_runs_approval_and_paths_fail_closed(self):
         host.validate(fixture())
         for key, value in [('runId', '../root'), ('durationSeconds', 360), ('explicitMaintenanceApproval', False),

@@ -14,6 +14,7 @@ import os
 import pathlib
 import secrets
 import signal
+import shutil
 import subprocess
 import time
 
@@ -38,6 +39,13 @@ def network(root, action, incident=None):
     args = ['/usr/bin/python3', '-I', str(HERE / 'endurance-network.py'), action, str(root / 'network.json')]
     if incident is not None: args.append(str(incident))
     return host.execute(args, timeout=120).stdout
+
+
+def executable(name):
+    """Resolve the installed tool; a distribution-specific symlink is not a transport contract."""
+    found = shutil.which(name)
+    if found is None or not pathlib.Path(found).resolve().is_file(): raise ValueError('Required tool unavailable: ' + name)
+    return str(pathlib.Path(found).resolve())
 
 
 def cleanup(value, root):
@@ -142,6 +150,10 @@ class Driver:
 
     def run(self):
         if (self.raw / 'inventory.json').exists() or (self.root / 'host-started').exists(): raise ValueError('A run cannot restart')
+        tools = {name: executable(name) for name in ('dotnet', 'dumpcap', 'mergecap', 'tshark', 'ip', 'iptables', 'iptables-save', 'ssh')}
+        runtime = subprocess.run([tools['dotnet'], '--list-runtimes'], check=True, capture_output=True, text=True,
+                                 timeout=30, **host.demotion())
+        if 'Microsoft.NETCore.App 10.0.12 ' not in runtime.stdout: raise ValueError('Qualified .NET runtime is unavailable')
         # This durable marker tells ExecStopPost to request restoration even if prepare loses its SSH reply.
         (self.root / 'host-started').touch(exist_ok=False)
         try:
@@ -151,7 +163,7 @@ class Driver:
             baseline = self.capture(None)
             self.sdk_log = (self.raw / 'sdk.log').open('wb')
             environment = dict(os.environ, DOTNET_ThreadPool_ForceMaxWorkerThreads='4')
-            args = ['/usr/bin/dotnet', str(self.root / 'sdk-build/Sigtran.NET.PerformanceLab.dll'), 'endurance',
+            args = [tools['dotnet'], str(self.root / 'sdk-build/Sigtran.NET.PerformanceLab.dll'), 'endurance',
                     '--remote-ip', self.value['peerIp'], '--remote-port', str(self.value['port']),
                     '--source-commit', self.value['sourceCommit'], '--output', str(self.raw / 'sdk'),
                     '--duration-seconds', str(self.value['durationSeconds']), '--diagnostic', str(self.value['diagnostic']).lower(),
