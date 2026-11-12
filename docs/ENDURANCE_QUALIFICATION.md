@@ -33,7 +33,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | 1 | Versioned duration/resource/fault contract and validated options | Complete; build/test/API/pack passed |
 | 2 | 64-bit, bounded, exact admission-to-terminal ledger | Complete; concurrent/fault tests and build/test/API/pack passed |
 | 3 | Continuous runner, durable checkpoints and deadline drain | Complete; journal/deadline/cancellation tests and build/test/API/pack passed |
-| 4 | Independent long-running peer and crash-surviving counter evidence | Planned |
+| 4 | Independent long-running peer and crash-surviving counter evidence | Complete; strict Linux C build/fixtures, mmap values above 2^32 and build/test/API/pack passed |
 | 5 | Scoped incident control, recovery probes and rollback | Planned |
 | 6 | Memory/heap/queue progression and bounded capture/log storage | Planned |
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Planned |
@@ -75,3 +75,19 @@ sequence, frame-size, frame-count and total-file bounds are enforced. The
 resource observation includes OS peak RSS, sampled managed/GC memory, process
 CPU and ThreadPool counters. No forced collection is used to make memory look
 smaller. An interrupted prefix is diagnostic evidence, never a final pass.
+
+## Independent Peer Counters
+
+The C peer retains strict protocol/stream/PPID checks without linking the SDK.
+Per-connection and summary counts are now 64-bit. Its explicit `endurance` mode
+maps a supervisor-created private 64-byte file containing accepted invokes,
+accepted response sends, five operation counts and validation failures.
+Lock-free aligned 64-bit atomic counters survive peer process termination;
+this does not assert power-loss durability or authorize stitching SDK restarts.
+
+The supervisor reads/flushes counters after a child stops. A forced kill can
+interrupt publication of one request: the corresponding bounded uncertainty
+must remain explicit. Accepted sends are not assumed to be SDK completions.
+Every SDK admission still requires its own terminal outcome, and any peer
+validation failure prevents qualification. Counter-file type/size/identity,
+response bounds and per-operation prefix reconciliation are checked.

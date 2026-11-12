@@ -14,12 +14,16 @@
 #include <signal.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdatomic.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -81,7 +85,35 @@ static int wrong_activation_context = 0;
 static int asp_client = 0;
 static uint32_t reference_context = REFERENCE_CONTEXT;
 static int capacity_mode = 0;
+static int endurance_mode = 0;
 static uint64_t capacity_counts[5] = {0};
+struct endurance_counters {
+    _Atomic uint64_t received;
+    _Atomic uint64_t responses;
+    _Atomic uint64_t by_operation[5];
+    _Atomic uint64_t invalid;
+};
+static struct endurance_counters *endurance_counts = NULL;
+_Static_assert(sizeof(struct endurance_counters) == 64, "Unexpected endurance counter ABI");
+_Static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "Endurance counters require lock-free 64-bit atomics");
+
+/* The supervisor creates one private 64-byte file per run and flushes it after each stopped generation. */
+static int map_endurance_counters(const char *path)
+{
+    int fd = open(path, O_RDWR | O_NOFOLLOW);
+    struct stat info;
+    if (fd < 0) return -1;
+    if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) || info.st_size != (off_t)sizeof(struct endurance_counters)) {
+        close(fd);
+        errno = EINVAL;
+        return -1;
+    }
+    void *mapped = mmap(NULL, sizeof(struct endurance_counters), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+    if (mapped == MAP_FAILED) return -1;
+    endurance_counts = mapped;
+    return 0;
+}
 static const char *capacity_socket_profile = "system-default";
 static struct sctp_rtoinfo capacity_rto;
 static int capacity_send_buffer, capacity_receive_buffer;
@@ -122,7 +154,7 @@ static int capacity_operation_index(uint8_t code)
 }
 
 /* A summary is emitted only after orderly client EOF; partial/terminated runs fail closed. */
-static int write_capacity_summary(const char *path, unsigned int operations)
+static int write_capacity_summary(const char *path, uint64_t operations)
 {
     struct rusage resources;
     if (getrusage(RUSAGE_SELF, &resources) != 0) return -1;
@@ -133,7 +165,7 @@ static int write_capacity_summary(const char *path, unsigned int operations)
     if (file == NULL) return -1;
     int result = fprintf(file,
         "{\"schemaVersion\":1,\"workload\":\"itu-map-sms-five-operation-equal-mix-v1\","
-        "\"received\":%u,\"responses\":%u,\"byOperation\":[%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 "],"
+        "\"received\":%" PRIu64 ",\"responses\":%" PRIu64 ",\"byOperation\":[%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 "],"
         "\"processId\":%ld,\"nice\":%d,\"cpuSeconds\":%.6f,\"peakRssKiB\":%ld,"
         "\"sctpSocketProfile\":{\"Name\":\"%s\",\"SendBufferBytes\":%d,\"ReceiveBufferBytes\":%d,"
         "\"RtoInitialMilliseconds\":%u,\"RtoMinimumMilliseconds\":%u,\"RtoMaximumMilliseconds\":%u},\"passed\":true}\n",
@@ -187,6 +219,8 @@ static void write_u32_be(uint8_t *destination, uint32_t value)
 
 static void log_event(const char *event_name, const char *detail)
 {
+    if (endurance_counts != NULL && strcmp(event_name, "validation-failed") == 0)
+        atomic_fetch_add_explicit(&endurance_counts->invalid, 1U, memory_order_relaxed);
     if (quiet_traffic
         && (strcmp(event_name, "sctp-receive") == 0
             || strcmp(event_name, "m3ua-receive") == 0
@@ -896,7 +930,7 @@ static int send_map_reply(
 }
 
 static int handle_data(int socket_fd, const uint8_t *message, size_t message_length,
-    uint16_t stream_id, unsigned int *operation_count)
+    uint16_t stream_id, uint64_t *operation_count)
 {
     struct protocol_data_view protocol_data;
     struct sccp_udt_view sccp;
@@ -927,7 +961,7 @@ static int handle_data(int socket_fd, const uint8_t *message, size_t message_len
         reply = reference_cases[*operation_count].reply;
     }
 
-    snprintf(detail, sizeof(detail), "case=%u operationCode=%u invokeId=%u opc=%u dpc=%u sccpBytes=%zu mapBytes=%zu",
+    snprintf(detail, sizeof(detail), "case=%" PRIu64 " operationCode=%u invokeId=%u opc=%u dpc=%u sccpBytes=%zu mapBytes=%zu",
         *operation_count + 1U, invoke.operation_code, invoke.invoke_id, protocol_data.opc, protocol_data.dpc,
         protocol_data.payload_length, invoke.parameters_length);
     log_event("map-invoke", detail);
@@ -939,9 +973,17 @@ static int handle_data(int socket_fd, const uint8_t *message, size_t message_len
         }
         log_event("foreign-context-response", detail);
     }
+    int capacity_index = capacity_operation_index(invoke.operation_code);
+    if (endurance_counts != NULL) {
+        if (capacity_index < 0) return -1;
+        atomic_fetch_add_explicit(&endurance_counts->received, 1U, memory_order_relaxed);
+        atomic_fetch_add_explicit(&endurance_counts->by_operation[capacity_index], 1U, memory_order_relaxed);
+    }
     if (reply != REPLY_SILENCE && send_map_reply(socket_fd, &protocol_data, &sccp, &invoke, reply, stream_id) != 0) {
         return -1;
     }
+    if (endurance_counts != NULL)
+        atomic_fetch_add_explicit(&endurance_counts->responses, 1U, memory_order_relaxed);
     (*operation_count)++;
     if (capacity_mode) {
         int index = capacity_operation_index(invoke.operation_code);
@@ -985,6 +1027,14 @@ static int self_test(void)
 
 int main(int argc, char **argv)
 {
+    if (argc == 3 && strcmp(argv[1], "--counter-self-test") == 0) {
+        if (map_endurance_counters(argv[2]) != 0) return 1;
+        uint64_t large = (uint64_t)UINT32_MAX + 6U;
+        atomic_store(&endurance_counts->received, large);
+        atomic_store(&endurance_counts->responses, large);
+        atomic_store(&endurance_counts->by_operation[0], large);
+        return msync(endurance_counts, sizeof(*endurance_counts), MS_SYNC) != 0;
+    }
     if (argc == 2 && strcmp(argv[1], "--self-test") == 0) {
         return self_test();
     }
@@ -1001,16 +1051,21 @@ int main(int argc, char **argv)
     struct sctp_event_subscribe events;
     struct timeval receive_timeout;
     uint8_t message[BUFFER_SIZE];
-    unsigned int operation_count = 0U;
+    uint64_t operation_count = 0U;
     int invalid_context_acknowledged = 0;
     int orderly_eof = 0;
     char detail[128];
 
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
-    capacity_mode = argc > 4 && strcmp(argv[4], "capacity") == 0;
-    if (capacity_mode && (argc != 6 || expected_operations != 0U)) {
+    endurance_mode = argc > 4 && strcmp(argv[4], "endurance") == 0;
+    capacity_mode = endurance_mode || (argc > 4 && strcmp(argv[4], "capacity") == 0);
+    if (capacity_mode && (argc != (endurance_mode ? 7 : 6) || expected_operations != 0U)) {
         fprintf(stderr, "Capacity requires unlimited operations and a new summary path.\n");
+        return 2;
+    }
+    if (endurance_mode && map_endurance_counters(argv[6]) != 0) {
+        perror("endurance counter mapping");
         return 2;
     }
     quiet_traffic = capacity_mode || (argc > 4 && strcmp(argv[4], "quiet") == 0);
@@ -1310,7 +1365,7 @@ int main(int argc, char **argv)
     snprintf(
         detail,
         sizeof(detail),
-        "operations=%u expected=%u passed=%s",
+        "operations=%" PRIu64 " expected=%u passed=%s",
         operation_count,
         expected_operations,
         passed ? "true" : "false");

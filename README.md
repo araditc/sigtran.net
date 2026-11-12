@@ -46,6 +46,8 @@ The endurance ledger uses fixed worker slots and 64-bit counters, rejects
 duplicate completions and preserves fault-window terminal outcomes explicitly.
 Its continuous runner drains in-flight work at the deadline and writes bounded,
 disk-flushed hash-chain checkpoints; interrupted prefixes cannot qualify.
+The independent C peer has 64-bit, process-crash-surviving counters with explicit
+publication-tail bounds, rather than assuming an interrupted peer emitted zero.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

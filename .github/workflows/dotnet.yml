@@ -58,6 +58,7 @@ jobs:
           python3 scripts/tests/test_capacity_cpu_sample.py
           python3 scripts/tests/test_capacity_peer_sample.py
           python3 scripts/tests/test_capacity_maintenance.py
+          python3 scripts/tests/test_endurance_peer_counters.py
 
       - name: Test MAP SMS wire evidence verification
         shell: bash
