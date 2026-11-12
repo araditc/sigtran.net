@@ -32,7 +32,7 @@ Kafka maintenance window requires separate explicit owner approval; the prior
 | --- | --- | --- |
 | 1 | Versioned duration/resource/fault contract and validated options | Complete; build/test/API/pack passed |
 | 2 | 64-bit, bounded, exact admission-to-terminal ledger | Complete; concurrent/fault tests and build/test/API/pack passed |
-| 3 | Continuous runner, durable checkpoints and deadline drain | Planned |
+| 3 | Continuous runner, durable checkpoints and deadline drain | Complete; journal/deadline/cancellation tests and build/test/API/pack passed |
 | 4 | Independent long-running peer and crash-surviving counter evidence | Planned |
 | 5 | Scoped incident control, recovery probes and rollback | Planned |
 | 6 | Memory/heap/queue progression and bounded capture/log storage | Planned |
@@ -60,3 +60,18 @@ Errors, rejects, malformed results and cancellation remain unexpected even
 inside a fault. After drain, five fresh successful probes are required before
 recovery is acknowledged; no prior request is replayed. Capture-stop
 acknowledgement precedes ordinary admission resumption.
+
+## Continuous Execution And Checkpoints
+
+The endurance runner owns one fixed worker set and one real monotonic origin.
+Deadline expiry stops admission, while in-flight requests get a bounded drain.
+Late successes remain terminal but do not inflate measured TPS. Cancellation
+is counted explicitly. A checkpoint/control failure aborts the run, rather
+than leaving an apparently successful partial measurement.
+
+Checkpoints are append-only, exclusively created, individually disk-flushed
+frames. SHA256 binds the previous raw digest and exact UTF-8 payload bytes;
+sequence, frame-size, frame-count and total-file bounds are enforced. The
+resource observation includes OS peak RSS, sampled managed/GC memory, process
+CPU and ThreadPool counters. No forced collection is used to make memory look
+smaller. An interrupted prefix is diagnostic evidence, never a final pass.

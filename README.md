@@ -44,6 +44,8 @@ accounting/resource checkpoints and nine incidents across three fault families.
 Short diagnostics or the Phase 61 pass cannot close this qualification.
 The endurance ledger uses fixed worker slots and 64-bit counters, rejects
 duplicate completions and preserves fault-window terminal outcomes explicitly.
+Its continuous runner drains in-flight work at the deadline and writes bounded,
+disk-flushed hash-chain checkpoints; interrupted prefixes cannot qualify.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
