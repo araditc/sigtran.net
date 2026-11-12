@@ -163,3 +163,15 @@ than mislabeled as an exact second. SCTP counters are namespace-wide, CPU ticks
 are host-wide, and an absent counter is not zero. Guest ticks are not counted
 twice. This changes diagnostics, never completion accounting or acceptance.
 See the [.NET runtime metric definitions](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-runtime).
+
+Linux metadata receive now waits through the .NET async socket engine after
+native would-block rather than scheduling repeated 2 ms polling timers. The
+zero-byte read is non-consuming; native `sctp_recvmsg` remains the only consumer
+of payload, notification and ancillary metadata. A linked cancellation token
+owns each wait until completion, including timeout, so no abandoned async reader
+can interfere with a later call. Send/connect and legacy paths are unchanged.
+Real Linux tests cover cancellation during readiness, subsequent data/PPID/stream
+integrity and idle expiry. The standard runtime's
+[zero-byte receive implementation](https://github.com/dotnet/runtime/blob/v10.0.0/src/libraries/System.Net.Sockets/src/System/Net/Sockets/SocketPal.Unix.cs)
+uses a one-byte peek; this is a measured optimization candidate, not proof of
+the cause of every historical low window.

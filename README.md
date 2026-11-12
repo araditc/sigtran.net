@@ -38,6 +38,8 @@ a causal TPS improvement or explain the one-second stalls.
 The stall-diagnosis continuation records bounded, monotonic runtime observations
 for GC pauses, ThreadPool queues, CPU and host SCTP counters; per-second
 completion accounting and the 10K acceptance criterion remain unchanged.
+Linux native receive readiness uses non-consuming async socket notification,
+preserving record/metadata ownership, cancellation and operation deadlines.
 Profile-guided encoding changes retain independently checked BER bytes and
 owned output buffers while removing repeated scratch/writer allocations.
 Linux SCTP attempts nonblocking I/O before readiness polling, retaining

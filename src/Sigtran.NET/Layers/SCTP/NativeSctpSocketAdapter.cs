@@ -470,6 +470,27 @@ public sealed class NativeSctpSocketAdapter : ISctpSocket, ISctpTransport, ISctp
         {
             CheckOperationBudget(budget, ct);
 
+            if (OperatingSystem.IsLinux() && _transportOptions.RequireKernelMetadata && mode == SelectMode.SelectRead)
+            {
+                using CancellationTokenSource wait = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                TimeSpan remaining = budget.DeadlineUtc - DateTimeOffset.UtcNow;
+                if (remaining <= TimeSpan.Zero) CheckOperationBudget(budget, ct);
+                // Limit only the timer slice, not the caller's configured operation deadline.
+                wait.CancelAfter(TimeSpan.FromMilliseconds(Math.Clamp(remaining.TotalMilliseconds, 0, int.MaxValue)));
+                try
+                {
+                    // .NET's zero-byte receive is a non-consuming peek backed by its async socket engine.
+                    _ = await _socket.ReceiveAsync(Memory<byte>.Empty, SocketFlags.Peek, wait.Token).ConfigureAwait(false);
+                    CheckOperationBudget(budget, ct);
+                    return;
+                }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                {
+                    CheckOperationBudget(budget, ct);
+                    continue;
+                }
+            }
+
             if (_socket.Poll(0, mode))
             {
                 return;

@@ -243,6 +243,24 @@ internal static class NativeSctpWireTests
         var result = receiver.ReceiveAsync(buffer, timeout.Token).AsTask().GetAwaiter().GetResult();
         Require(result.BytesReceived == 1 && buffer[0] == 9 && result.Metadata.StreamId == 2,
             "Cancellation must leave queued data and metadata intact.");
+        using (CancellationTokenSource cancelledWait = new(TimeSpan.FromMilliseconds(30)))
+        {
+            try
+            {
+                receiver.ReceiveAsync(buffer, cancelledWait.Token).AsTask().GetAwaiter().GetResult();
+                throw new InvalidOperationException("Cancellation did not interrupt pending readiness.");
+            }
+            catch (OperationCanceledException) when (cancelledWait.IsCancellationRequested) { }
+        }
+        Require(server.AssociationState == SctpAssociationState.Established,
+            "Cancelling readiness must not fail a healthy association.");
+        Task<SctpReceiveResult> waiting = receiver.ReceiveAsync(buffer, timeout.Token).AsTask();
+        Task.Delay(20, timeout.Token).GetAwaiter().GetResult();
+        sender.SendAsync(new(new byte[] { 8 }, new(3, 7)), timeout.Token).AsTask().GetAwaiter().GetResult();
+        result = waiting.GetAwaiter().GetResult();
+        Require(result.BytesReceived == 1 && buffer[0] == 8 && result.Metadata.StreamId == 3
+            && result.Metadata.PayloadProtocolIdentifier == 7,
+            "Readiness must not consume a record or its metadata, even after cancellation.");
         try
         {
             receiver.ReceiveAsync(buffer, timeout.Token).AsTask().GetAwaiter().GetResult();
