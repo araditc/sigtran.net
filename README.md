@@ -90,6 +90,12 @@ after a [verified guarded diagnostic](docs/evidence/ENDURANCE_POLICY_DIAGNOSTIC_
 Actual start: 2026-11-13 07:18:35 UTC; earliest measured finish:
 2026-11-16 07:18:35 UTC. No interrupted hours are reused; final policy/Kafka
 restoration and independent verification still precede any qualification claim.
+Execution is [laptop/Codex/VPN independent](docs/LAPTOP_INDEPENDENT_ENDURANCE.md)
+while the two Linux VMs and their hypervisor remain powered on. On reconnect,
+`python scripts/inspect-endurance-lab.py --latest` discovers the existing full
+run read-only; management loss never triggers a workload restart. Durable
+server-side progress/results and [agent resume rules](AGENTS.md) remove the
+need to remember a chat's process IDs or launch commands.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

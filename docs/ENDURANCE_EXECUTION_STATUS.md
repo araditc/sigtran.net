@@ -21,6 +21,9 @@ verified sanitized summary can be retrieved after successful stopped supervision
 Both VMs and their hypervisor must remain running without suspend/reboot for
 the entire interval. Desktop/SSH disconnection does not stop host-local jobs;
 VM power loss or an SDK restart cannot produce a qualifying continuation.
+On a later desktop/Codex session, use the [read-only reconnection procedure](LAPTOP_INDEPENDENT_ENDURANCE.md)
+to discover this existing run and its durable server-side state; never relaunch
+the load to regain visibility. The management VPN is not in the inter-VM path.
 
 A local freeze-verification attempt hit workstation disk pressure; its failed
 logs remain retained. After owner-authorized cleanup of stale tool downloads
