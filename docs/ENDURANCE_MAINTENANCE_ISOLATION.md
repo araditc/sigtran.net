@@ -51,3 +51,10 @@ This is a temporary experiment boundary, not a production update policy.
 Production security maintenance must use the deployment/failover procedures
 qualified separately. A new attempt starts from zero for the full 259,200
 seconds; the interrupted six hours are not reused.
+
+The [actual guarded diagnostic](evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json)
+passed independent verification on source `1579bad8b2c731819bfeb063260f23d10a0e427f`:
+360 seconds, 4,532,534 measured successes, three recovered incidents, no
+unexpected/unresolved work, matching fresh PCAP probes and verified restoration
+of Kafka plus removal of both exact-service policy files. A new full run on
+that frozen source is recorded in [execution status](ENDURANCE_EXECUTION_STATUS.md).

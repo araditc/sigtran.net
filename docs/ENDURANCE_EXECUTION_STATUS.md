@@ -6,7 +6,7 @@ must use one frozen committed source, one SDK process and 259,200 actual
 measured seconds. No timer acceleration, concatenation or process restart
 can substitute for this interval.
 
-The first full attempt was interrupted; its replacement is being prepared on the same authorized SDK and peer VMs under
+The first full attempt was interrupted; its replacement is running on the same authorized SDK and peer VMs under
 `completed-map-endurance-v1`, using the explicit LAN socket profile, .NET
 10.0.12/server GC, four maximum workers, concurrency 256, queue capacity 8192
 and the independent normal-priority CPU-3 C peer. Nine scheduled incidents
@@ -27,6 +27,26 @@ logs remain retained. After owner-authorized cleanup of stale tool downloads
 and generated build caches, the complete `execution-freeze-retry` verification
 passed build/tests/API/pack. Sources, credentials and lab evidence were not
 removed. This preparation does not itself qualify the 72-hour interval.
+
+## Active Replacement
+
+| Field | Observed Value |
+| --- | --- |
+| Run identity | `map-endurance-full-20261113-a` |
+| Frozen source | `1579bad8b2c731819bfeb063260f23d10a0e427f` |
+| Actual measurement start UTC | `2026-11-13T07:18:35.937656+00:00` |
+| Earliest measurement finish UTC | `2026-11-16T07:18:35.937656+00:00` |
+| Tehran start / earliest measured finish | 2026-11-13 10:48 / 2026-11-16 10:48 |
+| Continuous SDK PID at start | `2429120` |
+| Installed service policy | Exact owned unit, effective selection verified, auto-reboot disabled, unrelated policy unchanged |
+| Diagnostic | `false` |
+| Decision | Running, not qualified; final verification and restoration remain required |
+
+The [guarded six-minute diagnostic](evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json)
+on the same frozen source completed 4,532,534 measured transactions at
+12,590.37 TPS. All three faults, fresh PCAP probes, resource/accounting replay,
+Kafka restoration and both temporary-policy removals were independently
+verified. It remains a diagnostic, not a 72-hour substitute.
 
 ## Interrupted Attempt
 
@@ -50,7 +70,7 @@ measured deadline. Do not infer a pass from the service being active.
 The [maintenance-isolation report](ENDURANCE_MAINTENANCE_ISOLATION.md)
 records the actual library-update-triggered peer restart, independently verified
 Kafka restoration and the scoped correction. Original failed bytes and exit
-receipts remain unchanged. A fresh uninterrupted 72-hour attempt is required.
+receipts remain unchanged. The replacement above starts from zero.
 
 The final report will record actual source/start/finish, duration, completed
 work/TPS, classified fault terminals, zero unexpected/unresolved work, resource

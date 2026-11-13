@@ -85,6 +85,11 @@ was verified; original failed exits and unexpected terminal outcomes remain
 recorded. Exact-service, self-expiring restart-selection guards protect the
 next attempt without disabling security updates or changing unrelated services.
 Phase 62 remains **not qualified** and requires a fresh full 72-hour run.
+That replacement is now active on source `1579bad8b2c731819bfeb063260f23d10a0e427f`,
+after a [verified guarded diagnostic](docs/evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json).
+Actual start: 2026-11-13 07:18:35 UTC; earliest measured finish:
+2026-11-16 07:18:35 UTC. No interrupted hours are reused; final policy/Kafka
+restoration and independent verification still precede any qualification claim.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from
