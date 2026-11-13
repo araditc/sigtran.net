@@ -62,6 +62,7 @@ jobs:
           python3 scripts/tests/test_endurance_network.py
           python3 scripts/tests/test_endurance_evidence.py
           python3 scripts/tests/test_endurance_host.py
+          python3 scripts/tests/test_endurance_service_policy.py
 
       - name: Test MAP SMS wire evidence verification
         shell: bash

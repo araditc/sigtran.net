@@ -27,6 +27,7 @@ def module(name, filename):
 
 capacity = module('endurance_capacity_contract', 'verify-capacity-evidence.py')
 peer_counters = module('endurance_peer_counters', 'endurance-peer-counters.py')
+service_policy = module('endurance_service_policy', 'endurance-service-policy.py')
 require, read_json, utc_time = capacity.require, capacity.read_json, capacity.utc_time
 POLICY = 'completed-map-endurance-v1'
 SECONDS = 259200
@@ -354,6 +355,22 @@ def supervisor_cleanup(receipt, inventory):
     utc_time(receipt['observedAtUtc'])
 
 
+def restart_policy(value, role, run):
+    """Verify exact-service protection and its removal; no global security-update opt-out is permitted."""
+    require(value['schemaVersion'] == 1 and value['role'] == role
+            and value['unit'] == service_policy.service(value['runId'], role)
+            and value['automaticRebootEnabled'] is False and value['unrelatedRestartPolicyChanged'] is False
+            and value['removed'] is True and value['policyAbsent'] is True, 'Host restart-policy cleanup failed')
+    require(value['snippetSha256'] == hashlib.sha256(service_policy.content(value['runId'], role, value['expiresAtUtc'])).hexdigest(),
+            'Temporary policy content/expiry differs')
+    if value['available']:
+        require(value['protected'] is True and value['effectiveSelectionVerified'] is True,
+                'Installed host service restart selection was not verified')
+    else: require(value['reason'] == 'needrestart-not-installed', 'Missing service policy has no availability observation')
+    require(utc_time(value['installedAtUtc']) <= utc_time(run['StartedAtUtc']) < utc_time(run['FinishedAtUtc'])
+            <= utc_time(value['lastCheckedAtUtc']) <= utc_time(value['expiresAtUtc']), 'Restart-policy lease did not bracket the run')
+
+
 def verify(root, expected_source):
     root = pathlib.Path(root).resolve()
     require(re.fullmatch('[0-9a-f]{40}', expected_source), 'Expected source must be a full commit')
@@ -362,7 +379,7 @@ def verify(root, expected_source):
                 'sdk/resource-observations.bin', 'sdk.exit', 'controller.exit', 'controller-events.jsonl',
                 'peer-result.json', 'peer-counters.bin', 'host-maintenance.json', 'network-cleanup.json',
                 'network-events.jsonl', 'captures.json', 'peer', 'peer.log', 'libsctp.so.1', 'sdk-executable.dll', 'sdk-library.dll',
-                'supervisor-cleanup.json'}
+                'supervisor-cleanup.json', 'sdk-restart-policy.json', 'peer-restart-policy.json'}
     require(required <= hashes.keys() and len(hashes) <= 512, 'Required raw evidence is incomplete')
     for name, expected in hashes.items():
         require(re.fullmatch('[0-9a-f]{64}', expected) and capacity.digest(relative_file(root, name)) == expected, 'Raw artifact hash mismatch: ' + name)
@@ -389,6 +406,9 @@ def verify(root, expected_source):
                 and before[role]['kafkaProcesses'] == after[role]['kafkaProcesses'] == [], 'Host identity/boot/maintenance changed')
     frames = chain(root / 'sdk/checkpoints.jsonl')
     header, samples, faults, terminal, measured = journal_contract(frames, sdk, expected_source)
+    policies = {role: read_json(root / (role + '-restart-policy.json')) for role in ('sdk', 'peer')}
+    require(policies['sdk']['runId'] == policies['peer']['runId'], 'Service protection belongs to different attempts')
+    for role, value in policies.items(): restart_policy(value, role, sdk['Run'])
     require((root / 'peer.log').stat().st_size <= 64 * 1048576, 'Peer log exceeds budget')
     profiles = []
     with (root / 'peer.log').open() as stream:

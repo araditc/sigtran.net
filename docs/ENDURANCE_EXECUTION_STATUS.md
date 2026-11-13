@@ -6,7 +6,7 @@ must use one frozen committed source, one SDK process and 259,200 actual
 measured seconds. No timer acceleration, concatenation or process restart
 can substitute for this interval.
 
-The full attempt is running on the same authorized SDK and peer VMs under
+The first full attempt was interrupted; its replacement is being prepared on the same authorized SDK and peer VMs under
 `completed-map-endurance-v1`, using the explicit LAN socket profile, .NET
 10.0.12/server GC, four maximum workers, concurrency 256, queue capacity 8192
 and the independent normal-priority CPU-3 C peer. Nine scheduled incidents
@@ -28,7 +28,7 @@ and generated build caches, the complete `execution-freeze-retry` verification
 passed build/tests/API/pack. Sources, credentials and lab evidence were not
 removed. This preparation does not itself qualify the 72-hour interval.
 
-## Active Attempt
+## Interrupted Attempt
 
 | Field | Observed Value |
 | --- | --- |
@@ -40,11 +40,17 @@ removed. This preparation does not itself qualify the 72-hour interval.
 | Continuous SDK PID at start | `2413809` |
 | Diagnostic | `false` |
 | Initial observation | 18.26 seconds, 212,584 successes, 256 in flight, peak RSS 96.26 MiB |
-| Decision | Running, not qualified; no final result exists yet |
+| Actual finish UTC | `2026-11-13T06:12:24.4368741+00:00` |
+| Decision | Interrupted/rejected after 23,576.11 seconds; SDK/controller exit 1 |
 
 The earliest finish is not a completion claim. Actual receipt collection,
 host/network restoration, independent replay and final review follow the
 measured deadline. Do not infer a pass from the service being active.
+
+The [maintenance-isolation report](ENDURANCE_MAINTENANCE_ISOLATION.md)
+records the actual library-update-triggered peer restart, independently verified
+Kafka restoration and the scoped correction. Original failed bytes and exit
+receipts remain unchanged. A fresh uninterrupted 72-hour attempt is required.
 
 The final report will record actual source/start/finish, duration, completed
 work/TPS, classified fault terminals, zero unexpected/unresolved work, resource

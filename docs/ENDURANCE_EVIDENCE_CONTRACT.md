@@ -13,6 +13,7 @@ The protected raw root contains `source.tar`, executed `policy.json`,
 `peer-result.json`, `peer-counters.bin`, `host-maintenance.json`,
 `controller-events.jsonl`, `network-events.jsonl`, `network-cleanup.json`,
 `supervisor-cleanup.json`,
+`sdk-restart-policy.json`, `peer-restart-policy.json`,
 `captures.json`, bounded capture/log files, `peer`, `libsctp.so.1`,
 `sdk-executable.dll`, `sdk-library.dll` and a final `sha256.json` inventory.
 Private SSH keys and credentials are outside this evidence root and must not

@@ -242,7 +242,7 @@ class Driver:
                     except RuntimeError:
                         if time.monotonic() >= deadline: raise
                         time.sleep(2)
-                for name in ('peer-result.json', 'peer-counters.bin', 'peer.log', 'host-maintenance.json'): self.export(name)
+                for name in ('peer-result.json', 'peer-counters.bin', 'peer.log', 'host-maintenance.json', 'peer-restart-policy.json'): self.export(name)
                 audit = json.loads((self.raw / 'host-maintenance.json').read_text())
                 if not audit['restorationVerified'] or not audit['fallbackTimerCancelled']: raise RuntimeError('Peer restoration unverified')
                 (self.root / 'peer-restored').touch(exist_ok=False)
@@ -296,7 +296,10 @@ def main():
     args = parser.parse_args()
     if os.geteuid() != 0: raise ValueError('Frozen host-local controller requires root')
     value, root = host.plan(args.plan)
-    if args.action == 'cleanup': cleanup(value, root)
+    policy = host.load_module('sdk_service_policy', 'endurance-service-policy.py')
+    if args.action == 'cleanup':
+        try: cleanup(value, root)
+        finally: policy.release(root)
     elif args.action == 'collect': collect(value, root)
     elif args.action == 'run':
         def interrupt(*_): raise InterruptedError('Host controller interrupted')
@@ -306,6 +309,9 @@ def main():
         import fcntl
         lock = (root.parent.parent / 'sdk-job.lock').open('a')
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        policy.install(value, root, 'sdk')
+        import atexit
+        atexit.register(policy.release, root)
         # A separate process prevents writing a success receipt before the actual driver has exited.
         child = subprocess.Popen(['/usr/bin/python3', '-I', str(HERE / 'run-endurance-lab.py'), 'run', str(root / 'host.json')])
         def forward(sig, _): child.send_signal(sig)
@@ -318,6 +324,8 @@ def main():
             cleanup_verified = True
         finally:
             host.atomic(root / 'work/supervisor-cleanup.json', dict(verified=cleanup_verified, observedAtUtc=host.now()))
+            policy.release(root)
+            (root / 'work/sdk-restart-policy.json').write_bytes((root / 'restart-policy.json').read_bytes())
             collect(value, root)
         if code: raise SystemExit(1)
 

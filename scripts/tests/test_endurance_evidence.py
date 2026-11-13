@@ -26,6 +26,19 @@ def frame(sequence, previous, payload):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_restart_protection_requires_exact_scope_and_verified_removal(self):
+        value = dict(schemaVersion=1, runId='fixture', role='sdk', unit='sigtran-endurance-sdk-fixture.service',
+                     installedAtUtc='2026-01-01T00:00:00+00:00', expiresAtUtc='2026-01-04T00:30:00+00:00',
+                     lastCheckedAtUtc='2026-01-04T00:01:00+00:00', automaticRebootEnabled=False,
+                     unrelatedRestartPolicyChanged=False, available=True, protected=True,
+                     effectiveSelectionVerified=True, removed=True, policyAbsent=True)
+        value['snippetSha256'] = hashlib.sha256(evidence.service_policy.content('fixture', 'sdk', value['expiresAtUtc'])).hexdigest()
+        run = dict(StartedAtUtc='2026-01-01T00:00:01+00:00', FinishedAtUtc='2026-01-04T00:00:01+00:00')
+        evidence.restart_policy(value, 'sdk', run)
+        for key in ('policyAbsent', 'removed', 'effectiveSelectionVerified', 'protected'):
+            with self.assertRaises(ValueError): evidence.restart_policy(dict(value, **{key: False}), 'sdk', run)
+        with self.assertRaises(ValueError): evidence.restart_policy(dict(value, unrelatedRestartPolicyChanged=True), 'sdk', run)
+
     def test_successful_child_cannot_substitute_for_supervisor_cleanup(self):
         good = dict(verified=True, observedAtUtc='2026-01-01T00:00:00+00:00')
         evidence.supervisor_cleanup(good, dict(supervisorCleanupVerified=True))

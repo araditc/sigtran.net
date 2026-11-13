@@ -41,7 +41,7 @@ on the peer for this entire 72-hour test, with verified restoration on exit.
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Complete; corruption/release-boundary tests and final build/test/API/pack passed |
 | 8 | Durable execution, watchdogs and authenticated host control | Complete; safety tests and final build/test/API/pack passed; real diagnostic is unit 9 |
 | 9 | Real two-host short diagnostic of all incident families | Complete; all three faults, five fresh PCAP pairs each, exact accounting/resources and automatic restoration independently verified; failed attempts retained |
-| 10 | Actual 72-hour run, restoration, verification and exit report | [Execution status](ENDURANCE_EXECUTION_STATUS.md); actual 259200-second attempt running from frozen source, not yet qualified |
+| 10 | Actual 72-hour run, restoration, verification and exit report | [Execution status](ENDURANCE_EXECUTION_STATUS.md); first long attempt interrupted/rejected; bounded maintenance-isolation correction and fresh run pending |
 
 Each unit includes code, behavioral tests, standard code documentation,
 docs/README updates, build/test/API/pack and its own commit/push. Runtime

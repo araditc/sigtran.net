@@ -243,6 +243,7 @@ class Peer:
                       librarySha256=self.value['librarySha256'], forcedKills=self.forced, counters=counters,
                       actions=self.actions, generations=self.generations)
         atomic(self.root / 'peer-result.json', result)
+        load_module('peer_service_policy', 'endurance-service-policy.py').release(self.root)
         self.finished = True
         return dict(result=result, maintenance=audit)
 
@@ -300,7 +301,8 @@ class Peer:
             return self.finish()
         if action == 'read':
             names = {'peer-counters.bin': self.data / 'peer-counters.bin', 'peer.log': self.data / 'peer.log',
-                     'peer-result.json': self.root / 'peer-result.json', 'host-maintenance.json': self.root / 'host-maintenance.json'}
+                     'peer-result.json': self.root / 'peer-result.json', 'host-maintenance.json': self.root / 'host-maintenance.json',
+                     'peer-restart-policy.json': self.root / 'restart-policy.json'}
             name, offset = request.get('name'), request.get('offset')
             if not self.finished or name not in names or type(offset) is not int or offset < 0: raise ValueError('Invalid export')
             path = names[name]
@@ -370,11 +372,17 @@ def main():
     if args.action == 'bridge': bridge(args.path); return
     if os.geteuid() != 0: raise ValueError('Protected host operation requires root')
     value, root = plan(args.path)
-    if args.action == 'serve': serve(value, root)
-    elif args.action == 'restore': restore(value, root)
+    policy = load_module('host_service_policy', 'endurance-service-policy.py')
+    if args.action == 'serve':
+        policy.install(value, root, 'peer')
+        try: serve(value, root)
+        finally: policy.release(root)
+    elif args.action == 'restore':
+        try: restore(value, root)
+        finally: policy.release(root)
     else:
         while True:
-            try: restore(value, root); return
+            try: restore(value, root); policy.release(root); return
             except Exception: time.sleep(5)
 
 
