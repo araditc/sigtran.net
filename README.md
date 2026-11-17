@@ -83,6 +83,8 @@ remains `PENDING_INDEPENDENT_REVIEW`. Only reviewer designation and genuine
 [independent approval](docs/ENDURANCE_REVIEW_REQUEST.md) remain open for that
 package. CI rejects stale/self approvals and risk replay. Phase 62 is not yet
 closed; neither the original failed qualification nor stable GO changes.
+The [independent-review packet](docs/reviews/ENDURANCE_EVIDENCE_REVIEW.md)
+includes the implementation comparison and evidence checklist for the review PR.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

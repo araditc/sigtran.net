@@ -1,10 +1,12 @@
 # Independent Evidence Review Request
 
-Status: **OPEN / reviewer not designated / no approval requested or received**.
+Status: **OPEN / PR preparation in progress / reviewer not designated / no approval received**.
 The owner accepted the seven-reading risk; this document is a handoff, not a
 review receipt. Codex must not approve its own implementation or fill in a
 reviewer identity. The owner-designated reviewer should have relevant .NET
 runtime and signalling reliability experience and access to private originals.
+The [review packet](reviews/ENDURANCE_EVIDENCE_REVIEW.md) includes the exact
+implementation range, private-evidence requirements and reviewer checklist.
 
 ## Materials And Questions
 
