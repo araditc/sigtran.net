@@ -105,6 +105,39 @@ one SDK PID and zero lost events. This validates the actual pipeline, not
 capacity, historical causation or the subsequent windowed collector. A fresh
 smoke must validate windowed collection before the hour is launched.
 
+Windowed smoke `local-resource-smoke-20261117-d`, frozen source
+`fb4c7159e74b31f35db6004596b469ba593fe442`, passed ten measured seconds:
+86,294 in-window successes plus 256 drain successes, no failures/pending work,
+and exact independent peer totals of 86,550. All four children exited zero,
+18 original hashes matched, and the owned restart exclusion was absent.
+The five-second trace independently decoded 18 GC starts/stops on SDK PID
+2712819 with zero lost events. Binary/resource replay passed all 11 rows;
+there were no negative readings or retries.
+
+## Approved Hour
+
+`local-resource-hour-20261117-a` was launched from that same frozen source,
+using SDK PID 2715299, .NET 10.0.12/server GC and four maximum workers.
+Actual measurement started `2026-11-17T10:23:54.6275857+00:00` (13:53:54 Tehran).
+The earliest measured finish is 11:23:54 UTC (14:53:54 Tehran), followed by
+drain and collection. This record describes a **running diagnostic**, not a
+successful hour. Initial trace collection exited zero. Its own system unit,
+deadline, exact-service protection and cleanup are server-local. No Kafka
+host is used. Later desktop documentation/verifier edits do not change the
+frozen files already executing on the SDK host.
+
+`scripts/verify-local-resource-evidence.py` separately replays the completed
+hash inventory, journal, exact admission/terminal/peer totals, binary resource
+rows, every JSON raw attempt and GC bracket, and scheduled collector identities
+and exits. It deliberately reports trace contents as not independently decoded:
+run `TraceAnalysis --gc` on analysis copies for that separate check. PCAP payload
+decoding, frozen input hashes/source archive and host cleanup also require
+separate verification. A local execution pass never closes the endurance gate.
+
+```text
+python scripts/verify-local-resource-evidence.py PRIVATE_ORIGINAL_ROOT --source-commit FULL_SHA --seconds 3600
+```
+
 The original full run remains rejected, Phase 62 remains open and no exception,
 stable tag, package publication or production-readiness claim is authorized.
 

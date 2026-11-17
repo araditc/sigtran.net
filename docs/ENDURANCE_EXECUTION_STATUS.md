@@ -105,3 +105,7 @@ The owner next approved a [one-hour local real-stack diagnostic](LOCAL_RESOURCE_
 Its separately owned SDK-host loopback workload does not resume this full run,
 contact the Kafka machine for traffic, or imply a Phase 62 pass. Preparation
 and eventual actual diagnostic results are recorded separately.
+After two successful actual-stack smokes, `local-resource-hour-20261117-a`
+started on source `fb4c715` at 2026-11-17 10:23:54 UTC. Its earliest measurement
+finish is 11:23:54 UTC. That separate diagnostic is running; no full endurance
+workload is active and no diagnostic outcome is implied by its launch.

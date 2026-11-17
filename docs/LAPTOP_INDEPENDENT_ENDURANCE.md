@@ -6,6 +6,13 @@ No workload is currently active; original measured source and failed receipts
 remain unchanged. No SDK process, peer or workload was restarted to add the
 read-only reconnection tooling described here.
 
+The later [local resource diagnostic](LOCAL_RESOURCE_DIAGNOSTIC.md) is a
+different, separately owned one-hour job (`local-resource-hour-20261117-a`),
+not an endurance continuation. Its status uses
+`start-local-resource-diagnostic.py --run-id local-resource-hour-20261117-a --status`.
+The no-active-workload statement above refers to the retained endurance run,
+not that diagnostic. Both use server-local system-service ownership.
+
 ## Server Ownership
 
 Both load/control jobs are Linux **system** services launched through

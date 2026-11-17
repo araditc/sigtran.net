@@ -66,6 +66,7 @@ jobs:
           python3 scripts/tests/test_endurance_status.py
           python3 scripts/tests/test_endurance_resources.py
           python3 scripts/tests/test_local_resource_diagnostic.py
+          python3 scripts/tests/test_local_resource_evidence.py
 
       - name: Build standalone managed-memory diagnostic
         run: dotnet build eng/Sigtran.NET.ResourceProbe --configuration Release --nologo
