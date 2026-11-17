@@ -5,6 +5,7 @@ import pathlib
 import subprocess
 import unittest
 from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 path = pathlib.Path(__file__).resolve().parents[1] / 'run-local-resource-diagnostic.py'
 spec = importlib.util.spec_from_file_location('local_resource_driver_test', path)
@@ -42,6 +43,14 @@ class LocalResourceTests(unittest.TestCase):
         self.assertIn("'--property=KillMode=control-group'", launcher)
         self.assertNotIn('MemoryMax=', launcher)
         self.assertNotIn('SIGTRAN_LAB_PEER_PASSWORD', launcher)
+
+    def test_sftp_upload_requires_write_and_exclusive_creation(self):
+        spec = importlib.util.spec_from_file_location('local_resource_launcher_test', path.with_name('start-local-resource-diagnostic.py'))
+        launcher = importlib.util.module_from_spec(spec); spec.loader.exec_module(launcher)
+        sftp = MagicMock()
+        launcher.upload_new(sftp, '/private/new.bin', b'input')
+        sftp.open.assert_called_once_with('/private/new.bin', 'wx')
+        sftp.open.return_value.__enter__.return_value.write.assert_called_once_with(b'input')
 
 
 if __name__ == '__main__': unittest.main()

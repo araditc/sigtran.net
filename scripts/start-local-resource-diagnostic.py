@@ -2,6 +2,7 @@
 """Freeze/launch or read one local SDK diagnostic; never operate the Kafka host or restart a retained run."""
 import argparse
 import datetime
+import errno
 import hashlib
 import importlib.util
 import io
@@ -38,6 +39,11 @@ def command(client, args, password=None, timeout=120):
     output, error = stdout.read().decode(), stderr.read().decode()
     if stdout.channel.recv_exit_status() != 0: raise RuntimeError(error or output)
     return output
+
+
+def upload_new(sftp, path, data):
+    """Paramiko requires write plus exclusive creation; bare x does not grant write access."""
+    with sftp.open(path, 'wx') as stream: stream.write(data)
 
 
 def main():
@@ -88,10 +94,10 @@ def main():
             with sftp.open('/opt/sigtran-endurance/runs/' + prior['runId'] + '/libsctp.so.1', 'rb') as stream:
                 inputs['sdk-build/libsctp.so.1'] = stream.read()
             for name, data in inputs.items():
-                with sftp.open(remote + '/' + name, 'x') as stream: stream.write(data)
+                upload_new(sftp, remote + '/' + name, data)
             config = dict(sourceCommit=source, durationSeconds=args.seconds, port=args.port,
                           inputs={name: hashlib.sha256(data).hexdigest() for name, data in inputs.items()})
-            with sftp.open(remote + '/config.json', 'x') as stream: stream.write(json.dumps(config))
+            upload_new(sftp, remote + '/config.json', json.dumps(config))
         expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=args.seconds + 600)
         command(client, ['/usr/bin/python3', '-c', INSTALL, remote, helper,
                          json.dumps(dict(runId=args.run_id, expiresAtUtc=expiry.isoformat()))], password)
@@ -107,10 +113,16 @@ def main():
             json.dump(dict(runId=args.run_id, sourceCommit=source, unit=unit, remoteRoot=remote,
                            diagnostic=True, qualificationPassed=False, config=config), stream, indent=2); stream.write('\n')
         print(command(client, ['python3', '-c', STATUS, remote], timeout=30))
-    except (OSError, paramiko.SSHException, EOFError) as error:
+    except (paramiko.SSHException, EOFError, TimeoutError, ConnectionError) as error:
         print(json.dumps(dict(management='unreachable', executionState='unknown', readOnly=args.status,
                               qualificationPassed=False, workloadRestarted=False, error=type(error).__name__)))
         raise SystemExit(2)
+    except OSError as error:
+        if error.errno in (errno.ECONNREFUSED, errno.ECONNRESET, errno.ENETUNREACH, errno.EHOSTUNREACH, errno.ETIMEDOUT):
+            print(json.dumps(dict(management='unreachable', executionState='unknown', readOnly=args.status,
+                                  qualificationPassed=False, workloadRestarted=False, error=type(error).__name__)))
+            raise SystemExit(2)
+        raise
     except BaseException:
         # Do not release protection or restart work after a possibly successful launch/connection loss.
         if installed: print('Launch may have reached the server; inspect the same run identity before any further action.')

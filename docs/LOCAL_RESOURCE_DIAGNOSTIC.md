@@ -72,6 +72,13 @@ the approved one-hour session. Actual identities, timestamps, exits, accounting,
 raw negative attempts and decoded trace results will be appended after execution.
 No result is implied by this preparation document.
 
+Preparation attempt `local-resource-smoke-20261117-a` failed during exclusive
+SFTP upload before any system unit, peer, capture or workload started. Read-only
+inspection found only a zero-byte first DLL and no unit/trace. The launcher
+now requests Paramiko write-plus-exclusive mode (`wx`), with a regression test;
+file-I/O errors are no longer misreported as management-network outages. The
+failed directory is retained; a new identity is required for another attempt.
+
 The original full run remains rejected, Phase 62 remains open and no exception,
 stable tag, package publication or production-readiness claim is authorized.
 
