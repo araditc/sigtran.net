@@ -8,6 +8,13 @@ seven negative managed-memory observations. See the
 Kafka restoration and wire/accounting checks passed; they do not override the
 failed resource gate. There is no active run and no replacement was launched.
 
+The owner has since explicitly accepted the risk of those exact seven readings.
+The six-unit [scoped acceptance implementation](ENDURANCE_ACCEPTANCE.md) is
+delivered without another load run. Its separate assessment is
+`PENDING_INDEPENDENT_REVIEW`: reviewer designation/authenticated approval remain
+open. Owner acceptance alone does not close unit 10, change failed receipts,
+prove the cause or authorize stable promotion. Original JSON reports are retained.
+
 The verified six-minute
 [diagnostic](ENDURANCE_DIAGNOSTICS.md) closes only unit 9. The full attempt
 must use one frozen committed source, one SDK process and 259,200 actual

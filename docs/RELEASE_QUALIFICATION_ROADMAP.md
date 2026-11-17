@@ -69,7 +69,11 @@ pending valid resource evidence. The owner requested a
 [limited sampling investigation](MANAGED_MEMORY_SAMPLING.md) without a fresh
 72-hour run: defensive audited retries and short standalone diagnostics do
 not retrospectively qualify the old stream. A no-repeat acceptance exception
-would require explicit review/approval; none has been granted or inferred.
+would require explicit review/approval. The owner has now accepted this exact
+seven-reading risk and the [six-unit acceptance implementation](ENDURANCE_ACCEPTANCE.md)
+is delivered. Reviewer designation and authenticated independent approval are
+still open; the assessment is `PENDING_INDEPENDENT_REVIEW`, not a final exception
+or Phase 62 closure. No new 72-hour run was launched.
 Phases 63-65 and final package/source/scope-bound trusted release qualification
 remain mandatory; a source-build pass does not close the stable release gates.
 

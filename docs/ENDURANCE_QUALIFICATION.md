@@ -4,6 +4,10 @@ Phase 62 is **not qualified**. Policy: `completed-map-endurance-v1`.
 The [full-duration attempt](ENDURANCE_COMPLETION_20261117.md) completed 72 hours
 and restored Kafka, but seven invalid managed-memory observations caused the
 original independent verifier to reject it. No live run remains active.
+The owner accepted the exact seven-reading risk in the subsequent
+[six-unit acceptance package](ENDURANCE_ACCEPTANCE.md). Its implementation is
+delivered, but independent review remains open: `PENDING_INDEPENDENT_REVIEW`.
+There is no final exception, technical pass or Phase 62 closure yet.
 The [Phase 61 capacity pass](CAPACITY_QUALIFICATION_EXIT.md) is preserved and
 does not substitute for three real days of continuous execution.
 

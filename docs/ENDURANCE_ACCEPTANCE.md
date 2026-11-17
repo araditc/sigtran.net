@@ -23,8 +23,8 @@ An unchanged source tree is not an identical final package attestation.
 | 2 | Exact-scope owner risk acceptance | Complete; build/test/API/pack and commit/push passed |
 | 3 | Independent review contract and request | Complete; build/test/API/pack and commit/push passed; human approval OPEN |
 | 4 | Separate fail-closed administrative assessment | Complete; build/test/API/pack and commit/push passed; actual status pending |
-| 5 | Tamper rejection and CI boundaries | Implemented; synthetic API rejection tests and offline CI guard added |
-| 6 | Final report, docs and handoff | Pending |
+| 5 | Tamper rejection and CI boundaries | Complete; focused tests, build/test/API/pack and commit/push passed |
+| 6 | Final report, docs and handoff | Complete implementation; independent human approval remains OPEN |
 
 The strict endurance/release policies are not changed by this work. No VM load,
 Kafka control, package publication or stable promotion is authorized here.
@@ -67,3 +67,41 @@ condition blocks acceptance, and erasing it cannot revive an old approval.
 It is a manual incident register, not an automatic production anomaly detector.
 CI publishes a fresh **pending** assessment and exercises synthetic review
 transcripts; those fixtures are never treated as actual human approval.
+The case scope and owner decision must also already be present on the PR base;
+reviewer approval alone cannot install a broader owner risk decision.
+
+## Delivery And Open Approval
+
+All six implementation units are delivered. Their private verification roots
+are `artifacts/qualification/phase-62/evidence-acceptance/units/01..06`, with
+the final reruns for units 5 and 6 under `evidence-acceptance-final/units/05..06`. Failed/earlier
+receipts remain retained. Release build, SDK/qualification/trace tests, API
+comparison and pack are required for each commit; no SDK runtime/API changes
+or release-policy edits are part of this package.
+
+The [machine-readable handoff](evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json)
+matches a fresh assessment and is checked by CI. Its state is
+`PENDING_INDEPENDENT_REVIEW`, owner acceptance true, final exception/closure
+false. A separate read-only replay rechecked all 94 original hashes and all
+259,201 legacy observations; strict replay still rejected the same first
+negative value. The retained one-hour stream replayed all 3,601 rows. These
+checks do not manufacture independent human approval or a new passing run.
+
+```text
+python scripts/assess-evidence-deviation.py --check-report docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json
+python scripts/assess-evidence-deviation.py --output artifacts/qualification/evidence-deviations/NEW_RECEIPT.json
+```
+
+Only reviewer designation and a real authenticated independent review remain
+open for this acceptance package. Use a full-history checkout. No PR/reviewer
+approval has been fabricated or requested on the owner's behalf. If review is
+later accepted, the only allowed closure is `CLOSED_WITH_ACCEPTED_DEVIATION`;
+the original run still fails strict qualification. Phase 62 is **not yet closed**.
+Phases 63-65, final package-bound evidence and all stable gates remain separate.
+
+The final local verification includes 555 SDK checks, 40 qualification checks,
+both trace-analysis self-tests, the unchanged 2,308-member public API and pack.
+There are 21 focused acceptance tests; the 43-test endurance suite has two
+Linux-only skips on Windows. Separate original/diagnostic replays preserve
+all raw bytes. The actual GitHub workflow, not synthetic review fixtures,
+determines CI success; it does not supply the missing human review.

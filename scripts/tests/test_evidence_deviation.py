@@ -220,6 +220,15 @@ class AuthenticatedReviewTests(unittest.TestCase):
 
 
 class ReportOwnershipTests(unittest.TestCase):
+    def test_public_handoff_matches_fresh_pending_assessment(self):
+        path = ROOT / 'docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json'
+        value = assessment.check_report(path, assessment.assess())
+        self.assertTrue(value['assessment']['ownerRiskAccepted'])
+        self.assertFalse(value['assessment']['administrativeClosureApproved'])
+        altered = copy.deepcopy(value); altered['assessment']['status'] = 'CLOSED_WITH_ACCEPTED_DEVIATION'
+        with patch.object(assessment.contract.evidence, 'read_json', return_value=altered):
+            with self.assertRaises(ValueError): assessment.check_report(path, value['assessment'])
+
     def test_reports_cannot_overwrite_originals_or_existing_receipts(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory).resolve()

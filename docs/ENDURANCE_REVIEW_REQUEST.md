@@ -41,6 +41,8 @@ Disposition: ACCEPT_SCOPED_DEVIATION
 The reviewer must provide an actual rationale (at least 40 characters beyond
 those binding lines) in the same review. The allowlist must already exist on
 the PR base branch; a case PR cannot install its own reviewer trust. Approval
+also requires the owner decision and dossier already admitted on that base;
+the review PR cannot broaden the owner's accepted scope. Approval
 expires for assessment after 30 days; changed scope or recurring anomalies
 require re-review. No PR is created, no reviewer is impersonated and no new
 load is launched by preparing this request. See the

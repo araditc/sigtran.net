@@ -24,6 +24,7 @@ def snapshot(root):
 
 
 def bundle_digest(files):
+    """Ignore inventory ordering without normalizing the referenced decision bytes."""
     return hashlib.sha256(json.dumps(files, sort_keys=True, separators=(',', ':')).encode('ascii')).hexdigest()
 
 
@@ -42,6 +43,7 @@ def github_read(endpoint):
 
 
 def content_digest(api, repository, path, commit):
+    """Verify bounded remote decision bytes without extracting files or trusting a JSON success flag."""
     value = api('repos/' + repository + '/contents/' + path + '?ref=' + commit)
     require(value['type'] == 'file' and value['encoding'] == 'base64' and 0 < value['size'] <= 32768
             and value['path'] == path and isinstance(value['content'], str) and len(value['content']) <= 65536,
@@ -61,8 +63,9 @@ def live_review(material, files, digest, case_id, now, expected_head, api=github
             and pr['draft'] is False and (pr['state'] == 'open' or (pr['state'] == 'closed' and pr['merged'] is True))
             and re.fullmatch('[0-9a-f]{40}', head) and re.fullmatch('[0-9a-f]{40}', base)
             and head == expected_head, 'Review PR identity/state differs')
-    require(content_digest(api, repository, contract.REVIEW_POLICY, base) == files[contract.REVIEW_POLICY],
-            'Reviewer roster was not already admitted on base branch')
+    for path in (contract.CASE, contract.OWNER, contract.REVIEW_POLICY):
+        require(content_digest(api, repository, path, base) == files[path],
+                'Case scope, owner authority and reviewer trust must already be admitted on base branch')
     for path, expected in files.items():
         require(content_digest(api, repository, path, head) == expected, 'Reviewed head contains different case bytes')
     allowed = {name.lower() for name in policy['allowedReviewers']}
@@ -168,11 +171,28 @@ def write_assessment(path, report, root=contract.ROOT):
     with output.open('x', encoding='utf-8', newline='\n') as stream: json.dump(report, stream, indent=2); stream.write('\n')
 
 
+def check_report(path, current):
+    """Detect stale or promoted public handoff metadata by comparing it with a fresh assessment."""
+    value = contract.evidence.read_json(path)
+    require(set(value) == {'schemaVersion', 'recordedOn', 'assessment', 'delivery', 'remaining', 'limitations'}
+            and value['schemaVersion'] == 1 and value['assessment'] == current, 'Saved handoff differs from current assessment')
+    delivery = value['delivery']
+    require(delivery['implementationUnits'] == 6 and delivery['independentHumanApproval'] == 'open'
+            and all(delivery[key] is False for key in ('originalRawFilesModified', 'releasePolicyModified', 'measurementRepeated')),
+            'Handoff cannot claim review, evidence repair or release-policy changes')
+    require(value['remaining'] == ['independent-reviewer-designation', 'authenticated-independent-review'],
+            'Independent review must remain an explicit open item')
+    return value
+
+
 def main():
+    """Keep pending review a nonzero exit, including when a retained report matches current facts."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify-review', action='store_true', help='Read actual GitHub review state; never submit a review.')
     parser.add_argument('--output', type=pathlib.Path)
+    parser.add_argument('--check-report', type=pathlib.Path, help='Check retained public handoff against a fresh assessment.')
     args = parser.parse_args(); report = assess(verify_review=args.verify_review)
+    if args.check_report: check_report(args.check_report, report)
     if args.output: write_assessment(args.output, report)
     print(json.dumps(report, indent=2))
     return 0 if report['administrativeClosureApproved'] else (3 if report['status'] == 'PENDING_INDEPENDENT_REVIEW' else 1)

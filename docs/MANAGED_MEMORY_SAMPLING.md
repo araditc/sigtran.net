@@ -122,7 +122,10 @@ does **not** justify a full pass under the unchanged original acceptance gate.
 
 To avoid repeating the full measurement, an explicitly approved, independently
 reviewed acceptance exception would have to cover those historical missing
-managed observations. None was requested, inferred or granted here. Otherwise
+managed observations. The subsequent owner-authorized
+[acceptance package](ENDURANCE_ACCEPTANCE.md) records explicit risk acceptance
+and completed tooling, but independent human approval remains open; no final
+exception has been granted or inferred. Otherwise
 new qualifying evidence remains necessary after the sampling investigation
 and integration diagnostic; this is not authorization to start another run.
 

@@ -105,6 +105,12 @@ instruction to restart measurement or Kafka maintenance.
 No new Kafka maintenance window or 72-hour workload was started in this review.
 NuGet publication, stable tags and phases 63-65 remain outside this result.
 
+The later owner-authorized [acceptance package](ENDURANCE_ACCEPTANCE.md) follows
+a separate no-repeat administrative path. Its six implementation units are
+delivered and owner risk is accepted, but reviewer designation/authenticated
+independent approval remain open. It does not edit this run's failed verdict
+or qualify it under the original policy. The no-exception path above is unchanged.
+
 ## Follow-Up Verification
 
 The failure-detection correction passed the complete local verification group

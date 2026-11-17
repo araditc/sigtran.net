@@ -78,7 +78,8 @@ jobs:
           import json, pathlib, subprocess
           path = pathlib.Path('artifacts/qualification/evidence-deviations/ci-assessment.json')
           path.parent.mkdir(parents=True, exist_ok=True)
-          result = subprocess.run(['python3', 'scripts/assess-evidence-deviation.py', '--output', str(path)], check=False)
+          result = subprocess.run(['python3', 'scripts/assess-evidence-deviation.py', '--output', str(path),
+              '--check-report', 'docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json'], check=False)
           assert result.returncode == 3, 'Offline owner acceptance must remain pending'
           value = json.loads(path.read_text())
           assert value['status'] == 'PENDING_INDEPENDENT_REVIEW' and value['ownerRiskAccepted']

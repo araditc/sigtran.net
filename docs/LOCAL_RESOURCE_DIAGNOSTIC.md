@@ -179,6 +179,11 @@ unchanged gate, Phase 62 remains open. Avoiding a fresh qualifying measurement
 would require a separate independently reviewed and explicitly approved
 acceptance exception; none was granted or inferred. No new 72-hour run started.
 
+The later [scoped acceptance package](ENDURANCE_ACCEPTANCE.md) records the
+owner's explicit acceptance of the seven-reading risk. Its six implementation
+units are delivered; independent human review remains open. That later decision
+does not change this diagnostic's non-reproduction result or original hashes.
+
 ## Engineering Checks
 
 The `phase-62/local-session-completion/units/10` verification passed Release
