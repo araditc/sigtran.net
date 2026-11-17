@@ -13,6 +13,10 @@ driver = importlib.util.module_from_spec(spec); spec.loader.exec_module(driver)
 
 
 class LocalResourceTests(unittest.TestCase):
+    def test_gc_windows_are_bounded_and_distinct_from_the_full_workload_duration(self):
+        self.assertEqual(driver.trace_offsets(3600), [2, 1800, 3540])
+        self.assertEqual(driver.trace_offsets(10), [2])
+        self.assertEqual(driver.trace_offsets(60), [2, 30])
     def test_ready_signal_matches_the_owned_peer_text_not_assumed_json(self):
         self.assertTrue(driver.listening(b'2026-11-17T10:00:26Z event=listening endpoint=127.0.0.1:33462\n', 33462))
         self.assertFalse(driver.listening(b'2026-11-17T10:00:26Z event=listening endpoint=127.0.0.1:33461\n', 33462))

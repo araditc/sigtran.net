@@ -23,7 +23,8 @@ result=dict(runId=r.name,checkedAtUtc=datetime.datetime.now(datetime.timezone.ut
 for name,key in [('work/sdk/live-status.json','live'),('work/controller-result.json','controller'),('work/sdk/sdk.json','sdk')]:
  p=r/name
  if p.is_file() and p.stat().st_size<=2097152:result[key]=json.loads(p.read_text())
-result['traceBytes']=(r/'work/gc.nettrace').stat().st_size if (r/'work/gc.nettrace').is_file() else 0
+result['traceFiles']=[dict(name=p.name,bytes=p.stat().st_size) for p in sorted((r/'work').glob('*.nettrace'))]
+result['traceBytes']=sum(p['bytes'] for p in result['traceFiles'])
 p=r/'restart-policy.json'
 try:
  if p.is_file():result['restartPolicy']=json.loads(p.read_text())

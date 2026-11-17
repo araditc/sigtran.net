@@ -27,12 +27,19 @@ bracket the observation; they do not claim an atomic runtime snapshot.
 Every second's JSON line retains the full sample and protocol/queue snapshot;
 all raw attempts remain in `SGENOBS2`. JSON observations are bounded to 16 MiB.
 
-The SDK process alone enables startup EventPipe through
-`DOTNET_EnableEventPipe=1`, provider `Microsoft-Windows-DotNETRuntime:0x1:4`,
-`DOTNET_EventPipeCircularMB=20` (hexadecimal 32 MiB), output streaming and a
-private trace path. No global environment, forced GC or native/kernel tracing
-privilege is used. See [Microsoft's EventPipe configuration](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/eventpipe).
-The trace is capped at 256 MiB and total retained artifacts at 512 MiB; low
+GC context and raw managed readings cover the whole workload, but EventPipe
+traces cover **bounded windows**, not the whole hour. The existing private
+`dotnet-trace` collector attaches to the owned SDK PID as the same user. Its
+version and executable hash are retained. Three 20-second windows are requested
+approximately 2, 1800 and 3540 seconds after SDK spawn; a ten-second smoke uses
+one five-second window. These offsets are not the SDK measurement clock.
+The provider is `Microsoft-Windows-DotNETRuntime:0x1:4` with a 32 MiB buffer.
+At most two additional post-negative-reading windows may be requested if enough
+time remains; these cannot recover events preceding attachment. Window times,
+PIDs, actual collector exits and observed negative readings are retained.
+No global environment, forced GC or native/kernel tracing privilege is used.
+See [Microsoft's collector documentation](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-trace).
+Each trace has a 32 MiB file budget and total artifacts a 512 MiB budget; low
 free space or a breached budget stops only owned diagnostic processes.
 
 `Sigtran.NET.TraceAnalysis --gc ANALYSIS_COPY.nettrace` independently decodes
@@ -87,6 +94,16 @@ are retained. Cleanup removed its exact restart exclusion. Ready parsing now
 has a regression fixture from the actual text. Read-only status also tolerates
 a root-private cleanup receipt and reports independently observable guard-file
 absence rather than failing or interpreting permission denial as removal.
+
+Smoke `local-resource-smoke-20261117-c`, source `fa4d410`, completed ten measured
+seconds with 70,785 in-window successes and 256 separately reported drain
+successes. All 71,041 requests completed; no unexpected failures or pending
+requests remained. SDK, independent peer and capture exited zero, and the
+owned restart exclusion was removed. Fifteen original artifact hashes were
+verified on retrieval. Its startup EventPipe trace decoded 32 GC starts/stops,
+one SDK PID and zero lost events. This validates the actual pipeline, not
+capacity, historical causation or the subsequent windowed collector. A fresh
+smoke must validate windowed collection before the hour is launched.
 
 The original full run remains rejected, Phase 62 remains open and no exception,
 stable tag, package publication or production-readiness claim is authorized.

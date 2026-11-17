@@ -67,7 +67,9 @@ Kafka maintenance was started; avoiding a fresh qualification would require
 an explicit reviewed acceptance exception, which has not been granted.
 The approved [local real-stack resource diagnostic](docs/LOCAL_RESOURCE_DIAGNOSTIC.md)
 adds a separate loopback-only, at-most-one-hour SDK/independent-peer session
-with raw GC context and bounded EventPipe capture. It does not use the Kafka
+with continuous raw GC context and short, separately timed EventPipe windows.
+The ten-second real-stack smoke passed; windowed capture is validated separately.
+It does not use the Kafka
 machine, repeat 72 hours, or promote the original rejected evidence.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
