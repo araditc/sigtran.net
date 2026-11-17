@@ -100,3 +100,8 @@ implemented for future sampling; historical values remain unrecoverable and
 strict replay still fails. No acceptance exception, fresh endurance run or
 Kafka maintenance was started. Unit 10 remains open; phases 63-65 remain
 separate, and no stable release or NuGet publication is authorized here.
+
+The owner next approved a [one-hour local real-stack diagnostic](LOCAL_RESOURCE_DIAGNOSTIC.md).
+Its separately owned SDK-host loopback workload does not resume this full run,
+contact the Kafka machine for traffic, or imply a Phase 62 pass. Preparation
+and eventual actual diagnostic results are recorded separately.

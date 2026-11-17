@@ -23,11 +23,14 @@ internal sealed class EnduranceResourceProbe : IDisposable
     {
         _process.Refresh();
         GCMemoryInfo info = GC.GetGCMemoryInfo();
+        int gen0Before = GC.CollectionCount(0);
         ManagedMemoryReading managed = ManagedMemorySampler.Read();
+        GCMemoryInfo after = GC.GetGCMemoryInfo();
         return new(_process.WorkingSet64, _process.PeakWorkingSet64, managed.Value, info.HeapSizeBytes,
             info.FragmentedBytes, GC.GetTotalAllocatedBytes(false), _process.TotalProcessorTime.TotalSeconds,
             GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2),
-            ThreadPool.ThreadCount, ThreadPool.PendingWorkItemCount, ThreadPool.CompletedWorkItemCount, managed);
+            ThreadPool.ThreadCount, ThreadPool.PendingWorkItemCount, ThreadPool.CompletedWorkItemCount, managed,
+            new(info.Index, after.Index, gen0Before, GC.CollectionCount(0)));
     }
     public void Dispose() => _process.Dispose();
 }
@@ -36,7 +39,10 @@ internal sealed class EnduranceResourceProbe : IDisposable
 internal sealed record EnduranceResources(long WorkingSetBytes, long PeakWorkingSetBytes, long ManagedBytes,
     long HeapSizeBytes, long FragmentedBytes, long AllocatedBytes, double ProcessCpuSeconds,
     int Gen0, int Gen1, int Gen2, int ThreadPoolThreads, long ThreadPoolPending, long ThreadPoolCompleted,
-    ManagedMemoryReading? ManagedMemory = null);
+    ManagedMemoryReading? ManagedMemory = null, GcObservationContext? GcContext = null);
+
+/// <summary>Brackets a managed reading with GC identities; these separate reads are not an atomic GC snapshot.</summary>
+internal sealed record GcObservationContext(long BeforeIndex, long AfterIndex, int Gen0Before, int Gen0After);
 
 /// <summary>One consistent ledger snapshot with an actual monotonic sample timestamp.</summary>
 internal sealed record EnduranceSample(DateTimeOffset StartedAtUtc, double ElapsedSeconds, EnduranceCounts Counts, EnduranceResources Resources);

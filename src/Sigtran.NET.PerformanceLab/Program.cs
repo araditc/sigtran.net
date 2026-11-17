@@ -15,6 +15,8 @@ if (args.Length > 0 && args[0] == "capacity")
     return await CapacityApplication.RunAsync(args[1..]);
 if (args.Length > 0 && args[0] == "endurance")
     return await EnduranceApplication.RunAsync(args[1..]);
+if (args.Length > 0 && args[0] == "resource-session")
+    return await ResourceDiagnosticApplication.RunAsync(args[1..]);
 
 PerformanceLabOptions options = PerformanceLabOptions.Parse(args);
 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(options.MetricsPath))!);

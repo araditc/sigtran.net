@@ -128,6 +128,10 @@ The defensible current status is: retained 72-hour traffic/recovery/restoration
 evidence, corrected future sampling protocol with regression coverage, and an
 open managed-memory evidence gap. Phase 62 and stable promotion remain open.
 
+The next owner-approved step is a [bounded real-stack session](LOCAL_RESOURCE_DIAGNOSTIC.md),
+using a local independent peer and GC trace/context. The three allocation
+diagnostics above remain unchanged; this is not another endurance attempt.
+
 ## Engineering Verification
 
 The `phase-62/sampling-review/units/10` verification passed Release build,

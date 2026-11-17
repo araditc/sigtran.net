@@ -61,6 +61,7 @@ Run("Endurance monitor records resource and queue breaches before failing", Endu
 Run("Long-run TCAP identifiers wrap 24-bit and full 32-bit ranges safely", EnduranceTests.IdentifierRollover);
 Run("Endurance observations have a bounded replayable binary record format", EnduranceTests.ObservationFormat);
 Run("Managed-memory sampling preserves bounded retries without hiding invalid or high values", EnduranceTests.ManagedMemorySampling);
+Run("Resource diagnostic options fence loopback duration and preserve GC context", ResourceDiagnosticTests.Options);
 Run("TCAP exact-size encoding matches standard BER across length boundaries", EncodingAllocationTests.TransactionLengths);
 Run("BER writer reuse preserves nested, failed and parallel encoder isolation", EncodingAllocationTests.WriterLeases);
 Run("TCAP small transaction allocation excludes the old 2 KiB scratch buffer", EncodingAllocationTests.TransactionAllocation);

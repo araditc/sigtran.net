@@ -11,11 +11,18 @@ if (args is ["--self-test"])
     if (summary.Samples != 2 || summary.EstimatedBytes != 150 || summary.Methods["Dispatch"] != 150
         || summary.Types["Bytes"] != 100) throw new InvalidOperationException("Allocation attribution regression.");
     Console.WriteLine("PASS allocation sample aggregation and recursive-frame deduplication");
+    GcTraceSummary gc = new();
+    gc.Start(42, 1, 0, "AllocSmall", 1); gc.Stop(42, 1, 2);
+    if (gc.Starts != 1 || gc.Stops != 1 || gc.MinimumIndex != 1 || gc.MaximumIndex != 1
+        || gc.ProcessIds.Single() != 42) throw new InvalidOperationException("GC trace aggregation regression.");
+    Console.WriteLine("PASS bounded GC trace identity and generation aggregation");
     return 0;
 }
+if (args is ["--gc", var gcPath] && File.Exists(gcPath))
+    return GcTraceAnalysis.Run(gcPath);
 if (args.Length != 1 || !File.Exists(args[0]))
 {
-    Console.Error.WriteLine("Usage: Sigtran.NET.TraceAnalysis FILE.nettrace | --self-test");
+    Console.Error.WriteLine("Usage: Sigtran.NET.TraceAnalysis FILE.nettrace | --gc FILE.nettrace | --self-test");
     return 2;
 }
 

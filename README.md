@@ -65,6 +65,10 @@ still fail. This is defensive correction, not a proven root-cause fix.
 Historical values are not reconstructed or regraded. No new 72-hour run or
 Kafka maintenance was started; avoiding a fresh qualification would require
 an explicit reviewed acceptance exception, which has not been granted.
+The approved [local real-stack resource diagnostic](docs/LOCAL_RESOURCE_DIAGNOSTIC.md)
+adds a separate loopback-only, at-most-one-hour SDK/independent-peer session
+with raw GC context and bounded EventPipe capture. It does not use the Kafka
+machine, repeat 72 hours, or promote the original rejected evidence.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer
