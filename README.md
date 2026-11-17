@@ -76,6 +76,10 @@ reproduced: the historical cause remains unproven and Phase 62 stays open.
 The diagnostic did not use the Kafka machine, repeat 72 hours or promote
 the original rejected evidence. Its loopback average is not capacity qualification.
 
+The owner has now accepted the risk of those seven missing readings. The
+[scoped acceptance dossier](docs/ENDURANCE_ACCEPTANCE.md) is being implemented;
+independent review remains open and neither qualification nor stable GO changes.
+
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer
 counters, actual fault/rollback receipts and five fresh PCAP pairs per incident.

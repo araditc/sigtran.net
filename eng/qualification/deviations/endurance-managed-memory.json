@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "endurance-managed-memory-observations",
+  "runId": "map-endurance-full-20261113-a",
+  "sourceCommit": "1579bad8b2c731819bfeb063260f23d10a0e427f",
+  "sdkImplementationTree": "28ca2436d16c069bf5f1c153967d3b0182b818de",
+  "policy": "completed-map-endurance-v1",
+  "originalManifestSha256": "8998131ed9ce028f2e52e840ec21232c9bdc392529ed6739c8e1bef42dc50b88",
+  "scope": "seven-missing-managed-memory-readings-only",
+  "rootCauseProven": false,
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "observations": [
+    {"elapsedSeconds": 32430.261368219, "managedBytes": -710056},
+    {"elapsedSeconds": 76903.261171248, "managedBytes": -31656},
+    {"elapsedSeconds": 133946.260540874, "managedBytes": -103576},
+    {"elapsedSeconds": 202513.26044205, "managedBytes": -475368},
+    {"elapsedSeconds": 213231.260897826, "managedBytes": -202224},
+    {"elapsedSeconds": 221600.260125696, "managedBytes": -272720},
+    {"elapsedSeconds": 228951.262680667, "managedBytes": -381192}
+  ],
+  "evidence": [
+    {"kind":"rejected-run","path":"docs/evidence/ENDURANCE_COMPLETED_REJECTED_20261117.json","sha256":"b6871a003b716aa7be558ccd1c0c7c43a8ba78a948a530ff8b128d484fdc41d7"},
+    {"kind":"resource-analysis","path":"docs/evidence/ENDURANCE_RESOURCE_ANALYSIS_20261117.json","sha256":"8c167447613a03f3287c5698292011621ffb37d2a45b942b14e1dd2399f6790b"},
+    {"kind":"integration-diagnostic","path":"docs/evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json","sha256":"941c403c291fdc5cc3e4610bf6310a28c73b307fb9f0bf63cdc92e8a23486c28"}
+  ]
+}
