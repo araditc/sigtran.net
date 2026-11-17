@@ -11,6 +11,7 @@ CASE = 'eng/qualification/deviations/endurance-managed-memory.json'
 OWNER = 'eng/qualification/deviations/endurance-managed-memory.owner.json'
 REVIEW_POLICY = 'eng/qualification/deviations/endurance-managed-memory.review-policy.json'
 REVIEW_REQUEST = 'eng/qualification/deviations/endurance-managed-memory.review-request.json'
+RISK_EVENTS = 'eng/qualification/deviations/endurance-managed-memory.risk-events.json'
 spec = importlib.util.spec_from_file_location('deviation_endurance_contract', ROOT / 'scripts/verify-endurance-evidence.py')
 evidence = importlib.util.module_from_spec(spec); spec.loader.exec_module(evidence)
 require = evidence.require

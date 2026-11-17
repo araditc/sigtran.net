@@ -45,3 +45,8 @@ expires for assessment after 30 days; changed scope or recurring anomalies
 require re-review. No PR is created, no reviewer is impersonated and no new
 load is launched by preparing this request. See the
 [GitHub review API contract](https://docs.github.com/en/rest/pulls/reviews).
+
+Run live assessment from the exact reviewed PR head. Register newly discovered
+defects/recurrences in `.risk-events.json`; that history cannot be cleared to
+reuse approval. The human reviewer must inspect the private raw evidence; an
+offline CI report validates public bindings only, not private lab artifacts.

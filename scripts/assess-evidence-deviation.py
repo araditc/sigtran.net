@@ -15,7 +15,7 @@ import subprocess
 spec = importlib.util.spec_from_file_location('acceptance_contract', pathlib.Path(__file__).with_name('evidence-deviation.py'))
 contract = importlib.util.module_from_spec(spec); spec.loader.exec_module(contract)
 require = contract.require
-BUNDLE_FILES = (contract.CASE, contract.OWNER, contract.REVIEW_POLICY, contract.REVIEW_REQUEST)
+BUNDLE_FILES = (contract.CASE, contract.OWNER, contract.REVIEW_POLICY, contract.REVIEW_REQUEST, contract.RISK_EVENTS)
 
 
 def snapshot(root):
@@ -51,7 +51,7 @@ def content_digest(api, repository, path, commit):
     return hashlib.sha256(data).hexdigest()
 
 
-def live_review(material, files, digest, case_id, now, api=github_read):
+def live_review(material, files, digest, case_id, now, expected_head, api=github_read):
     """Authenticate a human review on the exact head and pre-existing base-branch trust roster."""
     policy, request = material['policy'], material['request']; repository = policy['repository']
     prefix = 'repos/' + repository + '/pulls/' + str(request['pullRequest'])
@@ -59,7 +59,8 @@ def live_review(material, files, digest, case_id, now, api=github_read):
     require(pr['number'] == request['pullRequest'] and pr['base']['repo']['full_name'] == repository
             and pr['head']['repo']['full_name'] == repository and pr['base']['ref'] == 'main'
             and pr['draft'] is False and (pr['state'] == 'open' or (pr['state'] == 'closed' and pr['merged'] is True))
-            and re.fullmatch('[0-9a-f]{40}', head) and re.fullmatch('[0-9a-f]{40}', base), 'Review PR identity/state differs')
+            and re.fullmatch('[0-9a-f]{40}', head) and re.fullmatch('[0-9a-f]{40}', base)
+            and head == expected_head, 'Review PR identity/state differs')
     require(content_digest(api, repository, contract.REVIEW_POLICY, base) == files[contract.REVIEW_POLICY],
             'Reviewer roster was not already admitted on base branch')
     for path, expected in files.items():
@@ -71,6 +72,7 @@ def live_review(material, files, digest, case_id, now, api=github_read):
         reviews = api(prefix + '/reviews?per_page=100&page=' + str(page))
         require(isinstance(reviews, list) and len(reviews) <= 100, 'Unbounded review response')
         for review in reviews:
+            require(isinstance(review['user']['login'], str), 'Invalid reviewer identity')
             login = review['user']['login'].lower()
             if login not in allowed or login in excluded or review['user']['type'] != 'User': continue
             if review['state'] not in ('APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'): continue
@@ -91,7 +93,34 @@ def live_review(material, files, digest, case_id, now, api=github_read):
         require(all(lines.count(tag) == 1 for tag in tags)
                 and len('\n'.join(line for line in lines if line not in tags).strip()) >= 40, 'Review scope/digest/rationale differs')
         approvals.append(dict(login=login, reviewId=review['id'], commit=head, submittedAtUtc=review['submitted_at']))
+    final = api(prefix)
+    require(final['head']['sha'] == head and final['base']['sha'] == base and final['draft'] is False
+            and (final['state'] == 'open' or (final['state'] == 'closed' and final['merged'] is True)),
+            'PR changed while review was being verified')
     return dict(pullRequest=request['pullRequest'], repository=repository, approvals=approvals, authenticated=True)
+
+
+def risk_events(root, owner, case_id):
+    """Keep reopening events append-only across committed history; clearing the file cannot revive old approval."""
+    require(subprocess.check_output(['git', 'rev-parse', '--is-shallow-repository'], cwd=root,
+            text=True, timeout=15).strip() == 'false', 'Complete history is required for reopening-event verification')
+    value = contract.evidence.read_json(contract.evidence.relative_file(root, contract.RISK_EVENTS))
+    require(set(value) == {'schemaVersion', 'caseId', 'events'} and value['schemaVersion'] == 1
+            and value['caseId'] == case_id and isinstance(value['events'], list) and len(value['events']) <= 32,
+            'Invalid reopening event register')
+    identities = set()
+    for item in value['events']:
+        require(set(item) == {'id', 'kind', 'observedAtUtc', 'reference'} and type(item['id']) is int
+                and item['id'] > 0 and item['id'] not in identities and item['kind'] in owner['revocationTriggers']
+                and isinstance(item['reference'], str) and 1 <= len(item['reference']) <= 512, 'Invalid reopening event')
+        identities.add(item['id']); contract.evidence.utc_time(item['observedAtUtc'])
+    commits = subprocess.check_output(['git', 'log', '--format=%H', '--max-count=65', '--', contract.RISK_EVENTS],
+                                      cwd=root, text=True, timeout=15).splitlines()
+    require(len(commits) <= 64, 'Reopening history requires a new reviewed case')
+    for commit in commits:
+        old = contract.evidence.json_bytes(subprocess.check_output(['git', 'show', commit + ':' + contract.RISK_EVENTS], cwd=root, timeout=15))
+        require(value['events'][:len(old['events'])] == old['events'], 'Recorded reopening events cannot be erased or rewritten')
+    return value['events']
 
 
 def assess(root=contract.ROOT, verify_review=False, api=None, now=None):
@@ -107,6 +136,9 @@ def assess(root=contract.ROOT, verify_review=False, api=None, now=None):
         material = contract.review_material(audit, owner, root); files = snapshot(root); digest = bundle_digest(files)
         result.update(ownerRiskAccepted=True, dossierSha256=audit['dossierSha256'], bundleSha256=digest,
                       decisionFileSha256=files, status='PENDING_INDEPENDENT_REVIEW')
+        events = risk_events(root, owner, audit['case']['id'])
+        if events:
+            result.update(status='RISK_REOPENED', blockers=['recorded-risk-reopening-event']); return result
         if not material['reviewerDesignated']: result['blockers'].append('independent-reviewer-not-designated')
         if not material['requestAssigned']: result['blockers'].append('independent-review-pr-not-assigned')
         if result['blockers']: return result
@@ -115,7 +147,10 @@ def assess(root=contract.ROOT, verify_review=False, api=None, now=None):
         for path in BUNDLE_FILES:
             committed = subprocess.check_output(['git', 'show', 'HEAD:' + path], cwd=root, timeout=15)
             require(hashlib.sha256(committed).hexdigest() == files[path], 'Uncommitted decision file')
-        result['review'] = live_review(material, files, digest, audit['case']['id'], now, api or github_read)
+        head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True, timeout=15).strip()
+        result['review'] = live_review(material, files, digest, audit['case']['id'], now, head, api or github_read)
+        require(snapshot(root) == files and subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+                cwd=root, text=True, timeout=15).strip() == head, 'Local case changed during review verification')
         result.update(status='CLOSED_WITH_ACCEPTED_DEVIATION', independentReviewApproved=True,
                       administrativeClosureApproved=True, acceptanceExceptionGranted=True)
     except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError):
@@ -123,15 +158,22 @@ def assess(root=contract.ROOT, verify_review=False, api=None, now=None):
     return result
 
 
+def write_assessment(path, report, root=contract.ROOT):
+    """Create only a new owned report; never write into original evidence, source files or an existing receipt."""
+    root = pathlib.Path(root).resolve(); allowed = root / 'artifacts/qualification/evidence-deviations'
+    output = path.resolve()
+    require(allowed in output.parents and all(not p.is_symlink() for p in (path, *path.parents)
+            if p == root or root in p.parents), 'Output must stay in the dedicated assessment artifact directory')
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open('x', encoding='utf-8', newline='\n') as stream: json.dump(report, stream, indent=2); stream.write('\n')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify-review', action='store_true', help='Read actual GitHub review state; never submit a review.')
     parser.add_argument('--output', type=pathlib.Path)
     args = parser.parse_args(); report = assess(verify_review=args.verify_review)
-    if args.output:
-        output = args.output.resolve(); allowed = (contract.ROOT / 'artifacts/qualification').resolve()
-        require(allowed in output.parents and not args.output.is_symlink(), 'Output must be a new private qualification artifact')
-        with output.open('x', encoding='utf-8', newline='\n') as stream: json.dump(report, stream, indent=2); stream.write('\n')
+    if args.output: write_assessment(args.output, report)
     print(json.dumps(report, indent=2))
     return 0 if report['administrativeClosureApproved'] else (3 if report['status'] == 'PENDING_INDEPENDENT_REVIEW' else 1)
 

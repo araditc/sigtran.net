@@ -22,8 +22,8 @@ An unchanged source tree is not an identical final package attestation.
 | 1 | Immutable evidence dossier and source-tree comparison | Complete; build/test/API/pack and commit/push passed |
 | 2 | Exact-scope owner risk acceptance | Complete; build/test/API/pack and commit/push passed |
 | 3 | Independent review contract and request | Complete; build/test/API/pack and commit/push passed; human approval OPEN |
-| 4 | Separate fail-closed administrative assessment | Implemented; actual result PENDING_INDEPENDENT_REVIEW |
-| 5 | Tamper rejection and CI boundaries | Pending |
+| 4 | Separate fail-closed administrative assessment | Complete; build/test/API/pack and commit/push passed; actual status pending |
+| 5 | Tamper rejection and CI boundaries | Implemented; synthetic API rejection tests and offline CI guard added |
 | 6 | Final report, docs and handoff | Pending |
 
 The strict endurance/release policies are not changed by this work. No VM load,
@@ -59,3 +59,11 @@ read-only GitHub PR/review/file APIs, a roster already on the base branch,
 exact reviewed commit/files/bundle digest, human identity and a stated rationale.
 Expired, dismissed, changed or owner/self approvals fail closed. No SDK API,
 strict original verifier or stable release evaluator is modified.
+
+Live assessment must run on the exact reviewed PR head with committed decision
+files; it rechecks PR state after reading reviews. The risk-event register is
+append-only across Git history: recording a recurrence or another reopening
+condition blocks acceptance, and erasing it cannot revive an old approval.
+It is a manual incident register, not an automatic production anomaly detector.
+CI publishes a fresh **pending** assessment and exercises synthetic review
+transcripts; those fixtures are never treated as actual human approval.
