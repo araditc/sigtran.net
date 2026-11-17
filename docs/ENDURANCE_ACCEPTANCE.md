@@ -42,11 +42,12 @@ Repository attributes preserve these decision bytes across OS checkouts.
 
 The [independent review request](ENDURANCE_REVIEW_REQUEST.md) names the review
 questions and authenticated approval path. The owner-nominated identity
-`akhiabanchian` is proposed through the separate
-[reviewer designation](ENDURANCE_REVIEWER_DESIGNATION.md). The case-request
-reference in this main-based policy branch is still null; PR #38 is updated
-only after policy admission. Neither nomination nor its existing Approve
-counts as authenticated scoped acceptance by itself.
+`akhiabanchian` was admitted through separately reviewed
+[PR #39](https://github.com/araditc/sigtran.net/pull/39), merged at
+`2026-11-17T15:51:08Z` as `305d6953f21fb30fb9210d7f77db76928f1cf3a5`.
+[PR #38](https://github.com/araditc/sigtran.net/pull/38) incorporates that base
+policy and remains the bound case request. Its old-head Approve and the
+policy-only approval do not authorize the refreshed case head/digest.
 
 ## Administrative Assessment
 
@@ -56,8 +57,9 @@ python scripts/assess-evidence-deviation.py --verify-review
 ```
 
 Exit 3 means review pending, 1 means ineligible, and 0 means scoped
-administrative acceptance only. Both commands currently return pending without
-network access while the case request on this main-based branch is unassigned. Live verification uses
+administrative acceptance only. Offline assessment still returns pending;
+live assessment must reject the earlier-head review until the reviewer submits
+a complete approval on the refreshed exact head/digest. Live verification uses
 read-only GitHub PR/review/file APIs, a roster already on the base branch,
 exact reviewed commit/files/bundle digest, human identity and a stated rationale.
 Expired, dismissed, changed or owner/self approvals fail closed. No SDK API,
@@ -82,7 +84,7 @@ receipts remain retained. Release build, SDK/qualification/trace tests, API
 comparison and pack are required for each commit; no SDK runtime/API changes
 or release-policy edits are part of this package.
 
-The [current designation handoff](evidence/ENDURANCE_REVIEWER_DESIGNATION_20261117.json)
+The [refreshed review handoff](evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
 matches a fresh assessment and is checked by CI. Its state is
 `PENDING_INDEPENDENT_REVIEW`, owner acceptance true, final exception/closure
 false. A separate read-only replay rechecked all 94 original hashes and all
@@ -95,18 +97,18 @@ python scripts/assess-evidence-deviation.py --check-current-report
 python scripts/assess-evidence-deviation.py --output artifacts/qualification/evidence-deviations/NEW_RECEIPT.json
 ```
 
-Policy admission, refreshing PR #38 and a complete authenticated independent
-review remain open. Use a full-history checkout. The actual GitHub review is
-acknowledged, but missing bindings are not invented. The original
+Only a complete authenticated independent review on the refreshed case remains
+open for administrative acceptance. Use a full-history checkout. Actual
+reviews are retained without reusing old bindings or extending their scope. The original
 [delivery snapshot](evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json)
-is retained unchanged. If review is
+and both preparation/designation snapshots remain unchanged. If review is
 later accepted, the only allowed closure is `CLOSED_WITH_ACCEPTED_DEVIATION`;
 the original run still fails strict qualification. Phase 62 is **not yet closed**.
 Phases 63-65, final package-bound evidence and all stable gates remain separate.
 
 The final local verification includes 555 SDK checks, 40 qualification checks,
 both trace-analysis self-tests, the unchanged 2,308-member public API and pack.
-There are 21 focused acceptance tests; the 43-test endurance suite has two
+There are 24 focused acceptance tests; the 43-test endurance suite has two
 Linux-only skips on Windows. Separate original/diagnostic replays preserve
 all raw bytes. The actual GitHub workflow, not synthetic review fixtures,
 determines CI success; it does not supply the missing human review.

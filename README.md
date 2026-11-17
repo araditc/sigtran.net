@@ -78,13 +78,18 @@ the original rejected evidence. Its loopback average is not capacity qualificati
 
 The owner accepted the risk of the seven missing readings. All six
 [acceptance implementation units](docs/ENDURANCE_ACCEPTANCE.md) are delivered;
-the [current handoff](docs/evidence/ENDURANCE_REVIEWER_DESIGNATION_20261117.json)
-remains `PENDING_INDEPENDENT_REVIEW`. A separate
-[policy registration](docs/ENDURANCE_REVIEWER_DESIGNATION.md) proposes the owner-nominated
-reviewer `akhiabanchian`. Its existing GitHub Approve lacks the case digest;
-policy admission, a refreshed PR #38 and genuine scoped approval remain open for that
+the [refreshed handoff](docs/evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
+remains `PENDING_INDEPENDENT_REVIEW`. The independently approved
+[reviewer policy](https://github.com/araditc/sigtran.net/pull/39) is admitted on
+`main`; PR #38 now incorporates that policy and binds reviewer `akhiabanchian`.
+A genuine scoped review on its new exact head/digest remains open for this
 package. CI rejects stale/self approvals and risk replay. Phase 62 is not yet
 closed; neither the original failed qualification nor stable GO changes.
+The [independent-review packet](docs/reviews/ENDURANCE_EVIDENCE_REVIEW.md)
+includes the implementation comparison and evidence checklist for
+[review PR #38](https://github.com/araditc/sigtran.net/pull/38). The reviewer
+allowlist is admitted, but the old-head approval and policy-only approval do
+not authorize the refreshed case. Preparing a PR does not grant acceptance.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

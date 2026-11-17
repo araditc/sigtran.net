@@ -11,8 +11,11 @@ failed resource gate. There is no active run and no replacement was launched.
 The owner has since explicitly accepted the risk of those exact seven readings.
 The six-unit [scoped acceptance implementation](ENDURANCE_ACCEPTANCE.md) is
 delivered without another load run. Its separate assessment is
-`PENDING_INDEPENDENT_REVIEW`: reviewer designation/authenticated approval remain
-open. Owner acceptance alone does not close unit 10, change failed receipts,
+`PENDING_INDEPENDENT_REVIEW`: the reviewer policy was independently approved
+and admitted through PR #39. The [refreshed case handoff](evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
+incorporates that policy; authenticated approval of its new head/digest remains
+open. Neither the old-head case review nor policy-only approval closes unit 10.
+Owner acceptance alone does not change failed receipts,
 prove the cause or authorize stable promotion. Original JSON reports are retained.
 
 The verified six-minute

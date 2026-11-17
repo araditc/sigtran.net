@@ -1,16 +1,18 @@
 # Independent Evidence Review Request
 
-Status: **OPEN / owner-nominated reviewer / scoped approval not verified**.
-The owner nominated `akhiabanchian`; the separate
-[policy registration](ENDURANCE_REVIEWER_DESIGNATION.md) must be admitted before
-refreshing PR #38 and obtaining final bound approval. GitHub has recorded a
-real Approve, but its text lacks the required digest. That review is retained,
-not treated as a complete acceptance receipt.
+Status: **OPEN / reviewer policy admitted / refreshed-case approval required**.
+The owner nominated `akhiabanchian`; independently reviewed
+[PR #39](https://github.com/araditc/sigtran.net/pull/39) admitted that policy on
+`main`. PR #38 now incorporates the admitted policy. The earlier case review
+contains the old bundle digest, but is bound to its old head and cannot approve
+this refreshed version. The policy-only review expressly excludes case acceptance.
 
 The owner accepted the seven-reading risk; this document is a handoff, not a
 review receipt. Codex must not approve its own implementation or invent a
 reviewer identity. The owner-designated reviewer should have relevant .NET
 runtime and signalling reliability experience and access to private originals.
+The [review packet](reviews/ENDURANCE_EVIDENCE_REVIEW.md) includes the exact
+implementation range, private-evidence requirements and reviewer checklist.
 
 ## Materials And Questions
 
@@ -28,9 +30,11 @@ The decision must not assert stable/operator readiness or qualify a new package.
 
 ## Authenticated Approval Path
 
-The owner must first designate an independent human in the case review policy
-through repository review. Then assign a repository PR in `.review-request.json`
-containing the exact case files to be reviewed. A PR author or the product owner
+An independent human is now designated in the case review policy through
+separate repository review. PR #38 is assigned in `.review-request.json` and
+incorporates the admitted policy. Review the final exact head/digest in the PR
+description after CI passes; a changed head requires a fresh formal review.
+A PR author or the product owner
 cannot be the independent approver; an empty allowlist never authorizes anyone.
 The assessment tool will obtain review state from GitHub, not a local `approved`
 flag. A later change request/dismissal or changed case bytes invalidates approval.
@@ -51,7 +55,7 @@ also requires the owner decision and dossier already admitted on that base;
 the review PR cannot broaden the owner's accepted scope. Approval
 expires for assessment after 30 days; changed scope or recurring anomalies
 require re-review. Preparing these requirements alone creates no approval or
-load; the subsequent case PR and policy proposal are described in the
+load; the case PR and admitted policy are described in the
 [designation handoff](ENDURANCE_REVIEWER_DESIGNATION.md). No reviewer is
 impersonated. See the
 [GitHub review API contract](https://docs.github.com/en/rest/pulls/reviews).

@@ -58,12 +58,13 @@ class OwnerDecisionTests(unittest.TestCase):
 
 
 class IndependentReviewTests(unittest.TestCase):
-    def test_owner_nominated_reviewer_is_listed_without_inventing_a_case_request(self):
+    def test_admitted_reviewer_and_bound_case_still_require_authenticated_approval(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit)
         value = deviation.review_material(audit, owner)
         self.assertEqual(value['policy']['allowedReviewers'], ['akhiabanchian'])
         self.assertTrue(value['reviewerDesignated'])
-        self.assertEqual(value['requestAssigned'], value['request']['pullRequest'] is not None)
+        self.assertTrue(value['requestAssigned'])
+        self.assertEqual(value['request']['pullRequest'], 38)
 
     def test_self_review_duplicate_identity_and_declared_approval_are_rejected(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit); original = deviation.evidence.read_json

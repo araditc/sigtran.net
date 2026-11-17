@@ -16,7 +16,7 @@ spec = importlib.util.spec_from_file_location('acceptance_contract', pathlib.Pat
 contract = importlib.util.module_from_spec(spec); spec.loader.exec_module(contract)
 require = contract.require
 BUNDLE_FILES = (contract.CASE, contract.OWNER, contract.REVIEW_POLICY, contract.REVIEW_REQUEST, contract.RISK_EVENTS)
-CURRENT_REPORT = 'docs/evidence/ENDURANCE_REVIEWER_DESIGNATION_20261117.json'
+CURRENT_REPORT = 'docs/evidence/ENDURANCE_REVIEW_REFRESH_20261117.json'
 
 
 def snapshot(root):
