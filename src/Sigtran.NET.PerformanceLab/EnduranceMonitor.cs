@@ -18,6 +18,14 @@ internal sealed class EnduranceMonitor(int concurrency, int queueCapacity, doubl
             if (_lastElapsed >= 0) _maximumGap = Math.Max(_maximumGap, sample.ElapsedSeconds - _lastElapsed);
             _lastElapsed = sample.ElapsedSeconds;
             _observations++;
+            var resource = sample.Resources;
+            // Preserve invalid samples in the observation log, but never hide them behind peak aggregates.
+            if (resource.WorkingSetBytes < 0 || resource.PeakWorkingSetBytes < resource.WorkingSetBytes
+                || resource.ManagedBytes < 0 || resource.HeapSizeBytes < 0 || resource.FragmentedBytes < 0
+                || resource.AllocatedBytes < 0 || !double.IsFinite(resource.ProcessCpuSeconds) || resource.ProcessCpuSeconds < 0
+                || resource.Gen0 < 0 || resource.Gen1 < 0 || resource.Gen2 < 0 || resource.ThreadPoolThreads < 0
+                || resource.ThreadPoolPending < 0 || resource.ThreadPoolCompleted < 0)
+                _violations.Add("invalid-resource-observation");
             _peakRss = Math.Max(_peakRss, sample.Resources.PeakWorkingSetBytes);
             _peakManaged = Math.Max(_peakManaged, sample.Resources.ManagedBytes);
             _peakHeap = Math.Max(_peakHeap, sample.Resources.HeapSizeBytes);
@@ -35,7 +43,8 @@ internal sealed class EnduranceMonitor(int concurrency, int queueCapacity, doubl
             if (Math.Max(_peakManaged, _peakHeap) > EnduranceOptions.MaximumManagedHeapMiB * mib) _violations.Add("managed-heap-bound");
             if (_growth > EnduranceOptions.MaximumResidentGrowthMiB * mib) _violations.Add("resident-growth-bound");
             if (!sample.Counts.Reconciled || sample.Counts.Pending < 0 || _peakPending > concurrency) _violations.Add("terminal-accounting-bound");
-            if (_peakActive > queueCapacity || stack.Pending > queueCapacity || _peakOutbound > queueCapacity || _peakInbound > queueCapacity)
+            if (stack.Active < 0 || stack.Pending < 0 || stack.OutboundQueue < 0 || stack.InboundQueue < 0
+                || _peakActive > queueCapacity || stack.Pending > queueCapacity || _peakOutbound > queueCapacity || _peakInbound > queueCapacity)
                 _violations.Add("queue-context-bound");
             if (stack.Malformed != 0 || stack.DroppedEvents != 0 || stack.ForeignTransfers != 0
                 || stack.UnsolicitedInvokes != 0 || stack.SccpReturns != 0 || !stack.ReadersHealthy)

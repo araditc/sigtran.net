@@ -38,64 +38,45 @@ The minimum margin is only 79 TPS (0.79%): this is not a general production SLA.
 This source-build evidence does not qualify an untested packaged candidate.
 The SDK never changes a consumer's ThreadPool configuration.
 
-[Phase 62 long-run resilience](docs/ENDURANCE_QUALIFICATION.md) is in progress.
-Its versioned contract requires one continuous 72-hour SDK process, durable
-accounting/resource checkpoints and nine incidents across three fault families.
-Short diagnostics or the Phase 61 pass cannot close this qualification.
-The endurance ledger uses fixed worker slots and 64-bit counters, rejects
-duplicate completions and preserves fault-window terminal outcomes explicitly.
-Its continuous runner drains in-flight work at the deadline and writes bounded,
-disk-flushed hash-chain checkpoints; interrupted prefixes cannot qualify.
-The independent C peer has 64-bit, process-crash-surviving counters with explicit
-publication-tail bounds, rather than assuming an interrupted peer emitted zero.
-Sequenced fault control requires fresh MAP recovery probes and capture-stop
-acknowledgement; scoped SCTP-only network faults have independent rollback.
-One-second resource/progress observations are replayable from a bounded binary
-stream with minute checkpoints;
-memory, queue or progress breaches fail the run, and TCAP rollover is tested.
-The [independent evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires
-raw-journal/resource replay, actual fault/rollback receipts and five correlated
-PCAP recovery probes per incident. Legacy duration-only soak summaries cannot
-close this gate; a short diagnostic never becomes a 72-hour qualification.
-The [durable execution design](docs/ENDURANCE_EXECUTION.md) freezes host-local
-systemd supervision, restricted peer control, expiring maintenance heartbeats
-and independent restoration guards. Kafka maintenance has explicit owner
-approval for this test; data/configuration and enablement stay unchanged.
-The first live diagnostic failed before traffic on a host-specific runtime
-path, and verified automatic Kafka restoration. Tool/runtime discovery now
-precedes maintenance; Phase 62 remains unqualified pending a successful
-diagnostic and the actual continuous 72-hour run.
-The [diagnostic log](docs/ENDURANCE_DIAGNOSTICS.md) also retains the second
-attempt's 360-second SDK result and rejected collection/wire outcome.
-Controller fixes preserve exact restoration checks and leave admission paused
-while final capture buffers retire; failed evidence is never promoted.
-The [verified six-minute diagnostic](docs/evidence/ENDURANCE_DIAGNOSTIC_20261112.json)
-then completed 4,251,513 measured transactions at 11,809.76 TPS, recovered all
-three fault families and matched all fifteen fresh PCAP probe pairs. Unexpected
-failures/unresolved work were zero; original Kafka state and scoped-rule cleanup
-were verified. This closes only the diagnostic unit, not 72-hour qualification.
-The [continuous execution status](docs/ENDURANCE_EXECUTION_STATUS.md) tracks
-unit 10 separately. Its final verifier also requires the actual supervisor's
-successful cleanup receipt, not only zero child exit codes. No Phase 62 or
-stable qualification is claimed before the full duration and verified exit.
-The first 72-hour attempt on source `5f5ce0a0119df978f78f3724284b5effde3baaff`
-was [interrupted by a host library-update restart](docs/ENDURANCE_MAINTENANCE_ISOLATION.md)
-after 23,576.11 seconds and 324,327,749 completed transactions. Kafka restoration
-was verified; original failed exits and unexpected terminal outcomes remain
-recorded. Exact-service, self-expiring restart-selection guards protect the
-next attempt without disabling security updates or changing unrelated services.
-Phase 62 remains **not qualified** and requires a fresh full 72-hour run.
-That replacement is now active on source `1579bad8b2c731819bfeb063260f23d10a0e427f`,
-after a [verified guarded diagnostic](docs/evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json).
-Actual start: 2026-11-13 07:18:35 UTC; earliest measured finish:
-2026-11-16 07:18:35 UTC. No interrupted hours are reused; final policy/Kafka
-restoration and independent verification still precede any qualification claim.
+[Phase 62 long-run resilience](docs/ENDURANCE_QUALIFICATION.md) remains
+**not qualified**. The [completed attempt](docs/ENDURANCE_COMPLETION_20261117.md)
+ran one continuous SDK process for 259,200 seconds on source
+`1579bad8b2c731819bfeb063260f23d10a0e427f`, finishing on 2026-11-16.
+It completed 3,545,239,973 in-window transactions at 13,677.62 average TPS,
+with zero unexpected outcomes/unresolved requests and P99 latency 33.2 ms.
+All nine incidents recovered; independent decoding matched 3,554 MAP pairs,
+including all 45 fresh recovery probes. Kafka's original states, enablement
+and unit-file hashes were restored, and checked again on 2026-11-17.
+
+However, the original independent verifier rejected seven negative
+`ManagedBytes` observations. SDK/controller exits were zero, but supervision
+correctly ended failed; no passing summary exists. All 94 original artifacts
+and failed receipts remain unchanged. The
+[sanitized rejection audit](docs/evidence/ENDURANCE_COMPLETED_REJECTED_20261117.json)
+separates successful traffic/wire/restoration checks from this failed gate.
+The monitor now fails immediately on invalid resource observations and the
+offline error identifies field/value/time; raw samples are never clamped.
+This improves detection, not the underlying sampling anomaly. A valid sampling
+correction, real diagnostic and fresh continuous 72-hour run remain necessary.
+No replacement was launched during this review and no workload is active.
+
+The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
+64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer
+counters, actual fault/rollback receipts and five fresh PCAP pairs per incident.
+Duration alone, positive peak aggregates or a short diagnostic cannot qualify.
+The [diagnostic history](docs/ENDURANCE_DIAGNOSTICS.md),
+[first interrupted attempt](docs/ENDURANCE_MAINTENANCE_ISOLATION.md) and
+[guarded diagnostic](docs/evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json)
+are retained separately; no hours or receipts are stitched together.
+
+The [durable execution design](docs/ENDURANCE_EXECUTION.md) uses Linux system
+services, restricted peer control and independent restoration watchdogs.
 Execution is [laptop/Codex/VPN independent](docs/LAPTOP_INDEPENDENT_ENDURANCE.md)
-while the two Linux VMs and their hypervisor remain powered on. On reconnect,
-`python scripts/inspect-endurance-lab.py --latest` discovers the existing full
-run read-only; management loss never triggers a workload restart. Durable
-server-side progress/results and [agent resume rules](AGENTS.md) remove the
-need to remember a chat's process IDs or launch commands.
+while both VMs and their hypervisor remain powered on. On reconnect,
+`python scripts/inspect-endurance-lab.py --latest` discovers the live or latest
+retained full run read-only; management loss never triggers a restart.
+The [execution status](docs/ENDURANCE_EXECUTION_STATUS.md) and
+[agent resume rules](AGENTS.md) retain the current decision and recovery rules.
 
 The [stall diagnosis](docs/CAPACITY_STALL_DIAGNOSIS_20261112.md) and
 [profiling details](docs/CAPACITY_PROFILING.md) distinguish observed costs from

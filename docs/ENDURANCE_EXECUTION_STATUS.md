@@ -1,12 +1,20 @@
 # Continuous Endurance Execution Status
 
-Phase 62 unit 10 is **in progress, not qualified**. The verified six-minute
+Phase 62 unit 10 is **open, not qualified**. The replacement finished its full
+72-hour workload on 2026-11-16, but original independent verification rejected
+seven negative managed-memory observations. See the
+[completion report](ENDURANCE_COMPLETION_20261117.md) and
+[sanitized rejection evidence](evidence/ENDURANCE_COMPLETED_REJECTED_20261117.json).
+Kafka restoration and wire/accounting checks passed; they do not override the
+failed resource gate. There is no active run and no replacement was launched.
+
+The verified six-minute
 [diagnostic](ENDURANCE_DIAGNOSTICS.md) closes only unit 9. The full attempt
 must use one frozen committed source, one SDK process and 259,200 actual
 measured seconds. No timer acceleration, concatenation or process restart
 can substitute for this interval.
 
-The first full attempt was interrupted; its replacement is running on the same authorized SDK and peer VMs under
+The first full attempt was interrupted; its replacement ran on the same authorized SDK and peer VMs under
 `completed-map-endurance-v1`, using the explicit LAN socket profile, .NET
 10.0.12/server GC, four maximum workers, concurrency 256, queue capacity 8192
 and the independent normal-priority CPU-3 C peer. Nine scheduled incidents
@@ -31,19 +39,25 @@ and generated build caches, the complete `execution-freeze-retry` verification
 passed build/tests/API/pack. Sources, credentials and lab evidence were not
 removed. This preparation does not itself qualify the 72-hour interval.
 
-## Active Replacement
+## Completed Replacement: Rejected
 
 | Field | Observed Value |
 | --- | --- |
 | Run identity | `map-endurance-full-20261113-a` |
 | Frozen source | `1579bad8b2c731819bfeb063260f23d10a0e427f` |
 | Actual measurement start UTC | `2026-11-13T07:18:35.937656+00:00` |
-| Earliest measurement finish UTC | `2026-11-16T07:18:35.937656+00:00` |
-| Tehran start / earliest measured finish | 2026-11-13 10:48 / 2026-11-16 10:48 |
+| Actual finish UTC, including drain | `2026-11-16T07:18:35.9746375+00:00` |
+| Tehran start / actual finish | 2026-11-13 10:48 / 2026-11-16 10:48 |
+| Measured duration | 259,200 seconds; one SDK process |
+| Measured successful transactions / TPS | 3,545,239,973 / 13,677.62 |
+| Unexpected failures / unresolved requests | 0 / 0 |
+| Incidents / independently decoded probe pairs | 9 recovered / 45 |
 | Continuous SDK PID at start | `2429120` |
-| Installed service policy | Exact owned unit, effective selection verified, auto-reboot disabled, unrelated policy unchanged |
+| Temporary policy / network cleanup | Both restart exclusions removed; scoped SCTP rules absent |
+| Kafka restoration | Verified at 2026-11-16 07:19:43 UTC; checked again on 2026-11-17 |
+| SDK / controller / supervision exit | 0 / 0 / 1; original verifier rejected resource observations |
 | Diagnostic | `false` |
-| Decision | Running, not qualified; final verification and restoration remain required |
+| Decision | Completed workload, rejected qualification; original failed receipt retained |
 
 The [guarded six-minute diagnostic](evidence/ENDURANCE_POLICY_DIAGNOSTIC_20261113.json)
 on the same frozen source completed 4,532,534 measured transactions at
@@ -66,17 +80,19 @@ verified. It remains a diagnostic, not a 72-hour substitute.
 | Actual finish UTC | `2026-11-13T06:12:24.4368741+00:00` |
 | Decision | Interrupted/rejected after 23,576.11 seconds; SDK/controller exit 1 |
 
-The earliest finish is not a completion claim. Actual receipt collection,
-host/network restoration, independent replay and final review follow the
-measured deadline. Do not infer a pass from the service being active.
+Neither a measured deadline nor zero child exits is a qualification claim.
+The replacement's original supervision remains failed after verification;
+it was not reset, re-collected or regraded into a passing result.
 
 The [maintenance-isolation report](ENDURANCE_MAINTENANCE_ISOLATION.md)
 records the actual library-update-triggered peer restart, independently verified
 Kafka restoration and the scoped correction. Original failed bytes and exit
 receipts remain unchanged. The replacement above starts from zero.
 
-The final report will record actual source/start/finish, duration, completed
-work/TPS, classified fault terminals, zero unexpected/unresolved work, resource
-replay, all nine recovery proofs, actual packet-drop/removal and original-unit
-restoration. Until then, unit 10 and the 72-hour gate remain open. Stable release
-is not authorized by this source/profile test; phases 63-65 remain separate.
+The completion report retains all 94 hashed original artifacts, including the
+invalid signed observations. The monitor now rejects invalid resource values
+at observation time instead of allowing peak aggregates to hide them. This is
+fail-fast detection, not a demonstrated fix for the underlying sampling anomaly.
+A valid sampling correction, diagnostic and fresh continuous 72-hour execution
+are still required. Unit 10 remains open; phases 63-65 remain separate, and no
+stable release or NuGet publication is authorized by this result.

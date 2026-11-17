@@ -1,6 +1,9 @@
 # Long-Run MAP Resilience Qualification
 
-Phase 62 is **in progress, not qualified**. Policy: `completed-map-endurance-v1`.
+Phase 62 is **not qualified**. Policy: `completed-map-endurance-v1`.
+The [full-duration attempt](ENDURANCE_COMPLETION_20261117.md) completed 72 hours
+and restored Kafka, but seven invalid managed-memory observations caused the
+original independent verifier to reject it. No live run remains active.
 The [Phase 61 capacity pass](CAPACITY_QUALIFICATION_EXIT.md) is preserved and
 does not substitute for three real days of continuous execution.
 
@@ -41,7 +44,7 @@ on the peer for this entire 72-hour test, with verified restoration on exit.
 | 7 | Independent verifier, tamper rejection and release-boundary tests | Complete; corruption/release-boundary tests and final build/test/API/pack passed |
 | 8 | Durable execution, watchdogs and authenticated host control | Complete; safety tests and final build/test/API/pack passed; real diagnostic is unit 9 |
 | 9 | Real two-host short diagnostic of all incident families | Complete; all three faults, five fresh PCAP pairs each, exact accounting/resources and automatic restoration independently verified; failed attempts retained |
-| 10 | Actual 72-hour run, restoration, verification and exit report | [Execution status](ENDURANCE_EXECUTION_STATUS.md); first failure retained; guarded diagnostic verified and fresh continuous 72-hour attempt active, not qualified |
+| 10 | Actual 72-hour run, restoration, verification and exit report | Open; full-duration replacement completed but resource replay rejected seven negative managed readings; wire/accounting/restoration passed; original failed receipts retained |
 
 Each unit includes code, behavioral tests, standard code documentation,
 docs/README updates, build/test/API/pack and its own commit/push. Runtime
@@ -145,6 +148,12 @@ checkpoint storage have separate hard byte budgets. Mean TPS uses successful
 in-window results, including fresh probes and the measured fault downtime;
 drain remains excluded. This is not a relaxation of Phase 61's independent
 per-second capacity criterion.
+
+Invalid negative resource counters, non-finite CPU time and inconsistent RSS
+readings now record `invalid-resource-observation` and fail immediately. The
+raw signed sample is written before monitoring and is never clamped. This
+corrects the online detection gap found in the rejected full run; it does not
+establish a fix for the runtime sampling anomaly or qualify the old evidence.
 
 The default 24-bit TCAP transaction-ID range and configurable full 32-bit
 range both have rollover tests; the manager's existing allocation fence skips

@@ -37,6 +37,9 @@ OFFSETS = (900, 1800, 2700, 87300, 88200, 89100, 173700, 174600, 175500)
 RESOURCE_KEYS = ('WorkingSetBytes', 'PeakWorkingSetBytes', 'ManagedBytes', 'HeapSizeBytes',
                  'FragmentedBytes', 'AllocatedBytes', 'ProcessCpuSeconds', 'Gen0', 'Gen1', 'Gen2',
                  'ThreadPoolThreads', 'ThreadPoolPending', 'ThreadPoolCompleted')
+OBSERVATION_KEYS = ('ElapsedSeconds', *RESOURCE_KEYS, 'Started', 'Successful', 'Pending',
+                    'ActiveDialogues', 'PendingInvokes', 'OutboundQueue', 'InboundQueue',
+                    'Malformed', 'DroppedEvents', 'ForeignTransfers', 'UnsolicitedInvokes', 'SccpReturns')
 
 
 def bounded_int(value, maximum=(1 << 63) - 1):
@@ -136,7 +139,10 @@ def replay_resources(path, header, checkpoint_samples, final):
             if first is None: first = row
             elapsed, *rest = row
             finite(elapsed); finite(row[7])
-            require(all(type(value) is int and value >= 0 for i, value in enumerate(row) if i not in (0, 7)), 'Negative resource counter')
+            for i, value in enumerate(row):
+                if i not in (0, 7):
+                    require(type(value) is int and value >= 0,
+                            f'Negative resource counter: {OBSERVATION_KEYS[i]}={value} at elapsedSeconds={elapsed}')
             require(elapsed <= header['DurationSeconds'] + 30 and row[2] >= row[1], 'Observation duration or RSS bounds differ')
             if previous is not None:
                 require(elapsed > previous[0], 'Observation times are not strictly monotonic')

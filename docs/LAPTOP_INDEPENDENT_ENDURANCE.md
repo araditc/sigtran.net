@@ -1,7 +1,10 @@
 # Laptop-Independent Endurance Execution
 
-The current measured source stays frozen. No SDK process, peer or workload
-has been restarted to add the read-only reconnection tooling described here.
+The [retained full attempt](ENDURANCE_COMPLETION_20261117.md) completed its
+72-hour workload and restored Kafka, but failed independent resource replay.
+No workload is currently active; original measured source and failed receipts
+remain unchanged. No SDK process, peer or workload was restarted to add the
+read-only reconnection tooling described here.
 
 ## Server Ownership
 

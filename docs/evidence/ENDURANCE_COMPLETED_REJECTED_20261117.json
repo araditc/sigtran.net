@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "rejected-completed-map-endurance",
+  "runId": "map-endurance-full-20261113-a",
+  "testedSourceCommit": "1579bad8b2c731819bfeb063260f23d10a0e427f",
+  "executionValid": false,
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "diagnostic": false,
+  "startedAtUtc": "2026-11-13T07:18:35.937656+00:00",
+  "finishedAtUtc": "2026-11-16T07:18:35.9746375+00:00",
+  "durationSeconds": 259200,
+  "completedTransactions": 3545239973,
+  "completedTps": 13677.623352623457,
+  "terminalAdmissions": 3545242531,
+  "totalTerminalSuccesses": 3545240229,
+  "lateSuccesses": 256,
+  "declaredFaultTerminals": 2302,
+  "unexpectedFailures": 0,
+  "unresolvedOperations": 0,
+  "latency": {
+    "Count": 3545239973,
+    "P50Milliseconds": 18.5,
+    "P95Milliseconds": 26.5,
+    "P99Milliseconds": 33.2,
+    "MaximumMilliseconds": 580.745837,
+    "ResolutionMilliseconds": 0.1
+  },
+  "sdkExitCode": 0,
+  "controllerExitCode": 0,
+  "supervision": {
+    "Result": "exit-code",
+    "NRestarts": "0",
+    "ExecMainStatus": "1",
+    "ActiveState": "failed"
+  },
+  "originalVerifierFailure": "Negative resource counter",
+  "originalVerifierSha256": "fbca7379cc2f5ede2c408c491d184a5d2102a76c703a811ce85670d9eb9f9bc7",
+  "originalManifestSha256": "8998131ed9ce028f2e52e840ec21232c9bdc392529ed6739c8e1bef42dc50b88",
+  "originalArtifactCount": 94,
+  "originalReceiptsUnmodified": true,
+  "journalFrames": 4403,
+  "journalAccountingPassed": true,
+  "peerCountersReconciled": true,
+  "recoveredIncidents": 9,
+  "maximumRecoverySeconds": 18.930370184010826,
+  "wire": {
+    "passed": true,
+    "captures": 10,
+    "independentlyMatchedPairs": 3554,
+    "recoveryProbePairs": 45,
+    "boundedSamplesOnly": true
+  },
+  "maintenance": {
+    "explicitlyAuthorized": true,
+    "quiescenceVerified": true,
+    "restorationVerified": true,
+    "unitFilesUnchanged": true,
+    "fallbackTimerCancelled": true
+  },
+  "restoredAtUtc": "2026-11-16T07:19:43.481010+00:00",
+  "supervisorCleanupVerified": true,
+  "scopedNetworkCleanupVerified": true,
+  "restartPoliciesRemoved": true,
+  "resources": {
+    "observations": 259201,
+    "invalidManagedObservations": [
+      {
+        "elapsedSeconds": 32430.261368219,
+        "managedBytes": -710056
+      },
+      {
+        "elapsedSeconds": 76903.261171248,
+        "managedBytes": -31656
+      },
+      {
+        "elapsedSeconds": 133946.260540874,
+        "managedBytes": -103576
+      },
+      {
+        "elapsedSeconds": 202513.26044205,
+        "managedBytes": -475368
+      },
+      {
+        "elapsedSeconds": 213231.260897826,
+        "managedBytes": -202224
+      },
+      {
+        "elapsedSeconds": 221600.260125696,
+        "managedBytes": -272720
+      },
+      {
+        "elapsedSeconds": 228951.262680667,
+        "managedBytes": -381192
+      }
+    ],
+    "peakWorkingSetBytes": 112631808,
+    "maximumObservedManagedBytes": 25271040,
+    "maximumObservedHeapBytes": 9293496,
+    "maximumResidentGrowthBytes": 15462400,
+    "resourceReplayPassed": false
+  },
+  "reasons": [
+    "invalid-managed-memory-observations",
+    "original-independent-verification-failed"
+  ],
+  "currentKafkaRestoration": {
+    "checkedAtUtc": "2026-11-17T08:26:39.160170+00:00",
+    "passed": true,
+    "units": [
+      {
+        "unit": "kafka-anw-health.timer",
+        "activeState": "active",
+        "subState": "waiting",
+        "stateAndEnablementMatch": true,
+        "definitionHashMatches": true
+      },
+      {
+        "unit": "kafka-anw-health.service",
+        "activeState": "inactive",
+        "subState": "dead",
+        "stateAndEnablementMatch": true,
+        "definitionHashMatches": true
+      },
+      {
+        "unit": "kafka-anw@broker.service",
+        "activeState": "active",
+        "subState": "running",
+        "stateAndEnablementMatch": true,
+        "definitionHashMatches": true
+      },
+      {
+        "unit": "kafka-anw@controller.service",
+        "activeState": "active",
+        "subState": "running",
+        "stateAndEnablementMatch": true,
+        "definitionHashMatches": true
+      }
+    ]
+  },
+  "privateArchiveOriginalBytes": 131374554
+}

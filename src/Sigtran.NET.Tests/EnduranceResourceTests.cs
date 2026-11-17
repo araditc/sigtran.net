@@ -23,6 +23,28 @@ internal static partial class EnduranceTests
         try { queues.Observe(new(DateTimeOffset.UtcNow, 0, ledger.Snapshot(), resources), stack with { InboundQueue = 17 }); }
         catch (InvalidOperationException) { }
         Check(queues.Snapshot().Violations.Contains("queue-context-bound"), "Oversized queues cannot qualify");
+
+        EnduranceResources[] invalidResources =
+        [
+            resources with { WorkingSetBytes = -1 }, resources with { PeakWorkingSetBytes = -1 },
+            resources with { ManagedBytes = -710056 }, resources with { HeapSizeBytes = -1 },
+            resources with { FragmentedBytes = -1 }, resources with { AllocatedBytes = -1 },
+            resources with { ProcessCpuSeconds = -1 }, resources with { ProcessCpuSeconds = double.NaN },
+            resources with { ProcessCpuSeconds = double.PositiveInfinity },
+            resources with { Gen0 = -1 }, resources with { Gen1 = -1 }, resources with { Gen2 = -1 },
+            resources with { ThreadPoolThreads = -1 }, resources with { ThreadPoolPending = -1 },
+            resources with { ThreadPoolCompleted = -1 }
+        ];
+        foreach (var invalid in invalidResources)
+        {
+            EnduranceMonitor counters = new(2, 8192, 0);
+            bool rejected = false;
+            try { counters.Observe(new(DateTimeOffset.UtcNow, 0, ledger.Snapshot(), invalid), stack); }
+            catch (InvalidOperationException) { rejected = true; }
+            Check(rejected && !counters.Snapshot().WithinBounds
+                && counters.Snapshot().Violations.Contains("invalid-resource-observation"),
+                "Invalid resource readings must fail immediately, not disappear into nonnegative peak aggregates");
+        }
     }
 
     internal static void IdentifierRollover()
@@ -40,14 +62,15 @@ internal static partial class EnduranceTests
         string path = Path.Combine(Path.GetTempPath(), "sigtran-observations-" + Guid.NewGuid().ToString("N") + ".bin");
         try
         {
-            EnduranceResources resources = new(1, 2, 3, 4, 5, 6, 7.5, 8, 9, 10, 11, 12, 13);
+            EnduranceResources resources = new(1, 2, -710056, 4, 5, 6, 7.5, 8, 9, 10, 11, 12, 13);
             CapacityStackMetrics stack = new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
             using (EnduranceObservationLog log = new(path)) log.Append(new(DateTimeOffset.UtcNow, 1.25, new EnduranceLedger(1).Snapshot(), resources), stack);
             using BinaryReader reader = new(File.OpenRead(path));
             Check(System.Text.Encoding.ASCII.GetString(reader.ReadBytes(8)) == "SGENOBS1"
                 && reader.BaseStream.Length == 8 + EnduranceObservationLog.RecordBytes, "Resource record header or width differs");
             Check(reader.ReadDouble() == 1.25, "Elapsed time must be a real double, not a sample index");
-            for (long i = 1; i <= 6; i++) Check(reader.ReadInt64() == i, "Resource counter order/width differs");
+            for (long i = 1; i <= 6; i++)
+                Check(reader.ReadInt64() == (i == 3 ? -710056 : i), "Raw signed resource readings must never be clamped or reordered");
             Check(reader.ReadDouble() == 7.5, "CPU time must retain its fractional seconds");
         }
         finally { if (File.Exists(path)) File.Delete(path); }

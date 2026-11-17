@@ -40,6 +40,14 @@ fixed schedule with unique nonces, a live in-flight cohort, drained pending
 work, five fresh successes, capture-stop acknowledgement and bounded recovery.
 All SDK runtime faults must be classified inside declared windows.
 
+Every signed resource counter must be nonnegative and CPU/time observations
+must be finite. A positive saved maximum never excuses an invalid raw value.
+Offline errors identify the offending field/value/elapsed time; the online
+monitor also fails fast while preserving the signed sample. The
+[completed rejected attempt](ENDURANCE_COMPLETION_20261117.md) remains rejected:
+no dropping, clamping or retrospective reinterpretation of its seven invalid
+managed readings can produce a qualifying summary.
+
 Controller and independent peer receipts must match each SDK intent. The
 crash case records actual SIGKILL exit; a held outage records stopped peer
 state and subsequent restart. A network case must prove tagged SCTP-rule

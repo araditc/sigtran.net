@@ -105,6 +105,17 @@ class EvidenceTests(unittest.TestCase):
             path.write_bytes(b'{}\n' * 257)
             with self.assertRaises(ValueError): evidence.event_log(path)
 
+    def test_negative_observation_identifies_the_field_without_regrading_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / 'observations'
+            row = [32430.261368219, 100, 100, -710056, 40, 0, 1000, 1.0] + [0] * 18
+            original = b'SGENOBS1' + evidence.OBSERVATION.pack(*row)
+            path.write_bytes(original)
+            with self.assertRaisesRegex(ValueError, r'Negative resource counter: ManagedBytes=-710056 at elapsedSeconds=32430'):
+                evidence.replay_resources(path, dict(DurationSeconds=259200, Diagnostic=False), [], {})
+            self.assertEqual(path.read_bytes(), original)
+            self.assertEqual(len(evidence.OBSERVATION_KEYS), len(row))
+
 
 if __name__ == '__main__':
     unittest.main()

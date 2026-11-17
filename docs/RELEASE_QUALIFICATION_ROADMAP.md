@@ -60,7 +60,12 @@ in-window transactions, average 14,777.49 TPS, minimum 10,079, zero low
 seconds/failures and 3,551 re-decoded MAP pairs. Owner-approved service
 quiescence and original-state/hash restoration were verified. The margin is
 only 79 TPS and the per-socket profile is explicit; no general SLA is implied.
-20K is not a current blocker. Next is Phase 62's actual 72-hour qualification.
+20K is not a current blocker. Phase 62's
+[full-duration attempt](ENDURANCE_COMPLETION_20261117.md) completed 259,200
+seconds and 3,545,239,973 in-window transactions, but remains rejected because
+seven raw managed-memory observations are negative. Wire/accounting and Kafka
+restoration passed; neither overrides resource replay. Unit 10 remains open
+pending a valid sampling correction, diagnostic and fresh qualifying run.
 Phases 63-65 and final package/source/scope-bound trusted release qualification
 remain mandatory; a source-build pass does not close the stable release gates.
 
