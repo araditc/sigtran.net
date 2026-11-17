@@ -9,6 +9,8 @@ from unittest.mock import patch
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('deviation_test_contract', ROOT / 'scripts/evidence-deviation.py')
 deviation = importlib.util.module_from_spec(spec); spec.loader.exec_module(deviation)
+spec = importlib.util.spec_from_file_location('deviation_assessment_test', ROOT / 'scripts/assess-evidence-deviation.py')
+assessment = importlib.util.module_from_spec(spec); spec.loader.exec_module(assessment)
 
 
 class DossierTests(unittest.TestCase):
@@ -66,6 +68,30 @@ class IndependentReviewTests(unittest.TestCase):
         bad = original(ROOT / deviation.REVIEW_REQUEST); bad['approved'] = True
         with patch.object(deviation.evidence, 'read_json', side_effect=lambda p: bad if str(p).endswith('.review-request.json') else original(p)):
             with self.assertRaises(ValueError): deviation.review_material(audit, owner)
+
+
+class AssessmentTests(unittest.TestCase):
+    def test_actual_case_is_pending_and_never_contacts_github(self):
+        api = unittest.mock.Mock(side_effect=AssertionError('Pending case must not use network'))
+        value = assessment.assess(verify_review=True, api=api)
+        self.assertEqual(value['status'], 'PENDING_INDEPENDENT_REVIEW')
+        self.assertTrue(value['ownerRiskAccepted'])
+        for key in ('independentReviewApproved', 'administrativeClosureApproved', 'acceptanceExceptionGranted',
+                    'qualificationPassed', 'stablePromotion', 'rootCauseProven'):
+            self.assertFalse(value[key])
+        api.assert_not_called()
+
+    def test_case_failure_cannot_be_suppressed_by_owner_acceptance(self):
+        with patch.object(assessment.contract, 'dossier', side_effect=ValueError('Changed source')):
+            value = assessment.assess()
+        self.assertEqual(value['status'], 'INELIGIBLE')
+        self.assertFalse(value['administrativeClosureApproved'])
+
+    def test_bundle_digest_covers_exact_file_names_and_bytes(self):
+        files = assessment.snapshot(ROOT); digest = assessment.bundle_digest(files)
+        self.assertEqual(digest, assessment.bundle_digest(dict(reversed(list(files.items())))))
+        files[deviation.OWNER] = '0' * 64
+        self.assertNotEqual(digest, assessment.bundle_digest(files))
 
 
 if __name__ == '__main__': unittest.main()

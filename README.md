@@ -82,6 +82,8 @@ decision to those exact evidence bytes;
 independent review remains open and neither qualification nor stable GO changes.
 An [independent-review handoff](docs/ENDURANCE_REVIEW_REQUEST.md) is available;
 the reviewer roster and PR reference remain explicitly unassigned.
+The separate administrative assessment reports `PENDING_INDEPENDENT_REVIEW`;
+it cannot turn the original failed qualification into a pass.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

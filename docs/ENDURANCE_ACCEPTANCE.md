@@ -21,8 +21,8 @@ An unchanged source tree is not an identical final package attestation.
 | --- | --- | --- |
 | 1 | Immutable evidence dossier and source-tree comparison | Complete; build/test/API/pack and commit/push passed |
 | 2 | Exact-scope owner risk acceptance | Complete; build/test/API/pack and commit/push passed |
-| 3 | Independent review contract and request | Implemented; reviewer designation and actual human approval remain OPEN |
-| 4 | Separate fail-closed administrative assessment | Pending |
+| 3 | Independent review contract and request | Complete; build/test/API/pack and commit/push passed; human approval OPEN |
+| 4 | Separate fail-closed administrative assessment | Implemented; actual result PENDING_INDEPENDENT_REVIEW |
 | 5 | Tamper rejection and CI boundaries | Pending |
 | 6 | Final report, docs and handoff | Pending |
 
@@ -44,3 +44,18 @@ The [independent review request](ENDURANCE_REVIEW_REQUEST.md) names the review
 questions and authenticated approval path. Its trust roster is deliberately
 empty and its PR reference is null. Preparing this contract does not perform
 the human review; the owner must designate that independent reviewer later.
+
+## Administrative Assessment
+
+```text
+python scripts/assess-evidence-deviation.py
+python scripts/assess-evidence-deviation.py --verify-review
+```
+
+Exit 3 means review pending, 1 means ineligible, and 0 means scoped
+administrative acceptance only. Both commands currently return pending without
+network access because the reviewer/PR are unassigned. Live verification uses
+read-only GitHub PR/review/file APIs, a roster already on the base branch,
+exact reviewed commit/files/bundle digest, human identity and a stated rationale.
+Expired, dismissed, changed or owner/self approvals fail closed. No SDK API,
+strict original verifier or stable release evaluator is modified.
