@@ -25,7 +25,11 @@ for name,key in [('work/sdk/live-status.json','live'),('work/controller-result.j
  if p.is_file() and p.stat().st_size<=2097152:result[key]=json.loads(p.read_text())
 result['traceBytes']=(r/'work/gc.nettrace').stat().st_size if (r/'work/gc.nettrace').is_file() else 0
 p=r/'restart-policy.json'
-if p.is_file():result['restartPolicy']=json.loads(p.read_text())
+try:
+ if p.is_file():result['restartPolicy']=json.loads(p.read_text())
+except PermissionError:result['restartPolicyReceiptReadable']=False
+try:result['restartGuardFileAbsent']=not pathlib.Path('/etc/needrestart/conf.d/sigtran-endurance-'+r.name+'.conf').exists()
+except PermissionError:result['restartGuardFileAbsent']=None
 print(json.dumps(result,indent=2))
 '''
 CLEANUP = 'import sys,pathlib,importlib.util;sys.dont_write_bytecode=True;s=importlib.util.spec_from_file_location("policy",sys.argv[2]);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);m.release(pathlib.Path(sys.argv[1]))'
@@ -122,6 +126,7 @@ def main():
             print(json.dumps(dict(management='unreachable', executionState='unknown', readOnly=args.status,
                                   qualificationPassed=False, workloadRestarted=False, error=type(error).__name__)))
             raise SystemExit(2)
+        if installed: print('Inspect the same run identity; local file I/O did not establish remote execution failure.')
         raise
     except BaseException:
         # Do not release protection or restart work after a possibly successful launch/connection loss.

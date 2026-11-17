@@ -13,6 +13,11 @@ driver = importlib.util.module_from_spec(spec); spec.loader.exec_module(driver)
 
 
 class LocalResourceTests(unittest.TestCase):
+    def test_ready_signal_matches_the_owned_peer_text_not_assumed_json(self):
+        self.assertTrue(driver.listening(b'2026-11-17T10:00:26Z event=listening endpoint=127.0.0.1:33462\n', 33462))
+        self.assertFalse(driver.listening(b'2026-11-17T10:00:26Z event=listening endpoint=127.0.0.1:33461\n', 33462))
+        self.assertFalse(driver.listening(b'{"event":"listening"}\n', 33462))
+
     def test_duration_source_and_input_paths_are_fenced(self):
         value = dict(sourceCommit='a' * 40, durationSeconds=3600, port=33462, inputs={'sdk-build/app.dll': 'b' * 64})
         self.assertEqual(driver.validate(value)['durationSeconds'], 3600)

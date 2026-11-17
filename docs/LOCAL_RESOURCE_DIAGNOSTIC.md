@@ -79,6 +79,15 @@ now requests Paramiko write-plus-exclusive mode (`wx`), with a regression test;
 file-I/O errors are no longer misreported as management-network outages. The
 failed directory is retained; a new identity is required for another attempt.
 
+Smoke `local-resource-smoke-20261117-b` reached the local peer/capture, but its
+ready check incorrectly expected JSON instead of the peer's text log. It
+stopped its own peer after ten seconds without launching the SDK; zero packets
+were recorded. The actual failed controller/peer receipts and original files
+are retained. Cleanup removed its exact restart exclusion. Ready parsing now
+has a regression fixture from the actual text. Read-only status also tolerates
+a root-private cleanup receipt and reports independently observable guard-file
+absence rather than failing or interpreting permission denial as removal.
+
 The original full run remains rejected, Phase 62 remains open and no exception,
 stable tag, package publication or production-readiness claim is authorized.
 

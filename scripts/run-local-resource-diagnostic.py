@@ -40,6 +40,12 @@ def save(path, value):
     with path.open('x') as stream: json.dump(value, stream, indent=2); stream.write('\n')
 
 
+def listening(log, port):
+    """Read only the owned peer's actual text log; probing its socket would consume its single accept."""
+    expected = b'event=listening endpoint=127.0.0.1:' + str(port).encode()
+    return any(line.endswith(expected) for line in log.splitlines())
+
+
 def stop(child, grace=10):
     """Only a child created by this invocation may be signalled; never discover/kill another workload."""
     if child.poll() is None:
@@ -89,7 +95,7 @@ def run(path):
             peer = launch('peer', ['taskset', '-c', '3', str(root / 'peer'), '127.0.0.1', str(value['port']), '0',
                 'endurance', str(work / 'peer-summary.json'), str(work / 'peer-counters.bin')], peer_env)
             deadline = time.monotonic() + 10
-            while b'"listening"' not in (work / 'peer.log').read_bytes():
+            while not listening((work / 'peer.log').read_bytes(), value['port']):
                 if peer.poll() is not None or time.monotonic() > deadline: raise RuntimeError('Owned local peer did not listen')
                 time.sleep(.05)
             sdk_env = dict(os.environ, DOTNET_ThreadPool_ForceMaxWorkerThreads='4',
