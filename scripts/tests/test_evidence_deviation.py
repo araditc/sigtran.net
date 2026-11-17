@@ -58,11 +58,12 @@ class OwnerDecisionTests(unittest.TestCase):
 
 
 class IndependentReviewTests(unittest.TestCase):
-    def test_actual_reviewer_remains_unassigned(self):
+    def test_owner_nominated_reviewer_is_listed_without_inventing_a_case_request(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit)
         value = deviation.review_material(audit, owner)
-        self.assertFalse(value['reviewerDesignated'] or value['requestAssigned'])
-        self.assertIsNone(value['request']['pullRequest'])
+        self.assertEqual(value['policy']['allowedReviewers'], ['akhiabanchian'])
+        self.assertTrue(value['reviewerDesignated'])
+        self.assertEqual(value['requestAssigned'], value['request']['pullRequest'] is not None)
 
     def test_self_review_duplicate_identity_and_declared_approval_are_rejected(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit); original = deviation.evidence.read_json
@@ -76,11 +77,14 @@ class IndependentReviewTests(unittest.TestCase):
 
 
 class AssessmentTests(unittest.TestCase):
-    def test_actual_case_is_pending_and_never_contacts_github(self):
+    def test_offline_case_stays_pending_without_contacting_github(self):
         api = unittest.mock.Mock(side_effect=AssertionError('Pending case must not use network'))
-        value = assessment.assess(verify_review=True, api=api)
+        value = assessment.assess(verify_review=False, api=api)
         self.assertEqual(value['status'], 'PENDING_INDEPENDENT_REVIEW')
         self.assertTrue(value['ownerRiskAccepted'])
+        material = deviation.review_material(deviation.dossier(), deviation.owner_acceptance(deviation.dossier()))
+        expected = ['live-independent-review-verification-required'] if material['requestAssigned'] else ['independent-review-pr-not-assigned']
+        self.assertEqual(value['blockers'], expected)
         for key in ('independentReviewApproved', 'administrativeClosureApproved', 'acceptanceExceptionGranted',
                     'qualificationPassed', 'stablePromotion', 'rootCauseProven'):
             self.assertFalse(value[key])
@@ -97,6 +101,27 @@ class AssessmentTests(unittest.TestCase):
         self.assertEqual(digest, assessment.bundle_digest(dict(reversed(list(files.items())))))
         files[deviation.OWNER] = '0' * 64
         self.assertNotEqual(digest, assessment.bundle_digest(files))
+
+    def test_pending_steps_follow_designation_and_request_lifecycle(self):
+        base = dict(status='PENDING_INDEPENDENT_REVIEW', independentReviewApproved=False, administrativeClosureApproved=False)
+        value = assessment.remaining_review_steps(dict(base, blockers=['independent-review-pr-not-assigned']))
+        self.assertEqual(value, ['independent-review-pr-assignment', 'authenticated-independent-review'])
+        value = assessment.remaining_review_steps(dict(base, blockers=['live-independent-review-verification-required']))
+        self.assertEqual(value, ['authenticated-independent-review'])
+        with self.assertRaises(ValueError):
+            assessment.remaining_review_steps(dict(base, status='CLOSED_WITH_ACCEPTED_DEVIATION', blockers=[]))
+        with self.assertRaises(ValueError): assessment.remaining_review_steps(dict(base, blockers=['unrecognized-bypass']))
+
+    def test_designated_reviewer_with_assigned_pr_still_needs_live_verification(self):
+        audit = deviation.dossier(); owner = deviation.owner_acceptance(audit)
+        material = deviation.review_material(audit, owner)
+        material['request']['pullRequest'] = 38; material['requestAssigned'] = True
+        api = unittest.mock.Mock(side_effect=AssertionError('Offline assessment must not use network'))
+        with patch.object(assessment.contract, 'review_material', return_value=material):
+            value = assessment.assess(verify_review=False, api=api)
+        self.assertEqual(value['blockers'], ['live-independent-review-verification-required'])
+        self.assertFalse(value['independentReviewApproved'] or value['administrativeClosureApproved'])
+        api.assert_not_called()
 
 
 class AuthenticatedReviewTests(unittest.TestCase):
@@ -143,6 +168,12 @@ class AuthenticatedReviewTests(unittest.TestCase):
             old = self.review[key]; self.review[key] = value
             with self.assertRaises(ValueError): self.verify()
             self.review[key] = old
+
+    def test_case_and_disposition_without_digest_cannot_reuse_github_approve(self):
+        self.review['body'] = ('Evidence-Deviation-Case: endurance-managed-memory-observations\n'
+            'Disposition: ACCEPT_SCOPED_DEVIATION\n'
+            'Synthetic acceptance of limited observation risk does not establish a runtime cause or stable qualification.')
+        with self.assertRaisesRegex(ValueError, 'scope/digest/rationale'): self.verify()
 
     def test_synthetic_administrative_acceptance_never_qualifies_release(self):
         actual = assessment.subprocess.check_output
@@ -221,7 +252,7 @@ class AuthenticatedReviewTests(unittest.TestCase):
 
 class ReportOwnershipTests(unittest.TestCase):
     def test_public_handoff_matches_fresh_pending_assessment(self):
-        path = ROOT / 'docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json'
+        path = ROOT / assessment.CURRENT_REPORT
         value = assessment.check_report(path, assessment.assess())
         self.assertTrue(value['assessment']['ownerRiskAccepted'])
         self.assertFalse(value['assessment']['administrativeClosureApproved'])
