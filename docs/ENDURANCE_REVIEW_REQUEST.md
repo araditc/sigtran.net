@@ -1,8 +1,14 @@
 # Independent Evidence Review Request
 
-Status: **OPEN / reviewer not designated / no approval requested or received**.
+Status: **OPEN / owner-nominated reviewer / scoped approval not verified**.
+The owner nominated `akhiabanchian`; the separate
+[policy registration](ENDURANCE_REVIEWER_DESIGNATION.md) must be admitted before
+refreshing PR #38 and obtaining final bound approval. GitHub has recorded a
+real Approve, but its text lacks the required digest. That review is retained,
+not treated as a complete acceptance receipt.
+
 The owner accepted the seven-reading risk; this document is a handoff, not a
-review receipt. Codex must not approve its own implementation or fill in a
+review receipt. Codex must not approve its own implementation or invent a
 reviewer identity. The owner-designated reviewer should have relevant .NET
 runtime and signalling reliability experience and access to private originals.
 
@@ -44,8 +50,10 @@ the PR base branch; a case PR cannot install its own reviewer trust. Approval
 also requires the owner decision and dossier already admitted on that base;
 the review PR cannot broaden the owner's accepted scope. Approval
 expires for assessment after 30 days; changed scope or recurring anomalies
-require re-review. No PR is created, no reviewer is impersonated and no new
-load is launched by preparing this request. See the
+require re-review. Preparing these requirements alone creates no approval or
+load; the subsequent case PR and policy proposal are described in the
+[designation handoff](ENDURANCE_REVIEWER_DESIGNATION.md). No reviewer is
+impersonated. See the
 [GitHub review API contract](https://docs.github.com/en/rest/pulls/reviews).
 
 Run live assessment from the exact reviewed PR head. Register newly discovered
