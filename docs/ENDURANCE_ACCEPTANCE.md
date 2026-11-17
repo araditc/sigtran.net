@@ -42,7 +42,8 @@ Repository attributes preserve these decision bytes across OS checkouts.
 
 The [independent review request](ENDURANCE_REVIEW_REQUEST.md) names the review
 questions and authenticated approval path. Its trust roster is deliberately
-empty and its PR reference is null. Preparing this contract does not perform
+empty. [Review PR #38](https://github.com/araditc/sigtran.net/pull/38) is now
+bound on the review branch for the handoff. Preparing this contract does not perform
 the human review; the owner must designate that independent reviewer later.
 
 ## Administrative Assessment
@@ -54,7 +55,7 @@ python scripts/assess-evidence-deviation.py --verify-review
 
 Exit 3 means review pending, 1 means ineligible, and 0 means scoped
 administrative acceptance only. Both commands currently return pending without
-network access because the reviewer/PR are unassigned. Live verification uses
+network access because no reviewer is designated. Live verification uses
 read-only GitHub PR/review/file APIs, a roster already on the base branch,
 exact reviewed commit/files/bundle digest, human identity and a stated rationale.
 Expired, dismissed, changed or owner/self approvals fail closed. No SDK API,
@@ -79,7 +80,7 @@ receipts remain retained. Release build, SDK/qualification/trace tests, API
 comparison and pack are required for each commit; no SDK runtime/API changes
 or release-policy edits are part of this package.
 
-The [machine-readable handoff](evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json)
+The [current review handoff](evidence/ENDURANCE_REVIEW_PREPARATION_20261117.json)
 matches a fresh assessment and is checked by CI. Its state is
 `PENDING_INDEPENDENT_REVIEW`, owner acceptance true, final exception/closure
 false. A separate read-only replay rechecked all 94 original hashes and all
@@ -88,13 +89,16 @@ negative value. The retained one-hour stream replayed all 3,601 rows. These
 checks do not manufacture independent human approval or a new passing run.
 
 ```text
-python scripts/assess-evidence-deviation.py --check-report docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json
+python scripts/assess-evidence-deviation.py --check-report docs/evidence/ENDURANCE_REVIEW_PREPARATION_20261117.json
 python scripts/assess-evidence-deviation.py --output artifacts/qualification/evidence-deviations/NEW_RECEIPT.json
 ```
 
 Only reviewer designation and a real authenticated independent review remain
-open for this acceptance package. Use a full-history checkout. No PR/reviewer
-approval has been fabricated or requested on the owner's behalf. If review is
+open for this acceptance package. Use a full-history checkout. PR #38 was
+created at the owner's request, but no reviewer was assigned and no approval
+has been fabricated or submitted. The previous
+[delivery receipt](evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json) is
+retained unchanged as the pre-PR snapshot. If review is
 later accepted, the only allowed closure is `CLOSED_WITH_ACCEPTED_DEVIATION`;
 the original run still fails strict qualification. Phase 62 is **not yet closed**.
 Phases 63-65, final package-bound evidence and all stable gates remain separate.

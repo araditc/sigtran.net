@@ -1,6 +1,7 @@
 # Independent Endurance Evidence Review
 
 This is a review packet, not an approval or a passing endurance receipt.
+Review PR: [#38](https://github.com/araditc/sigtran.net/pull/38).
 The product owner accepted the risk of seven missing managed-memory readings;
 independent human approval remains outstanding. Review the exact PR head and
 current bundle digest from the PR description before giving any disposition.
@@ -11,7 +12,7 @@ The six acceptance implementation commits already exist on `main`. The new PR
 prepares their review handoff; its own diff does not contain all of that code.
 Review this explicitly pinned implementation range as well as the new PR diff:
 
-[Implementation comparison](https://github.com/araditc/sigtran.net/compare/6772bfd...069cba18b2de423037618ac7b07d6d7a209825fa)
+[Implementation comparison](https://github.com/araditc/sigtran.net/compare/6772bfde9cec8b9d98f2d2a4921ca462d632a700...069cba18b2de423037618ac7b07d6d7a209825fa)
 
 | Implementation Unit | Commit |
 | --- | --- |
@@ -38,6 +39,14 @@ and exactly seven signed values/timestamps. The SDK implementation tree is
 | [Local diagnostic](../evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json) | 3,600 seconds, 37,021,965 measured completions, no reproduced negative reading; not endurance qualification |
 | [Owner acceptance](../../eng/qualification/deviations/endurance-managed-memory.owner.json) | Explicit risk decision bound to the dossier; not independent approval |
 | [Review contract](../ENDURANCE_REVIEW_REQUEST.md) | Human identity, scope, exact commit/digest, rationale and expiry |
+
+Inspect the current source as well as the comparison: the
+[dossier validator](../../scripts/evidence-deviation.py),
+[administrative assessor](../../scripts/assess-evidence-deviation.py),
+[strict endurance verifier](../../scripts/verify-endurance-evidence.py),
+[managed sampler](../../src/Sigtran.NET.PerformanceLab/ManagedMemorySampler.cs),
+[resource probe/runner](../../src/Sigtran.NET.PerformanceLab/EnduranceRunner.cs)
+and [focused rejection tests](../../scripts/tests/test_evidence_deviation.py).
 
 Public reports and passing CI are not substitutes for access to the private
 originals. The owner must arrange a read-only, access-controlled handoff of the

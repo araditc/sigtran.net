@@ -1,6 +1,6 @@
 # Independent Evidence Review Request
 
-Status: **OPEN / PR preparation in progress / reviewer not designated / no approval received**.
+Status: **OPEN / [review PR #38](https://github.com/araditc/sigtran.net/pull/38) prepared / reviewer not designated / no approval received**.
 The owner accepted the seven-reading risk; this document is a handoff, not a
 review receipt. Codex must not approve its own implementation or fill in a
 reviewer identity. The owner-designated reviewer should have relevant .NET
@@ -25,8 +25,10 @@ The decision must not assert stable/operator readiness or qualify a new package.
 ## Authenticated Approval Path
 
 The owner must first designate an independent human in the case review policy
-through repository review. Then assign a repository PR in `.review-request.json`
-containing the exact case files to be reviewed. A PR author or the product owner
+through repository review. PR #38 is now assigned in `.review-request.json` for
+the evidence handoff; it is not yet eligible for final acceptance while the
+reviewer allowlist is empty. After designation is admitted on `main`, update
+the PR from that policy and refresh its exact head/digest. A PR author or the product owner
 cannot be the independent approver; an empty allowlist never authorizes anyone.
 The assessment tool will obtain review state from GitHub, not a local `approved`
 flag. A later change request/dismissal or changed case bytes invalidates approval.
@@ -46,8 +48,8 @@ the PR base branch; a case PR cannot install its own reviewer trust. Approval
 also requires the owner decision and dossier already admitted on that base;
 the review PR cannot broaden the owner's accepted scope. Approval
 expires for assessment after 30 days; changed scope or recurring anomalies
-require re-review. No PR is created, no reviewer is impersonated and no new
-load is launched by preparing this request. See the
+require re-review. Creating PR #38 does not impersonate or approve a reviewer,
+and no new load was launched. See the
 [GitHub review API contract](https://docs.github.com/en/rest/pulls/reviews).
 
 Run live assessment from the exact reviewed PR head. Register newly discovered

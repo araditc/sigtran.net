@@ -58,11 +58,12 @@ class OwnerDecisionTests(unittest.TestCase):
 
 
 class IndependentReviewTests(unittest.TestCase):
-    def test_actual_reviewer_remains_unassigned(self):
+    def test_prepared_pr_does_not_designate_an_independent_reviewer(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit)
         value = deviation.review_material(audit, owner)
-        self.assertFalse(value['reviewerDesignated'] or value['requestAssigned'])
-        self.assertIsNone(value['request']['pullRequest'])
+        self.assertFalse(value['reviewerDesignated'])
+        self.assertTrue(value['requestAssigned'])
+        self.assertEqual(value['request']['pullRequest'], 38)
 
     def test_self_review_duplicate_identity_and_declared_approval_are_rejected(self):
         audit = deviation.dossier(); owner = deviation.owner_acceptance(audit); original = deviation.evidence.read_json
@@ -81,6 +82,7 @@ class AssessmentTests(unittest.TestCase):
         value = assessment.assess(verify_review=True, api=api)
         self.assertEqual(value['status'], 'PENDING_INDEPENDENT_REVIEW')
         self.assertTrue(value['ownerRiskAccepted'])
+        self.assertEqual(value['blockers'], ['independent-reviewer-not-designated'])
         for key in ('independentReviewApproved', 'administrativeClosureApproved', 'acceptanceExceptionGranted',
                     'qualificationPassed', 'stablePromotion', 'rootCauseProven'):
             self.assertFalse(value[key])
@@ -221,7 +223,7 @@ class AuthenticatedReviewTests(unittest.TestCase):
 
 class ReportOwnershipTests(unittest.TestCase):
     def test_public_handoff_matches_fresh_pending_assessment(self):
-        path = ROOT / 'docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json'
+        path = ROOT / 'docs/evidence/ENDURANCE_REVIEW_PREPARATION_20261117.json'
         value = assessment.check_report(path, assessment.assess())
         self.assertTrue(value['assessment']['ownerRiskAccepted'])
         self.assertFalse(value['assessment']['administrativeClosureApproved'])
