@@ -59,6 +59,23 @@ class ContextTests(unittest.TestCase):
 
 
 class TraceWindowTests(unittest.TestCase):
+    def test_public_diagnostic_cannot_promote_the_unreproduced_endurance_anomaly(self):
+        # Metadata consistency only; CI does not possess the private original lab artifacts.
+        path = pathlib.Path(__file__).resolve().parents[2] / 'docs/evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json'
+        value = verifier.evidence.read_json(path)
+        self.assertEqual(value['testedSourceCommit'], 'fb4c7159e74b31f35db6004596b469ba593fe442')
+        self.assertEqual(value['durationSeconds'], 3600)
+        self.assertEqual(value['completedTransactions'] + value['lateSuccesses'], value['terminalAdmissions'])
+        self.assertEqual(value['peerReceived'], value['terminalAdmissions'])
+        self.assertEqual(value['rawReplay']['binaryAndJsonRowsCompared'], 3601)
+        self.assertEqual(value['rawReplay']['negativeManagedReadings'], 0)
+        self.assertEqual(sum(item['starts'] for item in value['gcTraceDecoding']['windows']), 244)
+        self.assertEqual(len(value['rawArtifactSha256']), 22)
+        self.assertTrue(value['executionValid'] and value['diagnostic'])
+        for key in ('qualificationPassed', 'stablePromotion', 'rootCauseProven', 'acceptanceExceptionGranted',
+                    'freshEnduranceRunStarted', 'capacityQualification'):
+            self.assertFalse(value[key])
+
     def test_actual_pid_exits_and_schedule_are_required_without_whole_run_coverage(self):
         item = dict(name='trace-001', file='trace-001.nettrace', reason='scheduled', sdkPid=42, exitCode=0,
             requestedSeconds=5, offsetFromSdkSpawnSeconds=2.1,

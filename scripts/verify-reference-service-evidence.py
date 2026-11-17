@@ -70,9 +70,10 @@ def sccp(data):
 
 
 def extract_table(capture, timeout=60):
-    """Preserve retransmitted DATA bytes; our parser, not TShark's suppression, verifies duplicates."""
+    """Keep raw DATA bytes despite port-based ULP fallbacks; independently verify duplicates."""
     command = ['tshark', '-n', '-r', str(capture), '--disable-protocol', 'm3ua',
-               '-o', 'sctp.tsn_analysis:FALSE', '-Y', 'sctp.data_payload_proto_id == 3',
+               '-o', 'sctp.tsn_analysis:FALSE', '-o', 'sctp.ulp_dissection:FALSE',
+               '-Y', 'sctp.data_payload_proto_id == 3',
                '-T', 'fields', '-E', 'header=y']
     for field in FIELDS:
         command.extend(('-e', field))

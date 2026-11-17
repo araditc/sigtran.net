@@ -8,10 +8,11 @@ read-only reconnection tooling described here.
 
 The later [local resource diagnostic](LOCAL_RESOURCE_DIAGNOSTIC.md) is a
 different, separately owned one-hour job (`local-resource-hour-20261117-a`),
-not an endurance continuation. Its status uses
+not an endurance continuation. It finished and cleaned up on 2026-11-17;
+no diagnostic load remains active. Its retained status uses
 `start-local-resource-diagnostic.py --run-id local-resource-hour-20261117-a --status`.
-The no-active-workload statement above refers to the retained endurance run,
-not that diagnostic. Both use server-local system-service ownership.
+Both used server-local system-service ownership; the completed diagnostic
+does not change the failed full-run verdict.
 
 ## Server Ownership
 

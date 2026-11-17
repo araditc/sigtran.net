@@ -68,10 +68,13 @@ an explicit reviewed acceptance exception, which has not been granted.
 The approved [local real-stack resource diagnostic](docs/LOCAL_RESOURCE_DIAGNOSTIC.md)
 adds a separate loopback-only, at-most-one-hour SDK/independent-peer session
 with continuous raw GC context and short, separately timed EventPipe windows.
-The ten-second windowed smoke passed and the approved hour started on November
-17 at 10:23:54 UTC, on frozen source `fb4c715`. Independent raw replay and trace
-decoding remain required before a diagnostic completion claim. It does not use the Kafka
-machine, repeat 72 hours, or promote the original rejected evidence.
+The [completed hour](docs/evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json),
+on frozen source `fb4c715`, passed with 37,021,965 measured transactions, no
+unexpected failures, 3,601 independently replayed memory observations and
+three decoded GC windows without lost events. No negative reading was
+reproduced: the historical cause remains unproven and Phase 62 stays open.
+The diagnostic did not use the Kafka machine, repeat 72 hours or promote
+the original rejected evidence. Its loopback average is not capacity qualification.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

@@ -106,6 +106,11 @@ Its separately owned SDK-host loopback workload does not resume this full run,
 contact the Kafka machine for traffic, or imply a Phase 62 pass. Preparation
 and eventual actual diagnostic results are recorded separately.
 After two successful actual-stack smokes, `local-resource-hour-20261117-a`
-started on source `fb4c715` at 2026-11-17 10:23:54 UTC. Its earliest measurement
-finish is 11:23:54 UTC. That separate diagnostic is running; no full endurance
-workload is active and no diagnostic outcome is implied by its launch.
+completed on source `fb4c715`, 2026-11-17 10:23:54..11:23:54 UTC. Its 37,021,965
+measured completions, 256 drain completions, all 3,601 raw observations, exact
+peer totals and three independently decoded GC windows passed. No negative
+managed reading was reproduced, so the historical cause remains unproven.
+Cleanup and all 22 hashes/8 inputs were verified; the original 94 full-run
+hashes remain unchanged. No full or diagnostic load is now active. See the
+[separate diagnostic conclusion](LOCAL_RESOURCE_DIAGNOSTIC.md#interpretation):
+the unchanged endurance gate still rejects the historical seven missing values.

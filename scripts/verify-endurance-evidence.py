@@ -350,6 +350,7 @@ def verify_wire(root, captures, hashes, header, faults, port):
             subprocess.run(['mergecap', '-w', str(merged), *[str(relative_file(root, name)) for name in item['files']]],
                            check=True, capture_output=True, timeout=60)
             args = ['tshark', '-n', '-r', str(merged), '--disable-protocol', 'm3ua', '-o', 'sctp.tsn_analysis:FALSE',
+                    '-o', 'sctp.ulp_dissection:FALSE',
                     '-Y', 'sctp.data_payload_proto_id == 3', '-T', 'fields', '-E', 'header=y', '-e', 'frame.time_epoch']
             for field in capacity.wire.FIELDS: args += ['-e', field]
             rows = list(csv.DictReader(io.StringIO(subprocess.run(args, check=True, capture_output=True, text=True, timeout=120).stdout), delimiter='\t'))

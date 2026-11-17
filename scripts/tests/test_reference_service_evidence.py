@@ -63,6 +63,8 @@ class ReferenceEvidenceTests(unittest.TestCase):
             self.assertEqual(wire.extract_table(Path('original.pcap')), 'captured bytes')
         command = run.call_args.args[0]
         self.assertIn('sctp.tsn_analysis:FALSE', command)
+        # A source port such as 38412 must not select NGAP after M3UA is disabled.
+        self.assertIn('sctp.ulp_dissection:FALSE', command)
         self.assertIn('sctp.data_tsn_raw', command)
         self.assertNotIn('sctp.retransmission', ' '.join(command))
         self.assertTrue(run.call_args.kwargs['check'])

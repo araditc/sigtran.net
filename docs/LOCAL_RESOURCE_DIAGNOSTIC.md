@@ -18,7 +18,7 @@ continuous `EnduranceRunner`, 64-bit ledger and audited managed sampler.
 Its options accept only `127.0.0.1`, 10..3600 seconds, at most 1024 workers
 and a new output root. Diagnostic/qualification flags cannot be overridden.
 No incidents are injected, no outstanding request is replayed and reconnect
-is disabled. The planned hour uses concurrency 256, queue 8192, four maximum
+is disabled. The executed hour used concurrency 256, queue 8192, four maximum
 workers, server GC and the explicit `lan-bounded-v1` socket profile.
 
 The GC probe additionally records `GCMemoryInfo.Index` and generation-zero
@@ -73,11 +73,10 @@ this local diagnostic authorization.
 
 ## Execution Record
 
-Implementation and safety tests precede the frozen-source launch. A separate
-10-second smoke must validate real traffic, capture and GC trace decoding before
-the approved one-hour session. Actual identities, timestamps, exits, accounting,
-raw negative attempts and decoded trace results will be appended after execution.
-No result is implied by this preparation document.
+Implementation and safety tests preceded the frozen-source launch. Separate
+ten-second smokes validated actual traffic, capture and GC trace decoding
+before the hour. Failed preparation attempts remain retained alongside the
+successful smokes and the completed diagnostic below.
 
 Preparation attempt `local-resource-smoke-20261117-a` failed during exclusive
 SFTP upload before any system unit, peer, capture or workload started. Read-only
@@ -102,8 +101,8 @@ requests remained. SDK, independent peer and capture exited zero, and the
 owned restart exclusion was removed. Fifteen original artifact hashes were
 verified on retrieval. Its startup EventPipe trace decoded 32 GC starts/stops,
 one SDK PID and zero lost events. This validates the actual pipeline, not
-capacity, historical causation or the subsequent windowed collector. A fresh
-smoke must validate windowed collection before the hour is launched.
+capacity, historical causation or the subsequent windowed collector. Smoke D
+then validated that different collection method before the hour was launched.
 
 Windowed smoke `local-resource-smoke-20261117-d`, frozen source
 `fb4c7159e74b31f35db6004596b469ba593fe442`, passed ten measured seconds:
@@ -114,17 +113,84 @@ The five-second trace independently decoded 18 GC starts/stops on SDK PID
 2712819 with zero lost events. Binary/resource replay passed all 11 rows;
 there were no negative readings or retries.
 
-## Approved Hour
+## Completed Hour
 
 `local-resource-hour-20261117-a` was launched from that same frozen source,
 using SDK PID 2715299, .NET 10.0.12/server GC and four maximum workers.
 Actual measurement started `2026-11-17T10:23:54.6275857+00:00` (13:53:54 Tehran).
-The earliest measured finish is 11:23:54 UTC (14:53:54 Tehran), followed by
-drain and collection. This record describes a **running diagnostic**, not a
-successful hour. Initial trace collection exited zero. Its own system unit,
-deadline, exact-service protection and cleanup are server-local. No Kafka
-host is used. Later desktop documentation/verifier edits do not change the
-frozen files already executing on the SDK host.
+Actual finish was `2026-11-17T11:23:54.6606487+00:00` (14:53:54 Tehran),
+after 3,600 measured seconds and orderly drain. The controller finished at
+11:23:55 UTC; its privileged cleanup removed the exact-service exclusion at
+11:23:55.373 UTC. SDK/peer PIDs were absent on final inspection and all six
+owned children exited zero. No Kafka host was used or changed. The local
+documentation/verifier commits did not change the frozen executing files.
+
+The [sanitized diagnostic evidence](evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json)
+records the following independently checked result:
+
+| Check | Actual Result |
+| --- | --- |
+| In-window full transactions | 37,021,965; five operations, 7,404,393 each |
+| Drain / total terminal admissions | 256 / 37,022,221; exact peer agreement |
+| Unexpected failures / unresolved work | 0 / 0 |
+| JSON/binary observations | All 3,601 agree; journal and aggregate replay passed |
+| Negative raw readings / retries | 0 / 0; natural retry recovery was not exercised |
+| OS peak RSS / maximum observed managed | 103.89 MiB / 25.46 MiB |
+| Resident growth after ten-minute baseline | 3.53 MiB; maximum sample gap 1.329 seconds |
+| GC context changes across a read bracket | 3 index changes; 34 generation-zero count changes |
+| Three 20-second traces | Same SDK PID; 244 starts and 244 stops; zero lost events |
+| Prefix PCAP | 8,192 packets, zero capture drops, 3,112 independently matched pairs |
+| Original files / frozen inputs | All 22 output hashes and all 8 input hashes match |
+| Previous rejected full run | All 94 original hashes unchanged, locally and on Linux |
+
+The PCAP stops mid-traffic: its one trailing Invoke is a prefix-boundary
+observation, not an unresolved final transaction. Terminal peer/SDK accounting
+above covers all traffic. Average observed completion rate was 10,283.88 TPS,
+but loopback/shared-host topology, trace overhead and absence of per-second
+capacity qualification mean this is **not** a new capacity/operator claim.
+
+### Payload Extraction Correction
+
+The first offline extraction failed with empty `data.data`: the SDK's ephemeral
+source port was 38412, registered to NGAP. Disabling only M3UA allowed TShark
+3.6.2 to select NGAP instead of opaque payload bytes. The failed TSV is retained.
+Explicit Decode-As `sctp.ppi==3,data` was also rejected by this version; no
+configuration was changed. Adding process-local `-o sctp.ulp_dissection:FALSE`
+to raw extraction preserved payloads, and the **same original capture** then
+passed the independent BER/TCAP/MAP parser for all five operations.
+The shared reference/endurance extractors now use that option with regression
+coverage. No PCAP was edited, recaptured or filtered to conceal invalid bytes.
+See the [TShark option reference](https://www.wireshark.org/docs/man-pages/tshark.html).
+
+### Interpretation
+
+The one-hour diagnostic passed and the limited investigation is complete.
+It did **not reproduce** the original negative-memory anomaly. GC identity
+changes were observed, but all corresponding raw managed reads were valid;
+that does not demonstrate the cause of the earlier seven invalid values.
+The native send/receive review found no obvious length, descriptor-lifetime or
+buffer-lifetime mismatch in the inspected path; it is not a proof that every
+native-memory defect is excluded. No runtime defect or root-cause fix is claimed.
+
+The bounded retry protocol remains a defensive correction tested with injected
+negative reads, not naturally recovered negative observations in this hour.
+Historical missing values cannot be reconstructed or replaced. Under the
+unchanged gate, Phase 62 remains open. Avoiding a fresh qualifying measurement
+would require a separate independently reviewed and explicitly approved
+acceptance exception; none was granted or inferred. No new 72-hour run started.
+
+## Engineering Checks
+
+The `phase-62/local-session-completion/units/10` verification passed Release
+build, all 555 SDK checks, all 40 qualification checks, both trace-analysis
+self-tests, the unchanged 2,308-member public API comparison and package
+creation. Focused Python checks passed for local launch/replay (13), reference
+wire decoding (9), capacity replay (20), wire profiles (2) and endurance (43;
+two Linux-only checks skipped on Windows). The first windowed preparation's
+Windows socket-permission failure is retained separately; its authorized
+loopback-enabled retry passed before launch.
+
+## Independent Replay
 
 `scripts/verify-local-resource-evidence.py` separately replays the completed
 hash inventory, journal, exact admission/terminal/peer totals, binary resource

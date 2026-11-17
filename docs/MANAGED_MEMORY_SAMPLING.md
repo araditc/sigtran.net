@@ -3,7 +3,9 @@
 Date: 2026-11-17. Scope: limited instrumentation investigation and defensive
 correction, **not** a fresh endurance run, acceptance exception or Phase 62 pass.
 The owner requested that the 72-hour test not be repeated during this work.
-No Kafka maintenance, SCTP traffic or original-evidence modification occurred.
+The standalone investigations below made no SCTP traffic or service changes;
+the later explicitly approved real-stack diagnostic is reported separately.
+No Kafka maintenance or original-evidence modification occurred in either.
 
 ## Original Evidence
 
@@ -128,9 +130,13 @@ The defensible current status is: retained 72-hour traffic/recovery/restoration
 evidence, corrected future sampling protocol with regression coverage, and an
 open managed-memory evidence gap. Phase 62 and stable promotion remain open.
 
-The next owner-approved step is a [bounded real-stack session](LOCAL_RESOURCE_DIAGNOSTIC.md),
-using a local independent peer and GC trace/context. The three allocation
-diagnostics above remain unchanged; this is not another endurance attempt.
+The subsequent [bounded real-stack session](LOCAL_RESOURCE_DIAGNOSTIC.md)
+completed 3,600 actual seconds and 37,021,965 measured transactions with a local
+independent peer. All 3,601 JSON/binary memory observations, three GC windows
+and exact terminal totals passed; no negative reading or retry occurred.
+This is non-reproduction, not root-cause proof or an acceptance exception.
+The three allocation diagnostics and rejected full attempt remain unchanged;
+no further endurance run was launched.
 
 ## Engineering Verification
 
