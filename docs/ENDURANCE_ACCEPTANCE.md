@@ -19,8 +19,8 @@ An unchanged source tree is not an identical final package attestation.
 
 | Unit | Deliverable | Status |
 | --- | --- | --- |
-| 1 | Immutable evidence dossier and source-tree comparison | Implemented; focused tests pass |
-| 2 | Exact-scope owner risk acceptance | Pending |
+| 1 | Immutable evidence dossier and source-tree comparison | Complete; build/test/API/pack and commit/push passed |
+| 2 | Exact-scope owner risk acceptance | Implemented; focused scope/rejection tests pass |
 | 3 | Independent review contract and request | Pending; actual human approval remains open |
 | 4 | Separate fail-closed administrative assessment | Pending |
 | 5 | Tamper rejection and CI boundaries | Pending |
@@ -28,3 +28,14 @@ An unchanged source tree is not an identical final package attestation.
 
 The strict endurance/release policies are not changed by this work. No VM load,
 Kafka control, package publication or stable promotion is authorized here.
+
+## Owner Decision
+
+The `.owner.json` record transcribes the explicit owner instruction from this
+conversation and binds the exact dossier SHA-256. The authenticated local
+GitHub account was observed as `ammarheidari`; no token is stored. The record
+does not pretend to be a signed GitHub review or an independent approval.
+It accepts only the seven unknown readings, not an instrumentation-only cause.
+Changing scope, evidence or SDK implementation, finding an additional failure,
+recurring negative readings or reviewer rejection reopens the risk decision.
+Repository attributes preserve these decision bytes across OS checkouts.

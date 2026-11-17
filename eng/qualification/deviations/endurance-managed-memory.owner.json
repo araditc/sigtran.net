@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "caseId": "endurance-managed-memory-observations",
+  "dossierSha256": "214bb94a552d9ae9d689bae5ad07c14954b00b7fc2bce6ce9fb0020383ecb5ff",
+  "actor": "ammarheidari",
+  "role": "product-owner",
+  "recordedOn": "2026-11-17",
+  "decision": "accept-seven-reading-risk",
+  "basis": "explicit-owner-instruction-in-Codex",
+  "statement": "The owner accepts the risk of these seven readings, authorizes six delivery units without another 72-hour run, and explicitly leaves independent reviewer approval open.",
+  "independentReviewRequired": true,
+  "rootCauseProven": false,
+  "originalVerdictMayChange": false,
+  "releasePromotionAuthorized": false,
+  "revocationTriggers": [
+    "scope-or-evidence-change",
+    "sdk-implementation-change",
+    "additional-unexpected-failure",
+    "negative-managed-reading-recurrence",
+    "independent-review-rejection"
+  ]
+}

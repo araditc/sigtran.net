@@ -8,6 +8,7 @@ import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CASE = 'eng/qualification/deviations/endurance-managed-memory.json'
+OWNER = 'eng/qualification/deviations/endurance-managed-memory.owner.json'
 spec = importlib.util.spec_from_file_location('deviation_endurance_contract', ROOT / 'scripts/verify-endurance-evidence.py')
 evidence = importlib.util.module_from_spec(spec); spec.loader.exec_module(evidence)
 require = evidence.require
@@ -69,6 +70,28 @@ def dossier(root=ROOT):
     return dict(case=case, records=records, dossierSha256=evidence.capacity.digest(root / CASE),
                 publicRecordHashesVerified=True, sdkSourceTreeUnchanged=True, privateArtifactsReplayed=False,
                 qualificationPassed=False, stablePromotion=False, rootCauseProven=False)
+
+
+def owner_acceptance(audit, root=ROOT):
+    """Record the actual owner instruction, not an independent review or a cryptographic signature."""
+    value = evidence.read_json(evidence.relative_file(pathlib.Path(root).resolve(), OWNER))
+    require(set(value) == {'schemaVersion', 'caseId', 'dossierSha256', 'actor', 'role', 'recordedOn',
+        'decision', 'basis', 'statement', 'independentReviewRequired', 'rootCauseProven',
+        'originalVerdictMayChange', 'releasePromotionAuthorized', 'revocationTriggers'}, 'Unexpected owner decision schema')
+    require(value['schemaVersion'] == 1 and value['caseId'] == audit['case']['id']
+            and value['dossierSha256'] == audit['dossierSha256'], 'Owner acceptance does not bind this dossier')
+    require(value['actor'] == 'ammarheidari' and value['role'] == 'product-owner'
+            and value['decision'] == 'accept-seven-reading-risk' and value['basis'] == 'explicit-owner-instruction-in-Codex'
+            and isinstance(value['statement'], str) and 20 <= len(value['statement']) <= 1024,
+            'Owner authority or scope differs')
+    require(re.fullmatch(r'\d{4}-\d{2}-\d{2}', value['recordedOn']), 'Owner decision date is required')
+    evidence.utc_time(value['recordedOn'] + 'T00:00:00+00:00')
+    require(value['independentReviewRequired'] is True and all(value[key] is False for key in
+            ('rootCauseProven', 'originalVerdictMayChange', 'releasePromotionAuthorized')), 'Owner acceptance cannot bypass review or release gates')
+    require(value['revocationTriggers'] == ['scope-or-evidence-change', 'sdk-implementation-change',
+        'additional-unexpected-failure', 'negative-managed-reading-recurrence', 'independent-review-rejection'],
+        'Risk reopening conditions differ')
+    return value
 
 
 if __name__ == '__main__':

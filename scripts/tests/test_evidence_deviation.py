@@ -34,4 +34,20 @@ class DossierTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'hash differs'): deviation.dossier()
 
 
+class OwnerDecisionTests(unittest.TestCase):
+    def test_owner_instruction_is_exact_scope_not_independent_approval(self):
+        value = deviation.owner_acceptance(deviation.dossier())
+        self.assertTrue(value['independentReviewRequired'])
+        self.assertFalse(value['releasePromotionAuthorized'] or value['originalVerdictMayChange'])
+        self.assertEqual(value['actor'], 'ammarheidari')
+
+    def test_wrong_dossier_authority_and_release_bypass_are_rejected(self):
+        audit = deviation.dossier(); original = deviation.evidence.read_json
+        for key, value in [('dossierSha256', '0' * 64), ('actor', 'unapproved-owner'), ('decision', 'accept-all-failures'),
+                           ('independentReviewRequired', False), ('releasePromotionAuthorized', True), ('revocationTriggers', [])]:
+            bad = copy.deepcopy(original(ROOT / deviation.OWNER)); bad[key] = value
+            with patch.object(deviation.evidence, 'read_json', return_value=bad):
+                with self.assertRaises(ValueError): deviation.owner_acceptance(audit)
+
+
 if __name__ == '__main__': unittest.main()
