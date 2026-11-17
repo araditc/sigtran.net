@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "caseId": "endurance-managed-memory-observations",
+  "repository": "araditc/sigtran.net",
+  "allowedReviewers": [],
+  "excludedReviewers": ["ammarheidari"],
+  "maximumReviewAgeDays": 30,
+  "requireExactCommitAndBundle": true,
+  "requireHumanReviewer": true
+}

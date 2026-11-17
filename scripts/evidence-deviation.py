@@ -9,6 +9,8 @@ import subprocess
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CASE = 'eng/qualification/deviations/endurance-managed-memory.json'
 OWNER = 'eng/qualification/deviations/endurance-managed-memory.owner.json'
+REVIEW_POLICY = 'eng/qualification/deviations/endurance-managed-memory.review-policy.json'
+REVIEW_REQUEST = 'eng/qualification/deviations/endurance-managed-memory.review-request.json'
 spec = importlib.util.spec_from_file_location('deviation_endurance_contract', ROOT / 'scripts/verify-endurance-evidence.py')
 evidence = importlib.util.module_from_spec(spec); spec.loader.exec_module(evidence)
 require = evidence.require
@@ -92,6 +94,29 @@ def owner_acceptance(audit, root=ROOT):
         'additional-unexpected-failure', 'negative-managed-reading-recurrence', 'independent-review-rejection'],
         'Risk reopening conditions differ')
     return value
+
+
+def review_material(audit, owner, root=ROOT):
+    """An empty trust roster and unassigned PR are pending work, never independent approval."""
+    root = pathlib.Path(root).resolve()
+    policy, request = [evidence.read_json(evidence.relative_file(root, path)) for path in (REVIEW_POLICY, REVIEW_REQUEST)]
+    require(set(policy) == {'schemaVersion', 'caseId', 'repository', 'allowedReviewers', 'excludedReviewers',
+        'maximumReviewAgeDays', 'requireExactCommitAndBundle', 'requireHumanReviewer'}, 'Unexpected reviewer policy schema')
+    require(policy['schemaVersion'] == 1 and policy['caseId'] == audit['case']['id']
+            and policy['repository'] == 'araditc/sigtran.net' and type(policy['maximumReviewAgeDays']) is int
+            and policy['maximumReviewAgeDays'] == 30 and policy['requireExactCommitAndBundle'] is True
+            and policy['requireHumanReviewer'] is True, 'Reviewer scope or required controls differ')
+    names = policy['allowedReviewers']
+    require(isinstance(names, list) and len(names) <= 16 and all(isinstance(name, str)
+            and re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?', name) for name in names), 'Invalid reviewer roster')
+    require(len({name.lower() for name in names}) == len(names)
+            and policy['excludedReviewers'] == [owner['actor']]
+            and owner['actor'].lower() not in {name.lower() for name in names}, 'Owner or duplicate reviewer cannot be independent')
+    require(set(request) == {'schemaVersion', 'caseId', 'pullRequest'} and request['schemaVersion'] == 1
+            and request['caseId'] == audit['case']['id'], 'Unexpected review request schema')
+    number = request['pullRequest']
+    require(number is None or (type(number) is int and 1 <= number <= 100000000), 'Invalid review PR reference')
+    return dict(policy=policy, request=request, reviewerDesignated=bool(names), requestAssigned=number is not None)
 
 
 if __name__ == '__main__':

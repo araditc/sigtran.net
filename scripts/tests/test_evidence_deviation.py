@@ -50,4 +50,22 @@ class OwnerDecisionTests(unittest.TestCase):
                 with self.assertRaises(ValueError): deviation.owner_acceptance(audit)
 
 
+class IndependentReviewTests(unittest.TestCase):
+    def test_actual_reviewer_remains_unassigned(self):
+        audit = deviation.dossier(); owner = deviation.owner_acceptance(audit)
+        value = deviation.review_material(audit, owner)
+        self.assertFalse(value['reviewerDesignated'] or value['requestAssigned'])
+        self.assertIsNone(value['request']['pullRequest'])
+
+    def test_self_review_duplicate_identity_and_declared_approval_are_rejected(self):
+        audit = deviation.dossier(); owner = deviation.owner_acceptance(audit); original = deviation.evidence.read_json
+        for names in (['ammarheidari'], ['AMMARHEIDARI'], ['reviewer', 'Reviewer'], ['robot[bot]']):
+            bad = original(ROOT / deviation.REVIEW_POLICY); bad['allowedReviewers'] = names
+            with patch.object(deviation.evidence, 'read_json', side_effect=lambda p: bad if str(p).endswith('.review-policy.json') else original(p)):
+                with self.assertRaises(ValueError): deviation.review_material(audit, owner)
+        bad = original(ROOT / deviation.REVIEW_REQUEST); bad['approved'] = True
+        with patch.object(deviation.evidence, 'read_json', side_effect=lambda p: bad if str(p).endswith('.review-request.json') else original(p)):
+            with self.assertRaises(ValueError): deviation.review_material(audit, owner)
+
+
 if __name__ == '__main__': unittest.main()

@@ -20,8 +20,8 @@ An unchanged source tree is not an identical final package attestation.
 | Unit | Deliverable | Status |
 | --- | --- | --- |
 | 1 | Immutable evidence dossier and source-tree comparison | Complete; build/test/API/pack and commit/push passed |
-| 2 | Exact-scope owner risk acceptance | Implemented; focused scope/rejection tests pass |
-| 3 | Independent review contract and request | Pending; actual human approval remains open |
+| 2 | Exact-scope owner risk acceptance | Complete; build/test/API/pack and commit/push passed |
+| 3 | Independent review contract and request | Implemented; reviewer designation and actual human approval remain OPEN |
 | 4 | Separate fail-closed administrative assessment | Pending |
 | 5 | Tamper rejection and CI boundaries | Pending |
 | 6 | Final report, docs and handoff | Pending |
@@ -39,3 +39,8 @@ It accepts only the seven unknown readings, not an instrumentation-only cause.
 Changing scope, evidence or SDK implementation, finding an additional failure,
 recurring negative readings or reviewer rejection reopens the risk decision.
 Repository attributes preserve these decision bytes across OS checkouts.
+
+The [independent review request](ENDURANCE_REVIEW_REQUEST.md) names the review
+questions and authenticated approval path. Its trust roster is deliberately
+empty and its PR reference is null. Preparing this contract does not perform
+the human review; the owner must designate that independent reviewer later.
