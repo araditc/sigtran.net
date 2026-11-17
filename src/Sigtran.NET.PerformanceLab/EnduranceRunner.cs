@@ -23,10 +23,11 @@ internal sealed class EnduranceResourceProbe : IDisposable
     {
         _process.Refresh();
         GCMemoryInfo info = GC.GetGCMemoryInfo();
-        return new(_process.WorkingSet64, _process.PeakWorkingSet64, GC.GetTotalMemory(false), info.HeapSizeBytes,
+        ManagedMemoryReading managed = ManagedMemorySampler.Read();
+        return new(_process.WorkingSet64, _process.PeakWorkingSet64, managed.Value, info.HeapSizeBytes,
             info.FragmentedBytes, GC.GetTotalAllocatedBytes(false), _process.TotalProcessorTime.TotalSeconds,
             GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2),
-            ThreadPool.ThreadCount, ThreadPool.PendingWorkItemCount, ThreadPool.CompletedWorkItemCount);
+            ThreadPool.ThreadCount, ThreadPool.PendingWorkItemCount, ThreadPool.CompletedWorkItemCount, managed);
     }
     public void Dispose() => _process.Dispose();
 }
@@ -34,7 +35,8 @@ internal sealed class EnduranceResourceProbe : IDisposable
 /// <summary>Resource counters are observations, not a claim that every transient managed-heap peak was sampled.</summary>
 internal sealed record EnduranceResources(long WorkingSetBytes, long PeakWorkingSetBytes, long ManagedBytes,
     long HeapSizeBytes, long FragmentedBytes, long AllocatedBytes, double ProcessCpuSeconds,
-    int Gen0, int Gen1, int Gen2, int ThreadPoolThreads, long ThreadPoolPending, long ThreadPoolCompleted);
+    int Gen0, int Gen1, int Gen2, int ThreadPoolThreads, long ThreadPoolPending, long ThreadPoolCompleted,
+    ManagedMemoryReading? ManagedMemory = null);
 
 /// <summary>One consistent ledger snapshot with an actual monotonic sample timestamp.</summary>
 internal sealed record EnduranceSample(DateTimeOffset StartedAtUtc, double ElapsedSeconds, EnduranceCounts Counts, EnduranceResources Resources);

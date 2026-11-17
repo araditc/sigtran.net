@@ -127,7 +127,7 @@ The guard retries uncertain cleanup independently of the SDK/controller.
 
 An observation is taken about once per second. Fixed-width binary records
 preserve those observations while hash-chain checkpoints are written each
-minute. The `SGENOBS1` header precedes 208-byte little-endian records
+minute. The retained legacy `SGENOBS1` header precedes 208-byte little-endian records
 (`double`, six signed 64-bit counters, `double`, eighteen signed 64-bit counters).
 The doubles are actual elapsed seconds and process CPU seconds. Remaining
 fields are RSS/OS peak RSS/managed bytes/GC heap/fragmentation/allocation,
@@ -140,6 +140,13 @@ progress. Managed-memory sampling is not misrepresented as an exact transient
 peak. The baseline is the first observation at or after 600 seconds (one-sixth
 of a short diagnostic); the maximum subsequent RSS growth is bounded too.
 No forced GC or per-transaction resource log is used.
+
+New [audited managed-memory sampling](MANAGED_MEMORY_SAMPLING.md) writes
+`SGENOBS2`: the same 208-byte prefix plus four signed 64-bit attempt fields,
+for 240 bytes total. A start-frame declaration and replayed checkpoint/summary
+attempt counts bind the protocol. Only negative reads are retried, at most
+three times; all raw values remain visible and exhausted retries fail.
+Legacy negatives are not reinterpreted or upgraded into this new format.
 
 A resource/queue/protocol breach or more than 120 seconds without a successful
 result records the violated bound and aborts execution. Checkpoints retain
@@ -154,6 +161,8 @@ readings now record `invalid-resource-observation` and fail immediately. The
 raw signed sample is written before monitoring and is never clamped. This
 corrects the online detection gap found in the rejected full run; it does not
 establish a fix for the runtime sampling anomaly or qualify the old evidence.
+The limited investigation and standalone short diagnostics did not reproduce
+the anomaly; neither a root-cause fix nor an acceptance exception is claimed.
 
 The default 24-bit TCAP transaction-ID range and configurable full 32-bit
 range both have rollover tests; the manager's existing allocation fence skips

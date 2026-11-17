@@ -65,7 +65,11 @@ only 79 TPS and the per-socket profile is explicit; no general SLA is implied.
 seconds and 3,545,239,973 in-window transactions, but remains rejected because
 seven raw managed-memory observations are negative. Wire/accounting and Kafka
 restoration passed; neither overrides resource replay. Unit 10 remains open
-pending a valid sampling correction, diagnostic and fresh qualifying run.
+pending valid resource evidence. The owner requested a
+[limited sampling investigation](MANAGED_MEMORY_SAMPLING.md) without a fresh
+72-hour run: defensive audited retries and short standalone diagnostics do
+not retrospectively qualify the old stream. A no-repeat acceptance exception
+would require explicit review/approval; none has been granted or inferred.
 Phases 63-65 and final package/source/scope-bound trusted release qualification
 remain mandatory; a source-build pass does not close the stable release gates.
 

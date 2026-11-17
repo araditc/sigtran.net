@@ -40,6 +40,9 @@ internal static class EnduranceApplication
                             sample.StartedAtUtc, ProcessId = Environment.ProcessId, Runtime = Environment.Version.ToString(),
                             LocalPort = session.LocalPort, HeartbeatIntervalSeconds = 2, HeartbeatTimeoutSeconds = 2,
                             ObservationSeconds = 1, CheckpointSeconds = EnduranceOptions.CheckpointSeconds,
+                            ObservationFormat = EnduranceObservationLog.Format,
+                            ManagedMemorySampling = new { Method = ManagedMemorySampler.Method,
+                                MaximumAttempts = ManagedMemorySampler.MaximumAttempts, RetryDelayMilliseconds = 1 },
                             ServerGc = System.Runtime.GCSettings.IsServerGC, SocketProfile = socketProfile, FaultPlan = options.FaultPlan(),
                             ThreadPoolLimits = new { MinimumWorkers = minimumWorkers, MaximumWorkers = maximumWorkers,
                                 MinimumIoThreads = minimumIoThreads, MaximumIoThreads = maximumIoThreads }, Sample = sample, Stack = stack });

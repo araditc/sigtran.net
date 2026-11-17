@@ -116,6 +116,55 @@ class EvidenceTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), original)
             self.assertEqual(len(evidence.OBSERVATION_KEYS), len(row))
 
+    def test_audited_retries_cannot_skip_valid_reads_clamp_or_exceed_three_attempts(self):
+        self.assertEqual(evidence.managed_reading(50, (-710056, 50, 0, 2))['First'], -710056)
+        self.assertEqual(evidence.managed_reading(50, (-1, -2, 50, 3))['Attempts'], 3)
+        for value, raw in ((50, (100, 50, 0, 2)), (0, (-1, -2, -3, 3)), (50, (-1, 50, 0, 4)),
+                           (50, (50, 1, 0, 1)), (50, (-1, 49, 0, 2))):
+            with self.assertRaises(ValueError): evidence.managed_reading(value, raw)
+
+    def test_new_format_requires_explicit_sampling_identity_and_retains_legacy_rejection(self):
+        self.assertIs(evidence.observation_schema(b'SGENOBS1', {}), evidence.OBSERVATION)
+        with self.assertRaises(ValueError): evidence.observation_schema(b'SGENOBS2', {})
+        header = dict(ObservationFormat='SGENOBS2', ManagedMemorySampling=dict(
+            Method='bounded-non-forcing-read-v1', MaximumAttempts=3, RetryDelayMilliseconds=1))
+        self.assertIs(evidence.observation_schema(b'SGENOBS2', header), evidence.OBSERVATION_WITH_READS)
+        with self.assertRaises(ValueError): evidence.observation_schema(b'SGENOBS1', header)
+        header['ManagedMemorySampling']['RetryDelayMilliseconds'] = True
+        with self.assertRaises(ValueError): evidence.observation_schema(b'SGENOBS2', header)
+
+    def test_full_resource_replay_checks_all_retry_values_and_aggregate_counts(self):
+        header = dict(DurationSeconds=360, Diagnostic=True, Concurrency=256, QueueCapacity=8192,
+                      ObservationFormat='SGENOBS2', ManagedMemorySampling=dict(
+                          Method='bounded-non-forcing-read-v1', MaximumAttempts=3, RetryDelayMilliseconds=1))
+        rows, samples = [], []
+        for i, elapsed in enumerate((0., 60., 61.)):
+            row = [elapsed, 100, 100, 50, 40, 0, 1000 + i, float(i)] + [0] * 18
+            row[14:17] = [5 * (i + 1), 5 * (i + 1), 0]
+            raw = [-710056, 50, 0, 2] if i == 1 else [50, 0, 0, 1]
+            resources = dict(zip(evidence.RESOURCE_KEYS, row[1:14]))
+            resources['ManagedMemory'] = evidence.managed_reading(row[3], raw)
+            samples.append(dict(ElapsedSeconds=elapsed, Resources=resources, Counts=ledger(5 * (i + 1))))
+            rows.append(row + raw)
+        summary = dict(Observations=3, LastElapsedSeconds=61., PeakWorkingSetBytes=100,
+            MaximumObservedManagedBytes=50, MaximumObservedHeapBytes=40, BaselineWorkingSetBytes=100,
+            BaselineAfterSeconds=60., MaximumResidentGrowthBytes=0, MaximumObservationGapSeconds=60.,
+            MaximumNoProgressSeconds=0., PeakPending=0, PeakActive=0, PeakOutboundQueue=0, PeakInboundQueue=0,
+            WithinBounds=True, Violations=[], RetriedManagedObservations=1, NegativeManagedReadings=1)
+        final = dict(ResourceSummary=summary, Run=dict(Counts=ledger(15)))
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / 'observations'
+            path.write_bytes(b'SGENOBS2' + b''.join(evidence.OBSERVATION_WITH_READS.pack(*row) for row in rows))
+            replay = evidence.replay_resources(path, header, samples, final)
+            self.assertEqual(replay['retriedManagedObservations'], 1)
+            summary['NegativeManagedReadings'] = 0
+            with self.assertRaisesRegex(ValueError, 'aggregates differ'):
+                evidence.replay_resources(path, header, samples, final)
+            summary['NegativeManagedReadings'] = 1
+            samples[0]['Resources']['ManagedMemory']['Second'] = False
+            with self.assertRaisesRegex(ValueError, 'Checkpoint managed-memory attempts differ'):
+                evidence.replay_resources(path, header, samples, final)
+
 
 if __name__ == '__main__':
     unittest.main()

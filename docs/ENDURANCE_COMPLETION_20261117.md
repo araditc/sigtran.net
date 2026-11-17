@@ -87,6 +87,12 @@ This detection correction does not itself fix the sampling anomaly.
 
 ## Remaining Exit Work
 
+The subsequent [limited investigation](MANAGED_MEMORY_SAMPLING.md), requested
+without a new 72-hour run, adds audited bounded retries and records the failed
+independent reproduction attempt. It does not change this original rejection.
+The steps below remain the no-exception qualification path, not an automatic
+instruction to restart measurement or Kafka maintenance.
+
 1. Establish and test a valid non-forcing-GC sampling correction, with explicit
    semantics for every retained observation; do not loosen the existing gate.
 2. Freeze the corrected source, pass build/tests/API/pack, and verify a real

@@ -32,6 +32,7 @@ require, read_json, utc_time = capacity.require, capacity.read_json, capacity.ut
 POLICY = 'completed-map-endurance-v1'
 SECONDS = 259200
 OBSERVATION = struct.Struct('<d6qd18q')
+OBSERVATION_WITH_READS = struct.Struct('<d6qd22q')
 KINDS = ('peer-restart', 'peer-outage', 'sctp-partition')
 OFFSETS = (900, 1800, 2700, 87300, 88200, 89100, 173700, 174600, 175500)
 RESOURCE_KEYS = ('WorkingSetBytes', 'PeakWorkingSetBytes', 'ManagedBytes', 'HeapSizeBytes',
@@ -119,23 +120,52 @@ def fault_plan(header):
     return expected
 
 
+def observation_schema(marker, header):
+    """Old signed observations stay strict; new retries require an explicit source-bound declaration."""
+    require(marker in (b'SGENOBS1', b'SGENOBS2'), 'Observation format differs')
+    require(header.get('ObservationFormat', 'SGENOBS1') == marker.decode(), 'Declared observation format differs')
+    if marker == b'SGENOBS2':
+        sampling = header.get('ManagedMemorySampling')
+        require(isinstance(sampling, dict) and type(sampling.get('MaximumAttempts')) is int
+                and type(sampling.get('RetryDelayMilliseconds')) is int
+                and sampling == dict(Method='bounded-non-forcing-read-v1',
+                MaximumAttempts=3, RetryDelayMilliseconds=1), 'Managed-memory sampling declaration differs')
+        return OBSERVATION_WITH_READS
+    require('ManagedMemorySampling' not in header, 'Legacy observations cannot claim audited retries')
+    return OBSERVATION
+
+
+def managed_reading(value, raw):
+    """No valid earlier read may be skipped, no invalid value clamped, and all unused fields must be zero."""
+    first, second, third, attempts = raw
+    require(type(attempts) is int and 1 <= attempts <= 3, 'Invalid managed-memory attempt count')
+    reads = (first, second, third)
+    require(value >= 0 and reads[attempts - 1] == value and all(x < 0 for x in reads[:attempts - 1])
+            and all(x == 0 for x in reads[attempts:]), 'Managed-memory retry history differs from accepted value')
+    return dict(First=first, Second=second, Third=third, Attempts=attempts)
+
+
 def replay_resources(path, header, checkpoint_samples, final):
     """Stream every fixed-width observation, independently recalculating the reported resource bounds."""
     size = path.stat().st_size
-    require(8 < size <= 64 * 1024 * 1024 and (size - 8) % OBSERVATION.size == 0,
+    with path.open('rb') as stream:
+        record = observation_schema(stream.read(8), header)
+    require(8 < size <= 64 * 1024 * 1024 and (size - 8) % record.size == 0,
             'Observation stream is truncated or over budget')
-    require((size - 8) // OBSERVATION.size <= SECONDS + 60, 'Observation count exceeds bound')
+    require((size - 8) // record.size <= SECONDS + 60, 'Observation count exceeds bound')
     wanted = {sample['ElapsedSeconds']: sample for sample in checkpoint_samples}
     require(len(wanted) == len(checkpoint_samples), 'Repeated checkpoint timestamp')
     previous = first = None
     number, maximum_gap, maximum_idle, last_progress, last_success = 0, 0.0, 0.0, 0.0, 0
     rss = managed = heap = growth = max_pending = max_active = max_out = max_in = 0
     baseline = None
+    retried = negative_reads = 0
     after = header['DurationSeconds'] / 6.0 if header['Diagnostic'] else 600
     with path.open('rb') as stream:
-        require(stream.read(8) == b'SGENOBS1', 'Observation format differs')
-        while data := stream.read(OBSERVATION.size):
-            row = OBSERVATION.unpack(data)
+        require(observation_schema(stream.read(8), header) is record, 'Observation schema changed during replay')
+        while data := stream.read(record.size):
+            unpacked = record.unpack(data)
+            row = unpacked[:26]
             if first is None: first = row
             elapsed, *rest = row
             finite(elapsed); finite(row[7])
@@ -143,6 +173,11 @@ def replay_resources(path, header, checkpoint_samples, final):
                 if i not in (0, 7):
                     require(type(value) is int and value >= 0,
                             f'Negative resource counter: {OBSERVATION_KEYS[i]}={value} at elapsedSeconds={elapsed}')
+            reading = None
+            if record is OBSERVATION_WITH_READS:
+                reading = managed_reading(row[3], unpacked[26:])
+                retried += reading['Attempts'] > 1
+                negative_reads += reading['Attempts'] - 1
             require(elapsed <= header['DurationSeconds'] + 30 and row[2] >= row[1], 'Observation duration or RSS bounds differ')
             if previous is not None:
                 require(elapsed > previous[0], 'Observation times are not strictly monotonic')
@@ -162,10 +197,16 @@ def replay_resources(path, header, checkpoint_samples, final):
             if elapsed in wanted:
                 sample = wanted.pop(elapsed)
                 require(tuple(sample['Resources'][key] for key in RESOURCE_KEYS) == row[1:14], 'Checkpoint resource values differ from original stream')
+                if reading is not None:
+                    saved = sample['Resources'].get('ManagedMemory')
+                    require(isinstance(saved, dict) and saved == reading
+                            and all(type(saved[key]) is int for key in reading), 'Checkpoint managed-memory attempts differ')
                 ledger = counts(sample['Counts'])
                 require((ledger['started'], ledger['successes'], ledger['pending']) == row[14:17], 'Checkpoint ledger differs from observation stream')
             previous = row
     summary = final['ResourceSummary']
+    require(bounded_int(summary.get('RetriedManagedObservations', 0)) == retried
+            and bounded_int(summary.get('NegativeManagedReadings', 0)) == negative_reads, 'Managed-memory retry aggregates differ')
     require(not wanted and baseline is not None, 'Missing resource checkpoint/baseline observation')
     require(summary['Observations'] == number and summary['LastElapsedSeconds'] == previous[0]
             and summary['PeakWorkingSetBytes'] == rss and summary['MaximumObservedManagedBytes'] == managed
@@ -182,7 +223,9 @@ def replay_resources(path, header, checkpoint_samples, final):
             and max(maximum_gap, maximum_idle) <= 120 and summary['WithinBounds'] is True and summary['Violations'] == [], 'Resource/progress qualification failed')
     terminal = counts(final['Run']['Counts'])
     require((terminal['started'], terminal['successes'], terminal['pending']) == previous[14:17], 'Final ledger differs from last original observation')
-    return dict(observations=number, maximumObservationGapSeconds=maximum_gap, peakWorkingSetBytes=rss,
+    return dict(observations=number, observationFormat='SGENOBS2' if record is OBSERVATION_WITH_READS else 'SGENOBS1',
+                retriedManagedObservations=retried, negativeManagedReadings=negative_reads,
+                maximumObservationGapSeconds=maximum_gap, peakWorkingSetBytes=rss,
                 maximumObservedManagedBytes=managed, maximumObservedHeapBytes=heap, maximumResidentGrowthBytes=growth,
                 processCpuSeconds=previous[7] - first[7], allocatedBytes=previous[6] - first[6],
                 gen0Collections=previous[8] - first[8], gen1Collections=previous[9] - first[9], gen2Collections=previous[10] - first[10])

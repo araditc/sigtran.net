@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "resource-observation-analysis",
+  "testedSourceCommit": "1579bad8b2c731819bfeb063260f23d10a0e427f",
+  "qualificationPassed": false,
+  "stablePromotion": false,
+  "originalArtifactCount": 94,
+  "originalHashesUnchanged": true,
+  "originalManifestSha256": "8998131ed9ce028f2e52e840ec21232c9bdc392529ed6739c8e1bef42dc50b88",
+  "strictResourceReplayPassed": false,
+  "strictReplayRejection": "Negative resource counter: ManagedBytes=-710056 at elapsedSeconds=32430.261368219",
+  "diagnosticFindings": {
+    "observations": 259201,
+    "negativeManagedObservations": 7,
+    "invalidManagedDetails": [
+      {
+        "elapsedSeconds": 32430.261368219,
+        "managedBytes": -710056,
+        "lastGcHeapBytes": 2970968,
+        "allocatedBytesSincePrevious": 114277728,
+        "previousManagedBytes": 5459488
+      },
+      {
+        "elapsedSeconds": 76903.261171248,
+        "managedBytes": -31656,
+        "lastGcHeapBytes": 3335224,
+        "allocatedBytesSincePrevious": 143541240,
+        "previousManagedBytes": 19860936
+      },
+      {
+        "elapsedSeconds": 133946.260540874,
+        "managedBytes": -103576,
+        "lastGcHeapBytes": 3245000,
+        "allocatedBytesSincePrevious": 106523720,
+        "previousManagedBytes": 17485424
+      },
+      {
+        "elapsedSeconds": 202513.26044205,
+        "managedBytes": -475368,
+        "lastGcHeapBytes": 3218648,
+        "allocatedBytesSincePrevious": 111707776,
+        "previousManagedBytes": 5680568
+      },
+      {
+        "elapsedSeconds": 213231.260897826,
+        "managedBytes": -202224,
+        "lastGcHeapBytes": 3346256,
+        "allocatedBytesSincePrevious": 104986312,
+        "previousManagedBytes": 24524680
+      },
+      {
+        "elapsedSeconds": 221600.260125696,
+        "managedBytes": -272720,
+        "lastGcHeapBytes": 3034944,
+        "allocatedBytesSincePrevious": 149365912,
+        "previousManagedBytes": 24488008
+      },
+      {
+        "elapsedSeconds": 228951.262680667,
+        "managedBytes": -381192,
+        "lastGcHeapBytes": 3348176,
+        "allocatedBytesSincePrevious": 132764816,
+        "previousManagedBytes": 8540280
+      }
+    ],
+    "invalidDetailListTruncated": false,
+    "otherNegativeFields": 0,
+    "cumulativeOrTimeRollbackRows": 0,
+    "unexpectedProtocolValues": 0,
+    "observedBoundViolationRows": 0,
+    "maximumObservationGapSeconds": 1.26004578,
+    "peakWorkingSetBytes": 112631808,
+    "maximumKnownNonnegativeManagedBytes": 25271040,
+    "maximumLastGcHeapBytes": 9293496,
+    "historicalManagedReadingsComplete": false,
+    "exactMissingManagedValuesReconstructable": false
+  },
+  "missingValuesSubstituted": false,
+  "acceptanceExceptionGranted": false,
+  "conclusion": "Historical missing managed readings are not reconstructed; RSS and last-GC heap are distinct measurements."
+}

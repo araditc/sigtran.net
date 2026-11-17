@@ -56,9 +56,15 @@ and failed receipts remain unchanged. The
 separates successful traffic/wire/restoration checks from this failed gate.
 The monitor now fails immediately on invalid resource observations and the
 offline error identifies field/value/time; raw samples are never clamped.
-This improves detection, not the underlying sampling anomaly. A valid sampling
-correction, real diagnostic and fresh continuous 72-hour run remain necessary.
-No replacement was launched during this review and no workload is active.
+The [limited sampling investigation](docs/MANAGED_MEMORY_SAMPLING.md) then
+replayed all 259,201 observations and ran three standalone Linux diagnostics:
+100,271,031 readings in eight requested minutes, without reproducing the anomaly.
+Future sampling now uses at most three audited non-forcing reads, retaining
+every raw attempt in an explicit new observation format; exhausted retries
+still fail. This is defensive correction, not a proven root-cause fix.
+Historical values are not reconstructed or regraded. No new 72-hour run or
+Kafka maintenance was started; avoiding a fresh qualification would require
+an explicit reviewed acceptance exception, which has not been granted.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

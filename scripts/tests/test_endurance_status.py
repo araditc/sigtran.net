@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import pathlib
+import struct
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -69,6 +70,30 @@ class StatusTests(unittest.TestCase):
             self.assertEqual(value['expectedMeasuredFinishUtc'], '2026-01-04T00:00:00.123456+00:00')
             frame['Sha256'] = 'f' * 64; target.write_text(json.dumps(frame) + '\n')
             with self.assertRaises(ValueError): status.metadata(root)
+
+    def test_status_reads_both_observation_widths_without_restarting_a_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory) / 'fixture'; work = root / 'work/sdk'; work.mkdir(parents=True)
+            header = dict(Kind='start', SourceCommit='a' * 40, DurationSeconds=259200, Diagnostic=False,
+                          ProcessId=123, Runtime='10.0.12', StartedAtUtc='2026-01-01T00:00:00+00:00')
+            body = json.dumps(header).encode()
+            frame = dict(Sequence=1, PreviousSha256='0' * 64, PayloadBase64=base64.b64encode(body).decode(),
+                         Sha256=hashlib.sha256(bytes(32) + body).hexdigest())
+            (work / 'checkpoints.jsonl').write_text(json.dumps(frame) + '\n')
+            row = [1., 100, 100, 50, 40, 0, 1000, 1.] + [0] * 18
+            row[14:17] = [10, 10, 0]
+            for marker, record, extra in ((b'SGENOBS1', '<d6qd18q', []), (b'SGENOBS2', '<d6qd22q', [-1, 50, 0, 2])):
+                (work / 'resource-observations.bin').write_bytes(marker + struct.pack(record, *(row + extra)))
+                with patch.object(status, 'BASE', pathlib.Path(directory)), patch.object(status, 'unit_state', return_value=dict(ActiveState='inactive')):
+                    value = status.read('fixture')
+                self.assertEqual(value['observation']['successful'], 10)
+                self.assertEqual(value['observation']['managedMiB'], 50 / 1048576)
+                self.assertFalse(value['qualificationPassed'])
+            (work / 'resource-observations.bin').write_bytes(b'SGENOBS2' + b'\0' * 208)
+            with patch.object(status, 'BASE', pathlib.Path(directory)), patch.object(status, 'unit_state', return_value=dict(ActiveState='active')):
+                value = status.read('fixture')
+            self.assertNotIn('observation', value)
+            self.assertFalse(value['qualificationPassed'])
 
 
 if __name__ == '__main__': unittest.main()

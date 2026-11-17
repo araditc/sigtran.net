@@ -64,6 +64,10 @@ jobs:
           python3 scripts/tests/test_endurance_host.py
           python3 scripts/tests/test_endurance_service_policy.py
           python3 scripts/tests/test_endurance_status.py
+          python3 scripts/tests/test_endurance_resources.py
+
+      - name: Build standalone managed-memory diagnostic
+        run: dotnet build eng/Sigtran.NET.ResourceProbe --configuration Release --nologo
 
       - name: Test MAP SMS wire evidence verification
         shell: bash

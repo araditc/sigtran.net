@@ -1,9 +1,10 @@
 using System.Text;
 
-/// <summary>Streams fixed 208-byte little-endian observations for independent replay without retaining them in memory.</summary>
+/// <summary>Streams fixed 240-byte observations, including all managed-memory read attempts, for independent replay.</summary>
 internal sealed class EnduranceObservationLog : IDisposable
 {
-    internal const int RecordBytes = 208;
+    internal const string Format = "SGENOBS2";
+    internal const int RecordBytes = 240;
     private readonly FileStream _stream;
     private readonly BinaryWriter _writer;
     private int _records;
@@ -14,7 +15,7 @@ internal sealed class EnduranceObservationLog : IDisposable
         _stream = new(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
         if (OperatingSystem.IsLinux()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
         _writer = new(_stream, Encoding.ASCII, leaveOpen: true);
-        _writer.Write("SGENOBS1"u8);
+        _writer.Write("SGENOBS2"u8);
     }
 
     internal void Append(EnduranceSample sample, CapacityStackMetrics stack)
@@ -30,6 +31,9 @@ internal sealed class EnduranceObservationLog : IDisposable
                      r.ThreadPoolCompleted, sample.Counts.Started, sample.Counts.Successful, sample.Counts.Pending,
                      stack.Active, stack.Pending, stack.OutboundQueue, stack.InboundQueue, stack.Malformed,
                      stack.DroppedEvents, stack.ForeignTransfers, stack.UnsolicitedInvokes, stack.SccpReturns })
+            _writer.Write(value);
+        var managed = r.ManagedMemory ?? new ManagedMemoryReading(r.ManagedBytes, 0, 0, 1);
+        foreach (long value in new long[] { managed.First, managed.Second, managed.Third, managed.Attempts })
             _writer.Write(value);
         _records++;
         if (sample.ElapsedSeconds - _lastFlush >= EnduranceOptions.CheckpointSeconds)

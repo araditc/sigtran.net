@@ -81,11 +81,15 @@ def read(identity=None):
         size = path.stat().st_size
         if size >= 216:
             with path.open('rb') as stream:
-                if stream.read(8) != b'SGENOBS1': raise ValueError('Invalid resource observation header')
-                stream.seek(8 + ((size - 8) // 208 - 1) * 208)
-                row = struct.unpack('<d6qd18q', stream.read(208))
-            result['observation'] = dict(elapsedSeconds=row[0], started=row[14], successful=row[15], pending=row[16],
-                peakRssMiB=row[2] / 1048576, managedMiB=row[3] / 1048576, heapMiB=row[4] / 1048576)
+                marker = stream.read(8)
+                formats = {b'SGENOBS1': struct.Struct('<d6qd18q'), b'SGENOBS2': struct.Struct('<d6qd22q')}
+                if marker not in formats: raise ValueError('Invalid resource observation header')
+                record = formats[marker]
+                if size >= 8 + record.size:
+                    stream.seek(8 + ((size - 8) // record.size - 1) * record.size)
+                    row = record.unpack(stream.read(record.size))
+                    result['observation'] = dict(elapsedSeconds=row[0], started=row[14], successful=row[15], pending=row[16],
+                        peakRssMiB=row[2] / 1048576, managedMiB=row[3] / 1048576, heapMiB=row[4] / 1048576)
     for name, key in [('work/inventory.json', 'collection'), ('verified-summary.json', 'verifiedSummary')]:
         path = root / name
         if path.exists():

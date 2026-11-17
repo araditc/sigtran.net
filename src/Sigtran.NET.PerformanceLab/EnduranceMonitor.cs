@@ -6,6 +6,7 @@ internal sealed class EnduranceMonitor(int concurrency, int queueCapacity, doubl
     private int _observations, _peakPending, _peakActive, _peakOutbound, _peakInbound;
     private double _lastElapsed = -1, _maximumGap, _lastProgress, _maximumNoProgress;
     private long _lastSuccesses, _peakRss, _peakManaged, _peakHeap, _growth;
+    private long _managedRetries, _negativeManagedReadings;
     private long? _baseline;
 
     /// <summary>Resource violations are recorded before failing execution, so the failed bound remains inspectable.</summary>
@@ -26,6 +27,15 @@ internal sealed class EnduranceMonitor(int concurrency, int queueCapacity, doubl
                 || resource.Gen0 < 0 || resource.Gen1 < 0 || resource.Gen2 < 0 || resource.ThreadPoolThreads < 0
                 || resource.ThreadPoolPending < 0 || resource.ThreadPoolCompleted < 0)
                 _violations.Add("invalid-resource-observation");
+            if (resource.ManagedMemory is { } managed)
+            {
+                if (!managed.Consistent || managed.Value != resource.ManagedBytes)
+                    _violations.Add("invalid-resource-observation");
+                if (managed.Attempts > 1) _managedRetries++;
+                _negativeManagedReadings += (managed.First < 0 ? 1 : 0)
+                    + (managed.Attempts > 1 && managed.Second < 0 ? 1 : 0)
+                    + (managed.Attempts > 2 && managed.Third < 0 ? 1 : 0);
+            }
             _peakRss = Math.Max(_peakRss, sample.Resources.PeakWorkingSetBytes);
             _peakManaged = Math.Max(_peakManaged, sample.Resources.ManagedBytes);
             _peakHeap = Math.Max(_peakHeap, sample.Resources.HeapSizeBytes);
@@ -58,7 +68,8 @@ internal sealed class EnduranceMonitor(int concurrency, int queueCapacity, doubl
     {
         lock (_sync) return new(_observations, _lastElapsed, _maximumGap, _maximumNoProgress,
             _peakRss, _peakManaged, _peakHeap, _baseline, baselineAfterSeconds, _growth,
-            _peakPending, _peakActive, _peakOutbound, _peakInbound, _violations.Count == 0, _violations.Order().ToArray());
+            _peakPending, _peakActive, _peakOutbound, _peakInbound, _violations.Count == 0, _violations.Order().ToArray(),
+            _managedRetries, _negativeManagedReadings);
     }
 }
 
@@ -67,4 +78,5 @@ internal sealed record EnduranceResourceSummary(int Observations, double LastEla
     double MaximumObservationGapSeconds, double MaximumNoProgressSeconds, long PeakWorkingSetBytes,
     long MaximumObservedManagedBytes, long MaximumObservedHeapBytes, long? BaselineWorkingSetBytes,
     double BaselineAfterSeconds, long MaximumResidentGrowthBytes, int PeakPending, int PeakActive,
-    int PeakOutboundQueue, int PeakInboundQueue, bool WithinBounds, string[] Violations);
+    int PeakOutboundQueue, int PeakInboundQueue, bool WithinBounds, string[] Violations,
+    long RetriedManagedObservations = 0, long NegativeManagedReadings = 0);

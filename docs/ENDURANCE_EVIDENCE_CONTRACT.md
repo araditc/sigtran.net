@@ -48,6 +48,16 @@ monitor also fails fast while preserving the signed sample. The
 no dropping, clamping or retrospective reinterpretation of its seven invalid
 managed readings can produce a qualifying summary.
 
+Future `SGENOBS2` records explicitly retain up to three raw attempts for each
+accepted managed reading. The source-bound header declares the method and
+maximum attempts. A nonnegative first reading cannot be skipped; every earlier
+attempt must be negative, unused slots zero, and the final attempt must equal
+the nonnegative accepted value. Checkpoints and retry aggregates must agree.
+An exhausted retry or missing/changed sampling declaration fails verification.
+The [sampling investigation](MANAGED_MEMORY_SAMPLING.md) records this new
+instrumentation protocol without changing old `SGENOBS1` acceptance or granting
+an exception for missing historical managed values.
+
 Controller and independent peer receipts must match each SDK intent. The
 crash case records actual SIGKILL exit; a held outage records stopped peer
 state and subsequent restart. A network case must prove tagged SCTP-rule

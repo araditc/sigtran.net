@@ -93,6 +93,10 @@ The completion report retains all 94 hashed original artifacts, including the
 invalid signed observations. The monitor now rejects invalid resource values
 at observation time instead of allowing peak aggregates to hide them. This is
 fail-fast detection, not a demonstrated fix for the underlying sampling anomaly.
-A valid sampling correction, diagnostic and fresh continuous 72-hour execution
-are still required. Unit 10 remains open; phases 63-65 remain separate, and no
-stable release or NuGet publication is authorized by this result.
+The owner then requested a [limited investigation](MANAGED_MEMORY_SAMPLING.md)
+without repeating 72 hours. Three standalone diagnostics made 100,271,031
+readings without reproducing the anomaly. Bounded audited retries are now
+implemented for future sampling; historical values remain unrecoverable and
+strict replay still fails. No acceptance exception, fresh endurance run or
+Kafka maintenance was started. Unit 10 remains open; phases 63-65 remain
+separate, and no stable release or NuGet publication is authorized here.
