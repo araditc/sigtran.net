@@ -124,14 +124,15 @@ To avoid repeating the full measurement, an explicitly approved, independently
 reviewed acceptance exception would have to cover those historical missing
 managed observations. The subsequent owner-authorized
 [acceptance package](ENDURANCE_ACCEPTANCE.md) records explicit risk acceptance
-and completed tooling, but independent human approval remains open; no final
-exception has been granted or inferred. Otherwise
-new qualifying evidence remains necessary after the sampling investigation
-and integration diagnostic; this is not authorization to start another run.
+and completed tooling. The later [closure decision](ENDURANCE_CLOSURE_20261117.md)
+records authenticated scoped review and owner-authorized administrative
+acceptance with evidence-detail limitations. It is not strict qualification
+or authorization to start another run.
 
 The defensible current status is: retained 72-hour traffic/recovery/restoration
 evidence, corrected future sampling protocol with regression coverage, and an
-open managed-memory evidence gap. Phase 62 and stable promotion remain open.
+open managed-memory evidence gap. Phase 62 is administratively closed with
+that exact exception; technical qualification and stable promotion remain blocked.
 
 The subsequent [bounded real-stack session](LOCAL_RESOURCE_DIAGNOSTIC.md)
 completed 3,600 actual seconds and 37,021,965 measured transactions with a local

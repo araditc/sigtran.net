@@ -13,6 +13,11 @@ PR #38 now incorporates that admitted policy. Its
 without rewriting, the earlier preparation/designation receipts. The exact
 new head/digest are published in the PR description after validation.
 
+The subsequent explicit case review `5942538225` was authenticated on head
+`73d6855`, then PR #38 was normally merged. The owner's later authorization
+and the [administrative closure](ENDURANCE_CLOSURE_20261117.md) record the
+missing detailed replay receipts as follow-up; old snapshots remain unchanged.
+
 ## Observed Review And Limits
 
 GitHub recorded an [Approve review](https://github.com/araditc/sigtran.net/pull/38#pullrequestreview-5940071799)
@@ -59,8 +64,9 @@ python scripts/assess-evidence-deviation.py --check-current-report
 ```
 
 The retained registration snapshot expected exit 3 with case assignment and
-authenticated review outstanding. The refreshed case now expects exit 3 and
-`PENDING_INDEPENDENT_REVIEW`, with only authenticated case review outstanding.
+authenticated review outstanding. The pre-approval refreshed snapshot still
+expects exit 3 in offline CI. The later authenticated historical acceptance
+does not turn that offline check into proof for a new head or candidate.
 Technical qualification, stable publication and operator acceptance remain false/open.
 
 ## Registration Validation

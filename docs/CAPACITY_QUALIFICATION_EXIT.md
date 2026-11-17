@@ -71,6 +71,10 @@ The frozen defect ledger likewise remains conservative about final release
 binding. Phase 65 owns that exact-candidate requalification. No NuGet publication,
 tag or stable promotion is authorized by this result.
 
-Next: Phase 62's real 72-hour multi-host resilience and fault-accounting evidence,
-then representative cluster qualification (63), operator acceptance (64) and
-final candidate release qualification (65). None is replaced by this 30-minute run.
+The next step at this capacity checkpoint was Phase 62's real 72-hour multi-host
+resilience and fault-accounting evidence. Its later
+[administrative closure with accepted deviation](ENDURANCE_CLOSURE_20261117.md)
+preserves the rejected resource gate and is not a strict endurance pass.
+Representative cluster qualification (63), operator acceptance (64) and final
+candidate release qualification (65) remain mandatory. None is replaced by
+this 30-minute run or the scoped endurance exception.

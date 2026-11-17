@@ -2,8 +2,11 @@
 
 The product owner explicitly accepted the risk of the seven missing managed
 readings on 2026-11-17 and authorized six implementation units without a new
-72-hour run. **Independent review remains outstanding.** Owner risk acceptance
-is not a final acceptance exception, an original verifier pass or stable GO.
+72-hour run. The latest scoped human review was authenticated on the frozen
+case head and PR #38 was merged. The owner's subsequent explicit instruction
+permits **administrative closure with accepted deviation**, with evidence
+limitations recorded in the [closure report](ENDURANCE_CLOSURE_20261117.md).
+The original rejected verdict, technical qualification and stable NO-GO do not change.
 
 ## Bound Dossier
 
@@ -21,10 +24,10 @@ An unchanged source tree is not an identical final package attestation.
 | --- | --- | --- |
 | 1 | Immutable evidence dossier and source-tree comparison | Complete; build/test/API/pack and commit/push passed |
 | 2 | Exact-scope owner risk acceptance | Complete; build/test/API/pack and commit/push passed |
-| 3 | Independent review contract and request | Complete; build/test/API/pack and commit/push passed; human approval OPEN |
-| 4 | Separate fail-closed administrative assessment | Complete; build/test/API/pack and commit/push passed; actual status pending |
+| 3 | Independent review contract and request | Complete; authenticated scoped disposition recorded for the exact historical head |
+| 4 | Separate fail-closed administrative assessment | Complete; exit 0 on reviewed head; no qualification or release promotion |
 | 5 | Tamper rejection and CI boundaries | Complete; focused tests, build/test/API/pack and commit/push passed |
-| 6 | Final report, docs and handoff | Complete implementation; independent human approval remains OPEN |
+| 6 | Final report, docs and handoff | Administrative closure recorded with owner authorization and evidence-detail follow-up |
 
 The strict endurance/release policies are not changed by this work. No VM load,
 Kafka control, package publication or stable promotion is authorized here.
@@ -47,7 +50,11 @@ questions and authenticated approval path. The owner-nominated identity
 `2026-11-17T15:51:08Z` as `305d6953f21fb30fb9210d7f77db76928f1cf3a5`.
 [PR #38](https://github.com/araditc/sigtran.net/pull/38) incorporates that base
 policy and remains the bound case request. Its old-head Approve and the
-policy-only approval do not authorize the refreshed case head/digest.
+policy-only approval were not counted. The latest explicit case review
+`5942538225`, on head `73d6855090fac1f0733cccb3581200549fb739c8`, was authenticated.
+The review claims personal raw replay but includes no commands/versions/output
+receipts. The owner explicitly authorized closure with that detail limitation
+recorded; this session did not independently repeat the claimed raw replay.
 
 ## Administrative Assessment
 
@@ -57,9 +64,10 @@ python scripts/assess-evidence-deviation.py --verify-review
 ```
 
 Exit 3 means review pending, 1 means ineligible, and 0 means scoped
-administrative acceptance only. Offline assessment still returns pending;
-live assessment must reject the earlier-head review until the reviewer submits
-a complete approval on the refreshed exact head/digest. Live verification uses
+administrative acceptance only. Authenticated verification returned exit 0 on
+the exact reviewed head. A later documentation/source head cannot inherit it;
+offline assessment deliberately still returns pending rather than trusting the
+historical closure record. Live verification uses
 read-only GitHub PR/review/file APIs, a roster already on the base branch,
 exact reviewed commit/files/bundle digest, human identity and a stated rationale.
 Expired, dismissed, changed or owner/self approvals fail closed. No SDK API,
@@ -75,7 +83,7 @@ transcripts; those fixtures are never treated as actual human approval.
 The case scope and owner decision must also already be present on the PR base;
 reviewer approval alone cannot install a broader owner risk decision.
 
-## Delivery And Open Approval
+## Delivery And Historical Closure
 
 All six implementation units are delivered. Their private verification roots
 are `artifacts/qualification/phase-62/evidence-acceptance/units/01..06`, with
@@ -84,10 +92,12 @@ receipts remain retained. Release build, SDK/qualification/trace tests, API
 comparison and pack are required for each commit; no SDK runtime/API changes
 or release-policy edits are part of this package.
 
-The [refreshed review handoff](evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
-matches a fresh assessment and is checked by CI. Its state is
-`PENDING_INDEPENDENT_REVIEW`, owner acceptance true, final exception/closure
-false. A separate read-only replay rechecked all 94 original hashes and all
+The [pre-approval handoff](evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
+is preserved and remains the offline CI snapshot: pending authentication,
+not a current milestone tracker. The later
+[historical closure record](evidence/ENDURANCE_ACCEPTANCE_CLOSURE_20261117.json)
+contains the actual authenticated acceptance and normal PR merge. A preceding
+separate read-only replay rechecked all 94 original hashes and all
 259,201 legacy observations; strict replay still rejected the same first
 negative value. The retained one-hour stream replayed all 3,601 rows. These
 checks do not manufacture independent human approval or a new passing run.
@@ -97,18 +107,20 @@ python scripts/assess-evidence-deviation.py --check-current-report
 python scripts/assess-evidence-deviation.py --output artifacts/qualification/evidence-deviations/NEW_RECEIPT.json
 ```
 
-Only a complete authenticated independent review on the refreshed case remains
-open for administrative acceptance. Use a full-history checkout. Actual
-reviews are retained without reusing old bindings or extending their scope. The original
+Use a full-history checkout. Actual reviews are retained without reusing old
+bindings or extending their scope. The original
 [delivery snapshot](evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json)
-and both preparation/designation snapshots remain unchanged. If review is
-later accepted, the only allowed closure is `CLOSED_WITH_ACCEPTED_DEVIATION`;
-the original run still fails strict qualification. Phase 62 is **not yet closed**.
+and both preparation/designation snapshots remain unchanged. The recorded
+administrative result is `CLOSED_WITH_ACCEPTED_DEVIATION`; Phase 62 is closed
+for continuation with explicit owner-authorized evidence limitations. The
+original run still fails strict qualification. Missing detailed replay receipts
+remain follow-up and the root cause is not proven.
 Phases 63-65, final package-bound evidence and all stable gates remain separate.
 
 The final local verification includes 555 SDK checks, 40 qualification checks,
 both trace-analysis self-tests, the unchanged 2,308-member public API and pack.
-There are 24 focused acceptance tests; the 43-test endurance suite has two
+There are 28 focused acceptance/closure tests; the 43-test endurance suite has two
 Linux-only skips on Windows. Separate original/diagnostic replays preserve
 all raw bytes. The actual GitHub workflow, not synthetic review fixtures,
-determines CI success; it does not supply the missing human review.
+determines CI success; it does not independently replay private evidence or
+qualify a later candidate using the historical acceptance.
