@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-11-17",
+  "assessment": {
+    "schemaVersion": 1,
+    "evidenceKind": "scoped-evidence-acceptance-assessment",
+    "caseId": "endurance-managed-memory-observations",
+    "status": "PENDING_INDEPENDENT_REVIEW",
+    "ownerRiskAccepted": true,
+    "independentReviewApproved": false,
+    "administrativeClosureApproved": false,
+    "acceptanceExceptionGranted": false,
+    "originalVerdict": "rejected",
+    "qualificationPassed": false,
+    "stablePromotion": false,
+    "rootCauseProven": false,
+    "freshEnduranceRunStarted": false,
+    "privateArtifactsReplayed": false,
+    "blockers": [
+      "independent-review-pr-not-assigned"
+    ],
+    "dossierSha256": "214bb94a552d9ae9d689bae5ad07c14954b00b7fc2bce6ce9fb0020383ecb5ff",
+    "bundleSha256": "82d940371fd8b23e56b4eccad10039297fb821e28a42be8b11746d4157961a39",
+    "decisionFileSha256": {
+      "eng/qualification/deviations/endurance-managed-memory.json": "214bb94a552d9ae9d689bae5ad07c14954b00b7fc2bce6ce9fb0020383ecb5ff",
+      "eng/qualification/deviations/endurance-managed-memory.owner.json": "0469d05697fbdc9c6df2e0d0d84df3925419be743aaa2dccee25c07640f6adf7",
+      "eng/qualification/deviations/endurance-managed-memory.review-policy.json": "7110bd153098968b46b182090f4ab734088c7937a8fa867edb8c77663386507d",
+      "eng/qualification/deviations/endurance-managed-memory.review-request.json": "df42e7268d39cb14d770f7dc15b0c54870ea308a664f8dee874f430032928f27",
+      "eng/qualification/deviations/endurance-managed-memory.risk-events.json": "f92cd61bfb7db37523bee27ad0b821d791360f6c459e598199198851741e71bc"
+    }
+  },
+  "delivery": {
+    "implementationUnits": 6,
+    "independentHumanApproval": "open",
+    "originalRawFilesModified": false,
+    "releasePolicyModified": false,
+    "measurementRepeated": false,
+    "retainedOriginalHashesRechecked": 94,
+    "retainedResourceObservationsReplayed": 259201,
+    "retainedDiagnosticObservationsReplayed": 3601,
+    "privateReplayNote": "Private replay counts are retained from the preceding delivery; no new lab execution or human raw verification is inferred.",
+    "nominatedReviewer": "akhiabanchian",
+    "priorDeliveryReceipt": "docs/evidence/ENDURANCE_ACCEPTANCE_ASSESSMENT_20261117.json"
+  },
+  "remaining": [
+    "independent-review-pr-assignment",
+    "authenticated-independent-review"
+  ],
+  "limitations": [
+    "The historical sampling cause is unproven; missing values are not reconstructed.",
+    "Owner risk acceptance is not independent human approval or a final exception.",
+    "No stable, operator or packaged-candidate qualification is granted."
+  ]
+}

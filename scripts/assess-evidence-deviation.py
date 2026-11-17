@@ -16,6 +16,7 @@ spec = importlib.util.spec_from_file_location('acceptance_contract', pathlib.Pat
 contract = importlib.util.module_from_spec(spec); spec.loader.exec_module(contract)
 require = contract.require
 BUNDLE_FILES = (contract.CASE, contract.OWNER, contract.REVIEW_POLICY, contract.REVIEW_REQUEST, contract.RISK_EVENTS)
+CURRENT_REPORT = 'docs/evidence/ENDURANCE_REVIEW_REFRESH_20261117.json'
 
 
 def snapshot(root):
@@ -171,6 +172,18 @@ def write_assessment(path, report, root=contract.ROOT):
     with output.open('x', encoding='utf-8', newline='\n') as stream: json.dump(report, stream, indent=2); stream.write('\n')
 
 
+def remaining_review_steps(current):
+    """Describe actual open prerequisites instead of freezing the initial empty-roster state."""
+    require(current['status'] == 'PENDING_INDEPENDENT_REVIEW'
+            and current['independentReviewApproved'] is False and current['administrativeClosureApproved'] is False,
+            'A pending handoff cannot represent accepted or ineligible evidence')
+    mapping = [('independent-reviewer-not-designated', 'independent-reviewer-designation'),
+               ('independent-review-pr-not-assigned', 'independent-review-pr-assignment')]
+    require(set(current['blockers']) <= {code for code, _ in mapping} | {'live-independent-review-verification-required'},
+            'Unknown pending-review prerequisite')
+    return [step for code, step in mapping if code in current['blockers']] + ['authenticated-independent-review']
+
+
 def check_report(path, current):
     """Detect stale or promoted public handoff metadata by comparing it with a fresh assessment."""
     value = contract.evidence.read_json(path)
@@ -180,8 +193,7 @@ def check_report(path, current):
     require(delivery['implementationUnits'] == 6 and delivery['independentHumanApproval'] == 'open'
             and all(delivery[key] is False for key in ('originalRawFilesModified', 'releasePolicyModified', 'measurementRepeated')),
             'Handoff cannot claim review, evidence repair or release-policy changes')
-    require(value['remaining'] == ['independent-reviewer-designation', 'authenticated-independent-review'],
-            'Independent review must remain an explicit open item')
+    require(value['remaining'] == remaining_review_steps(current), 'Saved remaining review tasks differ from actual prerequisites')
     return value
 
 
@@ -190,9 +202,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify-review', action='store_true', help='Read actual GitHub review state; never submit a review.')
     parser.add_argument('--output', type=pathlib.Path)
-    parser.add_argument('--check-report', type=pathlib.Path, help='Check retained public handoff against a fresh assessment.')
+    checks = parser.add_mutually_exclusive_group()
+    checks.add_argument('--check-report', type=pathlib.Path, help='Check a retained public handoff against a fresh assessment.')
+    checks.add_argument('--check-current-report', action='store_true', help='Check the source-controlled current handoff without changing archived receipts.')
     args = parser.parse_args(); report = assess(verify_review=args.verify_review)
     if args.check_report: check_report(args.check_report, report)
+    if args.check_current_report: check_report(contract.ROOT / CURRENT_REPORT, report)
     if args.output: write_assessment(args.output, report)
     print(json.dumps(report, indent=2))
     return 0 if report['administrativeClosureApproved'] else (3 if report['status'] == 'PENDING_INDEPENDENT_REVIEW' else 1)

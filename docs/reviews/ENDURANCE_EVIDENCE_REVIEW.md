@@ -86,16 +86,22 @@ capture is not proof of full-run throughput or absence of loss.
 
 ## Before Formal Approval
 
-The owner must designate an independent human in the reviewer allowlist and
-admit that policy on `main` separately. Do not add a reviewer to the trust roster
-inside this case PR. Then update this PR from the admitted base policy, refresh
-its assessment/digest, pass CI and freeze the final head. Any earlier review of
-another head/digest does not authorize the final case. No reviewer is currently
-designated, and Codex will not approve or merge this PR.
+The independently reviewed policy was admitted on `main` through
+[PR #39](https://github.com/araditc/sigtran.net/pull/39), at commit
+`305d6953f21fb30fb9210d7f77db76928f1cf3a5`. This case PR now incorporates that
+admitted policy; its sole designated reviewer is `akhiabanchian`.
+The [refreshed assessment](../evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
+still reports pending approval. After CI passes, use the frozen exact head and
+bundle digest in this PR's description. Any earlier review of another
+head/digest does not authorize this version, and the separate policy review
+expressly excludes endurance-case acceptance. Codex cannot submit a human
+review or infer private raw verification from CI.
 
 The reviewer must use their own GitHub account, not the owner/PR-author account.
 Only after completing the review, submit an actual GitHub **Approve** review
-with an independent rationale and the exact bindings from the final PR body:
+with an independent rationale and the exact bindings from the final PR body.
+State the actual materials accessed, checks/findings and limitations; replace
+all evidence-access/rationale placeholders rather than attesting work not done:
 
 ```text
 Evidence-Deviation-Case: endurance-managed-memory-observations
