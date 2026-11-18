@@ -272,7 +272,7 @@ The current engineering track focuses on:
 | TCAP | Dialogue manager for transaction correlation, Begin/Continue/End/Abort, tracked invokes, Result/Error/Reject outcomes, timeout scanning, cleanup, snapshots, and metrics. Operator/vendor profile evidence remains. |
 | MAP SMS | Client/server SMS workflows for SRI-SM, MO/MT ForwardSM, ReportSM-DeliveryStatus, and AlertServiceCentre. Repository-profile evidence exists; operator/vendor profile evidence remains. Broader MAP is post-1.0. |
 | Performance | The declared shared-peer profile met 10K in every second for 30 minutes: 14,217.16 average TPS, minimum 10,026 and zero errors. Dedicated-host qualification and long-duration soak/failover remain open; no general production SLA is implied. |
-| Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. Representative Kubernetes SCTP/CNI qualification remains open. |
+| Operations | Health probes, BCL telemetry, structured events, validated configuration, live/ready/metrics endpoints, container manifests, Kubernetes manifests, and runbooks. [Phase 63](docs/KUBERNETES_QUALIFICATION.md) adds pinned lab preflight; representative SCTP/CNI, disruption and rollback qualification remain open. |
 
 ---
 
