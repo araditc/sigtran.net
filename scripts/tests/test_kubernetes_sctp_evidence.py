@@ -93,17 +93,21 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
         return raw, safe
 
     def write_matrix(self, raw: Path, *, passed=True, source_sha=SOURCE_SHA):
-        for filename in (
-            "service-exposure.json",
-            "network-policy.json",
-            "graceful-termination.json",
-            "rollout-rollback.json",
-            "node-drain.json",
-        ):
+        matrix = {
+            "service-exposure.json": {}, "network-policy.json": {},
+            "graceful-termination.json": {}, "rollout-rollback.json": {},
+            "pdb.json": {"maxUnavailable": 1, "disruptionsAllowed": 1, "singleReplicaAvailabilityClaim": False},
+            "node-drain.json": {"evictionPath": "policy-v1-single-pod", "rescheduledToDifferentNode": True,
+                                "sctpAssociationObserved": True, "shutdownEventObserved": True},
+            "disruption-restoration.json": {"nodeRestored": True, "pdbAbsent": True},
+        }
+        for filename, fields in matrix.items():
             (raw / filename).write_text(json.dumps({
                 "schemaVersion": 1,
                 "sourceSha": source_sha,
+                "runId": "synthetic-k8s-1",
                 "passed": passed,
+                **fields,
             }))
 
     def run_validator(self, raw: Path, safe: Path, *, profile="cni", image=IMAGE):
@@ -149,6 +153,25 @@ class KubernetesSctpEvidenceTests(unittest.TestCase):
             self.assertTrue(value["executionPassed"])
             self.assertTrue(value["gateEligible"])
             self.assertTrue(value["passed"])
+
+    def test_disruption_requires_same_run_and_actual_restoration_fields(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, safe = self.make_evidence(Path(directory))
+            for key, value, expected in (
+                ("runId", "different-run", "disruption run ID mismatch"),
+                ("nodeRestored", False, "disruption observations incomplete or inconsistent"),
+            ):
+                with self.subTest(key=key):
+                    self.write_matrix(raw)
+                    path = raw / "disruption-restoration.json"
+                    receipt = json.loads(path.read_text())
+                    receipt[key] = value
+                    path.write_text(json.dumps(receipt))
+                    run = self.run_validator(raw, safe)
+                    self.assertEqual(run.returncode, 0, run.stderr)
+                    summary = json.loads((safe / "summary.json").read_text())
+                    self.assertFalse(summary["gateEligible"])
+                    self.assertEqual(summary["matrix"]["disruptionRestoration"]["detail"], expected)
 
     def test_sctp_header_without_association_fails_core_execution(self):
         with tempfile.TemporaryDirectory() as directory:
