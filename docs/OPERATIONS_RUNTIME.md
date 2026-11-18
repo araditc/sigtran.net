@@ -122,6 +122,10 @@ The container must run on a Linux host whose kernel supports SCTP. Kubernetes
 network policy, CNI, load balancer, and firewall configuration must permit SCTP;
 TCP or UDP service exposure does not imply SCTP forwarding.
 
+See [Kubernetes deployment qualification](KUBERNETES_QUALIFICATION.md) for the
+pinned cluster/namespace preflight, protected lab prerequisites and remaining
+live SCTP/CNI, disruption and rollback evidence.
+
 Qualification images must also bind their immutable digest to the source commit
 under test. The Dockerfile records the supplied commit as both the OCI
 `org.opencontainers.image.revision` label and `SIGTRAN_IMAGE_REVISION`

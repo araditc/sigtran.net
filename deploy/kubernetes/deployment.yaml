@@ -16,6 +16,8 @@ spec:
       labels:
         app.kubernetes.io/name: sigtran-node
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       terminationGracePeriodSeconds: 30
       containers:
         - name: sigtran-node
