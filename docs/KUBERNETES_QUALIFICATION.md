@@ -11,7 +11,7 @@ deployment. The `kubernetes-sctp` gate remains open.
 | --- | --- | --- |
 | 1 | Read-only target preflight: pin cluster and namespace, check worker and CNI state, refuse mutation on failure | Tooling and offline tests delivered; live preflight not run |
 | 2 | Reconcile the PDB and voluntary-drain design from [PR #33](https://github.com/araditc/sigtran.net/pull/33) with pinned preflight and exact-run ownership | Integrated on the unit branch; offline verification only, review and representative execution open |
-| 3 | Prepare isolated representative cluster, protected runner/environment, private evidence storage, approved peer and source-bound image | Blocked on lab provisioning |
+| 3 | Prepare isolated representative cluster, protected runner/environment, private evidence storage, approved peer and source-bound image | GitHub environment configured; preparation tooling delivered. Runner-group access, dedicated hosts, peer launch and live verification remain open |
 | 4 | Deploy exact image and compare startup/liveness/readiness, management Service and real SCTP association/peer traffic | Existing tooling partial; representative run open |
 | 5 | Verify a fresh association is blocked under SCTP NetworkPolicy deny and recovers under allow, with verified cleanup | Existing tooling admitted; representative run open |
 | 6 | Verify graceful pod termination, replacement readiness, SCTP recovery and accounted in-flight work | Shutdown observation in drain tooling; separate timing and in-flight evidence open |
@@ -47,9 +47,13 @@ deployment. The `kubernetes-sctp` gate remains open.
   DaemonSet rollout state for this profile.
 
 Repository inventory on 2026-11-18 showed zero repository-visible self-hosted
-runners and no registered `kubernetes-sctp` environment. This does not assert
-that no external cluster exists. No workflow was dispatched and no lab,
-Kafka service, or production namespace was touched by this unit.
+runners. The `kubernetes-sctp` environment now requires owner approval, prevents
+self-review and admits only `main`; it is not activated. See the
+[protected lab setup checklist](KUBERNETES_LAB_SETUP.md) for the runner-group
+restriction, scoped access renderer, independent peer build and remaining
+operator checks. This does not assert that no external cluster exists. No
+workflow was dispatched and no lab, Kafka service or production namespace
+was touched by this preparation.
 
 ## Preflight Boundary
 

@@ -111,8 +111,14 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libsctp-dev
-          gcc -std=c11 -O2 -Wall -Wextra -Werror tools/interop-peer/sigtran_reference_peer.c -lsctp -o "$RUNNER_TEMP/sigtran-peer"
-          "$RUNNER_TEMP/sigtran-peer" --self-test
+          bash scripts/build-kubernetes-lab-peer.sh "$GITHUB_SHA" "$RUNNER_TEMP/sigtran-reference-peer"
+
+      - name: Upload independent Linux peer build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-reference-peer-build
+          path: ${{ runner.temp }}/sigtran-reference-peer/
+          if-no-files-found: error
 
       - name: Test legacy flag promotion rejection
         shell: pwsh
@@ -163,6 +169,7 @@ jobs:
           python3 -u scripts/tests/test_kubernetes_cni_policy_stage1.py
           python3 -u scripts/tests/test_kubernetes_lab_inventory.py
           python3 -u scripts/tests/test_kubernetes_disruption.py
+          python3 -u scripts/tests/test_kubernetes_lab_provisioning.py
 
       - name: Verify development and release package identity
         shell: bash

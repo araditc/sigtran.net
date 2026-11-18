@@ -45,7 +45,9 @@ concurrency:
 jobs:
   qualify:
     if: github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, linux, sigtran-kubernetes-lab]
+    runs-on:
+      group: sigtran-kubernetes-lab
+      labels: [self-hosted, linux, sigtran-kubernetes-lab]
     environment:
       name: kubernetes-sctp
     timeout-minutes: 90
@@ -74,6 +76,7 @@ jobs:
       K8S_CNI_DAEMONSET: ${{ vars.K8S_CNI_DAEMONSET }}
       K8S_CLUSTER_UID: ${{ vars.K8S_CLUSTER_UID }}
       K8S_QUALIFICATION_NAMESPACE_UID: ${{ vars.K8S_QUALIFICATION_NAMESPACE_UID }}
+      K8S_LAB_ENABLED: ${{ vars.K8S_LAB_ENABLED }}
 
     steps:
       - name: Checkout
@@ -88,6 +91,10 @@ jobs:
           MATRIX_CONFIRMATION: ${{ inputs.matrix_confirmation }}
         run: |
           set -euo pipefail
+          if [[ "$K8S_LAB_ENABLED" != "true" ]]; then
+            echo "Protected lab is not activated; complete the provisioning checklist first" >&2
+            exit 1
+          fi
           test "$QUALIFICATION_CONFIRMATION" = "run kubernetes sctp $K8S_NAMESPACE"
           [[ "$K8S_NAMESPACE" =~ ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$ ]]
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -731,7 +738,9 @@ jobs:
   retain-evidence:
     needs: qualify
     if: needs.qualify.result == 'success' && needs.qualify.outputs.gate_eligible == 'true'
-    runs-on: [self-hosted, linux, sigtran-kubernetes-lab]
+    runs-on:
+      group: sigtran-kubernetes-lab
+      labels: [self-hosted, linux, sigtran-kubernetes-lab]
     environment:
       name: kubernetes-sctp
     timeout-minutes: 30
