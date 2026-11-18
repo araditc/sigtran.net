@@ -203,6 +203,10 @@ class AuthenticatedReviewTests(unittest.TestCase):
         self.reviews.append(dict(self.review, id=11, state='CHANGES_REQUESTED'))
         with self.assertRaises(ValueError): self.verify()
 
+    def test_later_limited_approval_cannot_replay_an_older_acceptance(self):
+        self.reviews.append(dict(self.review, id=11, body='Synthetic limited review does not authorize administrative closure.'))
+        with self.assertRaisesRegex(ValueError, 'scope/digest/rationale'): self.verify()
+
     def test_changed_case_and_newly_installed_trust_are_rejected(self):
         for path in (deviation.OWNER, deviation.REVIEW_POLICY):
             before = self.raw[path]; self.raw[path] = before + b'\n'
@@ -249,6 +253,64 @@ class AuthenticatedReviewTests(unittest.TestCase):
         with patch.object(assessment.subprocess, 'check_output', return_value='true\n'):
             with self.assertRaisesRegex(ValueError, 'Complete history'):
                 assessment.risk_events(ROOT, owner, 'endurance-managed-memory-observations')
+
+
+class HistoricalClosureTests(unittest.TestCase):
+    """Audit a retained historical decision; cached JSON never authenticates a new candidate."""
+    def record(self):
+        return json.loads((ROOT / 'docs/evidence/ENDURANCE_ACCEPTANCE_CLOSURE_20261117.json').read_text(encoding='utf-8'))
+
+    def test_closure_binds_exact_reviewed_decision_bytes_and_authenticated_identity(self):
+        value = self.record(); approved = value['assessment']; head = value['reviewedHeadCommit']
+        case = deviation.dossier()['case']
+        self.assertEqual(value['status'], 'CLOSED_WITH_ACCEPTED_DEVIATION')
+        self.assertEqual(value['scope'], 'seven-missing-managed-memory-readings-only')
+        self.assertEqual(value['runId'], case['runId'])
+        self.assertEqual(value['testedSourceCommit'], case['sourceCommit'])
+        self.assertEqual(value['originalManifestSha256'], case['originalManifestSha256'])
+        self.assertEqual(value['reviewRecord']['commit'], head)
+        self.assertEqual(value['reviewRecord']['login'], 'akhiabanchian')
+        self.assertEqual(value['reviewRecord']['reviewId'], 5942538225)
+        self.assertTrue(approved['review']['authenticated'])
+        approval = approved['review']['approvals'][0]
+        self.assertEqual((approval['commit'], approval['reviewId'], approval['login']),
+                         (head, value['reviewRecord']['reviewId'], value['reviewRecord']['login']))
+        files = {path: assessment.hashlib.sha256(subprocess.check_output(['git', 'show', head + ':' + path],
+                 cwd=ROOT, timeout=15)).hexdigest() for path in assessment.BUNDLE_FILES}
+        self.assertEqual(approved['decisionFileSha256'], files)
+        self.assertEqual(approved['bundleSha256'], assessment.bundle_digest(files))
+        body = value['reviewRecord']['body'].splitlines()
+        self.assertIn('Evidence-Deviation-SHA256: ' + approved['bundleSha256'], body)
+        self.assertIn('Disposition: ACCEPT_SCOPED_DEVIATION', body)
+
+    def test_owner_authorization_preserves_failed_evidence_and_records_review_limitations(self):
+        value = self.record(); approved = value['assessment']; owner = value['ownerAuthorization']
+        self.assertEqual(approved['originalVerdict'], 'rejected')
+        self.assertTrue(approved['administrativeClosureApproved'] and approved['acceptanceExceptionGranted'])
+        self.assertFalse(any(approved[key] for key in ('qualificationPassed', 'stablePromotion',
+            'rootCauseProven', 'freshEnduranceRunStarted', 'privateArtifactsReplayed')))
+        self.assertEqual(owner['actor'], 'ammarheidari')
+        self.assertEqual(owner['basis'], 'explicit-owner-instruction-in-Codex')
+        self.assertTrue(owner['detailedReplayExecutionEvidenceDeferred'])
+        self.assertFalse(owner['originalOwnerDecisionModified'] or owner['originalFailedEvidenceMayChange']
+                         or owner['releasePromotionAuthorized'])
+        self.assertTrue(value['reviewRecord']['rawReplayIsReviewerAttestation'])
+        self.assertFalse(value['reviewRecord']['replayCommandsVersionsAndOutputsInReviewBody']
+                         or value['reviewRecord']['rawReplayIndependentlyRepeatedByThisClosure'])
+        self.assertFalse(any(value['boundaries'][key] for key in ('qualificationPassed', 'stablePromotion',
+            'rootCauseProven', 'finalPackageQualified', 'publicationAuthorized', 'originalArtifactsModified',
+            'currentHeadInheritsAcceptance', 'freshEnduranceRunStarted', 'kafkaChangedByThisClosure', 'consumedByReleaseGates')))
+
+    def test_historical_closure_is_not_consumed_by_current_offline_assessment(self):
+        original = assessment.contract.evidence.read_json
+        def guarded(path):
+            if pathlib.Path(path).name == 'ENDURANCE_ACCEPTANCE_CLOSURE_20261117.json':
+                raise AssertionError('A historical receipt cannot authorize a current candidate')
+            return original(path)
+        with patch.object(assessment.contract.evidence, 'read_json', side_effect=guarded):
+            value = assessment.assess(verify_review=False)
+        self.assertEqual(value['status'], 'PENDING_INDEPENDENT_REVIEW')
+        self.assertFalse(value['administrativeClosureApproved'] or value['qualificationPassed'] or value['stablePromotion'])
 
 
 class ReportOwnershipTests(unittest.TestCase):

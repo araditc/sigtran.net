@@ -107,8 +107,9 @@ NuGet publication, stable tags and phases 63-65 remain outside this result.
 
 The later owner-authorized [acceptance package](ENDURANCE_ACCEPTANCE.md) follows
 a separate no-repeat administrative path. Its six implementation units are
-delivered and owner risk is accepted, but reviewer designation/authenticated
-independent approval remain open. It does not edit this run's failed verdict
+delivered. A later explicit scoped review was authenticated and PR #38 was
+merged; the owner authorized [administrative closure with recorded limitations](ENDURANCE_CLOSURE_20261117.md).
+That decision does not edit this run's failed verdict
 or qualify it under the original policy. The no-exception path above is unchanged.
 
 ## Follow-Up Verification

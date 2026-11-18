@@ -175,14 +175,16 @@ native-memory defect is excluded. No runtime defect or root-cause fix is claimed
 The bounded retry protocol remains a defensive correction tested with injected
 negative reads, not naturally recovered negative observations in this hour.
 Historical missing values cannot be reconstructed or replaced. Under the
-unchanged gate, Phase 62 remains open. Avoiding a fresh qualifying measurement
+unchanged gate, strict endurance qualification still fails. Avoiding a fresh qualifying measurement
 would require a separate independently reviewed and explicitly approved
-acceptance exception; none was granted or inferred. No new 72-hour run started.
+acceptance exception; none was granted by this diagnostic. No new 72-hour run started.
 
 The later [scoped acceptance package](ENDURANCE_ACCEPTANCE.md) records the
 owner's explicit acceptance of the seven-reading risk. Its six implementation
-units are delivered; independent human review remains open. That later decision
-does not change this diagnostic's non-reproduction result or original hashes.
+units are delivered. A later authenticated scoped review and owner instruction
+permit [administrative closure with limitations](ENDURANCE_CLOSURE_20261117.md),
+not technical qualification. That decision does not change this diagnostic's
+non-reproduction result or original hashes.
 
 ## Engineering Checks
 
@@ -209,8 +211,8 @@ separate verification. A local execution pass never closes the endurance gate.
 python scripts/verify-local-resource-evidence.py PRIVATE_ORIGINAL_ROOT --source-commit FULL_SHA --seconds 3600
 ```
 
-The original full run remains rejected, Phase 62 remains open and no exception,
-stable tag, package publication or production-readiness claim is authorized.
+The original full run remains rejected. The separately recorded administrative
+exception does not authorize a stable tag, package publication or production-readiness claim.
 
 ## Start And Reconnect
 

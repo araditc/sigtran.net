@@ -1,11 +1,16 @@
 # Independent Evidence Review Request
 
-Status: **OPEN / reviewer policy admitted / refreshed-case approval required**.
+Status: **RECORDED / authenticated scoped approval / administrative closure with deviation**.
+See the [closure record](ENDURANCE_CLOSURE_20261117.md) for the actual review,
+owner authorization and evidence-detail limitations. Requirements below
+describe the review contract; this document is not itself a review receipt.
 The owner nominated `akhiabanchian`; independently reviewed
 [PR #39](https://github.com/araditc/sigtran.net/pull/39) admitted that policy on
 `main`. PR #38 now incorporates the admitted policy. The earlier case review
 contains the old bundle digest, but is bound to its old head and cannot approve
 this refreshed version. The policy-only review expressly excludes case acceptance.
+The later explicit case review `5942538225` is the authenticated disposition;
+neither the old review nor the policy-only review was substituted for it.
 
 The owner accepted the seven-reading risk; this document is a handoff, not a
 review receipt. Codex must not approve its own implementation or invent a

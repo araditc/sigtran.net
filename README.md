@@ -38,8 +38,9 @@ The minimum margin is only 79 TPS (0.79%): this is not a general production SLA.
 This source-build evidence does not qualify an untested packaged candidate.
 The SDK never changes a consumer's ThreadPool configuration.
 
-[Phase 62 long-run resilience](docs/ENDURANCE_QUALIFICATION.md) remains
-**not qualified**. The [completed attempt](docs/ENDURANCE_COMPLETION_20261117.md)
+[Phase 62 long-run resilience](docs/ENDURANCE_CLOSURE_20261117.md) is
+**administratively closed with accepted deviation; technically not qualified**.
+The [completed attempt](docs/ENDURANCE_COMPLETION_20261117.md)
 ran one continuous SDK process for 259,200 seconds on source
 `1579bad8b2c731819bfeb063260f23d10a0e427f`, finishing on 2026-11-16.
 It completed 3,545,239,973 in-window transactions at 13,677.62 average TPS,
@@ -63,8 +64,8 @@ Future sampling now uses at most three audited non-forcing reads, retaining
 every raw attempt in an explicit new observation format; exhausted retries
 still fail. This is defensive correction, not a proven root-cause fix.
 Historical values are not reconstructed or regraded. No new 72-hour run or
-Kafka maintenance was started; avoiding a fresh qualification would require
-an explicit reviewed acceptance exception, which has not been granted.
+Kafka maintenance was started. A later explicitly reviewed, owner-authorized
+administrative exception does not convert the retained run into a strict pass.
 The approved [local real-stack resource diagnostic](docs/LOCAL_RESOURCE_DIAGNOSTIC.md)
 adds a separate loopback-only, at-most-one-hour SDK/independent-peer session
 with continuous raw GC context and short, separately timed EventPipe windows.
@@ -72,24 +73,24 @@ The [completed hour](docs/evidence/LOCAL_RESOURCE_DIAGNOSTIC_20261117.json),
 on frozen source `fb4c715`, passed with 37,021,965 measured transactions, no
 unexpected failures, 3,601 independently replayed memory observations and
 three decoded GC windows without lost events. No negative reading was
-reproduced: the historical cause remains unproven and Phase 62 stays open.
+reproduced: the historical cause remains unproven and strict qualification still fails.
 The diagnostic did not use the Kafka machine, repeat 72 hours or promote
 the original rejected evidence. Its loopback average is not capacity qualification.
 
-The owner accepted the risk of the seven missing readings. All six
-[acceptance implementation units](docs/ENDURANCE_ACCEPTANCE.md) are delivered;
-the [refreshed handoff](docs/evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
-remains `PENDING_INDEPENDENT_REVIEW`. The independently approved
-[reviewer policy](https://github.com/araditc/sigtran.net/pull/39) is admitted on
-`main`; PR #38 now incorporates that policy and binds reviewer `akhiabanchian`.
-A genuine scoped review on its new exact head/digest remains open for this
-package. CI rejects stale/self approvals and risk replay. Phase 62 is not yet
-closed; neither the original failed qualification nor stable GO changes.
+The owner accepted the seven-reading risk and authorized provisional
+administrative closure. The [final closure record](docs/evidence/ENDURANCE_ACCEPTANCE_CLOSURE_20261117.json)
+binds `akhiabanchian`'s authenticated scoped acceptance on head `73d6855`;
+[PR #38](https://github.com/araditc/sigtran.net/pull/38) is merged. Replay
+commands/tool versions/output receipts are not in that review body and remain
+an explicit follow-up. No independent replay by this closure is claimed.
+The [pre-approval handoff](docs/evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
+remains unchanged; offline CI still requires authentication rather than trusting
+cached closure flags. The original failed qualification and stable NO-GO remain.
 The [independent-review packet](docs/reviews/ENDURANCE_EVIDENCE_REVIEW.md)
 includes the implementation comparison and evidence checklist for
-[review PR #38](https://github.com/araditc/sigtran.net/pull/38). The reviewer
-allowlist is admitted, but the old-head approval and policy-only approval do
-not authorize the refreshed case. Preparing a PR does not grant acceptance.
+[review PR #38](https://github.com/araditc/sigtran.net/pull/38). The latest explicit
+case review, not old-head/policy-only approvals, supplied the scoped disposition.
+Phases 63-65 and final candidate/operator/release qualification remain open.
 
 The [evidence contract](docs/ENDURANCE_EVIDENCE_CONTRACT.md) requires exact
 64-bit terminal accounting, hash-chain/resource replay, crash-surviving peer

@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "historical-scoped-acceptance-closure",
+  "recordedOn": "2026-11-17",
+  "recordedAtUtc": "2026-11-17T16:43:24Z",
+  "status": "CLOSED_WITH_ACCEPTED_DEVIATION",
+  "caseId": "endurance-managed-memory-observations",
+  "runId": "map-endurance-full-20261113-a",
+  "testedSourceCommit": "1579bad8b2c731819bfeb063260f23d10a0e427f",
+  "reviewedHeadCommit": "73d6855090fac1f0733cccb3581200549fb739c8",
+  "scope": "seven-missing-managed-memory-readings-only",
+  "originalManifestSha256": "8998131ed9ce028f2e52e840ec21232c9bdc392529ed6739c8e1bef42dc50b88",
+  "assessment": {
+    "schemaVersion": 1,
+    "evidenceKind": "scoped-evidence-acceptance-assessment",
+    "caseId": "endurance-managed-memory-observations",
+    "status": "CLOSED_WITH_ACCEPTED_DEVIATION",
+    "ownerRiskAccepted": true,
+    "independentReviewApproved": true,
+    "administrativeClosureApproved": true,
+    "acceptanceExceptionGranted": true,
+    "originalVerdict": "rejected",
+    "qualificationPassed": false,
+    "stablePromotion": false,
+    "rootCauseProven": false,
+    "freshEnduranceRunStarted": false,
+    "privateArtifactsReplayed": false,
+    "blockers": [],
+    "dossierSha256": "214bb94a552d9ae9d689bae5ad07c14954b00b7fc2bce6ce9fb0020383ecb5ff",
+    "bundleSha256": "cd311ad7f094977e6258851c4d1359265485f4a56ef0bbf257e392cf81dc57e3",
+    "decisionFileSha256": {
+      "eng/qualification/deviations/endurance-managed-memory.json": "214bb94a552d9ae9d689bae5ad07c14954b00b7fc2bce6ce9fb0020383ecb5ff",
+      "eng/qualification/deviations/endurance-managed-memory.owner.json": "0469d05697fbdc9c6df2e0d0d84df3925419be743aaa2dccee25c07640f6adf7",
+      "eng/qualification/deviations/endurance-managed-memory.review-policy.json": "7110bd153098968b46b182090f4ab734088c7937a8fa867edb8c77663386507d",
+      "eng/qualification/deviations/endurance-managed-memory.review-request.json": "4f47c7ac9a4f2dfde38d549f15959cc1f7b015d9186e5acee4a049ec67f1cffe",
+      "eng/qualification/deviations/endurance-managed-memory.risk-events.json": "f92cd61bfb7db37523bee27ad0b821d791360f6c459e598199198851741e71bc"
+    },
+    "review": {
+      "pullRequest": 38,
+      "repository": "araditc/sigtran.net",
+      "approvals": [
+        {
+          "login": "akhiabanchian",
+          "reviewId": 5942538225,
+          "commit": "73d6855090fac1f0733cccb3581200549fb739c8",
+          "submittedAtUtc": "2026-11-17T16:36:30Z"
+        }
+      ],
+      "authenticated": true
+    }
+  },
+  "reviewRecord": {
+    "repository": "araditc/sigtran.net",
+    "pullRequest": 38,
+    "reviewId": 5942538225,
+    "login": "akhiabanchian",
+    "reviewerType": "User",
+    "state": "APPROVED",
+    "commit": "73d6855090fac1f0733cccb3581200549fb739c8",
+    "submittedAtUtc": "2026-11-17T16:36:30Z",
+    "url": "https://github.com/araditc/sigtran.net/pull/38#pullrequestreview-5942538225",
+    "body": "Evidence-Deviation-Case: endurance-managed-memory-observations\nEvidence-Deviation-SHA256: cd311ad7f094977e6258851c4d1359265485f4a56ef0bbf257e392cf81dc57e3\nDisposition: ACCEPT_SCOPED_DEVIATION\n\nReviewed commit:\n73d6855090fac1f0733cccb3581200549fb739c8\n\nMy review covers the code and recorded case reports. I personally replayed the original raw artifacts using the verification tools.\n\nAccording to the retained reports, the 72-hour workload, transaction accounting, recovery from nine incidents and Kafka restoration completed. Seven managed-memory readings remain invalid, and their historical cause remains unproven. The subsequent one-hour diagnostic does not establish that cause. \n\nI accept a narrowly scoped exception for these seven readings, this run and this source, on these conditions: the original rejected verdict is preserved, missing values are never reconstructed, and additional defects or recurrence reopen the case.\n\nThis review authorizes administrative closure only as\nCLOSED_WITH_ACCEPTED_DEVIATION for the specified run, source\nand seven readings.",
+    "rawReplayIsReviewerAttestation": true,
+    "replayCommandsVersionsAndOutputsInReviewBody": false,
+    "rawReplayIndependentlyRepeatedByThisClosure": false
+  },
+  "ownerAuthorization": {
+    "actor": "ammarheidari",
+    "role": "product-owner",
+    "recordedOn": "2026-11-17",
+    "basis": "explicit-owner-instruction-in-Codex",
+    "statement": "With my authorization and explicit recording of these items, close phase 62 provisionally so we can continue.",
+    "originalStatement": "\u0628\u0627 \u0645\u062c\u0648\u0632 \u0645\u0646 \u0648 \u062b\u0628\u062a \u0635\u0631\u06cc\u062d \u0627\u06cc\u0646 \u0645\u0648\u0627\u0631\u062f\u060c \u0641\u0639\u0644\u0627 62 \u0631\u0648 \u0628\u0628\u0646\u062f\n\u062a\u0627 \u0627\u062f\u0627\u0645\u0647 \u0628\u062f\u06cc\u0645",
+    "authorizationScope": "administrative-milestone-closure-with-recorded-evidence-limitations",
+    "detailedReplayExecutionEvidenceDeferred": true,
+    "originalOwnerDecisionModified": false,
+    "originalFailedEvidenceMayChange": false,
+    "releasePromotionAuthorized": false
+  },
+  "merge": {
+    "pullRequest": 38,
+    "commit": "6832230745a9748fbf8c4d2fe520cdcf48112c15",
+    "mergedAtUtc": "2026-11-17T16:39:35Z",
+    "url": "https://github.com/araditc/sigtran.net/pull/38"
+  },
+  "boundaries": {
+    "originalVerdict": "rejected",
+    "qualificationPassed": false,
+    "stablePromotion": false,
+    "rootCauseProven": false,
+    "finalPackageQualified": false,
+    "publicationAuthorized": false,
+    "originalArtifactsModified": false,
+    "currentHeadInheritsAcceptance": false,
+    "freshEnduranceRunStarted": false,
+    "kafkaChangedByThisClosure": false,
+    "consumedByReleaseGates": false
+  },
+  "carryForward": [
+    "Detailed replay commands, tool versions and output receipts are not attached to the acceptance review; the owner authorizes administrative closure with this limitation recorded.",
+    "The historical sampling root cause is unproven and the seven missing readings remain unreconstructed.",
+    "The accepted review is bound to its exact historical head and bundle; later source/package/scope changes require separate assessment.",
+    "Any additional defect, recurrence, scope/evidence/SDK change or independent rejection reopens the risk decision.",
+    "Phases 63-65, final-package qualification and stable/operator release gates remain open and mandatory."
+  ]
+}
