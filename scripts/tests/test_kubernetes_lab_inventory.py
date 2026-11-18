@@ -36,14 +36,15 @@ class LabInventoryTests(unittest.TestCase):
                            "numberReady": 2, "numberAvailable": 2}},
         }
 
-    def check(self, *, cluster_uid=CLUSTER_UID, namespace_name="sigtran-lab", namespace_uid=NAMESPACE_UID):
+    def check(self, *, cluster_uid=CLUSTER_UID, namespace_name="sigtran-lab", namespace_uid=NAMESPACE_UID, minimum_workers=1):
         with tempfile.TemporaryDirectory() as directory:
             for path, contents in self.snapshots.items():
                 (Path(directory) / path).write_text(json.dumps(contents), encoding="utf-8")
             return subprocess.run([sys.executable, str(ROOT / "scripts/check-kubernetes-lab-inventory.py"), directory,
                                    "--cluster-uid", cluster_uid, "--namespace", namespace_name,
                                    "--namespace-uid", namespace_uid, "--cni-namespace", "kube-system",
-                                   "--cni-name", "lab-cni"], capture_output=True, text=True, timeout=10)
+                                   "--cni-name", "lab-cni", "--minimum-workers", str(minimum_workers)],
+                                  capture_output=True, text=True, timeout=10)
 
     def assert_rejected(self, run, reason):
         self.assertEqual(run.returncode, 1, run.stderr)
@@ -101,6 +102,13 @@ class LabInventoryTests(unittest.TestCase):
     def test_missing_inventory_fails_closed(self):
         self.snapshots.pop("cni-daemonset.json")
         self.assert_rejected(self.check(), "missing or malformed inventory")
+
+    def test_disruption_needs_two_distinct_eligible_workers(self):
+        self.assert_rejected(self.check(minimum_workers=2), "requires two Ready")
+        alternate = copy.deepcopy(self.node)
+        alternate["metadata"]["name"] = "private-worker-b"
+        self.snapshots["nodes.json"]["items"].append(alternate)
+        self.assertEqual(self.check(minimum_workers=2).returncode, 0)
 
     def test_workflow_checks_pinned_target_before_any_namespace_mutation(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

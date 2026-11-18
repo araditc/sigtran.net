@@ -64,16 +64,18 @@ only 79 TPS and the per-socket profile is explicit; no general SLA is implied.
 [full-duration attempt](ENDURANCE_COMPLETION_20261117.md) completed 259,200
 seconds and 3,545,239,973 in-window transactions, but remains rejected because
 seven raw managed-memory observations are negative. Wire/accounting and Kafka
-restoration passed; neither overrides resource replay. Unit 10 remains open
-pending valid resource evidence. The owner requested a
+restoration passed; neither overrides resource replay. The owner requested a
 [limited sampling investigation](MANAGED_MEMORY_SAMPLING.md) without a fresh
 72-hour run: defensive audited retries and short standalone diagnostics do
 not retrospectively qualify the old stream. A no-repeat acceptance exception
 would require explicit review/approval. The owner has now accepted this exact
 seven-reading risk and the [six-unit acceptance implementation](ENDURANCE_ACCEPTANCE.md)
-is delivered. Reviewer designation and authenticated independent approval are
-still open; the assessment is `PENDING_INDEPENDENT_REVIEW`, not a final exception
-or Phase 62 closure. No new 72-hour run was launched.
+is delivered. The later exact-head scoped review was authenticated and PR #38
+was merged. With the owner's explicit authorization, Phase 62 is
+[administratively closed with accepted deviation](ENDURANCE_CLOSURE_20261117.md),
+not technically qualified. Detailed reviewer replay receipts remain follow-up;
+the original resource rejection and unknown cause are preserved. No new
+72-hour run was launched.
 Phases 63-65 and final package/source/scope-bound trusted release qualification
 remain mandatory; a source-build pass does not close the stable release gates.
 

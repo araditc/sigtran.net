@@ -280,5 +280,8 @@ The release manifest's capacity flag and exact-candidate policy remain fail-clos
 this test deployed source-built binaries, not a packed release candidate with an
 authenticated schema-2 evidence envelope. That final binding belongs to Phase 65,
 not an assertion that source/profile qualification authorizes publication.
-Phase 62 still requires a real 72-hour resilience run; phases 63-65 cover cluster,
-operator and release acceptance. 20K is deferred, and no operator SLA is implied.
+The later real 72-hour workload is now
+[administratively closed with an accepted seven-reading deviation](ENDURANCE_CLOSURE_20261117.md),
+not technically qualified under the unchanged endurance resource gate. Phases
+63-65 cover cluster, operator and final release acceptance. 20K is deferred,
+and no operator SLA is implied.

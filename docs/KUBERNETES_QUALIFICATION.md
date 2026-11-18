@@ -10,12 +10,12 @@ deployment. The `kubernetes-sctp` gate remains open.
 | Unit | Deliverable and exit criterion | Status |
 | --- | --- | --- |
 | 1 | Read-only target preflight: pin cluster and namespace, check worker and CNI state, refuse mutation on failure | Tooling and offline tests delivered; live preflight not run |
-| 2 | Reconcile existing workflows and [disruption PR #33](https://github.com/araditc/sigtran.net/pull/33) against current `main`; independently review the diff and exact-head checks | Historical PR approved; not yet integrated or run |
+| 2 | Reconcile the PDB and voluntary-drain design from [PR #33](https://github.com/araditc/sigtran.net/pull/33) with pinned preflight and exact-run ownership | Integrated on the unit branch; offline verification only, review and representative execution open |
 | 3 | Prepare isolated representative cluster, protected runner/environment, private evidence storage, approved peer and source-bound image | Blocked on lab provisioning |
 | 4 | Deploy exact image and compare startup/liveness/readiness, management Service and real SCTP association/peer traffic | Existing tooling partial; representative run open |
 | 5 | Verify a fresh association is blocked under SCTP NetworkPolicy deny and recovers under allow, with verified cleanup | Existing tooling admitted; representative run open |
-| 6 | Verify graceful pod termination, replacement readiness, SCTP recovery and accounted in-flight work | Disruption tooling available for review; execution open |
-| 7 | Verify PDB behavior, approved worker drain and rescheduling to a distinct worker with restoration receipts | Disruption tooling available for review; execution open |
+| 6 | Verify graceful pod termination, replacement readiness, SCTP recovery and accounted in-flight work | Shutdown observation in drain tooling; separate timing and in-flight evidence open |
+| 7 | Verify PDB behavior, approved worker drain and rescheduling to a distinct worker with restoration receipts | Unit 2 tooling verified offline; representative execution open |
 | 8 | Verify bounded recovery after abrupt pod/node loss on an isolated target | Open; voluntary drain is not a substitute |
 | 9 | Verify a real image upgrade and rollback, exact image identities and post-rollback signaling | Existing rollback checks partial; representative run open |
 | 10 | Retain private originals and sanitized, source-bound receipts; independently validate matrix, cleanup and gate decision | Open; no gate promotion inferred from CI |
@@ -69,6 +69,50 @@ exclusive for the run and verify actual placement and wire behavior separately.
 See [node status](https://kubernetes.io/docs/reference/node/node-status/),
 [NetworkPolicy behavior](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 and [environment protection rules](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
+
+## Owned Disruption Profile
+
+The manually approved `disruption` profile is CNI-only and requires the
+additional confirmation `run kubernetes disruption <namespace>`. Preflight
+requires two eligible workers. The lab operator must reserve the worker
+labelled `sigtran.net/qualification-drain=true` for this drill. The workflow
+rechecks the cluster/namespace pins, both eligible workers and existing
+workloads before acting. It refuses an unrelated active non-DaemonSet pod on
+the target worker; it does not move or evict other workloads.
+
+The rendered pod template carries the workflow run/attempt label. A
+run-owned `policy/v1` PDB selects that label and the signaling application:
+`maxUnavailable: 1` allows disruption for this one-replica drill, not
+zero downtime. The controller must observe the PDB's current generation
+and report exactly one healthy pod and one permitted disruption. The workflow
+cordons the one approved worker with an atomic node UID/resource-version
+check and owner annotation, then uses a namespace-scoped
+[Eviction API request](https://kubernetes.io/docs/concepts/scheduling-eviction/api-eviction/)
+with the exact pod UID. It never falls back to forced deletion or tries to
+drain every workload on a node. A budget rejection fails the drill.
+
+The scenario looks for `m3ua.shutdown.completed` in the followed original
+pod log, a Ready replacement from the same ReplicaSet on a distinct eligible
+worker, and an SCTP association row. That row is not independently decoded
+peer traffic, and this drill does not establish in-flight accounting or a
+separate graceful-termination timing pass.
+
+Before creating the PDB or claiming the worker, a private intent record binds
+the run and target.
+The workflow's `always()` cleanup rechecks both pins. It restores only the
+same node UID with exact run ownership, clearing the annotation in the same
+atomic update as restoring schedulability. It independently attempts to
+delete only the owned PDB with UID/resource-version preconditions and verifies
+absence. Ownership changes or cleanup failures fail the slice; preserve the
+private intents and involve the lab operator. Runner loss is not covered by
+`always()`; verify the state and restore the owned resources before retrying.
+Node patch, cross-namespace pod inventory, namespaced PDB and `pods/eviction`
+permissions must be explicitly scoped by the lab operator.
+
+PDB, node rescheduling and restoration receipts must bind to the same run and
+source and include their required observations. The disruption slice does not
+produce NetworkPolicy, stand-alone graceful-termination or all peer evidence
+required by the full matrix. A successful slice is not a stable-gate decision.
 
 Run the offline checks from the repository root:
 

@@ -1,6 +1,8 @@
 # Continuous Endurance Execution Status
 
-Phase 62 unit 10 is **open, not qualified**. The replacement finished its full
+Phase 62 unit 10 is **administratively closed with accepted deviation, not qualified**.
+See the [closure report](ENDURANCE_CLOSURE_20261117.md) and its authenticated
+historical decision/owner authorization. The replacement finished its full
 72-hour workload on 2026-11-16, but original independent verification rejected
 seven negative managed-memory observations. See the
 [completion report](ENDURANCE_COMPLETION_20261117.md) and
@@ -8,15 +10,16 @@ seven negative managed-memory observations. See the
 Kafka restoration and wire/accounting checks passed; they do not override the
 failed resource gate. There is no active run and no replacement was launched.
 
-The owner has since explicitly accepted the risk of those exact seven readings.
-The six-unit [scoped acceptance implementation](ENDURANCE_ACCEPTANCE.md) is
-delivered without another load run. Its separate assessment is
-`PENDING_INDEPENDENT_REVIEW`: the reviewer policy was independently approved
-and admitted through PR #39. The [refreshed case handoff](evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
-incorporates that policy; authenticated approval of its new head/digest remains
-open. Neither the old-head case review nor policy-only approval closes unit 10.
-Owner acceptance alone does not change failed receipts,
-prove the cause or authorize stable promotion. Original JSON reports are retained.
+The owner accepted the risk of those exact seven readings and authorized
+provisional administrative closure with explicit limitations. Authenticated
+review `5942538225` by `akhiabanchian` bound head `73d6855` and its exact bundle;
+the assessor returned `CLOSED_WITH_ACCEPTED_DEVIATION`, then PR #38 was normally
+merged. The [closure record](evidence/ENDURANCE_ACCEPTANCE_CLOSURE_20261117.json)
+retains the actual review and owner instruction. Replay commands/versions/outputs
+are not attached to that review body and remain a follow-up; this closure did
+not independently replay raw artifacts. Old failed/pending receipts remain
+unchanged. Neither administrative acceptance nor the one-hour diagnostic
+proves the cause, changes strict qualification or authorizes stable promotion.
 
 The verified six-minute
 [diagnostic](ENDURANCE_DIAGNOSTICS.md) closes only unit 9. The full attempt
@@ -107,9 +110,10 @@ The owner then requested a [limited investigation](MANAGED_MEMORY_SAMPLING.md)
 without repeating 72 hours. Three standalone diagnostics made 100,271,031
 readings without reproducing the anomaly. Bounded audited retries are now
 implemented for future sampling; historical values remain unrecoverable and
-strict replay still fails. No acceptance exception, fresh endurance run or
-Kafka maintenance was started. Unit 10 remains open; phases 63-65 remain
-separate, and no stable release or NuGet publication is authorized here.
+strict replay still fails. That investigation granted no exception and started
+no fresh endurance run or Kafka maintenance. The later administrative closure
+above is a separate owner-authorized decision; phases 63-65 remain mandatory,
+and no stable release or NuGet publication is authorized here.
 
 The owner next approved a [one-hour local real-stack diagnostic](LOCAL_RESOURCE_DIAGNOSTIC.md).
 Its separately owned SDK-host loopback workload does not resume this full run,

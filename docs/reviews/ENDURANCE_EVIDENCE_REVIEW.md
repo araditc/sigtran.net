@@ -3,8 +3,10 @@
 This is a review packet, not an approval or a passing endurance receipt.
 Review PR: [#38](https://github.com/araditc/sigtran.net/pull/38).
 The product owner accepted the risk of seven missing managed-memory readings;
-independent human approval remains outstanding. Review the exact PR head and
-current bundle digest from the PR description before giving any disposition.
+the later scoped human review was authenticated on the exact frozen PR head.
+The [closure report](../ENDURANCE_CLOSURE_20261117.md) records the normal merge,
+owner authorization and evidence-detail limitations. This packet retains the
+review requirements; it is not a raw-replay receipt or approval of later heads.
 
 ## Review Scope
 
@@ -91,7 +93,8 @@ The independently reviewed policy was admitted on `main` through
 `305d6953f21fb30fb9210d7f77db76928f1cf3a5`. This case PR now incorporates that
 admitted policy; its sole designated reviewer is `akhiabanchian`.
 The [refreshed assessment](../evidence/ENDURANCE_REVIEW_REFRESH_20261117.json)
-still reports pending approval. After CI passes, use the frozen exact head and
+retains its pre-approval pending state for offline CI. For any future review,
+use the frozen exact head and
 bundle digest in this PR's description. Any earlier review of another
 head/digest does not authorize this version, and the separate policy review
 expressly excludes endurance-case acceptance. Codex cannot submit a human

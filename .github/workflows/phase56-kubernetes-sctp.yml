@@ -28,8 +28,9 @@ on:
         options:
           - core
           - cni-policy
+          - disruption
       matrix_confirmation:
-        description: For cni-policy type "run kubernetes cni-policy <namespace>"
+        description: For a non-core profile type "run kubernetes <matrix_profile> <namespace>"
         required: false
         type: string
       confirmation:
@@ -127,6 +128,9 @@ jobs:
               --output "$policy_check"
             rm -f -- "$policy_check"
             trap - EXIT
+          elif [[ "$K8S_MATRIX_PROFILE" == "disruption" ]]; then
+            test "$K8S_NETWORK_PROFILE" = "cni"
+            test "$MATRIX_CONFIRMATION" = "run kubernetes disruption $K8S_NAMESPACE"
           fi
 
       - name: Configure private kubectl credentials
@@ -166,10 +170,15 @@ jobs:
           kubectl --request-timeout=15s get namespace "$K8S_NAMESPACE" -o json > "$raw/qualification-namespace.json"
           kubectl --request-timeout=15s get nodes -o json > "$raw/nodes.json"
           kubectl --request-timeout=15s -n "$K8S_CNI_NAMESPACE" get daemonset "$K8S_CNI_DAEMONSET" -o json > "$raw/cni-daemonset.json"
+          minimum_workers=1
+          if [[ "$K8S_MATRIX_PROFILE" == "disruption" ]]; then
+            minimum_workers=2
+          fi
           python3 scripts/check-kubernetes-lab-inventory.py "$raw" \
             --cluster-uid "$K8S_CLUSTER_UID" --namespace "$K8S_NAMESPACE" \
             --namespace-uid "$K8S_QUALIFICATION_NAMESPACE_UID" \
-            --cni-namespace "$K8S_CNI_NAMESPACE" --cni-name "$K8S_CNI_DAEMONSET"
+            --cni-namespace "$K8S_CNI_NAMESPACE" --cni-name "$K8S_CNI_DAEMONSET" \
+            --minimum-workers "$minimum_workers"
           kubectl --request-timeout=15s version -o json > "$raw/kube-version.json"
 
       - name: Deploy operations host
@@ -185,7 +194,7 @@ jobs:
           python3 scripts/render-kubernetes-deployment.py \
             --template deploy/kubernetes/deployment.yaml \
             --output "$rendered" \
-            --image "$K8S_IMAGE"
+            --image "$K8S_IMAGE" --run-id "$RUN_ID"
           kubectl -n "$K8S_NAMESPACE" apply -f "$rendered"
 
           if [[ "$K8S_NETWORK_PROFILE" == "hostNetwork" ]]; then
@@ -442,6 +451,26 @@ jobs:
           printf '%s\n' "$remaining" > "$raw/network-policy-cleanup-result.txt"
           test -z "$remaining"
 
+      - name: Exercise owned PDB and worker drain
+        id: disruption
+        if: inputs.matrix_profile == 'disruption' && steps.cluster.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run-kubernetes-disruption.py exercise "$EVIDENCE_SCRATCH/raw" \
+            --cluster-uid "$K8S_CLUSTER_UID" --namespace "$K8S_NAMESPACE" \
+            --namespace-uid "$K8S_QUALIFICATION_NAMESPACE_UID" --run-id "$RUN_ID" --source "$SOURCE_SHA"
+
+      - name: Restore owned worker and remove PDB
+        id: disruption_cleanup
+        if: always() && inputs.matrix_profile == 'disruption' && steps.cluster.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run-kubernetes-disruption.py cleanup "$EVIDENCE_SCRATCH/raw" \
+            --cluster-uid "$K8S_CLUSTER_UID" --namespace "$K8S_NAMESPACE" \
+            --namespace-uid "$K8S_QUALIFICATION_NAMESPACE_UID" --run-id "$RUN_ID" --source "$SOURCE_SHA"
+
       - name: Verify pod restart and rollout rollback
         id: rollout
         shell: bash
@@ -529,6 +558,8 @@ jobs:
           SERVICE_EXPOSURE_OUTCOME: ${{ steps.service_exposure.outcome }}
           NETWORK_POLICY_OUTCOME: ${{ steps.network_policy.outcome }}
           POLICY_CLEANUP_OUTCOME: ${{ steps.policy_cleanup.outcome }}
+          DISRUPTION_OUTCOME: ${{ steps.disruption.outcome }}
+          DISRUPTION_CLEANUP_OUTCOME: ${{ steps.disruption_cleanup.outcome }}
           ROLLOUT_OUTCOME: ${{ steps.rollout.outcome }}
           FINAL_CAPTURE_OUTCOME: ${{ steps.final_capture.outcome }}
         run: |
@@ -539,9 +570,11 @@ jobs:
           python3 - "$raw/qualification-steps.json" \
             "$SOURCE_SHA" "$CLUSTER_OUTCOME" "$DEPLOY_OUTCOME" \
             "$INITIAL_OUTCOME" "$SERVICE_EXPOSURE_OUTCOME" "$NETWORK_POLICY_OUTCOME" \
-            "$POLICY_CLEANUP_OUTCOME" "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
+            "$POLICY_CLEANUP_OUTCOME" "$DISRUPTION_OUTCOME" "$DISRUPTION_CLEANUP_OUTCOME" \
+            "$ROLLOUT_OUTCOME" "$FINAL_CAPTURE_OUTCOME" <<'PY'
           import json, sys
-          path, source, cluster, deploy, initial, service_exposure, network_policy, policy_cleanup, rollout, final_capture = sys.argv[1:]
+          (path, source, cluster, deploy, initial, service_exposure, network_policy,
+           policy_cleanup, disruption, disruption_cleanup, rollout, final_capture) = sys.argv[1:]
           value = {
               "schemaVersion": 1,
               "sourceSha": source,
@@ -552,6 +585,8 @@ jobs:
                   "serviceExposure": service_exposure,
                   "networkPolicy": network_policy,
                   "policyCleanup": policy_cleanup,
+                  "disruption": disruption,
+                  "disruptionCleanup": disruption_cleanup,
                   "rollout": rollout,
                   "finalCapture": final_capture,
               },
@@ -577,6 +612,10 @@ jobs:
                 matrix_steps_ok=false
               fi
             done
+          elif [[ "$K8S_MATRIX_PROFILE" == "disruption" ]]; then
+            if [[ "$DISRUPTION_OUTCOME" != "success" || "$DISRUPTION_CLEANUP_OUTCOME" != "success" ]]; then
+              matrix_steps_ok=false
+            fi
           fi
           if [[ "$matrix_steps_ok" != "true" ]]; then
             workflow_steps_ok=false

@@ -39,8 +39,17 @@ MATRIX_FILES = {
     "serviceExposure": "service-exposure.json",
     "networkPolicy": "network-policy.json",
     "gracefulTermination": "graceful-termination.json",
+    "podDisruptionBudget": "pdb.json",
     "rolloutRollback": "rollout-rollback.json",
     "nodeDrainReschedule": "node-drain.json",
+    "disruptionRestoration": "disruption-restoration.json",
+}
+
+DISRUPTION_FIELDS = {
+    "pdb.json": {"maxUnavailable": 1, "disruptionsAllowed": 1, "singleReplicaAvailabilityClaim": False},
+    "node-drain.json": {"evictionPath": "policy-v1-single-pod", "rescheduledToDifferentNode": True,
+                        "sctpAssociationObserved": True, "shutdownEventObserved": True},
+    "disruption-restoration.json": {"nodeRestored": True, "pdbAbsent": True},
 }
 
 
@@ -168,7 +177,7 @@ def pod_identity(value: dict[str, Any]) -> tuple[str, str, str, str]:
     return uid, node, image, image_id
 
 
-def matrix_result(path: Path, source_sha: str) -> tuple[bool, str]:
+def matrix_result(path: Path, source_sha: str, run_id: str) -> tuple[bool, str]:
     if not path.exists():
         return False, "not executed"
     value = load_json(path)
@@ -178,6 +187,12 @@ def matrix_result(path: Path, source_sha: str) -> tuple[bool, str]:
         return False, "source SHA mismatch"
     if value.get("passed") is not True:
         return False, "reported failure"
+    if required := DISRUPTION_FIELDS.get(path.name):
+        if value.get("runId") != run_id:
+            return False, "disruption run ID mismatch"
+        if any(type(value.get(key)) is not type(expected) or value[key] != expected
+               for key, expected in required.items()):
+            return False, "disruption observations incomplete or inconsistent"
     return True, "passed"
 
 
@@ -262,7 +277,7 @@ def main() -> int:
 
     matrix: dict[str, dict[str, Any]] = {}
     for name, filename in MATRIX_FILES.items():
-        passed, detail = matrix_result(raw / filename, source_sha)
+        passed, detail = matrix_result(raw / filename, source_sha, args.run_id)
         matrix[name] = {"passed": passed, "detail": detail}
 
     gate_eligible = execution_passed and all(
@@ -329,8 +344,8 @@ def main() -> int:
         "",
         "A core PASS is not stable-gate evidence by itself. Gate eligibility also",
         "requires retained source-bound evidence for management service exposure,",
-        "NetworkPolicy behavior, graceful termination, rollout/rollback, and node",
-        "drain/rescheduling.",
+        "NetworkPolicy behavior, graceful termination, PDB, rollout/rollback,",
+        "node drain/rescheduling, and verified disruption restoration.",
         "",
     ])
     (safe / "report.md").write_text("\n".join(report_lines), encoding="utf-8")

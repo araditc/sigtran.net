@@ -28,12 +28,12 @@ def validate_namespace(value, name, uid, *, dedicated=False):
         raise ValueError("An explicitly labelled, dedicated qualification namespace is required")
 
 
-def count_ready_linux_workers(inventory):
-    """Count distinct Ready Linux workers without blocking scheduling taints."""
+def ready_linux_workers(inventory):
+    """Identify distinct Ready Linux workers without blocking scheduling taints."""
     if inventory["kind"] not in ("List", "NodeList") or inventory["apiVersion"] != "v1":
         raise ValueError("Expected a Kubernetes node list")
     seen = set()
-    count = 0
+    eligible = set()
     for node in inventory["items"]:
         metadata, spec, status = node["metadata"], node["spec"], node["status"]
         name = metadata["name"]
@@ -47,8 +47,8 @@ def count_ready_linux_workers(inventory):
                 and not CONTROL_PLANE.intersection(metadata.get("labels", {}))
                 and not any(taint["effect"] in ("NoSchedule", "NoExecute")
                             for taint in spec.get("taints", []))):
-            count += 1
-    return count
+            eligible.add(name)
+    return eligible
 
 
 def validate_cni(value, name, namespace):
@@ -67,7 +67,7 @@ def validate_cni(value, name, namespace):
         raise ValueError("CNI DaemonSet has not converged on its current generation")
 
 
-def check_inventory(root, *, cluster_uid, namespace, namespace_uid, cni_namespace, cni_name):
+def check_inventory(root, *, cluster_uid, namespace, namespace_uid, cni_namespace, cni_name, minimum_workers=1):
     """Return a worker count only after all prerequisites have passed."""
     def read(name):
         with (root / name).open(encoding="utf-8") as stream:
@@ -75,9 +75,11 @@ def check_inventory(root, *, cluster_uid, namespace, namespace_uid, cni_namespac
 
     validate_namespace(read("cluster-anchor.json"), "kube-system", cluster_uid)
     validate_namespace(read("qualification-namespace.json"), namespace, namespace_uid, dedicated=True)
-    workers = count_ready_linux_workers(read("nodes.json"))
-    if workers < 1:
-        raise ValueError("No Ready, schedulable Linux worker found")
+    workers = len(ready_linux_workers(read("nodes.json")))
+    if workers < minimum_workers:
+        if minimum_workers == 1:
+            raise ValueError("No Ready, schedulable Linux worker found")
+        raise ValueError("Disruption preflight requires two Ready, schedulable Linux workers")
     validate_cni(read("cni-daemonset.json"), cni_name, cni_namespace)
     return workers
 
@@ -87,6 +89,7 @@ def main():
     parser.add_argument("raw_root", type=Path)
     for option in ("cluster-uid", "namespace", "namespace-uid", "cni-namespace", "cni-name"):
         parser.add_argument("--" + option, required=True)
+    parser.add_argument("--minimum-workers", type=int, choices=(1, 2), default=1)
     options = vars(parser.parse_args())
     root = options.pop("raw_root")
     try:

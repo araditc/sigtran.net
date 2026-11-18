@@ -123,8 +123,9 @@ network policy, CNI, load balancer, and firewall configuration must permit SCTP;
 TCP or UDP service exposure does not imply SCTP forwarding.
 
 See [Kubernetes deployment qualification](KUBERNETES_QUALIFICATION.md) for the
-pinned cluster/namespace preflight, protected lab prerequisites and remaining
-live SCTP/CNI, disruption and rollback evidence.
+pinned cluster/namespace preflight, protected lab prerequisites, run-owned
+PDB/eviction and worker restoration. Representative live SCTP/CNI, disruption
+and rollback evidence remain open.
 
 Qualification images must also bind their immutable digest to the source commit
 under test. The Dockerfile records the supplied commit as both the OCI
