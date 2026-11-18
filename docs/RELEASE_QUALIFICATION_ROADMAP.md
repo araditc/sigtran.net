@@ -26,7 +26,7 @@ The executable scope contract is `eng/qualification/scope.json`.
 | 60 | External interoperability | Separately maintained peer or vendor stack; positive/negative M3UA and MAP SMS scenarios; mismatches corrected |
 | 61 | Capacity qualification | Owner-approved current target: 10K completed transactions/second for 30 minutes on declared hardware/workload; latency/error/resource report; 20K deferred |
 | 62 | Long-run resilience | At least 72 hours; bounded memory/queues; network/process failures; every outstanding request accounted for |
-| 63 | Deployment qualification | Representative Kubernetes SCTP network, readiness/drain, pod/node failure, upgrade and rollback |
+| 63 | [Deployment qualification](KUBERNETES_QUALIFICATION.md) | Representative Kubernetes SCTP network, readiness/drain, pod/node failure, upgrade and rollback |
 | 64 | Operator acceptance | Documented STP/HLR/SMSC or vendor profile, controlled pilot, accepted operations and support boundaries |
 | 65 | Release qualification | Final API compatibility, migration, SBOM, provenance, approved signing, durable artifacts and protected publication |
 
