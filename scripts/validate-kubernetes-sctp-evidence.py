@@ -39,6 +39,7 @@ MATRIX_FILES = {
     "serviceExposure": "service-exposure.json",
     "networkPolicy": "network-policy.json",
     "gracefulTermination": "graceful-termination.json",
+    "podDisruptionBudget": "pdb.json",
     "rolloutRollback": "rollout-rollback.json",
     "nodeDrainReschedule": "node-drain.json",
 }
@@ -329,8 +330,8 @@ def main() -> int:
         "",
         "A core PASS is not stable-gate evidence by itself. Gate eligibility also",
         "requires retained source-bound evidence for management service exposure,",
-        "NetworkPolicy behavior, graceful termination, rollout/rollback, and node",
-        "drain/rescheduling.",
+        "NetworkPolicy behavior, graceful termination, PodDisruptionBudget behavior,",
+        "rollout/rollback, and node drain/rescheduling.",
         "",
     ])
     (safe / "report.md").write_text("\n".join(report_lines), encoding="utf-8")
